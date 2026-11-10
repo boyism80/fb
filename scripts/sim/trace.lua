@@ -55,9 +55,9 @@ function M.described(decision)
     end
     local dest = decision.dest or {}
     return table.concat(
-    { tostring(decision.task), tostring(decision.kind), tostring(decision.key), tostring(decision.slot),
-        tostring(decision.item), tostring(decision.oid), tostring(dest.map), tostring(dest.x), tostring(dest.y),
-        tostring(dest.range), table.concat(dest.maps or {}, ",") }, "|")
+        { tostring(decision.task), tostring(decision.kind), tostring(decision.key), tostring(decision.slot),
+            tostring(decision.item), tostring(decision.oid), tostring(dest.map), tostring(dest.x), tostring(dest.y),
+            tostring(dest.range), table.concat(dest.maps or {}, ",") }, "|")
 end
 
 function M.compare(left, right)

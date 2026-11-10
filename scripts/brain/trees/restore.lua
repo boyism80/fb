@@ -1,13 +1,11 @@
 local data     = require("brain.data.combat")
 local combat   = require("brain.policies.combat")
-local escort   = require("brain.policies.escort")
-local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
 local battle   = require("brain.policies.battle")
 local tree     = require("brain.tree")
 local rest     = require("brain.tasks.rest")
 
-local choose, when, act = tree.select, tree.when, tree.act
+local choose, when, act, pick = tree.select, tree.when, tree.act, tree.pick
 
 local function healing(snap, facts, action)
     return rest.worth(snap, facts, action, true)
@@ -46,13 +44,7 @@ local function cure_helps(snap, facts)
     if cure == nil then
         return false
     end
-    local crew = escort.present(snap, facts)
-    local able = false
-    for _, member in ipairs(crew ~= nil and party.members(snap) or {}) do
-        local spell = recovery.heal(member)
-        able = able or (spell ~= nil and spell.hp > 0 and spell.mp <= (member.self.mp or 0))
-    end
-    return cure.hp > (able and crew.heal or 0) * combat.cast(snap) / 1000
+    return cure.hp > rest.mending(snap, facts) * combat.cast(snap) / 1000
 end
 
 local function cure_beats_food(snap, facts)
@@ -153,31 +145,61 @@ local function go_shrine(snap, facts)
 end
 
 local function healer_beside(snap, facts)
-    local crew = escort.present(snap, facts)
-    return crew ~= nil and crew.heal > 0
+    return rest.mending(snap, facts) > 0
 end
 
 local function await_heal()
     return { kind = ACTION.HOLD }
 end
 
-local mend = choose({
-    when(combat.can_cast, when(cure_helps, when(cure_beats_food, act("REST", cast_cure, "cure", healing)))),
-    when(has_edible, act("REST", eat, "eat", healing)),
-    when(below_shrine_limit, when(no_death_record, act("REST", go_shrine, "to_shrine", healing))),
-    -- No walking to a crewmate to be healed: outside the ground each member recovers on its own (its
-    -- cure, food, or regeneration), and inside the group is already together.
-    when(healer_beside, act("REST", await_heal, "await_heal", healing)),
-}, "mend")
+local cure   = when(combat.can_cast, when(cure_helps, when(cure_beats_food, act("REST", cast_cure, "cure", healing))))
+local food   = when(has_edible, act("REST", eat, "eat", healing))
+local shrine = when(below_shrine_limit, when(no_death_record, act("REST", go_shrine, "to_shrine", healing)))
 
-return when(alive, choose({
+-- The ways to recover are weighed against each other instead of taken in a fixed order, and the walk to the
+-- shrine costs its time like anything else (job gather_offering: 135s for 6 hp). Natural regeneration is
+-- never one of them: it is a bonus of the server, and waiting for it stalled bots for minutes.
+local mend = pick({
+    cure,
+    food,
+    shrine,
+    -- No walking to a crewmate to be healed: outside the ground each member recovers on its own (its
+    -- cure or food), and inside the group is already together.
+    when(healer_beside, act("REST", await_heal, "await_heal", healing)),
+}, tree.compared, "mend")
+
+-- With nothing else left to do, the best way to recover is taken even when it would not pay on its own, since
+-- the other choice is standing still: a 1 hp level-5 bot 20 tiles from the shrine stood for good because its
+-- cheap death made the 5s walk look too dear (state pure 10).
+local function best(_, _, found)
+    return found.worth
+end
+
+local M = {}
+
+M.recuperate = when(alive, when(rest.low, pick({ cure, food, shrine }, best, "recuperate")), "recuperate")
+
+function M.mendable(snap, facts)
+    return rest.low(snap, facts) and tree.run(mend, snap, facts) ~= nil
+end
+
+M.restore = when(alive, choose({
     when(below_shrine_limit, when(wounded, when(near_shrine, act("REST", rest.thank, "thank", healing)))),
     when(rest.low, choose({
         when(combat.can_cast,
             when(cure_helps,
                 when(cure_beats_food, when(cure_leaves_prime, act("REST", cast_cure, "cure_first", healing))))),
         when(has_edible, act("REST", eat, "eat_first", healing)),
+        -- A cure that would leave less mana than the strongest attack needs is still weighed against a charge
+        -- first, not skipped for it: a poet keeping 597 mp for 지진 charged under three skeletons instead of
+        -- healing itself, and the failed charges left it at 918 hp (WA+PO 세작 seed 0, 282-283s). Only a charge
+        -- is weighed so, as it is paid in hp; weighed against a drink, a warrior under four 흑령 cast a 50 hp cure
+        -- and drank 동동주 for its mana by turns instead of fighting (offline solo seed 101, 641s).
+        when(combat.can_cast, when(has_charge, when(cure_helps,
+            pick({ act("REST", cast_cure, "cure_over_refuel", healing), refuel }, tree.compared, "cure_or_refuel")))),
     })),
     refuel,
     when(rest.low, mend),
 }), "restore")
+
+return M

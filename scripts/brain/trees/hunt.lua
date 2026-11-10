@@ -5,6 +5,7 @@ local escort   = require("brain.policies.escort")
 local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local tree     = require("brain.tree")
+local aid      = require("brain.tasks.aid")
 local field    = require("brain.tasks.field")
 local rest     = require("brain.tasks.rest")
 local recovery = require("brain.policies.recovery")
@@ -93,7 +94,10 @@ local function stage(snap, facts, maps, hunting)
     -- for. Entering from outside, the exit is the meeting point: every member walks here on its own after
     -- its own servicing, so the leader waits instead of walking off to fetch anyone. Only a member that
     -- cannot come (moves keep failing, or it is fighting) is fetched, or the wait would never end. A
-    -- member already inside the ground is not waited for; the leader goes in to it.
+    -- member already inside the ground is not waited for; the leader goes in to it. A member on the floor I
+    -- am leaving is not inside yet: counted so, a vanguard crossed to the next floor without a rogue that was
+    -- rooted on its own floor, and a rogue went on and came back for a poet held at the exit (offline profile
+    -- trio rooted seed 2, 244-250s; RO+PO 흉가 seed 1, 219-222s).
     local plan = party.plan(snap, facts)
     for _, member in ipairs(party.members(snap)) do
         local world   = member.world
@@ -102,7 +106,7 @@ local function stage(snap, facts, maps, hunting)
             through = through or map == world.map
         end
         for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
-            through = through or floor.map == world.map
+            through = through or (floor.map == world.map and world.map ~= snap.world.map)
         end
         if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
                 member.pinned or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
@@ -118,8 +122,12 @@ local function leader(snap)
     return snap.leader == snap.self.name
 end
 
-local function not_leader(snap)
-    return leader(snap) == false
+local function vanguard(snap, facts)
+    return party.vanguard_name(snap, facts) == snap.self.name
+end
+
+local function not_vanguard(snap, facts)
+    return vanguard(snap, facts) == false
 end
 
 -- Entering from outside always works the same way: the group decided the ground, every member walks to
@@ -135,6 +143,17 @@ local function lead_gate(snap, facts)
     return stage(snap, facts, { plan.floors[1].map })
 end
 
+local function doorway(facts, floor, map, from)
+    local route = from ~= nil and facts.path({ maps = { floor } }, nil, nil, from) or facts.route({ floor })
+    local found = nil
+    for _, hop in ipairs(route ~= nil and route.path or {}) do
+        if hop.dest == floor and hop.map == map then
+            found = hop
+        end
+    end
+    return found
+end
+
 local function follow_entry(snap, facts)
     local plan = party.plan(snap, facts)
     local lead = party.leader(snap)
@@ -142,11 +161,14 @@ local function follow_entry(snap, facts)
     if lead == nil or lead.world.x == nil then
         return { kind = ACTION.HOLD }
     end
-    -- While the leader is outside the ground a member never goes in on its own: it walks to the gate,
-    -- waits beside the leader there, and follows only when the leader crosses from that gate. Following
-    -- the leader around made the fleer re-enter alone and flee again and again (trio rooted, 777-870s).
-    -- With the leader already inside, the member goes to the leader, except right after a flight: the
-    -- leader inside is about to leave too (party.regrouping).
+    -- While the leader is outside the ground a member never goes in on its own: it walks to the entrance of
+    -- the gate map, waits there, and follows only when the leader crosses from that gate. Following the
+    -- leader around made the fleer re-enter alone and flee again and again (trio rooted, 777-870s), and
+    -- walking to wherever the leader stood on the gate map sent a warrior already at the entrance across
+    -- 국내성 after a leader that had just left it (online group, 14:44:55); the leader waits at the same
+    -- entrance (stage), so both meet there whatever either did on the way. With the leader already inside,
+    -- the member goes to the leader, except right after a flight: the leader inside is about to leave too
+    -- (party.regrouping).
     if ground.floor_at(lead.world.map) == nil or party.regrouping(snap) then
         local regate   = party.entry_gate(snap, facts, plan)
         local entering = false
@@ -158,11 +180,20 @@ local function follow_entry(snap, facts)
             if snap.world.map ~= regate then
                 return { kind = ACTION.MOVE, dest = { maps = { regate } } }
             end
-            if lead.world.map ~= regate or
-                math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
+            local from = lead.world.map == regate and
+                { map = lead.world.map, x = lead.world.x, y = lead.world.y, level = lead.self.level } or nil
+            local door = doorway(facts, plan.floors[1].map, regate, from)
+            if door == nil then
+                if lead.world.map ~= regate or
+                    math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
+                    return { kind = ACTION.HOLD }
+                end
+                return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
+            end
+            if math.abs(door.x - snap.world.x) + math.abs(door.y - snap.world.y) <= data.adjacent then
                 return { kind = ACTION.HOLD }
             end
-            return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
+            return { kind = ACTION.MOVE, dest = { map = regate, x = door.x, y = door.y, range = data.adjacent } }
         end
     else
         -- While the group is scattered the member goes where the leader's rally point says, not to wherever
@@ -232,6 +263,27 @@ local enter = choose({
     act("FIELD", claimed(follow_entry), "follow_entry"),
 }, "enter_ground")
 
+-- The crewmate the leader sent me to save comes before my own prey: the mob in my way to it first, then the
+-- ones on it (party.rescue_share), and with none in sight I walk to it.
+local function rescue(snap, facts)
+    local victim = together.on_ground(snap, facts) and party.rescued(snap, facts) or nil
+    if victim == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or
+        math.abs(victim.world.x - snap.world.x) + math.abs(victim.world.y - snap.world.y) <= 1 then
+        return nil
+    end
+    local found = battle.target(snap, facts, function(mob)
+        return party.rescue_share(snap, facts, mob) > 0 and field.castable(snap, facts, mob)
+    end)
+    if found == nil then
+        return { kind = ACTION.MOVE, dest = { map = victim.world.map, x = victim.world.x, y = victim.world.y, range = 1 } }
+    end
+    local range = stride(snap, found.mob.x, found.mob.y, 1)
+    if found.choice.approach and range > 1 then
+        return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = range } }
+    end
+    return battle.propose(found)
+end
+
 local function free_member(snap, facts)
     for _, member in ipairs(party.members(snap)) do
         local world = member.world
@@ -254,11 +306,22 @@ local function strike(snap, facts)
     if found == nil then
         return nil
     end
-    local range = stride(snap, found.mob.x, found.mob.y, 1)
-    if found.choice.approach and range > 1 then
-        return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = range } }
+    -- Beside a crewmate that turns hp into damage, a strike is worth its share of the kill less what its mana
+    -- would heal that crewmate, and below that I keep with the crew instead of swinging. Counted free, as a
+    -- spell is beside a plain swing, a poet cast 화염주 at full mana and then had to charge for the warrior's
+    -- heal (online group, 16:23, 14 of 66 화염주). A vanguard that holds back still has prey here for its crew,
+    -- so it stays instead of moving on: falling through to the next floor, the one in front left its warrior
+    -- fighting on 국내해골굴1 (online group, 16:47).
+    local fuel = aid.fueling(snap, facts, found.mob)
+    if battle.marginal(snap, found) < (found.choice.mp or 0) * fuel then
+        return vanguard(snap, facts) and { kind = ACTION.HOLD } or nil
+    else
+        local range = stride(snap, found.mob.x, found.mob.y, 1)
+        if found.choice.approach and range > 1 then
+            return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = range } }
+        end
+        return battle.propose(found)
     end
-    return battle.propose(found)
 end
 
 local function several(snap, facts)
@@ -473,12 +536,12 @@ local on_ground = choose({
     act("FIELD", occupied(strike), "strike"),
     when(several, choose({
         when(together.grouped, choose({
-            when(not_leader, together.advance),
+            when(not_vanguard, together.advance),
             when(crew_busy_here, together.advance),
         })),
         when(other_floor_ready, act("FIELD", occupied(next_floor), "next_floor")),
     })),
-    when(together.grouped, when(not_leader, together.follow)),
+    when(together.grouped, when(not_vanguard, together.follow)),
     when(lap_finished, act("FIELD", finish_lap, "lap_done")),
     act("FIELD", searching(occupied(spawn_area)), "spawn_area"),
     act("FIELD", searching(occupied(seen_prey)), "seen_prey"),
@@ -521,6 +584,7 @@ return choose({
         tree.postpone(snap, field.revisit(snap))
         return false
     end, choose({
+        act("FIELD", occupied(rescue), "rescue"),
         together.keep,
         when(together.on_ground, on_ground),
         enter,

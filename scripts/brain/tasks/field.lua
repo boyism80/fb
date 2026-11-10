@@ -51,15 +51,22 @@ function M.target(snap, query, names)
     for _, name in ipairs(names) do
         wanted[name] = true
     end
-    local lead   = snap.leader ~= snap.self.name and party.leader(snap) or nil
-    local shared = lead ~= nil and lead.battle or nil
-    if type(shared) == "table" and shared.map == snap.world.map then
-        local found = battle.target(snap, query, function(mob)
-            return mob.oid == shared.oid and wanted[mob.name] ~= nil and M.castable(snap, query, mob) and
-                approachable(snap, mob) and escort.tethered(snap, mob.x, mob.y)
-        end)
-        if found ~= nil then
-            return found
+    -- The vanguard takes on a crewmate's fight first, wherever it is: with only its own prey in reach, a
+    -- warrior in front walked on to the next floor while the caster beside it shot a skeleton from afar
+    -- (healer_waits_beside_leader). Every other hitter takes its own prey within the crew's reach: with three
+    -- or more, all striking the one mob the leader fights wastes the other hitters (crew rule, 11-10).
+    if party.vanguard_name(snap, query) == snap.self.name then
+        for _, member in ipairs(party.members(snap)) do
+            local shared = member.self.ghost == false and member.battle or nil
+            if type(shared) == "table" and shared.map == snap.world.map then
+                local found = battle.target(snap, query, function(mob)
+                    return mob.oid == shared.oid and wanted[mob.name] ~= nil and M.castable(snap, query, mob) and
+                        approachable(snap, mob) and escort.tethered(snap, mob.x, mob.y)
+                end)
+                if found ~= nil then
+                    return found
+                end
+            end
         end
     end
     return battle.target(snap, query, function(mob)
@@ -117,8 +124,12 @@ function M.wanted(snap, query)
                 tostring(snap.pace.step), tostring(snap.pace.swing), tostring(query.demand(plan.floors[1].map)),
                 table.concat(worn, ","), table.concat(held, ",")))
     end
+    -- Short hp holds the walk to the ground back only while some way to recover pays for itself. Waiting for
+    -- the full bar made a 52 hp mage, who lost 1 hp to every 동동주, walk to the shrine and back for good
+    -- once natural regeneration no longer refilled it (state supplier, online).
     local hp = snap.self.hp + (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
-    return snap.self.hp >= snap.self.max_hp or hp > (plan ~= nil and plan.peak or 0)
+    return snap.self.hp >= snap.self.max_hp or hp > (plan ~= nil and plan.peak or 0) or
+        require("brain.trees.restore").mendable(snap, query) == false
 end
 
 return M

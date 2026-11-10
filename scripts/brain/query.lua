@@ -1,3 +1,4 @@
+local terrain = require("brain.policies.terrain")
 local profile = require("brain.profile")
 
 local M = {}
@@ -34,6 +35,9 @@ function M.bind(brain, bot)
         end,
         steps = function(map, x, y, goals)
             return brain:steps(map, x, y, goals)
+        end,
+        floor = function(map, x, y)
+            return terrain.floor(brain, map, x, y)
         end,
         ally = function(name)
             return brain:ally(bot, name)

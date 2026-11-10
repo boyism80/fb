@@ -81,6 +81,7 @@ function M.take(brain, bot)
             hit       = seen.hit,
             struck    = seen.struck,
             casted    = seen.casted,
+            swung     = seen.swung,
             grouping  = seen.grouping,
             cloaked   = seen.cloaked,
             riding    = seen.riding,

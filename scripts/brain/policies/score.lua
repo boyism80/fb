@@ -49,8 +49,8 @@ local function supplies(snap)
         if effect ~= nil then
             local hp = effect.hp_full and snap.self.max_hp or
                 (effect.hp_ratio or 0) * snap.self.max_hp + (effect.hp or 0)
-            local mp = effect.mp_full and snap.self.max_mp or
-                (effect.mp_ratio or 0) * snap.self.max_mp + (effect.mp or 0)
+            local mp = effect.mp_full and (snap.self.max_mp or 0) or
+                (effect.mp_ratio or 0) * (snap.self.max_mp or 0) + (effect.mp or 0)
             result.hp = result.hp + math.max(0, hp) * count
             result.mp = result.mp + math.max(0, mp) * count
         end
@@ -188,9 +188,10 @@ function M.capability(snap, query)
     local options   = fight.options(snap, NEUTRAL)
     local refill    = recovery.rates(snap)
     local regen     = refill.mp
-    local recovered = refill.hp + combat.natural.hp * snap.self.max_hp
+    local recovered = refill.hp
     local rate      = 1000 / fight.cast(snap)
-    local melee     = fight.strike(snap, query, NEUTRAL) * 1000 / combat.swing
+    local swing     = fight.strike(snap, query, NEUTRAL)
+    local melee     = swing * 1000 / combat.swing
     local single    = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "ATTACK"
     end)
@@ -217,6 +218,10 @@ function M.capability(snap, query)
             melee  = melee,
         },
         burst    = math.max(opener ~= nil and opener.damage or 0, nuke),
+        blow     = {
+            adjacent = math.max(swing, opener ~= nil and opener.damage or 0),
+            ranged   = single ~= nil and single.damage or 0,
+        },
         ehp      = snap.self.hp / guard,
         hps      = {
             self   = sustained(heal, "hp", regen, rate),

@@ -8,8 +8,10 @@ local escort   = require("brain.policies.escort")
 local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
+local spacing  = require("brain.policies.spacing")
 local survival = require("brain.policies.survival")
 local value    = require("brain.policies.value")
+local snapshot = require("brain.snapshot")
 local trace    = require("brain.trace")
 
 local M = {}
@@ -88,6 +90,51 @@ local function splashed(snap, mob, damage)
     return found
 end
 
+local RECENT = 2
+
+local function beside(snap, mob)
+    return mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 and combat.hits(mob)
+end
+
+-- A mob beside me attacks me when it attacks by itself, or when it only hits back and the fight is with it:
+-- my target, already wounded, or the only one beside me that could have dealt the blow I just took.
+-- Counting every retaliating neighbour made a 43 hp commoner flee from a stag and a squirrel that stood still
+-- beside it (job gather_offering, online 03:16:55); counting only my target left a commoner hit 100ms ago by
+-- the one squirrel beside it walking off instead of hitting back (state pure 6).
+function M.attacking(snap, mob)
+    if beside(snap, mob) == false then
+        return false
+    end
+    local fight = snap.record.memory.battle
+    if mob.attack ~= "RETALIATE" or (fight ~= nil and fight.oid == mob.oid) or (mob.ratio or 1) < 1 then
+        return true
+    end
+    if M.struck(snap, mob) == false then
+        return false
+    end
+    for _, other in ipairs(snap.world.mobs or {}) do
+        if other.oid ~= mob.oid and other.attack ~= "RETALIATE" and beside(snap, other) then
+            return false
+        end
+    end
+    return true
+end
+
+-- Struck means struck by a mob beside me within its own attack interval, not struck at any time before:
+-- one blow two minutes earlier kept a full hp commoner "under attack" for good (job gather_offering).
+function M.struck(snap, mob)
+    return snap.self.struck ~= nil and snap.self.struck <= (mob.speed or 0) * RECENT
+end
+
+function M.pressed(snap)
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if M.attacking(snap, mob) and M.struck(snap, mob) then
+            return true
+        end
+    end
+    return false
+end
+
 local bursts = setmetatable({}, { __mode = "k" })
 
 function M.burst(snap)
@@ -97,8 +144,7 @@ function M.burst(snap)
     end
     local attackers = {}
     for _, other in ipairs(snap.world.mobs or {}) do
-        if other.x ~= nil and combat.hits(other) and
-            math.abs(other.x - snap.world.x) + math.abs(other.y - snap.world.y) == 1 then
+        if M.attacking(snap, other) then
             table.insert(attackers, { mob = other, count = 1 })
         end
     end
@@ -144,8 +190,7 @@ function M.closing(snap)
     local window    = 2 * combat.cast(snap)
     local attackers = {}
     for _, other in ipairs(snap.world.mobs or {}) do
-        if other.x ~= nil and combat.hits(other) and (other.attack == "AGGRESSIVE" or
-                math.abs(other.x - snap.world.x) + math.abs(other.y - snap.world.y) == 1) then
+        if other.x ~= nil and combat.hits(other) and (combat.seeks(other) or M.attacking(snap, other)) then
             local gap = math.abs(other.x - snap.world.x) + math.abs(other.y - snap.world.y) - 1
             if gap * (other.speed or math.huge) <= window then
                 table.insert(attackers, { mob = other, count = 1 })
@@ -221,6 +266,28 @@ local function strands(snap, facts, mob)
                     return true
                 end
             end
+        end
+    end
+    return false
+end
+
+-- The server lands the ambush behind the mob, else beside it, on a tile that is floor and free, and casts
+-- nothing at all when none is. Its cost is 0 mp, so the cast still reads as done and the rogue stays cloaked:
+-- among three stags it cast 2050 ambushes for 15 kills in 736s and never swung (RO seed 2, map 63).
+local function lands(snap, facts, mob)
+    local dx, dy = mob.x - snap.world.x, mob.y - snap.world.y
+    for _, tile in ipairs({ { mob.x + dx, mob.y + dy }, { mob.x + dy, mob.y + dx }, { mob.x - dy, mob.y - dx } }) do
+        local free = facts.floor == nil or facts.floor(snap.world.map, tile[1], tile[2])
+        for _, other in ipairs(snap.world.mobs or {}) do
+            free = free and (other.x ~= tile[1] or other.y ~= tile[2])
+        end
+        for _, profile in ipairs(snap.party or {}) do
+            local member = escort.member(profile)
+            free         = free and (member.world.map ~= snap.world.map or member.world.x ~= tile[1] or
+                member.world.y ~= tile[2])
+        end
+        if free then
+            return true
         end
     end
     return false
@@ -394,7 +461,7 @@ local function candidates(snap, facts, mob, state, reachable)
     for name, slot in pairs(known) do
         local spell = magic.spells[name]
         if cloak > 1 and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and adjacent and
-            gated(snap, facts, mob) == false and strands(snap, facts, mob) == false then
+            gated(snap, facts, mob) == false and lands(snap, facts, mob) and strands(snap, facts, mob) == false then
             add({
                 key = name,
                 kind = "CAST",
@@ -510,9 +577,8 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     end
     local short = math.max(0, ready - math.max(ending, 0))
     local crew  = escort.present(snap, facts)
-    local regen = recovery.rates(snap).hp + data.natural.hp * math.max(snap.self.max_hp, 1) +
-        (crew ~= nil and crew.heal or 0)
-    if short > 0 then
+    local regen = recovery.rates(snap).hp + recovery.refilling(snap, "hp") + (crew ~= nil and crew.heal or 0)
+    if short > 0 and regen > 0 then
         time = time + short / regen
     end
     if entry.melee ~= nil then
@@ -521,7 +587,8 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         time = time - entry.hp / regen
     end
     if (entry.wasted or 0) > 0 then
-        time = time + entry.wasted / (recovery.rates(snap).mp + data.natural.mp * math.max(snap.self.max_mp or 0, 1))
+        local refill = recovery.rates(snap).mp + recovery.refilling(snap, "mp")
+        time         = refill > 0 and time + entry.wasted / refill or time
     end
     local bonus = 0
     for _, hit in ipairs(entry.extra or {}) do
@@ -721,7 +788,7 @@ function M.need(snap, facts)
     local nearest = nil
     local closest = math.huge
     for _, mob in ipairs(snap.world.mobs) do
-        if mob.x ~= nil and mob.attack == "AGGRESSIVE" and combat.hits(mob) then
+        if mob.x ~= nil and combat.seeks(mob) and combat.hits(mob) then
             local distance = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
             if distance < closest then
                 nearest = mob
@@ -740,24 +807,37 @@ function M.need(snap, facts)
     return snap.self.hp - known + 1
 end
 
-local function guarding(snap, facts, mob, baseline)
-    local total = 0
-    if combat.hits(mob) == false or (mob.speed or 0) <= 0 then
-        return total
+-- A mob I cannot beat beside the only way left is passed when the blows taken on the way cost less than
+-- waiting for the way to open. One that keeps up with my steps or kills in one blow is never passed
+-- (danger.deadly), nor one whose blows on the way could end me. With a crewmate on the map the wait lasts
+-- its walk to me; alone it lasts until the mob moves, which it did not.
+function M.braves(snap, facts, mob, steps)
+    if mob == nil or steps <= 0 or danger.deadly(snap, facts, mob) then
+        return false
     end
-    for _, profile in ipairs(snap.party or {}) do
-        local member = escort.member(profile)
-        if member.world.map == snap.world.map and member.world.x ~= nil and member.self.ghost ~= true and
-            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
-            local ally    = facts.ally ~= nil and facts.ally(member.self.name) or nil
-            local current = ally ~= nil and ally.percent ~= nil and member.self.max_hp * ally.percent / 100 or
-                member.self.hp
-            local _, high = combat.spread(member, mob)
-            total         = total +
-                math.exp(-current * mob.speed / math.max(high * 1000, 1)) * danger.loss(member, facts, baseline)
+    local step    = snap.pace.step or data.walk
+    local _, high = combat.spread(snap, mob)
+    local hit     = math.ceil(steps * step / math.max(mob.speed or step, 1)) * high
+    if hit >= snap.self.hp then
+        return false
+    end
+    local gap = math.huge
+    for _, member in ipairs(party.members(snap)) do
+        if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil then
+            gap = math.min(gap, math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y))
         end
     end
-    return total
+    if gap == math.huge then
+        return true
+    else
+        local worth = value.baseline(snap, facts)
+        return hit * value.vigor(snap, facts, worth, value.mana(snap, facts)) < gap * step / 1000 * worth.value
+    end
+end
+
+function M.marginal(snap, found)
+    local mob = found.mob
+    return (found.choice.damage or 0) / math.max(mob.hp or 1, 1) * combat.gain(mob, snap)
 end
 
 function M.target(snap, facts, accept)
@@ -785,12 +865,19 @@ function M.target(snap, facts, accept)
     table.sort(near, function(left, right)
         return left.steps < right.steps
     end)
+    local tiles = { { x = snap.world.x, y = snap.world.y } }
     for _, entry in ipairs(near) do
+        table.insert(tiles, { x = entry.mob.x, y = entry.mob.y })
+    end
+    local gaps = #near > 0 and spacing.costs(snap, facts, tiles) or nil
+    for index, entry in ipairs(near) do
         local travel = entry.reachable and entry.steps * step / 1000 * worth or 0
-        local guard  = guarding(snap, facts, entry.mob, plain)
-        if best == nil or combat.gain(entry.mob, snap) + guard > best then
+        local guard  = party.rescue_share(snap, facts, entry.mob)
+        local apart  = gaps ~= nil and gaps[index + 1] - gaps[1] or 0
+        if best == nil or combat.gain(entry.mob, snap) + guard - math.min(apart, 0) > best then
             local choice = M.choose(snap, facts, entry.mob, entry.reachable)
-            local net    = choice ~= nil and choice.value + guard - (choice.approach and travel or 0) or nil
+            local net    = choice ~= nil and
+                choice.value + guard - (choice.approach and travel + apart or 0) or nil
             if net ~= nil and (entry.reachable or net > 0) and (best == nil or net > best) then
                 found = { mob = entry.mob, choice = choice }
                 best  = net
@@ -943,10 +1030,22 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved,
     return GOING[event.type] and memory or nil, count > 0 and kept or nil
 end
 
+-- Every swing waits out the previous one here, where it happens: a decision never picks a swing inside the
+-- cooldown, but the job and tutorial hunts and the clearing of a blocked path swing outside decisions, and a
+-- commoner swung 11 times in 311ms at a squirrel (job gather_offering, online). The approach walks at the
+-- walking pace of the data for the same reason it does everywhere else. The cooldown runs from the moment
+-- the swing is sent, which engage records: timed from the reply instead, every swing also waited the
+-- round trip (DEFEND held 1746s longer over the solo scenario), and an engage that only approached
+-- held back the next swing as if it had swung.
 function M.step(brain, bot, oid, action)
+    local swing = action.maneuver.kind == MANEUVER.SWING
+    local pause = swing and combat.backswing(snapshot.take(brain, bot)) or 0
+    if pause > 0 and brain:active(bot) then
+        brain:watch(bot, oid, pause // 1 | 0)
+    end
     local seen    = brain:observe(bot)
     local before  = bot:position()
-    local event   = brain:engage(bot, oid, action.maneuver)
+    local event   = brain:engage(bot, oid, setmetatable({ pace = data.walk }, { __index = action.maneuver }))
     local after   = bot:position()
     local visible = {}
     for _, mob in ipairs(brain:mobs(bot)) do

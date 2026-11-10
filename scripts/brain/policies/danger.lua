@@ -131,11 +131,27 @@ function M.penalty(snap)
 end
 
 function M.hostile(snap, query, mob)
-    return mob.attack == "AGGRESSIVE" and M.winnable(snap, query, mob) == false
+    return combat.seeks(mob) and M.winnable(snap, query, mob) == false
+end
+
+-- The walker keeps off the tiles beside these mobs at every step, wherever they stand by then. They are
+-- kinds, so one of the same kind that walks into sight on the way is kept off too. A box fixed around
+-- each mob when the walk started closed the exits of an open 20x20 map, was dropped as soon as it did,
+-- and never followed the mob (danger scenario, 까만소 on 고구려왕초보사냥1).
+function M.threats(snap, query)
+    local kinds = {}
+    local seen  = {}
+    for _, mob in ipairs(snap.self.ghost and {} or snap.world.mobs) do
+        if mob.id ~= nil and seen[mob.id] == nil and M.hostile(snap, query, mob) then
+            seen[mob.id] = true
+            table.insert(kinds, mob.id)
+        end
+    end
+    return kinds
 end
 
 function M.deadly(snap, query, mob, crew)
-    if mob.attack ~= "AGGRESSIVE" or M.winnable(snap, query, mob, crew) then
+    if not combat.seeks(mob) or M.winnable(snap, query, mob, crew) then
         return false
     end
     local step   = snap.pace.step or data.walk
@@ -219,7 +235,7 @@ function M.shunned(snap, query)
             local mob    = type(seen) == "table" and (known[seen.mob] or seen.stats) or nil
             local id     = tonumber(map)
             local recent = mob ~= nil and snap.now - seen.at < respawn(seen)
-            if mob ~= nil and ((recent and mob.attack == "AGGRESSIVE" and M.winnable(rested, query, mob, crew) == false) or
+            if mob ~= nil and ((recent and combat.seeks(mob) and M.winnable(rested, query, mob, crew) == false) or
                     (M.deadly(rested, query, mob, crew) and query.native(id, mob.id))) then
                 table.insert(found, id)
             end
@@ -237,14 +253,14 @@ end
 function M.threat(snap, maps)
     local threat = 0
     for _, mob in ipairs(snap.world.mobs) do
-        if mob.attack == "AGGRESSIVE" then
+        if combat.seeks(mob) then
             threat = math.max(threat, combat.blow(snap, mob))
         end
     end
     local perils = snap.record.memory.perils or {}
     for _, map in ipairs(maps or { snap.world.map }) do
         local seen = perils[tostring(map)] or perils[map]
-        if type(seen) == "table" and type(seen.stats) == "table" and seen.stats.attack == "AGGRESSIVE" then
+        if type(seen) == "table" and type(seen.stats) == "table" and combat.seeks(seen.stats) then
             threat = math.max(threat, M.weight(snap, seen) * combat.blow(snap, seen.stats))
         end
     end
@@ -265,7 +281,7 @@ function M.lethal_mob(snap, query)
     local crew = escort.gathering(snap, query) or false
     for _, mob in ipairs(snap.world.mobs) do
         local near = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
-        if M.deadly(snap, query, mob, crew) or (near and mob.attack == "AGGRESSIVE" and M.winnable(snap, query, mob, crew) == false) then
+        if M.deadly(snap, query, mob, crew) or (near and combat.seeks(mob) and M.winnable(snap, query, mob, crew) == false) then
             return mob
         end
     end

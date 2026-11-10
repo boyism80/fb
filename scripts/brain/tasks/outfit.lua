@@ -130,7 +130,7 @@ local function plan(snap, query)
             -- buy gear on one tick and not on the next.
             local gain = memo.get(gains, snap.self.name, base, pick.name, function()
                 local after = now ~= nil and ground.hold({ dressed(snap, query, kind, pick.name) }, query, now.name) or
-                nil
+                    nil
                 return math.max(0, (after ~= nil and after.rate or 0) - rate)
             end)
             if (gain or 0) > 0 then

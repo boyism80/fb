@@ -44,7 +44,7 @@ function M.crowd(snap, entries, time, fighters, density)
     for _, entry in ipairs(entries) do
         local mob = entry.mob
         total     = total + entry.count
-        if mob.attack == "AGGRESSIVE" and combat.hits(mob) then
+        if combat.seeks(mob) and combat.hits(mob) then
             local period = M.respawn(mob) / data.rezen
             arrival      = arrival + (period > 0 and entry.count / period or 0)
             present      = present + entry.count
@@ -223,7 +223,7 @@ local function approach(snap)
     if found == nil or found.phydef ~= snap.self.phydef then
         found = { phydef = snap.self.phydef }
         for _, seen in ipairs(world.mobs or {}) do
-            if seen.x ~= nil and seen.attack == "AGGRESSIVE" and combat.hits(seen) and (seen.speed or 0) > 0 then
+            if seen.x ~= nil and combat.seeks(seen) and combat.hits(seen) and (seen.speed or 0) > 0 then
                 local distance = math.abs(seen.x - world.x) + math.abs(seen.y - world.y)
                 table.insert(found, {
                     oid = seen.oid,

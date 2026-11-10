@@ -3,9 +3,9 @@ local battle   = require("brain.policies.battle")
 local danger   = require("brain.policies.danger")
 local go       = require("brain.trees.go")
 local party    = require("brain.policies.party")
-local tactics  = require("brain.policies.combat")
 local snapshot = require("brain.snapshot")
 local query    = require("brain.query")
+local trace    = require("brain.trace")
 local value    = require("brain.policies.value")
 
 local M = {}
@@ -47,6 +47,10 @@ local function patience(brain, bot, destination, detour, event)
     end
 end
 
+-- A blocker I would not survive is waited out or walked around like any other occupant. Clearing took
+-- whatever battle.choose returned, which is its best move even when no move survives: a level-5
+-- commoner with 50 hp and no weapon swung at a deer (95 hp, 5-15 damage) that stood in its way and
+-- had to walk to the shrine (job gather_offering, online 01:57).
 local function blocker(brain, bot, event)
     local snap = snapshot.take(brain, bot)
     if event.detail ~= "MOB" or snap.self.ghost then
@@ -56,7 +60,7 @@ local function blocker(brain, bot, event)
     for _, mob in ipairs(snap.world.mobs) do
         if mob.oid == event.oid and mob.hp ~= nil then
             local choice = battle.choose(snap, facts, mob)
-            if choice ~= nil then
+            if choice ~= nil and choice.survives then
                 return mob,
                     { maneuver = choice.maneuver, key = choice.key, opener = choice.opener, debuff = choice.debuff }
             end
@@ -65,19 +69,27 @@ local function blocker(brain, bot, event)
     return nil
 end
 
+local function avoided(detour, event)
+    for _, tile in ipairs(detour.avoid) do
+        if tile.map == event.map and tile.x == event.x and tile.y == event.y then
+            return true
+        end
+    end
+    return false
+end
+
 local function passable(brain, bot, destination, detour, event)
     local trial = {
         closed = detour.closed,
         perilous = detour.perilous,
         shunned = detour.shunned,
-        wary = detour.wary,
         bounced = detour.bounced,
         avoid = { { map = event.map, x = event.x, y = event.y } }
     }
+    if avoided(detour, event) then
+        return false
+    end
     for _, tile in ipairs(detour.avoid) do
-        if tile.map == event.map and tile.x == event.x and tile.y == event.y then
-            return false
-        end
         table.insert(trial.avoid, tile)
     end
     return brain:route(bot, destination, trial) ~= nil
@@ -96,8 +108,29 @@ local function expect(brain, bot, destination, detour)
     brain:expect(bot, step)
 end
 
+-- A tile or gate a mob stood on is given up only while that mob still stands there. Kept for the whole walk,
+-- the tiles of rabbits and squirrels that had long wandered off closed all five exits of 고구려왕초보사냥1
+-- (danger hit_on_way and recover guarded, online).
+local function vacated(brain, bot, detour)
+    local standing = {}
+    for _, mob in ipairs(brain:mobs(bot)) do
+        standing[mob.oid] = mob
+    end
+    for _, field in ipairs({ "avoid", "closed" }) do
+        local kept = {}
+        for _, tile in ipairs(detour[field]) do
+            local mob = tile.oid ~= nil and standing[tile.oid] or nil
+            if tile.oid == nil or (mob ~= nil and mob.x == tile.x and mob.y == tile.y) then
+                table.insert(kept, tile)
+            end
+        end
+        detour[field] = kept
+    end
+end
+
 local function journey(brain, bot, destination, detour)
     while brain:active(bot) do
+        vacated(brain, bot, detour)
         go.choose(snapshot.take(brain, bot), query.bind(brain, bot), destination, detour)
         destination.pace = combat.walk
         local event = brain:walk(bot, destination, detour)
@@ -108,7 +141,7 @@ local function journey(brain, bot, destination, detour)
             local crew = {}
             for _, name in ipairs(destination.leash.names) do
                 local ally = brain:ally(bot, name)
-                if ally ~= nil then
+                if ally ~= nil and ally.x ~= nil then
                     crew[name] = { x = ally.x, y = ally.y }
                 end
             end
@@ -128,20 +161,14 @@ local function journey(brain, bot, destination, detour)
             log("debug", string.format("[brain:travel] bot=%s jumped by %s to map=%d %d,%d", bot:name(), event.detail,
                 event.map, event.x, event.y))
         elseif event.type == "OCCUPIED" and passable(brain, bot, destination, detour, event) then
-            table.insert(detour.avoid, { map = event.map, x = event.x, y = event.y })
+            table.insert(detour.avoid,
+                { map = event.map, x = event.x, y = event.y, oid = event.detail == "MOB" and event.oid or nil })
         elseif event.type == "OCCUPIED" and blocker(brain, bot, event) ~= nil then
             local mob, action = blocker(brain, bot, event)
             remember_block(brain, bot, event)
-            local pause = action.maneuver.kind == MANEUVER.SWING and tactics.backswing(snapshot.take(brain, bot)) or 0
-            if pause > 0 and brain:active(bot) then
-                brain:watch(bot, event.oid, pause // 1 | 0)
-            end
             log("debug", string.format("[brain:travel] bot=%s clears %s %d at map=%d %d,%d", bot:name(), mob.name,
                 event.oid, event.map, event.x, event.y))
             local fought = battle.step(brain, bot, event.oid, action)
-            if action.maneuver.kind == MANEUVER.SWING then
-                brain:remember(bot, "swung", snapshot.take(brain, bot).now)
-            end
             if fought.type ~= "KILLED" then
                 log("debug", string.format("[brain:travel] bot=%s clearing ended %s", bot:name(), fought.type))
                 return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
@@ -153,17 +180,43 @@ local function journey(brain, bot, destination, detour)
                 event.detail, event.oid, event.map, event.x, event.y, wait))
             local target = event.x == event.gx and event.y == event.gy
             local moved  = wait > 0 and brain:watch(bot, event.oid, wait)
-            if moved == false and target and final then
+            local oid    = event.detail == "MOB" and event.oid or nil
+            if moved == false and ((target and final) or (target == false and avoided(detour, event))) then
                 return false, event
             elseif moved == false and target then
                 detour.crowded = detour.crowded or event.detail == "CHARACTER"
-                table.insert(detour.closed, { map = event.map, x = event.x, y = event.y })
+                table.insert(detour.closed, { map = event.map, x = event.x, y = event.y, oid = oid })
             elseif moved == false then
-                table.insert(detour.avoid, { map = event.map, x = event.x, y = event.y })
+                table.insert(detour.avoid, { map = event.map, x = event.x, y = event.y, oid = oid })
             end
-        elseif event.type == "BLOCKED" and final == false and detour.wary then
-            detour.wary  = false
-            detour.avoid = {}
+        elseif event.type == "THREATENED" then
+            -- A mob I cannot beat stands beside the only way left. The way opens when it moves, so the walk waits
+            -- for that instead of closing the exit for good, which kept a bot on 고구려왕초보사냥1 until it ran out
+            -- of time (danger hit_on_way, online).
+            local wait = patience(brain, bot, destination, detour, event)
+            log("debug", string.format("[brain:travel] bot=%s kept off by %d at map=%d %d,%d wait=%dms", bot:name(),
+                event.oid, event.map, event.x, event.y, wait))
+            if wait <= 0 or brain:watch(bot, event.oid, wait) == false then
+                -- A mob that did not move is passed when its blows on the way cost less than staying, and
+                -- otherwise the walk is held so the crew comes for me: retried as it was, a poet kept off by a
+                -- skeleton that never moved waited 80s while its warrior fought out of its sight (online
+                -- group, 16:54).
+                local snap = snapshot.take(brain, bot)
+                local mob  = nil
+                for _, seen in ipairs(snap.world.mobs) do
+                    if seen.oid == event.oid then
+                        mob = seen
+                    end
+                end
+                if battle.braves(snap, query.bind(brain, bot), mob, event.count or 0) then
+                    table.insert(detour.braved, event.oid)
+                    log("debug", string.format("[brain:travel] bot=%s braves %d beside %d steps at map=%d %d,%d",
+                        bot:name(), event.oid, event.count or 0, event.map, event.x, event.y))
+                else
+                    remember_block(brain, bot, { map = event.map, detail = "THREAT" })
+                    return false, event
+                end
+            end
         elseif event.type == "BOUNCED" and detour.bounced[event.dest] == nil then
             log("debug", string.format("[brain:travel] bot=%s bounced off map=%d at map=%d %d,%d", bot:name(),
                 event.dest, event.map, event.x, event.y))
@@ -187,33 +240,9 @@ local function journey(brain, bot, destination, detour)
     return false, nil
 end
 
-
-
-local function around(snap, facts)
-    local tiles = {}
-    if snap.self.ghost then
-        return tiles
-    end
-    for _, mob in ipairs(snap.world.mobs) do
-        local apart = mob.x ~= nil and
-            math.max(math.abs(mob.x - snap.world.x), math.abs(mob.y - snap.world.y)) > combat.reach * 2
-        if apart and danger.hostile(snap, facts, mob) then
-            for dx = -combat.reach, combat.reach do
-                for dy = -combat.reach, combat.reach do
-                    if mob.x + dx >= 0 and mob.y + dy >= 0 then
-                        table.insert(tiles, { map = snap.world.map, x = mob.x + dx, y = mob.y + dy })
-                    end
-                end
-            end
-        end
-    end
-    return tiles
-end
-
 function M.go(brain, bot, destination)
     local snap  = snapshot.take(brain, bot)
     local facts = query.bind(brain, bot)
-    local avoid = around(snap, facts)
     local risky = destination.risky
     if risky == nil then
         local choice = value.trip(snap, facts, destination, value.baseline(snap, facts))
@@ -224,8 +253,9 @@ function M.go(brain, bot, destination)
     end
     local detour = {
         closed = {},
-        avoid = avoid,
-        wary = #avoid > 0,
+        avoid = {},
+        threats = danger.threats(snap, facts),
+        braved = {},
         perilous = risky and {} or party.perilous(snap, facts),
         shunned = risky and {} or danger.shunned(snap, facts),
         bounced = {}
@@ -233,6 +263,9 @@ function M.go(brain, bot, destination)
     expect(brain, bot, destination, detour)
     local arrived, event = journey(brain, bot, destination, detour)
     brain:expect(bot, 0)
+    if arrived == false then
+        trace.walk(brain, bot, destination, detour, event)
+    end
     return arrived, event
 end
 

@@ -31,11 +31,6 @@ local function bound(snap)
     return high
 end
 
-local function dose(snap, kind)
-    local doses = recovery.doses(snap, kind)
-    return math.max(#doses > 0 and doses[#doses].amount or 0, recovery.purchasable(snap, kind))
-end
-
 local trips = {}
 
 local function restock(snap, query, floor)
@@ -54,10 +49,9 @@ end
 local function paces(snap, ability, buffs, trip)
     local cast    = fight.cast(snap)
     local max_mp  = math.max(snap.self.max_mp or 0, 1)
-    local natural = combat.natural.mp * max_mp
-    local mana    = natural > 0 and 1000 / natural or math.huge
+    local mana    = math.huge
     local charged = 0
-    local drink   = dose(snap, "mp")
+    local drink   = recovery.bite(snap, "mp")
     local spells  = recovery.spells(snap)
     if buffs.charge ~= nil and buffs.charge.chance > 0 and spells.charge ~= nil then
         mana    = math.min(mana, cast / buffs.charge.chance / max_mp)
@@ -69,8 +63,8 @@ local function paces(snap, ability, buffs, trip)
     if drink > 0 then
         mana = math.min(mana, cast / drink + trip / math.max(recovery.carriable(snap, "mp"), drink))
     end
-    local life = 1000 / math.max(ability.refill.hp + combat.natural.hp * math.max(snap.self.max_hp, 1), 1e-9)
-    local food = dose(snap, "hp")
+    local life = 1000 / math.max(ability.refill.hp, 1e-9)
+    local food = recovery.bite(snap, "hp")
     if food > 0 then
         life = math.min(life, cast / food + trip / math.max(recovery.carriable(snap, "hp"), food))
     end
@@ -168,7 +162,7 @@ local function assess(snap, query, floor, ability, crew)
     local spent   = 0
     local counted = 0
     local travel  = (floor.density or 0) > 0 and NEAREST / math.sqrt(floor.density) * (snap.pace.step or combat.walk) or
-    0
+        0
     for _, entry in ipairs(floor.mobs) do
         local mob = hunting.mobs[entry.id]
         if mob ~= nil then
@@ -177,7 +171,7 @@ local function assess(snap, query, floor, ability, crew)
             if base.time < math.huge then
                 local hurt    = math.max(0, base.taken - base.healed)
                 local resting = (hurt > 0 or base.drained > 0) and rest({ taken = hurt, drained = base.drained }, pace) or
-                0
+                    0
                 spent         = spent + entry.count * (base.time + travel + (resting < math.huge and resting or 0))
                 counted       = counted + entry.count
             end
@@ -212,13 +206,13 @@ local function assess(snap, query, floor, ability, crew)
             deadly = danger.deadly(snap, query, mob, false)
             book.deadly[mob.id] = deadly
         end
-        if mob.attack == "AGGRESSIVE" and fight.hits(mob) and deadly then
+        if fight.seeks(mob) and fight.hits(mob) and deadly then
             safe = false
         end
-        local close = mob.attack == "AGGRESSIVE" and fight.hits(mob) and burst > 0 and
+        local close = fight.seeks(mob) and fight.hits(mob) and burst > 0 and
             math.max(0, math.min(1, (2 * burst - ending) / burst)) or 0
         peak        = math.max(peak, burst)
-        local bears = mob.attack == "AGGRESSIVE" or fight.hits(mob) == false or
+        local bears = fight.seeks(mob) or fight.hits(mob) == false or
             snap.self.max_hp - (charge ~= nil and result.drained > 0 and charge.cost or 0) > burst
         if ending > 0 and (mob.exp or 0) > 0 and bears then
             local hurt = math.max(0, result.taken - result.healed)

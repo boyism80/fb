@@ -15,11 +15,11 @@ end
 return when(defend.attacked, when(defend.holds_ground, choose({
     when(together.grouped, choose({
         support.rescue,
-        when(steady, when(together.apart, when(together.on_ground, when(together.can_move, together.regroup)))),
+        when(steady, when(together.apart, when(together.on_ground, when(together.can_move, together.rejoin)))),
     })),
     pick({
         survive.flee,
-        restore,
+        restore.restore,
         support.care,
         act("DEFEND", defend.strike_back, "attack", defend.value),
     }, tree.compared, "weigh"),

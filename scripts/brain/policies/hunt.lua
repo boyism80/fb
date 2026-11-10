@@ -43,7 +43,8 @@ function M.drop(brain, bot, names, tried)
             match = match or wanted[name] == true
         end
         local cost = math.abs(item.x - here[1]) + math.abs(item.y - here[2])
-        if match and tried[item.oid] == nil and (best == nil or cost < best) then
+        if match and tried[tostring(item.oid)] == nil and brain:warp_at(bot:map(), item.x, item.y) == false and
+            (best == nil or cost < best) then
             nearest = item
             best    = cost
         end
@@ -124,7 +125,8 @@ function M.step(brain, bot, goal)
         for corner, point in ipairs(corners) do
             local key  = index .. ":" .. corner
             local cost = math.abs(point[1] - here[1]) + math.abs(point[2] - here[2])
-            if state.visited[key] == nil and (near == nil or cost < near) then
+            if state.visited[key] == nil and brain:warp_at(bot:map(), point[1], point[2]) == false and
+                (near == nil or cost < near) then
                 area = { index = key, x = point[1], y = point[2] }
                 near = cost
             end

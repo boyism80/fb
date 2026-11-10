@@ -92,9 +92,9 @@ local function described(decision)
     end
     local dest = decision.dest or {}
     return table.concat(
-    { tostring(decision.task), tostring(decision.kind), tostring(decision.key), tostring(decision.slot),
-        tostring(decision.item), tostring(decision.oid), tostring(dest.map), tostring(dest.x), tostring(dest.y),
-        tostring(dest.range), table.concat(dest.maps or {}, ",") }, "|")
+        { tostring(decision.task), tostring(decision.kind), tostring(decision.key), tostring(decision.slot),
+            tostring(decision.item), tostring(decision.oid), tostring(dest.map), tostring(dest.x), tostring(dest.y),
+            tostring(dest.range), table.concat(dest.maps or {}, ",") }, "|")
 end
 
 local Session = {}
@@ -317,7 +317,8 @@ function Session:run()
                 ghost[key] = value
             end
             ghost.ghost, ghost.hp = true, 0
-            profile.self = ghost
+            profile.self          = ghost
+            profile.fallen        = { map = actor.active.map.id, at = self.clock }
         end
         if actor.options.guard and actor.me.dead then
             actor:violate("died")
@@ -338,8 +339,9 @@ function Actor:violate(rule)
     self.session.verdict = "VIOLATION " .. rule
     if self.options.alarm ~= nil and self.seen_snap ~= nil then
         serialize.dump(
-        self.options.alarm ..
-        "." .. string.gsub(rule, "[^%w_]", "_") .. "." .. string.gsub(self.base.self.name or "", "[^%w_]", "_") .. ".lua",
+            self.options.alarm ..
+            "." ..
+            string.gsub(rule, "[^%w_]", "_") .. "." .. string.gsub(self.base.self.name or "", "[^%w_]", "_") .. ".lua",
             self.seen_snap)
         for _, other in ipairs(self.session.actors) do
             if other ~= self and other.seen_snap ~= nil then
@@ -415,7 +417,7 @@ function Actor:watch(snap, bound, decision)
         end
         local file = io.open(self.options.alarm .. ".exp", "a")
         file:write(
-        json.encode({ scene = self.options.scene or "solo", seed = self.session.seed, t = self.clock, exp = total }),
+            json.encode({ scene = self.options.scene or "solo", seed = self.session.seed, t = self.clock, exp = total }),
             "\n")
         file:close()
     end
@@ -680,6 +682,7 @@ function Actor:snapshot()
     self_.ghost    = me.dead
     self_.struck   = me.struck ~= nil and self.clock - me.struck or nil
     self_.casted   = self.casted ~= nil and self.clock - self.casted or nil
+    self_.swung    = self.swung ~= nil and self.clock - self.swung or nil
     self_.cloaked  = self:cloaked()
     self_.riding   = false
     self_.phydef   = me.phydef
@@ -925,6 +928,7 @@ function Actor:engage(oid)
     end
     self:face(mob)
     world:swing(self.me)
+    self.swung = self.clock
     self:advance(self.pace.latency)
     mob, ended = self:sighted(oid)
     if mob == nil then
@@ -1075,20 +1079,121 @@ function Actor:attack(action)
     return event == "KILLED" or event == "UNREACHABLE" or battle.going(event), event
 end
 
-function Actor:walk(dest)
+function Actor:threatened(kinds, braved)
+    local world  = self.active
+    local barred = {}
+    local seen   = {}
+    for _, mob in pairs(next(kinds) ~= nil and world.mobs or {}) do
+        if kinds[mob.data.id] and braved[mob] == nil and world.map:sight(self.me, mob) then
+            table.insert(seen, mob)
+            for _, offset in ipairs({ { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) do
+                local x, y = mob.x + offset[1], mob.y + offset[2]
+                if world.map:inside(x, y) then
+                    barred[world.map:index(x, y)] = true
+                end
+            end
+        end
+    end
+    return barred, seen
+end
+
+function Actor:braving(goal, seen, braved, braves)
     local world = self.active
-    local range = dest.range or 0
+    local path  = braves ~= nil and world.map:route(self.me, goal, true) or nil
+    if path == nil then
+        return false
+    end
+    local any = false
+    for _, mob in ipairs(seen) do
+        local zone = {}
+        for _, offset in ipairs({ { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) do
+            if world.map:inside(mob.x + offset[1], mob.y + offset[2]) then
+                zone[world.map:index(mob.x + offset[1], mob.y + offset[2])] = true
+            end
+        end
+        local x, y, beside = self.me.x, self.me.y, 0
+        for _, direction in ipairs(path) do
+            x, y = world.map:step(x, y, direction)
+            if zone[world.map:index(x, y)] then
+                beside = beside + 1
+            end
+        end
+        if beside > 0 then
+            if braves(mob, beside) == false then
+                return false
+            end
+            braved[mob] = true
+            any = true
+        end
+    end
+    return any
+end
+
+function Actor:walk(dest, kinds, braves)
+    local world  = self.active
+    local range  = dest.range or 0
+    kinds        = kinds or {}
+    local braved = {}
     if self.rooted ~= nil and self.clock >= self.rooted.from and self.clock < self.rooted.to then
         self.memory.blocked = { at = self.clock, since = self.rooted.from, map = world.map.id }
         return false, "BLOCKED"
     end
-    local path = world.map:route(self.me, function(x, y)
+    local function goal(x, y)
         return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
-    end)
-    if path == nil then
-        path = world.map:route(self.me, function(x, y)
-            return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
-        end, true)
+    end
+    local function outwait(barred, seen)
+        local path = nil
+        while path == nil and next(barred) ~= nil and world.map:route(self.me, goal, true) ~= nil do
+            local pace, before, beside = math.huge, {}, false
+            for _, mob in ipairs(seen) do
+                pace   = math.min(pace, mob.data.speed or math.huge)
+                beside = beside or math.abs(mob.x - self.me.x) + math.abs(mob.y - self.me.y) == 1
+                table.insert(before, mob.x .. "," .. mob.y)
+            end
+            if pace == math.huge or beside then
+                return nil, "THREATENED"
+            end
+            local hp = self.me.hp
+            self:advance(pace)
+            local after = {}
+            for _, mob in ipairs(seen) do
+                table.insert(after, mob.x .. "," .. mob.y)
+            end
+            if self.me.dead or self.me.hp < hp then
+                return nil, "ATTACKED"
+            elseif table.concat(after, "|") == table.concat(before, "|") then
+                return nil, "THREATENED"
+            end
+            barred, seen = self:threatened(kinds, braved)
+            path         = world.map:route(self.me, goal, nil, barred) or world.map:route(self.me, goal, true, barred)
+        end
+        return path, "BLOCKED"
+    end
+    local function stalled()
+        local _, seen = self:threatened(kinds, braved)
+        if self:braving(goal, seen, braved, braves) then
+            local barred = self:threatened(kinds, braved)
+            local path   = world.map:route(self.me, goal, nil, barred) or world.map:route(self.me, goal, true, barred)
+            if path ~= nil then
+                return path, "BRAVED"
+            end
+        end
+        local prior = self.memory.blocked
+        local since = type(prior) == "table" and prior.map == world.map.id and prior.since or self.clock
+        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, detail = "THREAT" }
+        return nil, "THREATENED"
+    end
+    local barred, seen = self:threatened(kinds, braved)
+    local path         = world.map:route(self.me, goal, nil, barred) or world.map:route(self.me, goal, true, barred)
+    if path == nil and next(barred) ~= nil and world.map:route(self.me, goal, true) ~= nil then
+        local reason
+        path, reason = outwait(barred, seen)
+        if path == nil and reason == "THREATENED" then
+            path, reason = stalled()
+        end
+        if path == nil then
+            return reason == "ATTACKED", reason
+        end
     end
     if path == nil then
         local prior = self.memory.blocked
@@ -1101,19 +1206,43 @@ function Actor:walk(dest)
     local walked = 0
     local crew   = self:crew_percents()
     while path[index] ~= nil do
+        barred, seen = self:threatened(kinds, braved)
+        local x, y, crossed = self.me.x, self.me.y, false
+        for step = index, #path do
+            x, y    = world.map:step(x, y, path[step])
+            crossed = crossed or barred[world.map:index(x, y)] == true
+        end
+        if crossed then
+            path  = world.map:route(self.me, goal, nil, barred) or world.map:route(self.me, goal, true, barred)
+            index = 1
+            if path == nil then
+                local reason
+                path, reason = outwait(barred, seen)
+                if path == nil and reason == "THREATENED" then
+                    path, reason = stalled()
+                end
+                if path == nil then
+                    return reason == "ATTACKED", reason
+                end
+            end
+        end
+        if path[index] == nil then
+            break
+        end
         if dest.leash ~= nil then
             local _, nx, ny = world.map:passable(self.me.x, self.me.y, path[index], self.me)
             local pulled    = false
             for _, name in ipairs(dest.leash.names) do
                 local mate = self.session:find(name)
-                if mate == nil or mate.active ~= self.active or mate.me.dead or world.map:sight(self.me, mate.me) == false then
-                    pulled = true
-                elseif nx ~= nil then
-                    local at     = mate.me
-                    local beyond = math.abs(nx - at.x) > dest.leash.x or math.abs(ny - at.y) > dest.leash.y
-                    local away   = math.abs(nx - at.x) + math.abs(ny - at.y) >
-                        math.abs(self.me.x - at.x) + math.abs(self.me.y - at.y)
-                    pulled       = pulled or (beyond and away)
+                if nx ~= nil and mate ~= nil and mate.active == self.active and mate.me.dead ~= true then
+                    local at    = world.map:sight(self.me, mate.me) and mate.me or (dest.leash.at or {})[name]
+                    local steps = at ~= nil and self.mind:steps(world.map.id, at.x, at.y, {
+                        { x = nx, y = ny, range = 0 },
+                        { x = self.me.x, y = self.me.y, range = 0 },
+                    }) or {}
+                    if type(steps[1]) == "number" and type(steps[2]) == "number" then
+                        pulled = pulled or (steps[1] > dest.leash.steps and steps[1] > steps[2])
+                    end
                 end
             end
             if pulled then
@@ -1135,9 +1264,7 @@ function Actor:walk(dest)
             end
         end
         if world:move(self.me, path[index]) == false then
-            local around = world.map:route(self.me, function(x, y)
-                return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
-            end)
+            local around = world.map:route(self.me, goal, nil, barred)
             local yielded, alerted = false, false
             if around == nil or #around == 0 then
                 yielded, alerted, crew = self:yielded(path[index], #path - index + 1, crew)
@@ -1239,9 +1366,28 @@ function Actor:publish()
 end
 
 function Actor:travel(dest)
-    local here = self.active.map.id
+    local here  = self.active.map.id
+    local snap  = self:snapshot()
+    local kinds = {}
+    for _, id in ipairs(self:main(function()
+        return danger.threats(snap, facts.bind(self.mind, snap))
+    end)) do
+        kinds[id] = true
+    end
+    local function braves(mob, steps)
+        local now  = self:snapshot()
+        local view = nil
+        for _, entry in ipairs(now.world.mobs) do
+            if entry.oid == mob.oid then
+                view = entry
+            end
+        end
+        return self:main(function()
+            return battle.braves(now, facts.bind(self.mind, now), view, steps)
+        end)
+    end
     if dest.map == here and dest.x ~= nil then
-        return self:walk(dest)
+        return self:walk(dest, kinds, braves)
     end
     local maps = dest.maps or { dest.map }
     for _, map in ipairs(maps) do
@@ -1249,7 +1395,6 @@ function Actor:travel(dest)
             return true, "ARRIVED"
         end
     end
-    local snap   = self:snapshot()
     local detour = { closed = {}, perilous = {}, shunned = {}, spent = self.memory.spent_leaps or {} }
     local jump   = self:main(function()
         local bound = facts.bind(self.mind, snap)
@@ -1315,7 +1460,7 @@ function Actor:travel(dest)
     local spent = 0
     if exit ~= nil and exit.x ~= nil then
         spent = (math.abs(exit.x - self.me.x) + math.abs(exit.y - self.me.y)) * self.pace.step
-        local walked, reason = self:walk({ map = here, x = exit.x, y = exit.y, range = 0 })
+        local walked, reason = self:walk({ map = here, x = exit.x, y = exit.y, range = 0 }, kinds, braves)
         if self.me.dead then
             return false, "DIED"
         end
@@ -1550,7 +1695,7 @@ function Actor:think()
     end
     self.decisions          = (self.decisions or 0) + 1
     local audited           = self.options.audit ~= nil and self.decisions % self.options.audit == 0 and detached(snap) or
-    nil
+        nil
     local pristine          = audited ~= nil and detached(snap) or nil
     local decision, revisit = decide.choose(snap, bound, nil, nil)
     if audited ~= nil then
@@ -1669,10 +1814,6 @@ function Actor:think()
     local fleeing = decide.fleeing(snap, decision)
     if fleeing ~= nil then
         self.memory.fleeing = fleeing
-    end
-    local swung = decide.swung(snap, decision)
-    if swung ~= nil then
-        self.memory.swung = swung
     end
     local changed, errand = decide.errand(snap, decision)
     if changed then

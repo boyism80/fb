@@ -125,9 +125,9 @@ public:
 
     struct leash
     {
-        std::unordered_set<std::string> names;
-        uint16_t                        x = 0;
-        uint16_t                        y = 0;
+        std::unordered_set<std::string>                  names;
+        std::unordered_map<std::string, atlas::position> at;
+        uint16_t                                         steps = 0;
     };
 
     struct destination
@@ -153,6 +153,8 @@ public:
         std::unordered_set<uint64_t> closed;
         std::unordered_set<uint64_t> avoid;
         std::unordered_set<uint32_t> perilous;
+        std::unordered_set<uint32_t> threats;
+        std::unordered_set<uint32_t> braved;
         std::unordered_set<uint16_t> shunned;
         std::vector<jump>            jumps;
         std::optional<size_t>        leap;
@@ -167,11 +169,12 @@ public:
 
     struct maneuver
     {
-        MANEUVER    kind = MANEUVER::SWING;
-        uint8_t     slot = 0;
-        bool        self = false;
-        int32_t     cost = -1;
-        std::string item;
+        MANEUVER                  kind = MANEUVER::SWING;
+        uint8_t                   slot = 0;
+        bool                      self = false;
+        int32_t                   cost = -1;
+        std::string               item;
+        std::chrono::milliseconds pace = std::chrono::milliseconds{0};
     };
 
     struct answer
@@ -250,6 +253,7 @@ public:
         std::chrono::milliseconds                       budget{0};
         std::vector<std::string>                        activities;
         std::optional<clock::time_point>                casted;
+        std::optional<clock::time_point>                swung;
         uint32_t                                        closed = 0;
     };
 
@@ -289,6 +293,7 @@ public:
                             std::vector<answer>                   answers);
     void               act(uint32_t bot, std::string_view activity);
     void               casting(uint32_t bot);
+    void               swinging(uint32_t bot);
     void               close(game_bot& bot);
     bool               talking(const game_bot& bot) const;
     template <typename Fn>

@@ -110,20 +110,24 @@ local function decision(snap, facts, found, revisit)
                 tostring(snap.self.hp), tostring(snap.self.max_hp), tostring(snap.self.mp), tostring(snap.self.max_mp),
                 tostring(snap.self.exp), seen, close, far, tostring(snap.self.level), partner, tostring(result.text)))
     end
-    -- The leader's walk on a hunting floor keeps the crew within reach: the walker stops (LEASHED) before
-    -- a step that leaves the sight box of a crewmate who is beside it now, and the group decides again. A
-    -- leader that walked the long way round a wall left its poet behind and died alone 15 tiles away
-    -- (WA+PO 세작, 534-546s). Only the leader is leashed: it sets the direction and the crew follows it;
-    -- leashing everyone made each wait for the other to move. A crewmate that cannot move or is out of
-    -- sight already is not leashed: the rally fetches it, and walking back to it is never held back.
+    -- The vanguard's walk on a hunting floor keeps the crew within reach: the walker stops (LEASHED) before
+    -- a step that takes it farther than walking reach from a crewmate already beyond it, and the group decides
+    -- again. A leader that walked the long way round a wall left its poet behind and died alone 15 tiles away
+    -- (WA+PO 세작, 534-546s). Only the vanguard is leashed: it walks in front and the crew follows it;
+    -- leashing everyone made each wait for the other to move. Every crewmate on the floor holds it, one that
+    -- cannot move or is out of sight too: leaving those to the rally walked the vanguard to the next floor
+    -- away from a rooted rogue (offline profile trio rooted seed 2, 244-250s). Steps back toward one are never
+    -- held back, and a crewmate out of sight is held at the spot it last posted.
     if result.kind == ACTION.MOVE and result.dest ~= nil and result.dest.x ~= nil and result.dest.map == snap.world.map and
-        name ~= "ESCAPE" and snap.leader == snap.self.name and ground.floor_at(snap.world.map) ~= nil then
+        name ~= "ESCAPE" and party.vanguard_name(snap, facts) == snap.self.name and ground.floor_at(snap.world.map) ~= nil then
         local names = {}
+        local at    = {}
         for _, member in ipairs(party.members(snap)) do
-            local ally = member.self.ghost == false and member.pinned ~= true and facts.ally(member.self.name) or nil
-            if ally ~= nil and ally.x ~= nil and math.abs(ally.x - snap.world.x) <= data.sight.x and
-                math.abs(ally.y - snap.world.y) <= data.sight.y then
+            if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil then
+                local ally = facts.ally(member.self.name)
+                local spot = ally ~= nil and ally.x ~= nil and ally or member.world
                 table.insert(names, member.self.name)
+                at[member.self.name] = { x = spot.x, y = spot.y }
             end
         end
         if #names > 0 then
@@ -131,7 +135,7 @@ local function decision(snap, facts, found, revisit)
             for key, entry in pairs(result.dest) do
                 dest[key] = entry
             end
-            dest.leash  = { names = names, x = data.sight.x, y = data.sight.y }
+            dest.leash  = { names = names, at = at, steps = escort.reach() }
             result.dest = dest
         end
     end
@@ -158,31 +162,32 @@ function M.choose(snap, facts, current, sink)
     if found == nil then
         return nil, revisit
     end
-    if current ~= nil and (found.name == current or states.required[current]) then
+    local route  = table.concat(path, ">") .. (found.via ~= nil and ">" .. found.via or "")
+    local result = nil
+    if current == nil or (found.name ~= current and states.required[current] == nil) then
+        result = decision(snap, facts, found, revisit)
+    end
+    if sink ~= nil and sink.alarm ~= nil then
+        trace.alarm(sink.brain, sink.bot, snap, sink.alarm, current, result ~= nil and result.task or found.name, route)
+    end
+    -- The cooldown gap can turn the found task into the current one (a hit while drinking finds DEFEND, whose
+    -- swing waits, and the gap drinks again): that is the task already running, so it is not interrupted.
+    if result == nil or (current ~= nil and result.task == current) then
         return nil, revisit
     end
-    if sink ~= nil and picks[owner] ~= found.name then
-        picks[owner] = found.name
-        trace.decide(sink.brain, sink.bot, snap, {}, found.name, current)
+    if sink ~= nil and picks[owner] ~= result.task then
+        picks[owner] = result.task
+        trace.decide(sink.brain, sink.bot, snap, result, route, current)
     end
-    local result = decision(snap, facts, found, revisit)
     if data.journal or data.trace then
         M.offers[owner] = { {
             task = result.task,
             value = found.worth or 0,
             action = describe(result),
-            path = table.concat(path, ">") .. (found.via ~= nil and ">" .. found.via or "")
+            path = route
         } }
     end
     return result, revisit
-end
-
-function M.swung(snap, decision)
-    if decision == nil or combat.swinging(snap, decision) == false then
-        return nil
-    end
-    snap.record.memory.swung = snap.now
-    return snap.now
 end
 
 function M.mark(snap, decision)
@@ -434,7 +439,11 @@ function M.lap(brain, bot, snap, decision, facts)
         brain:remember(bot, "servicing", memory.servicing)
         brain:remember(bot, "serviced", memory.serviced)
     end
-    if memory.servicing ~= nil and decision.task == "FIELD" and decision.occupy ~= nil then
+    -- Servicing is over once I hunt again, or once I came back into the ground after it began: only the one in
+    -- front takes a hunting spot, so a poet that followed its warrior back in kept its servicing and walked
+    -- out again every time it entered (offline WA+PO, 482-911s).
+    if memory.servicing ~= nil and decision.task == "FIELD" and
+        (decision.occupy ~= nil or (memory.joined ~= nil and memory.joined > memory.servicing.at)) then
         local crew_busy = false
         for _, member in ipairs(party.members(snap)) do
             crew_busy = crew_busy or (member.errand ~= nil and member.self.ghost == false)
@@ -448,7 +457,7 @@ function M.lap(brain, bot, snap, decision, facts)
     end
 end
 
-function M.first(brain, bot, current)
+function M.first(brain, bot, current, alarm)
     local owner = bot:name()
     local snap  = profile.measure(owner, "snapshot", snapshot.take, brain, bot)
     local facts = query.bind(brain, bot)
@@ -485,7 +494,7 @@ function M.first(brain, bot, current)
         snap.record.memory.swept  = swept
         snap.record.memory.solo   = solo
     end
-    local decision, revisit = M.choose(snap, facts, current, { brain = brain, bot = bot })
+    local decision, revisit = M.choose(snap, facts, current, { brain = brain, bot = bot, alarm = alarm })
     if data.journal then
         local before = hops[owner]
         if before ~= nil and before.map ~= snap.world.map then
@@ -539,10 +548,6 @@ function M.first(brain, bot, current)
     local fleeing = M.fleeing(snap, decision)
     if fleeing ~= nil then
         brain:remember(bot, "fleeing", fleeing)
-    end
-    local swung = M.swung(snap, decision)
-    if swung ~= nil then
-        brain:remember(bot, "swung", swung)
     end
     local changed, errand = M.errand(snap, decision)
     if changed then

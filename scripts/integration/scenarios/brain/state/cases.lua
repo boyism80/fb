@@ -17,7 +17,8 @@ local option   = require("integration.lib.option")
 local M = {}
 
 local TIMEOUT           = 120000
-local OPEN_STRIDE       = 8
+local TAVERN            = 29
+local TAVERN_REACH      = 2
 local START             = { map = "국내성", x = 15, y = 107 }
 local STRIKER           = { hp = 10 }
 local SUPPLIER          = { money = 1000, mp = 300 }
@@ -948,24 +949,35 @@ local function members(text)
     return names
 end
 
-local function widest(facts, map, spot)
+local function inside(facts, map)
+    local route = facts.route({ map })
+    local last  = route ~= nil and route.path ~= nil and route.path[#route.path] or nil
+    if last == nil or last.dest ~= map then
+        return {}
+    end
     local tiles = {}
-    for y = spot.top, spot.bottom, OPEN_STRIDE do
-        for x = spot.left, spot.right, OPEN_STRIDE do
-            table.insert(tiles, { x = x, y = y, range = 0 })
+    for dy = -TAVERN_REACH, TAVERN_REACH do
+        for dx = -TAVERN_REACH, TAVERN_REACH do
+            local x, y = last.ax + dx, last.ay + dy
+            if x >= 0 and y >= 0 and facts.floor(map, x, y) and not facts.warp(map, x, y) then
+                table.insert(tiles, { x = x, y = y, range = 0, gap = math.abs(dx) + math.abs(dy) })
+            end
         end
     end
-    local best, most = spot, -1
-    for _, tile in ipairs(tiles) do
-        local reached = 0
-        for _, steps in ipairs(facts.steps(map, tile.x, tile.y, tiles)) do
-            reached = reached + (steps ~= false and 1 or 0)
-        end
-        if reached > most then
-            best, most = tile, reached
+    local steps = facts.steps(map, last.ax, last.ay, tiles)
+    local open  = {}
+    for index, tile in ipairs(tiles) do
+        if steps[index] ~= false then
+            table.insert(open, tile)
         end
     end
-    return best
+    table.sort(open, function(left, right)
+        if left.gap ~= right.gap then
+            return left.gap < right.gap
+        end
+        return left.y < right.y or (left.y == right.y and left.x < right.x)
+    end)
+    return open
 end
 
 local function gather(ctx, count, arrivals)
@@ -979,16 +991,20 @@ local function gather(ctx, count, arrivals)
     if plan == nil then
         return nil
     end
-    local floor = plan.floors[1]
-    local spots = facts.spawns(floor.map, floor.targets)
-    local model = id2map(floor.map)
-    if model == nil or #spots == 0 then
+    local open  = inside(facts, TAVERN)
+    local model = id2map(TAVERN)
+    if model == nil or #open == 0 then
         return nil
     end
-    local open = widest(facts, floor.map, spots[1])
     for slot = 0, arrivals - 1 do
-        ctx:bot(slot):map_move(model:name(), open.x, open.y)
-        if expect.arrive(ctx, slot, model:name(), TIMEOUT) == false then
+        local spot = open[math.min(slot + 1, #open)]
+        ctx:bot(slot):map_move(model:name(), spot.x, spot.y)
+        local placed = expect.within(ctx, TIMEOUT, function()
+            local here = id2map(ctx:bot(slot):map())
+            local at   = ctx:bot(slot):position()
+            return here ~= nil and here:name() == model:name() and at ~= nil and at[1] == spot.x and at[2] == spot.y
+        end)
+        if placed == false then
             return nil
         end
     end

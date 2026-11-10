@@ -307,13 +307,13 @@ function M.teams(options)
                 if options.alarm ~= nil then
                     local file = io.open(options.alarm, "a")
                     file:write(
-                    require("sim.world.json").encode({
-                        rule = "team_error",
-                        scene = team.name,
-                        seed = options.seed_base,
-                        t = 0,
-                        error = tostring(result)
-                    }), "\n")
+                        require("sim.world.json").encode({
+                            rule = "team_error",
+                            scene = team.name,
+                            seed = options.seed_base,
+                            t = 0,
+                            error = tostring(result)
+                        }), "\n")
                     file:close()
                 end
             elseif result.skipped ~= nil then

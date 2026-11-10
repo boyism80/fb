@@ -11,7 +11,7 @@ M.flee = flee.flee
 
 M.notified = flee.notified
 
-M.steady = pick({ M.flee, restore }, tree.compared, "steady")
+M.steady = pick({ M.flee, restore.restore }, tree.compared, "steady")
 
 M.danger = when(function(snap)
     return snap.self.hp <= battle.burst(snap)

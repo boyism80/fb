@@ -44,10 +44,23 @@ end
 
 -- Topping up before going in is done at the entrance, where the group gathers anyway. Doing it anywhere
 -- outside the ground made a member on an errand stop for 3% of its hp and walk to a crewmate to be healed
--- (RO+PO, 680s); while walking, natural regeneration refills that much for free.
+-- (RO+PO, 680s).
 local function at_gate(snap, query, plan)
     return plan ~= nil and outside(snap, query) and
         (#party.members(snap) == 0 or snap.world.map == party.entry_gate(snap, query, plan))
+end
+
+-- Topping up at the gate is worth a cast or a bite only when at least half of it is used, as a healer weighs
+-- its heal for a crewmate. With every missing point topped up, a warrior one hp short cast its cure,
+-- drank 동동주 for the mana, lost the point again and kept its poet waiting (pair enters from the gate).
+local function toppable(snap)
+    local deficit = snap.self.max_hp - snap.self.hp
+    local heal    = recovery.heal(snap)
+    local useful  = heal ~= nil and recovery.useful(heal.hp, deficit, snap.self.max_hp) >= 0
+    for _, dose in ipairs(recovery.doses(snap, "hp")) do
+        useful = useful or recovery.useful(dose.amount, deficit, snap.self.max_hp) >= 0
+    end
+    return useful
 end
 
 local function low(snap, query)
@@ -56,7 +69,7 @@ local function low(snap, query)
     local crew   = escort.present(snap, query)
     local hp     = snap.self.hp + escort.ready(crew, combat.cast(snap))
     return snap.self.hp < snap.self.max_hp and
-        ((at_gate(snap, query, plan) and snap.self.max_hp - snap.self.hp > data.natural.hp * snap.self.max_hp) or
+        ((at_gate(snap, query, plan) and toppable(snap)) or
             (threat > 0 and hp <= threat) or
             hp <= battle.reachable(snap) or hp <= 2 * (plan ~= nil and plan.peak or 0) or
             hp <= entry_need(snap, query) or hp <= battle.need(snap, query))
@@ -92,8 +105,6 @@ function M.thank(snap)
     return thanks(snap)
 end
 
-local price
-
 function M.edible(snap, query)
     local worth = value.baseline(snap, query)
     local hurt  = 0
@@ -103,27 +114,40 @@ function M.edible(snap, query)
             hurt = hurt + high * combat.cast(snap) / math.max(mob.speed or 1, 1)
         end
     end
-    -- Food is skipped only when a crewmate who can heal stands beside me. Skipping it whenever a healer
+    -- Food is skipped only when a crewmate beside me would heal me. Skipping it whenever a healer
     -- existed anywhere left "walk to the healer" as the only choice even for a poet that could not cast
     -- on a no-magic map (RO+PO, 680s).
     local found = {}
-    local crew  = escort.present(snap, query)
-    if hurt <= 0 and crew ~= nil and crew.heal > 0 then
+    if hurt <= 0 and M.mending(snap, query) > 0 then
         return found
     end
-    local time = combat.cast(snap) / 1000 * worth.value
-    local heal = recovery.heal(snap)
-    local each = price(snap, query)
+    -- Short of the need the bag is the nearest way back to it, as anything else costs a trip, so a bite is
+    -- eaten without weighing it against its sale price: weighed, a 1 hp commoner holding potatoes walked to the
+    -- shrine instead (state pure 11). Otherwise a bite is worth what it really refills, up to the hp missing.
+    local deficit = snap.self.max_hp - snap.self.hp
+    local short   = low(snap, query)
+    local time    = combat.cast(snap) / 1000 * worth.value
+    local heal    = recovery.heal(snap)
+    local each    = value.vigor(snap, query, worth, value.mana(snap, query))
     if heal ~= nil and heal.hp > 0 then
         each = math.max(each, heal.mp / heal.hp * value.spend(snap, query, nil))
     end
     for _, entry in ipairs(recovery.doses(snap, "hp")) do
         local sale = buyers[entry.name] ~= nil and buyers[entry.name].price or 0
-        if entry.amount > hurt and entry.amount * each > sale * worth.exchange + time then
+        if entry.amount > hurt and (short or math.min(entry.amount, deficit) * each > sale * worth.exchange + time) then
             table.insert(found, entry)
         end
     end
     return found
+end
+
+-- What the crewmates beside me heal per second, counted only while I am under blows: then they heal to save
+-- me, while out of a fight they weigh my hp against food and their own mana and may well not cast. Counting
+-- them then left a rogue short of 122 hp waiting 147s beside a poet that never healed it (offline, profile
+-- 50+65 form); out of a fight I use my own cure or food, or just go on.
+function M.mending(snap, query)
+    local crew = escort.present(snap, query)
+    return crew ~= nil and battle.pressed(snap) and crew.heal or 0
 end
 
 function M.buffed(snap, name)
@@ -133,16 +157,6 @@ function M.buffed(snap, name)
         end
     end
     return false
-end
-
-price = function(snap, query)
-    local mana = value.mana(snap, query)
-    local heal = recovery.heal(snap)
-    if heal ~= nil and heal.hp > 0 then
-        return heal.mp / heal.hp * mana
-    end
-    local regen = recovery.rates(snap).hp + data.natural.hp * math.max(snap.self.max_hp, 1)
-    return regen > 0 and value.baseline(snap, query).value / regen or math.huge
 end
 
 local function copy(source, changes)
@@ -161,7 +175,7 @@ function M.mana_need(snap, query)
         local charge = combat.buffs(snap).charge
         local mend   = recovery.heal(snap)
         local back   = charge ~= nil and mend ~= nil and mend.hp > 0 and math.ceil(charge.cost / mend.hp) * mend.mp or 0
-        return recovery.ceiling(snap) - data.natural.mp * (snap.self.max_mp or 0) - back
+        return recovery.ceiling(snap) - back
     end
     local plan = ground.choose(snap, query)
     return math.min(recovery.ceiling(snap), math.max(recovery.least(snap) or 0, plan ~= nil and plan.spend or 0))
@@ -179,7 +193,23 @@ function M.worth(snap, query, action, healing)
                 deficit = math.min(deficit, entry.amount)
             end
         end
-        gain = value.mana(snap, query) * deficit
+        gain         = value.mana(snap, query) * deficit
+        -- A charge refills only on success and is paid in hp whatever happens. Valued as a sure refill, it beat a
+        -- poet's own 5000 hp heal under three skeletons: three charges failed, the fourth left it at 918 hp and it
+        -- fled (WA+PO 세작 seed 0, 282-283s).
+        local charge = combat.buffs(snap).charge
+        local slot   = recovery.spells(snap).charge
+        if action.kind == ACTION.CAST and charge ~= nil and slot ~= nil and action.slot == slot.slot then
+            local blows = battle.burst(snap)
+            local risk  = 0
+            if blows > 0 then
+                local paid   = snap.self.hp - recovery.charged(snap)
+                local before = math.max(0, math.min(1, (2 * blows - snap.self.hp) / blows))
+                local after  = math.max(0, math.min(1, (2 * blows - snap.self.hp + paid) / blows))
+                risk         = after - before
+            end
+            gain = gain * charge.chance - risk * danger.loss(snap, query, worth)
+        end
         if low(snap, query) then
             worth = { value = 0, exchange = worth.exchange, rate = worth.rate, income = worth.income }
         end
@@ -206,7 +236,10 @@ function M.worth(snap, query, action, healing)
             saved        = before - after
         end
         gain = math.max(amount / need, saved) * danger.loss(snap, query, worth)
-        if snap.self.hp < need then
+        -- Below the need a quick cure or bite costs no time, since nothing else is done until it is over. The walk
+        -- to the shrine lasts long enough to be weighed: valued at no time, a commoner hit for 6 of its 43 hp
+        -- walked 135s to the shrine (job gather_offering, online).
+        if snap.self.hp < need and action.kind ~= ACTION.MOVE then
             worth = { value = 0, exchange = worth.exchange, rate = worth.rate, income = worth.income }
         end
     end

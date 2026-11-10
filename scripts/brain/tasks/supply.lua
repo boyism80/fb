@@ -298,15 +298,6 @@ local function plan(snap, query, kind)
         local onhand = (charge == nil and kind == "mp" and route.dest ~= snap.world.map) and held + (snap.self.mp or 0) or
             held
         delta        = loss * math.max(0, 1 - onhand / math.max(target, 1)) - worth.value * spent - spend - risk
-        if kind == "mp" and charge ~= nil then
-            local dry   = ground.choose(snap, query, "DRY")
-            local base  = dry ~= nil and dry.rate or 0
-            local short = math.max(0,
-                recovery.spells(snap).charge.mp / combat.buffs(snap).charge.chance - (snap.self.mp or 0) - held)
-            local wait  = short / math.max(data.natural.mp * (snap.self.max_mp or 0), 1)
-            delta       = math.max(delta,
-                math.max(0, worth.rate - base) * math.max(0, wait - spent) - base * spent - spend - risk)
-        end
     end
     if route.dest ~= snap.world.map then
         local chances = {}

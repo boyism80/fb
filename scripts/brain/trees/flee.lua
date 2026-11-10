@@ -71,7 +71,7 @@ local function fatal_chance(snap, facts)
 end
 
 local function struck(snap)
-    return snap.self.struck ~= nil
+    return battle.pressed(snap)
 end
 
 local function burst_lethal(snap)

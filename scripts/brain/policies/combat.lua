@@ -7,7 +7,6 @@ local magic   = require("brain.data.spells")
 local M = {}
 
 local OFFENSE = { ATTACK = true, AREA = true }
-local HITTING = { AGGRESSIVE = true, RETALIATE = true, STATIONARY = true }
 
 local function truncate(value)
     return value < 0 and math.ceil(value) or math.floor(value)
@@ -290,8 +289,21 @@ function M.strike(snap, query, mob, density, weaken, extra)
         critical * buffs.echo * spread
 end
 
+function M.attack(mob)
+    return combat.attacks[mob.attack] or combat.attacks.NONE
+end
+
 function M.hits(mob)
-    return HITTING[mob.attack] == true
+    return M.attack(mob).hits
+end
+
+function M.seeks(mob)
+    return M.attack(mob).seeks
+end
+
+function M.striking(mob)
+    local ratio = mob.ratio or 1
+    return ratio > 0 and math.max(0, ratio - M.attack(mob).flee) / ratio or 0
 end
 
 function M.spread(snap, mob)
@@ -546,12 +558,14 @@ local function volley(options, mp, left, hp)
     return left, mp, casts, spent
 end
 
-function M.efficient(options, cast, melee, regen)
+-- Nothing in this model gives back the hp a spell costs: its heals are paid from mp, and crew support is credited
+-- only after the fight by survival. Counting a spell paid with hp against eating a dose every cast planned 40
+-- 금강퇴 per mob for a lv81 rogue and sent it to 인어장군굴 (run 20261109-121438); counting it against the crew
+-- aid planned a poet's hp down to nothing and charged under three skeletons (state charge_under_attack).
+function M.bloodless(options)
     local offense = {}
     for _, choice in ipairs(options.offense) do
-        local spend = -(choice.hp or 0)
-        local time  = cast + (spend > 0 and regen > 0 and spend / regen * 1000 or 0)
-        if spend <= 0 or (regen > 0 and choice.damage / time > melee) then
+        if (choice.hp or 0) >= 0 then
             table.insert(offense, choice)
         end
     end
@@ -580,12 +594,13 @@ local function landed(time, disable, speed, blow, mob)
         return 0
     end
     local delay = mob ~= nil and mob.attack == "RETALIATE" and speed / 2 or 0
-    return math.max(0, time - disable - delay) / speed * blow
+    return math.max(0, time - disable - delay) * M.striking(mob) / speed * blow
 end
 
 function M.interval()
     return 1000 / math.min(balance.cast_rate, magic.cast_rate)
 end
+
 
 function M.cast(snap)
     return math.max(M.interval(), (snap.pace or {}).cast or 0)
@@ -600,11 +615,11 @@ function M.cooldown(snap)
 end
 
 function M.backswing(snap)
-    local swung = ((snap.record or {}).memory or {}).swung
+    local swung = snap.self.swung
     if swung == nil then
         return 0
     end
-    return math.max(0, math.min(combat.swing, combat.swing - (snap.now - swung)))
+    return math.max(0, math.min(combat.swing, combat.swing - swung))
 end
 
 function M.swinging(snap, action)
@@ -655,12 +670,13 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     local strike  = M.strike(snap, query, exposed, density, nil, extra)
     local blow    = M.blow(snap, mob)
     local buffs   = M.buffs(snap)
-    local options = M.efficient(M.options(snap, exposed, extra), cast, strike / combat.swing,
-        (aid or 0) + combat.natural.hp * math.max(snap.self.max_hp or 0, 1))
+    local melee   = math.max(strike / combat.swing,
+        buffs.opener > 1 and strike * buffs.opener / (2 * cast + combat.swing) or 0)
+    local options = M.bloodless(M.options(snap, exposed, extra))
     local left    = (mob.hp or 0) * (mob.ratio or 1)
     local opener  = best(options.strike, mp, "damage")
     local spent   = 0
-    local rival   = left / math.max(M.plain(options, mp, left, cast, strike / combat.swing, hp), 1e-9)
+    local rival   = left / math.max(M.plain(options, mp, left, cast, melee, hp), 1e-9)
     local repays  = opener ~= nil and (opener.hp <= 0 or
         (aid or 0) > 0 and opener.damage / math.max(rival, 1e-9) >= opener.hp / aid)
     if opener ~= nil and repays and hp - opener.hp > blow then
@@ -674,10 +690,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     local fills = 0
     if (aid or 0) > 0 and opener ~= nil and opener.hp > 0 and opener.damage > 0 and left > 0 then
         local period = math.max(cast, opener.hp / aid)
-        local melee  = strike / combat.swing
-        local ambush = buffs.opener > 1 and strike * buffs.opener / (2 * cast + combat.swing) or 0
-        local filler = math.max(melee, ambush)
-        local cycle  = opener.damage + filler * (period - cast)
+        local cycle  = opener.damage + melee * (period - cast)
         if cycle / period > rival then
             local count = left / cycle
             if opener.mp > 0 then
@@ -687,7 +700,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
             mp    = math.max(0, mp - math.ceil(count) * opener.mp)
             time  = time + count * period
             casts = casts + math.ceil(count)
-            fills = count * (period - cast) * filler / math.max(strike, 1e-9)
+            fills = count * (period - cast) * melee / math.max(strike, 1e-9)
         end
     end
     local volleys           = 0
@@ -715,10 +728,6 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     end
     local swings = 0
     if left > 0 then
-        local melee = strike / combat.swing
-        if buffs.opener > 1 then
-            melee = math.max(melee, strike * buffs.opener / (2 * cast + combat.swing))
-        end
         local poison = weak.dot * (mob.hp or 0) / ((magic.buff_tick or 1) * 1000)
         local during = math.min(weak.dot_time, left / math.max(melee + poison, 1e-9))
         local rest   = math.max(0, left - (melee + poison) * during)

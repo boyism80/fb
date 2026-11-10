@@ -4,18 +4,16 @@ local combat  = require("brain.policies.combat")
 local danger  = require("brain.policies.danger")
 local failure = require("brain.policies.failure")
 local party   = require("brain.policies.party")
+local score   = require("brain.policies.score")
 local aid     = require("brain.tasks.aid")
 local field   = require("brain.tasks.field")
 local value   = require("brain.policies.value")
 
 local M = {}
 
-local RECENT = 2
-
 local function attacker(snap, query)
     return battle.target(snap, query, function(mob)
-        local near = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
-        return near and combat.hits(mob) and snap.self.struck ~= nil and snap.self.struck <= (mob.speed or 0) * RECENT
+        return battle.attacking(snap, mob) and battle.struck(snap, mob)
     end)
 end
 
@@ -67,9 +65,20 @@ local function passing(snap, query, mob, fight)
     return fight.time > (mob.speed or 0) and combat.gain(mob, snap) / math.max(fight.time, 1) * 1000 < plan.rate
 end
 
-local function marginal(found, snap)
-    local mob = found.mob
-    return (found.choice.damage or 0) / math.max(mob.hp or 1, 1) * combat.gain(mob, snap)
+local function backed(snap, query)
+    local blow = score.capability(snap, query).blow
+    local mine = math.max(blow.adjacent, blow.ranged)
+    for _, member in ipairs(party.members(snap)) do
+        if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil and
+            math.abs(member.world.x - snap.world.x) <= data.sight.x and
+            math.abs(member.world.y - snap.world.y) <= data.sight.y then
+            local theirs = score.capability(member, query).blow
+            if math.max(theirs.adjacent, theirs.ranged) > mine then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function M.value(snap, query)
@@ -79,17 +88,37 @@ function M.value(snap, query)
     if passing(snap, query, found.mob, fight) then
         return -1
     end
-    local aiding  = aid.wanted(snap, query)
-    local ignored = combat.lethal(snap, found.mob, aiding and combat.cast(snap) or fight.time, snap.self.hp)
+    -- Striking back only removes the danger of an attacker it ends within the window, so the danger counts in the
+    -- share of the fight one cast takes. Counted in full, a poet beside a 18000 hp skeleton cast 화염주 (320) over
+    -- healing the warrior whenever it was hit (online group, 14:45, 36 화염주 to 28 heals).
+    -- A stronger crewmate fighting beside me kills the attacker anyway, so the same holds with no crew work to
+    -- do: counted as a lone 52s fight to the death, the strike was worth the whole kill plus a sure death and a
+    -- poet cast 화염주 whenever its warrior was full (online group, 16:08, 66 of 397 weighings). Stronger means
+    -- the harder single blow, hp strikes included, whether it fights this moment or rests: by sustained spell
+    -- damage a poet refilling with 공력증강 outranked its warrior's 건곤대나이, a resting warrior counted as no
+    -- help, and the poet struck back for the whole kill (online group, 05:57, 25 of 83 strikes). Crew work alone
+    -- does not share the attacker, as nobody else ends it then: counted shared for a warrior ten tiles off and out of
+    -- sight, a poet under blows neither struck back nor got away (offline stage supply seed 18, 818-823s).
+    local shared  = backed(snap, query)
+    local window  = shared and combat.cast(snap) or fight.time
+    local ignored = combat.lethal(snap, found.mob, window, snap.self.hp)
+    local ended   = shared and math.min(1, window / math.max(fight.time, 1e-9)) or 1
+    -- With a crew, a strike back is worth only its own share of the kill, net of its mana, and the mana of a poet is
+    -- also the warrior's next heal: priced by its refill alone (6.6 a point) 화염주 beat every small heal, priced by
+    -- the 건곤대나이 it fuels (about 45) it costs more than its share (online group, 16:08, 39 weighings). The fuel is
+    -- priced on the mob I fight while the warrior rests too: priced by refill whenever it ate, 화염주 came out at
+    -- 1455 over heals of 122-2293 (online group, 05:57, 58 of 83 strikes).
     local gain    = found.choice.value
-    if gain > 0 and aiding and aid.value(snap, query) > marginal(found, snap) then
-        gain = math.min(gain, aid.value(snap, query) - 1)
+    if shared then
+        local price = math.max(value.spend(snap, query, found.mob), aid.fueling(snap, query, found.mob))
+        gain        = math.min(gain, battle.marginal(snap, found) - (found.choice.mp or 0) * price)
+        return gain + ignored * ended * danger.loss(snap, query, worth)
     end
-    return math.max(0, gain + ignored * danger.loss(snap, query, worth))
+    return math.max(0, gain + ignored * ended * danger.loss(snap, query, worth))
 end
 
 function M.attacked(snap, query)
-    return attacker(snap, query) ~= nil
+    return snap.self.ghost == false and attacker(snap, query) ~= nil
 end
 
 function M.holds_ground(snap, query)

@@ -647,13 +647,15 @@ int builtin::brain::builtin_observe(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto seen                    = fb::bot::brain::observe(*bot);
-    auto found                   = brain->read(bot->id, [](const fb::bot::brain::mind& mind) {
-        return std::tuple{mind.jumped, mind.paces, mind.casted};
+    auto seen  = fb::bot::brain::observe(*bot);
+    auto found = brain->read(bot->id, [](const fb::bot::brain::mind& mind) {
+        return std::tuple{mind.jumped, mind.paces, mind.casted, mind.swung};
     });
-    auto [jumped, paces, casted] = found.value_or(std::tuple{std::string{},
-                                                             std::unordered_map<std::string, fb::bot::brain::pace>{},
-                                                             std::optional<fb::bot::brain::clock::time_point>{}});
+    auto [jumped, paces, casted, swung] =
+        found.value_or(std::tuple{std::string{},
+                                  std::unordered_map<std::string, fb::bot::brain::pace>{},
+                                  std::optional<fb::bot::brain::clock::time_point>{},
+                                  std::optional<fb::bot::brain::clock::time_point>{}});
     lua->new_table();
     lua->pushstring("level");
     lua->pushinteger(seen.level);
@@ -769,12 +771,17 @@ int builtin::brain::builtin_observe(lua_State* L)
                 .count());
         lua->settable(-3);
     }
-    if (casted.has_value())
+    for (auto [field, at] : {
+             std::pair{"casted", &casted},
+             std::pair{"swung",  &swung }
+    })
     {
-        lua->pushstring("casted");
+        if (at->has_value() == false)
+            continue;
+
+        lua->pushstring(field);
         lua->pushinteger(
-            std::chrono::duration_cast<std::chrono::milliseconds>(fb::bot::brain::clock::now() - casted.value())
-                .count());
+            std::chrono::duration_cast<std::chrono::milliseconds>(fb::bot::brain::clock::now() - at->value()).count());
         lua->settable(-3);
     }
     lua->pushstring("now");
@@ -881,11 +888,28 @@ fb::bot::brain::destination builtin::brain::read_destination(lua_State* L, int i
             lua_pop(L, 1);
         }
         lua_pop(L, 1);
-        lua_getfield(L, -1, "x");
-        lua_getfield(L, -2, "y");
-        leash.x = static_cast<uint16_t>(lua_tointeger(L, -2));
-        leash.y = static_cast<uint16_t>(lua_tointeger(L, -1));
-        lua_pop(L, 2);
+        lua_getfield(L, -1, "at");
+        if (lua_istable(L, -1))
+        {
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                if (lua_type(L, -2) == LUA_TSTRING && lua_istable(L, -1))
+                {
+                    lua_getfield(L, -1, "x");
+                    lua_getfield(L, -2, "y");
+                    leash.at.emplace(lua_tostring(L, -4),
+                                     atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)),
+                                                     static_cast<uint16_t>(lua_tointeger(L, -1))));
+                    lua_pop(L, 2);
+                }
+                lua_pop(L, 1);
+            }
+        }
+        lua_pop(L, 1);
+        lua_getfield(L, -1, "steps");
+        leash.steps = static_cast<uint16_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
         if (leash.names.empty() == false)
             result.leash = std::move(leash);
     }
@@ -924,17 +948,24 @@ fb::bot::brain::detour builtin::brain::read_detour(lua_State* L, int index)
         lua_pop(L, 1);
     }
 
-    lua_getfield(L, index, "perilous");
-    if (lua_istable(L, -1))
+    for (auto [field, ids] : {
+             std::pair{"perilous", &result.perilous},
+             std::pair{"threats",  &result.threats },
+             std::pair{"braved",   &result.braved  }
+    })
     {
-        for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) != LUA_TNIL; i++)
+        lua_getfield(L, index, field);
+        if (lua_istable(L, -1))
         {
-            result.perilous.insert(static_cast<uint32_t>(lua_tointeger(L, -1)));
+            for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) != LUA_TNIL; i++)
+            {
+                ids->insert(static_cast<uint32_t>(lua_tointeger(L, -1)));
+                lua_pop(L, 1);
+            }
             lua_pop(L, 1);
         }
         lua_pop(L, 1);
     }
-    lua_pop(L, 1);
 
     lua_getfield(L, index, "shunned");
     if (lua_istable(L, -1))
@@ -1947,7 +1978,7 @@ int builtin::brain::builtin_concern(lua_State* L)
             while (lua_next(L, -2) != 0)
             {
                 if (lua_type(L, -2) == LUA_TSTRING && lua_toboolean(L, -1))
-                    value.crew.insert(lua_tostring(L, -2));
+                    value.crew.insert(lua->tostring(-2));
                 lua_pop(L, 1);
             }
         }
@@ -2160,7 +2191,7 @@ int builtin::brain::builtin_demand(lua_State* L)
     lua_pushnil(L);
     while (lua_next(L, 4) != 0)
     {
-        except.insert(lua_tostring(L, -1));
+        except.insert(lua->tostring(-1));
         lua_pop(L, 1);
     }
 
@@ -2247,6 +2278,9 @@ int builtin::brain::builtin_walk(lua_State* L)
         lua->settable(-3);
         lua->pushstring("dest");
         lua->pushinteger(result->dest);
+        lua->settable(-3);
+        lua->pushstring("count");
+        lua->pushinteger(result->count);
         lua->settable(-3);
         lua->pushstring("map");
         lua->pushinteger(result->map);
@@ -2649,7 +2683,9 @@ int builtin::brain::builtin_engage(lua_State* L)
         lua_getfield(L, 4, "cost");
         if (lua_isnumber(L, -1))
             maneuver.cost = static_cast<int32_t>(lua_tointeger(L, -1));
-        lua_pop(L, 5);
+        lua_getfield(L, 4, "pace");
+        maneuver.pace = std::chrono::milliseconds{lua_tointeger(L, -1)};
+        lua_pop(L, 6);
     }
     auto result = std::make_shared<fb::bot::brain::event>();
 

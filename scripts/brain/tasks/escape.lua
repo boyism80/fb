@@ -18,8 +18,7 @@ local pressed = setmetatable({}, { __mode = "k" })
 local function pressing(snap, query)
     if pressed[snap] == nil then
         local found = battle.target(snap, query, function(mob)
-            local near = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
-            return near and combat.hits(mob) and snap.self.struck ~= nil
+            return battle.attacking(snap, mob) and battle.struck(snap, mob)
         end)
         pressed[snap] = found ~= nil and (found.choice.value < 0 or found.choice.survives == false) and found or false
     end
@@ -96,8 +95,7 @@ end
 local function incoming(snap)
     local total = 0
     for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
-            math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+        if battle.attacking(snap, mob) and (mob.speed or 0) > 0 then
             total = total + combat.blow(snap, mob) / mob.speed
         end
     end
@@ -183,7 +181,7 @@ end
 
 function M.adjacent_hitter(snap)
     for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+        if battle.attacking(snap, mob) then
             return mob
         end
     end
@@ -202,6 +200,8 @@ end
 -- time does not depend on when I decide: a later entry means I came in after the flight and it is old.
 -- "The same ground" means one hunting bundle lists both floors: the first version compared per-floor
 -- rosters, so a member one floor away ignored the flight.
+-- A crewmate that fell there counts the same as one that fled: the ground was chosen for the whole group,
+-- and a poet left on it stayed alone among the skeletons until it had to flee itself (online group, 14:15).
 function M.crew_notice(snap)
     local entry = snap.record.memory.entry
     if entry == nil then
@@ -212,6 +212,10 @@ function M.crew_notice(snap)
         if notice ~= nil and notice.at ~= nil and notice.at > entry.at and
             ground.same_ground(notice.map, snap.world.map) and member.self.ghost == false then
             return notice
+        end
+        local fallen = member.fallen
+        if fallen ~= nil and fallen.at > entry.at and ground.same_ground(fallen.map, snap.world.map) then
+            return fallen
         end
     end
     return nil

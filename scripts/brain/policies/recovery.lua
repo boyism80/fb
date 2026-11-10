@@ -175,16 +175,16 @@ function M.rates(snap)
     local mp    = 0
     local cast  = fight.cast(snap) / 1000
     if buffs.charge ~= nil then
-        local gain    = buffs.charge.chance * max - buffs.charge.mp
-        local mend    = M.heal(snap)
-        local natural = data.natural.hp * math.max(snap.self.max_hp or 0, 1)
-        local back    = 0
-        local time    = cast
+        local gain   = buffs.charge.chance * max - buffs.charge.mp
+        local mend   = M.heal(snap)
+        local eating = M.bite(snap, "hp") / cast
+        local back   = 0
+        local time   = cast
         if mend ~= nil and mend.hp > 0 then
             back = buffs.charge.cost / mend.hp * mend.mp
             time = cast * (1 + buffs.charge.cost / mend.hp)
-        elseif natural > 0 then
-            time = cast + buffs.charge.cost / natural
+        elseif eating > 0 then
+            time = cast + buffs.charge.cost / eating
         end
         mp = math.max(mp, math.max(0, gain - back) / time)
     end
@@ -294,6 +294,23 @@ function M.potable(snap)
         end
     end
     return false
+end
+
+function M.bite(snap, kind)
+    local doses = M.doses(snap, kind)
+    return math.max(#doses > 0 and doses[#doses].amount or 0, M.purchasable(snap, kind))
+end
+
+-- Points got back per second by eating or drinking the best dose in the bag, one dose a cast. Natural
+-- regeneration is never counted: it is a bonus of the server, and waiting for it stalled bots for minutes.
+function M.refilling(snap, kind)
+    local doses = M.doses(snap, kind)
+    return (#doses > 0 and doses[#doses].amount or 0) * 1000 / fight.cast(snap)
+end
+
+function M.useful(amount, deficit, top)
+    local restored = math.min(deficit, amount)
+    return restored - (math.min(amount, top) - restored)
 end
 
 function M.purchasable(snap, kind)

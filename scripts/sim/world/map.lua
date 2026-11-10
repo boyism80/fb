@@ -118,7 +118,7 @@ function Map:sight(from, to)
     return to.x >= x0 and to.x <= x1 and to.y >= y0 and to.y <= y1
 end
 
-function Map:route(mover, goal, walls)
+function Map:route(mover, goal, walls, barred)
     local DIRECTION = self.enums.DIRECTION
     local start     = self:index(mover.x, mover.y)
     if goal(mover.x, mover.y) then
@@ -132,7 +132,7 @@ function Map:route(mover, goal, walls)
         head = head + 1
         for _, direction in ipairs({ DIRECTION.TOP, DIRECTION.RIGHT, DIRECTION.BOTTOM, DIRECTION.LEFT }) do
             local allowed, tx, ty = self:passable(x, y, direction, mover, walls)
-            if allowed then
+            if allowed and (barred == nil or barred[self:index(tx, ty)] == nil) then
                 local key = self:index(tx, ty)
                 if parents[key] == nil then
                     parents[key] = { from = self:index(x, y), direction = direction }

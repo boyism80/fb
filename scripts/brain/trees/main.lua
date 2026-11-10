@@ -3,6 +3,7 @@ local defend   = require("brain.tasks.defend")
 local chores   = require("brain.trees.chores")
 local fight    = require("brain.trees.fight")
 local hunt     = require("brain.trees.hunt")
+local restore  = require("brain.trees.restore")
 local revive   = require("brain.trees.revive")
 local support  = require("brain.trees.support")
 local survive  = require("brain.trees.survive")
@@ -31,4 +32,5 @@ return choose({
     chores.crew,
     when(together.grouped, together.make_way),
     hunt,
+    restore.recuperate,
 }, "main")

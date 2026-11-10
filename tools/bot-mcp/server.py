@@ -563,6 +563,18 @@ def sim_online_rules(run_id: str) -> list:
 
 
 @server.tool()
+def online_trace(run_id: str, bot: str, kinds: list[str] | None = None, limit: int = 200) -> list:
+    """Brain trace of one bot during a run against a real server: decisions and alarms with hp, mp, level, money, position, tree path, destination and visible mobs, plus fights and failed actions. kinds filters decide, alarm, fight, action, ground."""
+    return sim.online_trace(run_id, bot, kinds, limit)
+
+
+@server.tool()
+def online_alarms(run_id: str) -> dict:
+    """Alarms raised during a run against a real server (hit, sight, hurt, dialog, dead), counted by whether the re-decision kept or changed the task, per kind and per bot."""
+    return sim.online_alarms(run_id)
+
+
+@server.tool()
 def sim_online(run_id: str, limit: int = 40) -> list:
     """Per bot map sequence, task counts, flee causes and earned exp of a run against a real server."""
     return sim.online(run_id, limit)

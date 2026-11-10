@@ -107,6 +107,7 @@ local SKILLS = {
                 end
             end
             brain:remember(bot, "stuck", stuck)
+            trace.pick(brain, bot, action)
             return false, "UNCHANGED"
         end
         return true

@@ -1,3 +1,5 @@
+local terrain = require("brain.policies.terrain")
+
 local M = {}
 
 local npcs  = {}
@@ -53,6 +55,9 @@ function M.bind(mind, snap, world)
         end,
         steps = function(map, x, y, goals)
             return mind:steps(map, x, y, goals)
+        end,
+        floor = function(map, x, y)
+            return terrain.floor(mind, map, x, y)
         end,
         ally = function(name)
             return world.ally ~= nil and world.ally(name) or nil

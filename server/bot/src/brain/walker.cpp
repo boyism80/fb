@@ -43,6 +43,14 @@ void brain::casting(uint32_t bot)
         found->second.casted = clock::now();
 }
 
+void brain::swinging(uint32_t bot)
+{
+    auto lock  = std::lock_guard(this->_mutex);
+    auto found = this->_minds.find(bot);
+    if (found != this->_minds.end())
+        found->second.swung = clock::now();
+}
+
 async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
                                       const destination&        destination,
                                       const detour&             detour)
@@ -89,6 +97,27 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             auto kind   = atlas.mob(map, entry.look, entry.color).has_value() ? "MOB" : npc ? "NPC" : "CHARACTER";
             result      = event{"OCCUPIED", map, at, kind, oid, target};
             break;
+        }
+        return result;
+    };
+
+    auto threatened = [&bot, &atlas, &detour](uint16_t map) {
+        auto result = std::unordered_map<uint64_t, uint32_t>{};
+        for (auto& [oid, entry] : bot->sight.entries())
+        {
+            if (entry.look >= game_bot::sight::ITEM_LOOK)
+                continue;
+
+            auto kind = atlas.mob(map, entry.look, entry.color);
+            if (kind.has_value() == false || detour.threats.contains(kind.value()) == false ||
+                detour.braved.contains(oid))
+                continue;
+
+            for (auto direction :
+                 {atlas::DIRECTION::TOP, atlas::DIRECTION::RIGHT, atlas::DIRECTION::BOTTOM, atlas::DIRECTION::LEFT})
+            {
+                result.emplace(atlas::gate(map, atlas::forward(entry.position, direction)), oid);
+            }
         }
         return result;
     };
@@ -208,15 +237,17 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             if (entry.look < game_bot::sight::ITEM_LOOK)
                 occupied.insert(atlas::gate(map, entry.position));
         }
+        auto zone       = threatened(map);
         auto directions = atlas.path(map, here, target, range, [&](const atlas::position& at) {
             auto key = atlas::gate(map, at);
-            return occupied.contains(key) || corrected.contains(key) || detour.avoid.contains(key);
+            return occupied.contains(key) || corrected.contains(key) || detour.avoid.contains(key) ||
+                   zone.contains(key);
         });
         if (directions.has_value() == false || directions->empty())
         {
             auto open = atlas.path(map, here, target, range, [&](const atlas::position& at) {
                 auto key = atlas::gate(map, at);
-                return corrected.contains(key) || detour.avoid.contains(key);
+                return corrected.contains(key) || detour.avoid.contains(key) || zone.contains(key);
             });
             auto at   = here;
             for (auto direction : open.value_or(std::vector<atlas::DIRECTION>{}))
@@ -227,7 +258,40 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             }
 
             auto blocker = at != here ? occupant(map, at, target) : std::nullopt;
-            co_return blocker.value_or(event{"BLOCKED", map, target});
+            if (blocker.has_value())
+                co_return blocker.value();
+
+            auto free = atlas.path(map, here, target, range, [&](const atlas::position& at) {
+                return corrected.contains(atlas::gate(map, at));
+            });
+            auto step = here;
+            for (auto direction : free.value_or(std::vector<atlas::DIRECTION>{}))
+            {
+                step       = atlas::forward(step, direction);
+                auto key   = atlas::gate(map, step);
+                auto found = zone.find(key);
+                if (found != zone.end())
+                {
+                    auto beside = uint32_t{0};
+                    auto at     = here;
+                    for (auto next : free.value())
+                    {
+                        at          = atlas::forward(at, next);
+                        auto passed = zone.find(atlas::gate(map, at));
+                        if (passed != zone.end() && passed->second == found->second)
+                            beside++;
+                    }
+                    co_return event{"THREATENED", map, here, "MOB", found->second, target, beside};
+                }
+
+                if (occupied.contains(key))
+                {
+                    auto standing = occupant(map, step, target);
+                    if (standing.has_value())
+                        co_return standing.value();
+                }
+            }
+            co_return event{"BLOCKED", map, target};
         }
 
         auto route = std::vector<atlas::position>{};
@@ -251,31 +315,42 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             if (this->active(bot->id) == false)
                 co_return event{"INTERRUPTED", map, bot->position()};
 
-            auto from = bot->position();
-            auto next = route[index];
-            auto hop  = gate && index + 1 == route.size();
+            auto from  = bot->position();
+            auto next  = route[index];
+            auto hop   = gate && index + 1 == route.size();
+            auto ahead = threatened(map);
+            if (std::any_of(route.begin() + static_cast<std::ptrdiff_t>(index),
+                            route.end(),
+                            [&map, &ahead](const atlas::position& at) {
+                                return ahead.contains(atlas::gate(map, at));
+                            }))
+            {
+                replan = true;
+                break;
+            }
             if (destination.leash.has_value())
             {
                 auto& leash   = destination.leash.value();
                 auto& entries = bot->sight.entries();
                 auto  pulled  = false;
+                auto  open    = [](const atlas::position&) {
+                    return false;
+                };
                 for (auto& name : leash.names)
                 {
-                    auto found = std::find_if(entries.begin(), entries.end(), [&name](const auto& pair) {
+                    auto found  = std::find_if(entries.begin(), entries.end(), [&name](const auto& pair) {
                         return pair.second.name == name;
                     });
-                    if (found == entries.end())
-                    {
+                    auto posted = leash.at.find(name);
+                    if (found == entries.end() && posted == leash.at.end())
+                        continue;
+
+                    auto& at     = found != entries.end() ? found->second.position : posted->second;
+                    auto  onward = atlas.path(map, at, next, 0, open);
+                    auto  stay   = atlas.path(map, at, from, 0, open);
+                    if (onward.has_value() && stay.has_value() && onward->size() > leash.steps &&
+                        onward->size() > stay->size())
                         pulled = true;
-                    }
-                    else
-                    {
-                        auto& at     = found->second.position;
-                        auto  beyond = std::abs(next.x - at.x) > leash.x || std::abs(next.y - at.y) > leash.y;
-                        auto  away   = std::abs(next.x - at.x) + std::abs(next.y - at.y) >
-                                    std::abs(from.x - at.x) + std::abs(from.y - at.y);
-                        pulled = pulled || (beyond && away);
-                    }
                 }
                 if (pulled)
                     co_return event{"LEASHED", map, from};

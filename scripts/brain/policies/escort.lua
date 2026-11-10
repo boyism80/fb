@@ -21,15 +21,19 @@ function M.member(profile)
         now       = profile.now,
         plan      = profile.plan,
         rally     = profile.rally,
+        vanguard  = profile.vanguard,
         battle    = profile.battle,
         heading   = profile.heading,
         pinned    = profile.pinned,
+        peril     = profile.peril,
+        rescue    = profile.rescue,
         going     = profile.going,
         errand    = profile.errand,
         servicing = profile.servicing,
         arrives   = profile.arrives,
         task      = profile.task,
         fleeing   = profile.fleeing,
+        fallen    = profile.fallen,
         joined    = profile.joined,
         leashed   = profile.leashed,
         looted    = profile.looted or 0,
@@ -87,7 +91,52 @@ function M.crew(members, query)
     }
 end
 
-local function near(snap, member)
+local fields = setmetatable({}, { __mode = "k" })
+
+function M.reach()
+    return math.min(combat.sight.x, combat.sight.y)
+end
+
+function M.steps(snap, query, member, tiles)
+    local known = fields[snap]
+    if known == nil then
+        known        = {}
+        fields[snap] = known
+    end
+    local world = member.world
+    local own   = known[member.self.name or ""]
+    if own == nil or own.map ~= world.map or own.x ~= world.x or own.y ~= world.y then
+        own                           = { map = world.map, x = world.x, y = world.y, tiles = {} }
+        known[member.self.name or ""] = own
+    end
+    local goals = {}
+    local keys  = {}
+    for _, tile in ipairs(tiles) do
+        local key = tile.x .. "," .. tile.y
+        if own.tiles[key] == nil and keys[key] == nil then
+            table.insert(goals, { x = tile.x, y = tile.y, range = 0 })
+            keys[key] = #goals
+        end
+    end
+    if #goals > 0 then
+        local found = query ~= nil and query.steps ~= nil and query.steps(world.map, world.x, world.y, goals) or nil
+        for key, index in pairs(keys) do
+            local goal     = goals[index]
+            local value    = found == nil and math.abs(goal.x - world.x) + math.abs(goal.y - world.y) or found[index]
+            own.tiles[key] = type(value) == "number" and value or false
+        end
+    end
+    local result = {}
+    for index, tile in ipairs(tiles) do
+        result[index] = own.tiles[tile.x .. "," .. tile.y]
+    end
+    return result
+end
+
+-- Together means in sight and no farther to walk than the corner of sight is on open ground: a crewmate in
+-- sight across a wall that takes a long walk round cannot come to a fight in time. Walking reach itself would
+-- drop crewmates in plain sight on open ground; how near is better is the gap cost's to weigh (spacing).
+local function near(snap, query, member)
     local world = member.world
     if member.self == nil or member.self.ghost or world.map ~= snap.world.map or world.x == nil then
         return false
@@ -99,7 +148,11 @@ local function near(snap, member)
     if staying == false then
         return false
     end
-    return math.abs(world.x - snap.world.x) <= combat.sight.x and math.abs(world.y - snap.world.y) <= combat.sight.y
+    if math.abs(world.x - snap.world.x) > combat.sight.x or math.abs(world.y - snap.world.y) > combat.sight.y then
+        return false
+    end
+    local steps = M.steps(snap, query, member, { { x = snap.world.x, y = snap.world.y } })[1]
+    return type(steps) == "number" and steps <= combat.sight.x + combat.sight.y
 end
 
 function M.tethered(snap, x, y)
@@ -136,7 +189,7 @@ function M.present(snap, query)
         local found = {}
         for _, profile in ipairs(snap.party or {}) do
             local member = M.member(profile)
-            if near(snap, member) then
+            if near(snap, query, member) then
                 table.insert(found, member)
             end
         end
@@ -189,7 +242,7 @@ function M.gathering(snap, query)
     local found = {}
     for _, profile in ipairs(snap.party or {}) do
         local member = M.member(profile)
-        if near(snap, member) or arriving(snap, member) or nearby(snap, query, member) then
+        if near(snap, query, member) or arriving(snap, member) or nearby(snap, query, member) then
             table.insert(found, member)
         end
     end

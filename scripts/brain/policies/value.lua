@@ -23,7 +23,7 @@ local function visible(snap, query)
     end
     local found = {}
     for _, mob in ipairs(snap.world.mobs) do
-        if mob.attack == "AGGRESSIVE" and mob.x ~= nil and danger.winnable(snap, query, mob) == false then
+        if combat.seeks(mob) and mob.x ~= nil and danger.winnable(snap, query, mob) == false then
             table.insert(found, mob)
         end
     end
@@ -112,7 +112,7 @@ local errands = {}
 local function errand(snap, query, name, npcs)
     -- Errand time is an estimate, so the start tile is bucketed by screen like supply trips.
     local spot = table.concat(
-    { snap.world.map, (snap.world.x or 0) // data.sight.x, (snap.world.y or 0) // data.sight.y }, "|")
+        { snap.world.map, (snap.world.x or 0) // data.sight.x, (snap.world.y or 0) // data.sight.y }, "|")
     return memo.get(errands, snap.self.name, spot, name, function()
         local maps = {}
         for _, spot in ipairs(query.npcs(npcs)) do
@@ -124,6 +124,30 @@ local function errand(snap, query, name, npcs)
     end).seconds
 end
 
+local stocks = setmetatable({}, { __mode = "k" })
+
+local function restock(snap, query, worth, kind)
+    local known = stocks[snap] or {}
+    if known[kind] == nil then
+        local price = math.huge
+        local crew  = 1 + #party.members(snap)
+        for name, shop in pairs(shops) do
+            local effect   = items[name]
+            local restored = effect ~= nil and recovery.restored(snap, effect, kind) or 0
+            if restored > 0 then
+                local uses  = math.max(shop.uses or 1, 1)
+                local stack = restored * uses * math.max(shop.capacity or 1, 1)
+                price       = math.min(price, shop.price / (restored * uses) * worth.exchange +
+                    combat.cast(snap) / 1000 * worth.value / restored +
+                    errand(snap, query, name, shop.npcs) * crew * worth.value / stack)
+            end
+        end
+        known[kind]  = price
+        stocks[snap] = known
+    end
+    return known[kind]
+end
+
 local refills = setmetatable({}, { __mode = "k" })
 
 local function refilled(snap, query)
@@ -131,20 +155,8 @@ local function refilled(snap, query)
         return refills[snap]
     end
     local worth = M.baseline(snap, query)
-    local regen = recovery.rates(snap).mp + data.natural.mp * (snap.self.max_mp or 0)
-    local price = regen > 0 and worth.value / regen or math.huge
-    local crew  = 1 + #party.members(snap)
-    for name, shop in pairs(shops) do
-        local effect   = items[name]
-        local restored = effect ~= nil and recovery.restored(snap, effect, "mp") or 0
-        if restored > 0 then
-            local uses  = math.max(shop.uses or 1, 1)
-            local stack = restored * uses * math.max(shop.capacity or 1, 1)
-            price       = math.min(price, shop.price / (restored * uses) * worth.exchange +
-                combat.cast(snap) / 1000 * worth.value / restored +
-                errand(snap, query, name, shop.npcs) * crew * worth.value / stack)
-        end
-    end
+    local regen = recovery.rates(snap).mp
+    local price = math.min(regen > 0 and worth.value / regen or math.huge, restock(snap, query, worth, "mp"))
     refills[snap] = price
     return price
 end
@@ -211,13 +223,24 @@ function M.power(snap, query)
     end)
 end
 
+-- What one hit point costs to get back: the heal I cast, or else food bought, eaten and fetched like any
+-- supply, at its shop price whether or not I can pay it now (money is made by hunting). Natural regeneration
+-- is not a way to get it back: it is a bonus of the server, and waiting for it stalled bots for minutes.
+function M.vigor(snap, query, worth, mana)
+    local mend = recovery.heal(snap)
+    if mend ~= nil and mend.hp > 0 then
+        return mend.mp / mend.hp * mana
+    end
+    return restock(snap, query, worth, "hp")
+end
+
 local plains = setmetatable({}, { __mode = "k" })
 
 function M.refill(snap, query, worth)
     if plains[snap] ~= nil then
         return plains[snap]
     end
-    local regen = recovery.rates(snap).mp + data.natural.mp * (snap.self.max_mp or 0)
+    local regen = recovery.rates(snap).mp
     local price = regen > 0 and worth.value / regen or math.huge
     for name, shop in pairs(shops) do
         local effect   = items[name]

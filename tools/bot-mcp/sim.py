@@ -1,5 +1,6 @@
 import argparse
 import collections
+import datetime
 import glob
 import json
 import os
@@ -811,9 +812,96 @@ def packets(run_id, limit=12):
     for entry in sent[:limit]:
         lines.append(f"{entry['name']} n={entry['count']} {100 * entry['count'] / max(total, 1):.1f}% p50={entry.get('p50')}")
     for entry in entries:
-        if entry['name'] in ('decide:cpu', 'decide:wait', 'brain:decide'):
-            lines.append(f"{entry['name']} avg={entry.get('avg')} p50={entry.get('p50')} p95={entry.get('p95')} p99={entry.get('p99')}")
+        name = entry['name']
+        if name in ('decide:cpu', 'decide:wait', 'brain:decide') or (name.startswith('alarm:') and name.endswith((':cpu', ':wait'))):
+            lines.append(f"{name} n={entry['count']} avg={entry.get('avg')} p50={entry.get('p50')} p95={entry.get('p95')} p99={entry.get('p99')}")
     return lines
+
+
+TRACES = os.path.join(BOT, 'logs', 'brain')
+
+
+def run_window(run_id):
+    started = datetime.datetime.strptime(run_id[:15], '%Y%m%d-%H%M%S')
+    elapsed = call(f'/api/runs/{run_id}').get('elapsed') or 0
+    finished = started + datetime.timedelta(seconds=elapsed + 60)
+    return started, finished
+
+
+def traces(run_id, bot='', kinds=None):
+    started, finished = run_window(run_id)
+    since, until = started.strftime('%Y-%m-%dT%H:%M:%S'), finished.strftime('%Y-%m-%dT%H:%M:%S')
+    opened = started.replace(tzinfo=datetime.timezone.utc).timestamp()
+    rows = []
+    for path in glob.glob(os.path.join(TRACES, '*.jsonl')):
+        if os.path.getmtime(path) < opened:
+            continue
+        with open(path, encoding='utf-8', errors='replace') as source:
+            for line in source:
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                stamp = entry.get('t', '')
+                if stamp < since or stamp > until or (bot and entry.get('bot') != bot) or (kinds and entry.get('kind') not in kinds):
+                    continue
+                rows.append(entry)
+    rows.sort(key=lambda entry: entry.get('t', ''))
+    return rows
+
+
+def described(entry):
+    kind = entry.get('kind')
+    head = f"{entry.get('t', '')[11:]} {entry.get('bot')} {kind}"
+    if kind in ('decide', 'alarm'):
+        mobs = ' '.join(f"{mob.get('name')}@{mob.get('x')},{mob.get('y')}:{mob.get('attack')}:{mob.get('ratio')}"
+                        for mob in entry.get('mobs') or [])
+        dest = entry.get('dest') or {}
+        target = dest.get('maps') or dest.get('map')
+        spot = f"{target}({dest.get('x')},{dest.get('y')})" if dest else '-'
+        return (f"{head} {entry.get('alarm') or ''} map={entry.get('map')}({entry.get('x')},{entry.get('y')}) "
+                f"hp={entry.get('hp')}/{entry.get('max_hp')} mp={entry.get('mp')}/{entry.get('max_mp')} lv={entry.get('level')} "
+                f"{entry.get('class')} money={entry.get('money')} current={entry.get('current')} picked={entry.get('picked')} "
+                f"action={entry.get('action')} key={entry.get('key')} item={entry.get('item')} dest={spot} "
+                f"path={entry.get('path')} mobs=[{mobs}]")
+    if kind == 'fight':
+        actual = entry.get('actual') or {}
+        steps = ' '.join(f"{step.get('at')}:{step.get('key')}:{step.get('event')}:{step.get('hp')}" for step in actual.get('steps') or [])
+        return (f"{head} {entry.get('result')} mob={entry.get('mob')} task={entry.get('task')} map={entry.get('map')} "
+                f"time={actual.get('time')} hp={actual.get('hp')} low={actual.get('low')} steps=[{steps}]")
+    if kind == 'action':
+        return (f"{head} task={entry.get('task')} action={entry.get('action')} reason={entry.get('reason')} "
+                f"map={entry.get('map')} item={entry.get('item')} spell={entry.get('spell')} npc={entry.get('npc')}")
+    if kind == 'pick':
+        items = ' '.join(f"{item.get('oid')}@{item.get('x')},{item.get('y')}:{'+'.join(item.get('names') or [])}"
+                         f"{':under' if item.get('under') else ''}{':wanted' if item.get('wanted') else ''}"
+                         for item in entry.get('items') or [])
+        return f"{head} map={entry.get('map')}({entry.get('x')},{entry.get('y')}) oids={entry.get('oids')} items=[{items}]"
+    if kind == 'walk':
+        at = entry.get('at') or {}
+        dest = entry.get('dest') or {}
+        closed = ' '.join(f"{gate.get('map')}:{gate.get('x')},{gate.get('y')}" for gate in entry.get('closed') or [])
+        return (f"{head} {entry.get('event')} by={entry.get('detail')} oid={entry.get('oid')} map={entry.get('map')}"
+                f"({entry.get('x')},{entry.get('y')}) hp={entry.get('hp')} at={at.get('map')}({at.get('x')},{at.get('y')}) "
+                f"goal=({at.get('gx')},{at.get('gy')}) dest={dest.get('maps') or dest.get('map')}({dest.get('x')},{dest.get('y')}) "
+                f"closed=[{closed}] avoided={entry.get('avoided')} shunned={entry.get('shunned')}")
+    return f"{head} {json.dumps(entry, ensure_ascii=False)[:300]}"
+
+
+def online_trace(run_id, bot, kinds=None, limit=200):
+    rows = [described(entry) for entry in traces(run_id, bot, kinds)]
+    return rows[:limit]
+
+
+def online_alarms(run_id):
+    kinds = collections.Counter()
+    bots = collections.defaultdict(collections.Counter)
+    for entry in traces(run_id, kinds=('alarm',)):
+        outcome = 'kept' if entry.get('picked') == entry.get('current') else 'changed'
+        kinds[(entry.get('alarm'), outcome)] += 1
+        bots[entry.get('bot')][f"{entry.get('alarm')}:{outcome}"] += 1
+    return {'by_kind': {f'{alarm}:{outcome}': count for (alarm, outcome), count in sorted(kinds.items())},
+            'by_bot': {bot: dict(counts) for bot, counts in sorted(bots.items())}}
 
 
 def online(run_id, limit=40):

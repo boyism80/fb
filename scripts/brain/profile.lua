@@ -4,6 +4,7 @@ local records = {}
 
 function M.start(owner)
     records[owner] = { started = clock(), waited = 0, sections = {} }
+    return records[owner]
 end
 
 function M.measure(owner, name, fn, ...)
@@ -30,17 +31,18 @@ function M.wait(owner, fn, ...)
     return table.unpack(results, 1, results.n)
 end
 
-function M.finish(brain, bot, owner)
+function M.finish(brain, bot, owner, prefix, started)
     local record = records[owner]
-    records[owner] = nil
-    if record == nil then
+    if record == nil or (started ~= nil and record ~= started) then
         return
     end
-    local total = clock() - record.started
-    brain:stat(bot, "decide:cpu", (total - record.waited) / 1000)
-    brain:stat(bot, "decide:wait", record.waited / 1000)
-    for name, spent in pairs(record.sections) do
-        brain:stat(bot, "decide:" .. name, spent / 1000)
+    records[owner] = nil
+    local name     = prefix or "decide"
+    local total    = clock() - record.started
+    brain:stat(bot, name .. ":cpu", (total - record.waited) / 1000)
+    brain:stat(bot, name .. ":wait", record.waited / 1000)
+    for section, spent in pairs(record.sections) do
+        brain:stat(bot, name .. ":" .. section, spent / 1000)
     end
 end
 
