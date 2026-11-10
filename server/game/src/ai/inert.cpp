@@ -14,5 +14,5 @@ MOB_ATTACK_TYPE inert_ai::get_type() const
     return MOB_ATTACK_TYPE::INERT;
 }
 
-void inert_ai::on_damage(mob&, std::shared_ptr<life>, const datetime&)
+void inert_ai::on_damage(mob&, std::shared_ptr<life>, uint64_t, const datetime&)
 { }

@@ -86,6 +86,7 @@ function M.profile(snap, query, decision)
         pinned    = grouped and decision ~= nil and decision.kind == ACTION.MOVE and
             M.stuck(snap, snap.pace.swing or combat.swing) or nil,
         peril     = grouped and M.peril(snap, query) or nil,
+        dealt     = grouped and require("brain.policies.battle").recent(snap.record.memory.dealt, snap.now) or nil,
         fallen    = snap.record.death ~= nil and
             { map = snap.record.death.map, at = snap.now - (snap.record.death.age or 0) } or nil,
         going     = decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and decision.dest.x ~= nil and

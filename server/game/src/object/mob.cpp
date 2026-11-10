@@ -971,11 +971,11 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
         {
             auto dealt =
                 this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-            this->notify_damage(attacker);
+            this->notify_damage(attacker, dealt);
             if (dealt > 0)
             {
                 body->update_hp(dealt, opts.critical, opts.notify);
-                body->notify_damage(attacker);
+                body->notify_damage(attacker, dealt);
             }
 
             if (this->stat.hp() == 0 && this->invincible() == false)
@@ -986,8 +986,9 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
         }
         else
         {
-            body->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-            body->notify_damage(attacker);
+            auto dealt =
+                body->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+            body->notify_damage(attacker, dealt);
         }
 
         if (body->stat.hp() == 0 && body->invincible() == false)
@@ -999,8 +1000,9 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
     // Assembly body ignores direct damage; only parts forward damage.
     else if (this->has_parts() == false)
     {
-        this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-        this->notify_damage(attacker);
+        auto dealt =
+            this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+        this->notify_damage(attacker, dealt);
 
         // character::alive() means "not ghost", so death must be detected by HP.
         // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
@@ -1024,10 +1026,23 @@ void mob::on_map_left(fb::game::map& map)
         map.on_summon_leave();
 }
 
-void mob::notify_damage(const std::shared_ptr<life>& attacker)
+void mob::notify_damage(const std::shared_ptr<life>& attacker, uint64_t amount)
 {
     if (attacker == nullptr || this->_ai_strategy == nullptr || this->alive() == false)
         return;
 
-    this->_ai_strategy->on_damage(*this, attacker, this->server.now());
+    this->_ai_strategy->on_damage(*this, attacker, amount, this->server.now());
+}
+
+void mob::provoke(std::shared_ptr<life> target)
+{
+    this->assert_thread();
+
+    if (this->_ai_strategy == nullptr)
+    {
+        this->target(target);
+        return;
+    }
+
+    this->_ai_strategy->provoke(*this, target, this->server.now());
 }

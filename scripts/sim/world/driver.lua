@@ -1076,6 +1076,7 @@ function Actor:attack(action)
     self.memory.battle, self.memory.unreachable = battle.settle(self.memory.battle, self.memory.unreachable,
         action.oid, self.active.map.id, action, { type = event }, self.clock, visible, x ~= self.me.x or y ~= self.me.y,
         { x = self.me.x, y = self.me.y })
+    self.memory.dealt = battle.tally(self.memory.dealt, action.oid, action, event, self.clock)
     return event == "KILLED" or event == "UNREACHABLE" or battle.going(event), event
 end
 

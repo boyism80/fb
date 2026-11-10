@@ -92,32 +92,34 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
     co_return true;
 }
 
-void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now)
+void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount, const datetime& now)
 {
     if (attacker == nullptr || this->should_ignore_attacker(mob_obj, attacker))
         return;
 
-    this->record_damage(attacker, now);
+    this->record_damage(attacker, amount, now);
+    if (this->should_maintain_target(mob_obj, now))
+        return;
 
-    // If we don't have a target or our target lock expired,
-    // immediately switch to this attacker
-    if (mob_obj.target() == nullptr || !this->should_maintain_target(mob_obj, now))
-        this->lock_target(mob_obj, attacker, now);
+    auto strongest = this->strongest_attacker(mob_obj, false);
+    if (strongest != nullptr)
+        this->lock_target(mob_obj, strongest, now);
 }
 
-std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
+void ai::provoke(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
 {
-    auto map = mob_obj.map();
-    if (map == nullptr)
-        return nullptr;
+    mob_obj.target(target);
+    if (target != nullptr)
+        this->_provoked_time = now;
+    else
+        this->_provoked_time.reset();
+}
 
-    if (mob_obj.type() == mob::spawn_type::SUMMONED)
-        return nullptr;
-
+std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
+{
+    auto                  current     = mob_obj.target();
     std::shared_ptr<life> best_target = nullptr;
     uint64_t              best_damage = 0;
-
-    // First check recent attackers that are in sight
     for (const auto& [weak, record] : this->_recent_damage)
     {
         auto attacker = weak.lock();
@@ -129,13 +131,32 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
             continue;
 
+        DIRECTION attack_dir;
+        if (adjacent && !mob_obj.near_target(attacker, attack_dir))
+            continue; // Skip if not in attack range
+
         // Select the attacker that dealt the most damage recently
-        if (record.first > best_damage)
+        if (record.first > best_damage || (record.first == best_damage && attacker == current))
         {
             best_damage = record.first;
             best_target = attacker;
         }
     }
+
+    return best_target;
+}
+
+std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
+{
+    auto map = mob_obj.map();
+    if (map == nullptr)
+        return nullptr;
+
+    if (mob_obj.type() == mob::spawn_type::SUMMONED)
+        return nullptr;
+
+    // First check recent attackers that are in sight
+    auto best_target = this->strongest_attacker(mob_obj, false);
 
     // If we found a recent attacker in sight, use them
     if (best_target != nullptr)
@@ -178,32 +199,8 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     if (mob_obj.type() == mob::spawn_type::SUMMONED)
         return nullptr;
 
-    std::shared_ptr<life> best_target = nullptr;
-    uint64_t              best_damage = 0;
-
     // First check recent attackers that are in range
-    for (const auto& [weak, record] : this->_recent_damage)
-    {
-        auto attacker = weak.lock();
-        if (attacker == nullptr)
-            continue;
-
-        if (attacker == mob_obj.oblivion())
-            continue;
-        if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
-            continue;
-
-        DIRECTION attack_dir;
-        if (!mob_obj.near_target(attacker, attack_dir))
-            continue; // Skip if not in attack range
-
-        // Select the attacker that dealt the most damage recently
-        if (record.first > best_damage)
-        {
-            best_damage = record.first;
-            best_target = attacker;
-        }
-    }
+    auto best_target = this->strongest_attacker(mob_obj, true);
 
     // If we found a recent attacker in range, use them
     if (best_target != nullptr)
@@ -286,30 +283,28 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
 bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
 {
     auto target = mob_obj.target();
-    if (target == nullptr)
+    if (target == nullptr || !this->_provoked_time.has_value())
         return false;
 
-    // Keep current target for at least TARGET_LOCK_DURATION
-    return (now - this->_target_lock_time) <= TARGET_LOCK_DURATION;
+    return (now - this->_provoked_time.value()) <= TARGET_LOCK_DURATION;
 }
 
-void ai::lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
+void ai::lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime&)
 {
     mob_obj.target(target);
-    this->_target_lock_time = now;
 }
 
-void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
+void ai::record_damage(std::shared_ptr<life> attacker, uint64_t amount, const datetime& now)
 {
     auto key   = std::weak_ptr<life>(attacker);
     auto found = this->_recent_damage.find(key);
     if (found == this->_recent_damage.end())
     {
-        this->_recent_damage.emplace(std::move(key), damage_record{1, now});
+        this->_recent_damage.emplace(std::move(key), damage_record{amount, now});
         return;
     }
 
-    found->second.first  += 1;
+    found->second.first  += amount;
     found->second.second  = now;
 }
 

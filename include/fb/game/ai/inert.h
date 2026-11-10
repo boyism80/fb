@@ -16,7 +16,7 @@ public:
     // clang-format off
     [[nodiscard]] async::task<bool> execute(mob& mob_obj, const datetime& now) override final;
     MOB_ATTACK_TYPE                 get_type() const override final;
-    void                            on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now) override final;
+    void                            on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount, const datetime& now) override final;
     // clang-format on
 };
 

@@ -117,6 +117,7 @@ local function walled(bound)
     }, { __index = bound })
 end
 
+
 local function apart_floors(me, mate, changes)
     local first, seen = state(me)
     local team        = state(mate)
@@ -1886,6 +1887,113 @@ test_suite {
                         local rally                                   = party.rally(snap, bound)
                         return rally ~= nil and rally.name == rogue.self.name,
                             string.format("rally=%s", tostring(rally and rally.name))
+                    end),
+                    case("a warrior its poet heals keeps 건곤대나이's mana for it instead of casting 백열장", function()
+                        local value = require("brain.policies.value")
+                        local function pick(grouped)
+                            local snap, bound = state("warrior63")
+                            local mob         = mob_named("칼든해골", snap.world.x + 1, snap.world.y, 801)
+                            snap.world.mobs   = { mob }
+                            snap.self.hp      = snap.self.max_hp // 3
+                            snap.self.mp      = snap.self.max_mp // 2
+                            if grouped then
+                                local poet                                 = state("poet65")
+                                poet.world.map, poet.world.x, poet.world.y = snap.world.map, snap.world.x - 1,
+                                    snap.world.y
+                                snap.group                                 = { snap.self.name, poet.self.name }
+                                snap.leader                                = snap.self.name
+                                snap.party                                 = { party.profile(poet, bound, nil) }
+                            end
+                            local choice = battle.choose(snap, bound, mob, true)
+                            return choice and choice.key, value.held(snap, bound, mob)
+                        end
+                        local alone, free  = pick(false)
+                        local beside, held = pick(true)
+                        return beside ~= "백열장" and held > 0 and free == 0,
+                            string.format("alone=%s free=%.1f beside=%s held=%.1f", tostring(alone), free,
+                                tostring(beside),
+                                held)
+                    end),
+                    case("a mob turns on whoever hurt it most, keeps its target on a tie and holds a lure", function()
+                        local engine = require("sim.world.engine")
+                        local open   = string.rep("\0", 20 * 20)
+                        local world  = engine.new({ map = 1, grid = { width = 20, height = 20, blocked = open, collisions = open, spawns = {} }, seed = 1 })
+                        local data   = nil
+                        for _, mob in pairs(hunting.mobs) do
+                            if mob.attack == "AGGRESSIVE" and data == nil then
+                                data = mob
+                            end
+                        end
+                        local mob                                         = world:spawn(
+                            { spawn = {}, data = data, alive = 0 }, 5, 5)
+                        local poet                                        = { oid = 1, x = 5, y = 6, dead = false }
+                        local warrior                                     = { oid = 2, x = 5, y = 9, dead = false }
+                        world.characters[poet], world.characters[warrior] = true, true
+                        mob.locked                                        = world:sighted(mob)
+                        local nearest                                     = mob.locked
+                        world:remember(mob, warrior, 280)
+                        local drawn = mob.locked
+                        world:remember(mob, poet, 100)
+                        local kept = mob.locked
+                        world:remember(mob, poet, 180)
+                        local tied = mob.locked
+                        world:provoke(mob, poet)
+                        world:remember(mob, warrior, 1000)
+                        local lured = mob.locked
+                        world.now = 6000
+                        world:remember(mob, warrior, 1)
+                        local after = mob.locked
+                        return nearest == poet and drawn == warrior and kept == warrior and tied == warrior and
+                            lured == poet and after == warrior,
+                            string.format("nearest=%s drawn=%s kept=%s tied=%s lured=%s after=%s",
+                                tostring(nearest and nearest.oid),
+                                tostring(drawn and drawn.oid), tostring(kept and kept.oid), tostring(tied and tied.oid),
+                                tostring(lured and lured.oid), tostring(after and after.oid))
+                    end),
+                    case("a rescuer draws a mob off its poet with a spell from afar only when the spell takes the lead in damage", function()
+                        local function draws(dealt, led)
+                            local snap, bound                          = apart_floors("warrior63", "poet65")
+                            local poet                                 = state("poet65")
+                            snap.world.x, snap.world.y                 = 10, 10
+                            poet.world.map, poet.world.x, poet.world.y = snap.world.map, 16, 10
+                            local mob                                  = mob_named("칼든해골", 17, 10, 901)
+                            poet.world.mobs                            = { mob_named("칼든해골", 17, 10, 901), mob_named(
+                                "칼든해골", 16, 11, 902),
+                                mob_named("칼든해골", 16, 9, 903) }
+                            poet.self.struck                           = 0
+                            poet.record.memory.dealt                   = dealt and
+                                { ["901"] = { damage = dealt, at = poet.now } } or nil
+                            snap.record.memory.dealt                   = led and
+                                { ["901"] = { damage = led, at = snap.now } } or nil
+                            snap.group                                 = { snap.self.name, poet.self.name }
+                            poet.group                                 = snap.group
+                            snap.leader                                = snap.self.name
+                            snap.party                                 = { party.profile(poet, bound, nil) }
+                            snap.world.mobs                            = { mob }
+                            local rescue                               = party.rescue(snap, bound)
+                            local choice                               = battle.choose(snap, bound, mob, true)
+                            return choice and choice.key, rescue ~= nil and rescue.name == poet.self.name
+                        end
+                        local idle, named = draws(nil)
+                        local hard        = draws(1000000)
+                        local drawn       = draws(nil, 1000000)
+                        return idle == "백열장" and named and hard ~= "백열장" and drawn ~= "백열장",
+                            string.format("idle=%s named=%s hard=%s drawn=%s", tostring(idle), tostring(named),
+                                tostring(hard),
+                                tostring(drawn))
+                    end),
+                    case("a bot tallies the damage it dealt each mob only for blows that landed, over the mob's memory", function()
+                        local memory = require("brain.data.combat").aggro.memory
+                        local blow   = { damage = 300 }
+                        local dealt  = battle.tally(nil, 901, blow, "DONE", 1000)
+                        dealt        = battle.tally(dealt, 901, blow, "REFUSED", 1500)
+                        dealt        = battle.tally(dealt, 901, blow, "KILLED", 2000)
+                        dealt        = battle.tally(dealt, 902, blow, "DONE", 2000)
+                        local kept   = dealt["901"] ~= nil and dealt["901"].damage or 0
+                        local later  = battle.tally(dealt, 902, { damage = 0 }, "DONE", 2000 + memory + 1)
+                        return kept == 600 and later["901"] == nil and later["902"] == nil,
+                            string.format("kept=%s later=%s/%s", tostring(kept), tostring(later["901"] ~= nil),
+                                tostring(later["902"] ~= nil))
                     end),
                     case("walker beside a threat that strikes it does not wait for it to move off", function()
                         local walker, threat = threatened_walk(9, 1, { from = { 1, 0 }, speed = 1000 })

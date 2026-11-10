@@ -127,7 +127,7 @@ private:
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
     bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
     void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
-    void                            notify_damage(const std::shared_ptr<life>& attacker);
+    void                            notify_damage(const std::shared_ptr<life>& attacker, uint64_t amount);
     void                            on_map_entered(fb::game::map& map) override;
     void                            on_map_left(fb::game::map& map) override;
     void                            unlink_part(mob& part);
@@ -149,6 +149,7 @@ public:
     void                            action_time(const fb::model::datetime& dt);
     std::shared_ptr<fb::game::life> target() const;
     void                            target(std::shared_ptr<fb::game::life> value);
+    void                            provoke(std::shared_ptr<fb::game::life> target);
     std::shared_ptr<fb::game::life> oblivion() const;
     void                            oblivion(std::shared_ptr<fb::game::life> value);
     virtual bool                    available() const;

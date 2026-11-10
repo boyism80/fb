@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 
@@ -28,19 +29,20 @@ public:
 
 private:
     using datetime      = fb::model::datetime;
-    using damage_record = std::pair<uint32_t, datetime>;
+    using damage_record = std::pair<uint64_t, datetime>;
     using damage_map    = std::map<std::weak_ptr<life>, damage_record, std::owner_less<std::weak_ptr<life>>>;
 
 private:
-    damage_map _recent_damage;
-    datetime   _target_lock_time = datetime::utc_now();
+    damage_map              _recent_damage;
+    std::optional<datetime> _provoked_time;
 
 public:
     virtual ~ai() = default;
     // clang-format off
     [[nodiscard]] virtual async::task<bool> execute(mob& mob_obj, const datetime& now);
     virtual MOB_ATTACK_TYPE                 get_type() const = 0;
-    virtual void                            on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now);
+    virtual void                            on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount, const datetime& now);
+    void                                    provoke(mob& mob_obj, std::shared_ptr<life> target, const datetime& now);
     static std::unique_ptr<ai>              create(MOB_ATTACK_TYPE attack_type);
     // clang-format on
 
@@ -52,7 +54,8 @@ protected:
     bool                            should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
     bool                            should_maintain_target(const mob& mob_obj, const datetime& now) const;
     void                            lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime& now);
-    void                            record_damage(std::shared_ptr<life> attacker, const datetime& now);
+    void                            record_damage(std::shared_ptr<life> attacker, uint64_t amount, const datetime& now);
+    std::shared_ptr<life>           strongest_attacker(mob& mob_obj, bool adjacent) const;
     [[nodiscard]] async::task<void> run_from_target(mob& mob_obj, std::shared_ptr<life> target);
     // clang-format on
 };

@@ -61,7 +61,10 @@ int builtin::mob::builtin_target(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            mob->target(target);
+            if (target != nullptr)
+                mob->provoke(target);
+            else
+                mob->target(nullptr);
             co_return;
         };
         builder.resume = []() -> async::task<int> {

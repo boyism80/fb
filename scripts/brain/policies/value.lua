@@ -84,7 +84,11 @@ end
 
 local sinks = setmetatable({}, { __mode = "k" })
 
-local function sunk(snap, mob)
+-- A strike that turns hp into damage makes the most of a point of mana, but only so far as mana is what holds
+-- it back: it can strike as often as hp comes back, from its own heals and its crew's, and needs that many
+-- times its mana; where its regeneration covers that, mana is plentiful and worth no more than its refill. A
+-- warrior beside its poet struck 건곤대나이 53 times and spent the mana between on 135 백열장 (online group, 12:28).
+local function sunk(snap, query, mob)
     local known = sinks[snap]
     if known == nil then
         known = {}
@@ -96,10 +100,18 @@ local function sunk(snap, mob)
     end
     local sink = nil
     if mob ~= nil and (mob.hp or 0) > 0 then
+        local rates  = recovery.rates(snap)
+        local crew   = query ~= nil and require("brain.policies.escort").present(snap, query) or nil
+        local inflow = rates.hp + (crew ~= nil and crew.heal or 0)
+        local pace   = 1000 / combat.cast(snap)
         for _, choice in ipairs(combat.options(snap, mob).strike) do
             if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
-                local each = choice.damage / choice.mp * combat.gain(mob, snap) / mob.hp
-                sink = math.max(sink or each, each)
+                local casts   = (choice.hp or 0) > 0 and math.min(pace, inflow / choice.hp) or pace
+                local binding = math.min(1, casts * choice.mp / math.max(rates.mp, 1e-9))
+                local each    = choice.damage / choice.mp * combat.gain(mob, snap) / mob.hp
+                sink          = sink or { each = each, held = each * binding }
+                sink.each     = math.max(sink.each, each)
+                sink.held     = math.max(sink.held, each * binding)
             end
         end
     end
@@ -161,9 +173,19 @@ local function refilled(snap, query)
     return price
 end
 
+-- A point of mana is worth the more of what it costs to get back and what the best strike would make of it
+-- while mana holds that strike back (sunk). The less of the two let a cheap refill price the mana a warrior
+-- needed for 건곤대나이.
 function M.spend(snap, query, mob)
-    local found = math.min(refilled(snap, query), sunk(snap, mob) or math.huge)
+    local sink  = sunk(snap, query, mob)
+    local found = math.max(refilled(snap, query), sink ~= nil and sink.held or 0)
     return found < math.huge and found or 0
+end
+
+-- What a point of mana would make in the best strike while mana holds that strike back; nothing without one.
+function M.held(snap, query, mob)
+    local sink = sunk(snap, query, mob)
+    return sink ~= nil and sink.held or 0
 end
 
 function M.sip(snap, query, mob)
@@ -190,9 +212,9 @@ function M.restock(snap, query, mob, restored)
     local charging = combat.buffs(snap).charge
     local floor    = 0
     local sink     = price
-    if sunk(snap, mob) ~= nil then
+    if sunk(snap, query, mob) ~= nil then
         floor = recovery.opening(snap) or 0
-        sink  = sunk(snap, mob)
+        sink  = sunk(snap, query, mob).each
     elseif mob ~= nil and (mob.hp or 0) > 0 then
         for _, choice in ipairs(combat.options(snap, mob).offense) do
             if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then

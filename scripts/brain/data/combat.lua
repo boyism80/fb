@@ -19,6 +19,7 @@ return {
     reach         = 1,
     rezen         = 1,
     rerank        = 5000,
+    aggro         = { memory = 10000 },
     defense_limit = 127,
     exp_limit     = 3.3,
     adjacent      = 4,

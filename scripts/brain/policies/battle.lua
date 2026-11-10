@@ -717,6 +717,29 @@ function M.choose(snap, facts, mob, reachable)
     return byreach[flag] or nil
 end
 
+-- A spell from afar that would make me the one a mob has taken the most damage from draws it off the crewmate
+-- it strikes, which is what the leader sent me to do (party.rescue): a mob remembers who hurt it most and turns
+-- on that one. Beside the mob any blow draws it as well, so only the spell from afar earns the rescue; a poet
+-- that dealt the mob nothing is drawn off at once, a mage whose spells hurt it most is not. Only the spell that
+-- overtakes draws: once I lead, the mob is mine already and every further spell earned the rescue again, so
+-- warriors cast 백열장 from afar 8,230 times against 35 before (offline run 13:43).
+local function drawing(snap, facts, mob, damage)
+    local victim, rescue = party.rescued(snap, facts)
+    if victim == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or mob.x == nil or
+        math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1 or
+        math.abs(mob.x - victim.world.x) + math.abs(mob.y - victim.world.y) ~= 1 then
+        return 0
+    end
+    local key  = tostring(mob.oid)
+    local mine = (M.recent(snap.record.memory.dealt, snap.now)[key] or {}).damage or 0
+    local most = 0
+    for _, member in ipairs(party.members(snap)) do
+        local entry = (member.dealt or {})[key]
+        most        = math.max(most, entry ~= nil and entry.damage or 0)
+    end
+    return mine <= most and mine + damage > most and rescue.value or 0
+end
+
 function evaluate(snap, facts, mob, reachable)
     local baseline = value.baseline(snap, facts)
     local loss     = danger.loss(snap, facts, baseline)
@@ -749,14 +772,20 @@ function evaluate(snap, facts, mob, reachable)
         entry.value, entry.survives, left, entry.plan = estimate(snap, facts, mob, entry, baseline, loss,
             entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
             entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
+        -- A spell that hits harder than a swing is worth the swing and the extra damage, less what its mana
+        -- would make in a strike that mana holds back: counted free, 백열장 beat every swing and took the mana a
+        -- warrior's 건곤대나이 needed (online group, 12:28). Without such a strike it stays free, as before.
         if entry.kind == "CAST" and melee ~= nil and hemmed == false and (entry.mp or 0) > 0 then
             local direct = math.max(0, (entry.damage or 0) - (melee.damage or 0)) * share
             local empty  = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
-            entry.value  = direct > 0 and melee.value + direct or
+            entry.value  = direct > 0 and melee.value + direct - entry.mp * value.held(snap, facts, mob) or
                 math.min(entry.value, melee.value - entry.mp * empty * value.sip(snap, facts, mob))
         elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
             local gain  = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
             entry.value = math.min(entry.value, melee.value + gain)
+        end
+        if entry.kind == "CAST" and (entry.damage or 0) > 0 then
+            entry.value = entry.value + drawing(snap, facts, mob, entry.damage)
         end
         if last == nil or entry.value > last.value then
             last = entry
@@ -965,6 +994,7 @@ function M.propose(found, extra)
         debuff = found.choice.debuff,
         mob = found.mob.name,
         mob_id = found.mob.id,
+        damage = found.choice.damage,
         forecast = found.forecast,
         rivals = found.choice.rivals,
         scale = found.choice.value,
@@ -976,6 +1006,28 @@ function M.propose(found, extra)
 end
 
 local GOING = { STRUCK = true, DONE = true, REFUSED = true, APPROACHED = true }
+
+-- The damage I dealt each mob over the time a mob remembers its attackers, posted so a crewmate can tell
+-- whether a blow of its own would draw that mob off whoever it strikes. Hits are counted at the damage the
+-- choice expected: a client sees a mob's hp only as a share, crewmates' blows included.
+function M.recent(dealt, now)
+    local kept = {}
+    for oid, entry in pairs(dealt or {}) do
+        if now - entry.at <= data.aggro.memory then
+            kept[oid] = entry
+        end
+    end
+    return kept
+end
+
+function M.tally(dealt, oid, action, event, now)
+    local kept = M.recent(dealt, now)
+    if (event == "DONE" or event == "KILLED") and (action.damage or 0) > 0 then
+        local entry         = kept[tostring(oid)] or { damage = 0 }
+        kept[tostring(oid)] = { damage = entry.damage + action.damage, at = now }
+    end
+    return kept
+end
 
 function M.going(kind)
     return GOING[kind] == true
@@ -1065,6 +1117,7 @@ function M.step(brain, bot, oid, action)
     end
     brain:remember(bot, "battle", memory)
     brain:remember(bot, "unreachable", blocked)
+    brain:remember(bot, "dealt", M.tally(brain:recall(bot, "dealt"), oid, action, event.type, brain:observe(bot).now))
     return event
 end
 

@@ -237,7 +237,7 @@ function World:damage(attacker, target, value, options)
     local dealt    = math.min(final, target.hp)
     target.hp      = target.hp - dealt
     if target:is(self.enums.OBJECT_TYPE.MOB) then
-        self:remember(target, attacker)
+        self:remember(target, attacker, dealt)
         if attacker ~= nil and attacker.stats ~= nil then
             attacker.stats.hits  = attacker.stats.hits + 1
             attacker.stats.dealt = attacker.stats.dealt + dealt
@@ -258,17 +258,16 @@ function World:damage(attacker, target, value, options)
     end
 end
 
-function World:remember(mob, attacker)
+function World:remember(mob, attacker, dealt)
     if attacker == nil then
         return
     end
-    local record          = mob.damaged[attacker] or { count = 0, at = 0 }
-    record.count          = record.count + 1
+    local record          = mob.damaged[attacker] or { damage = 0, at = 0 }
+    record.damage         = record.damage + (dealt or 0)
     record.at             = self.now
     mob.damaged[attacker] = record
-    if mob.locked == nil or self.now - (mob.lock or 0) > RULES.lock then
-        mob.locked = attacker
-        mob.lock   = self.now
+    if self:held(mob) == false then
+        mob.locked = self:strongest(mob, false) or mob.locked
     end
 end
 
@@ -435,39 +434,36 @@ function World:forget(mob)
     end
 end
 
-function World:sighted(mob)
+function World:strongest(mob, adjacent)
     local best, most = nil, 0
     for attacker, record in pairs(mob.damaged) do
-        if self:visible(mob, attacker) and record.count > most then
-            best, most = attacker, record.count
+        if self:visible(mob, attacker) and (adjacent == false or self:adjacent(mob, attacker) ~= nil) and
+            (record.damage > most or (record.damage == most and attacker == mob.locked)) then
+            best, most = attacker, record.damage
         end
     end
-    if best ~= nil then
-        return best
-    end
-    return self:nearest(mob, false)
+    return best
+end
+
+function World:sighted(mob)
+    return self:strongest(mob, false) or self:nearest(mob, false)
 end
 
 function World:ranged(mob)
-    local best, most = nil, 0
-    for attacker, record in pairs(mob.damaged) do
-        if self:visible(mob, attacker) and self:adjacent(mob, attacker) ~= nil and record.count > most then
-            best, most = attacker, record.count
-        end
-    end
-    if best ~= nil then
-        return best
-    end
-    return self:nearest(mob, true)
+    return self:strongest(mob, true) or self:nearest(mob, true)
 end
 
 function World:lock(mob, target)
     mob.locked = target
-    mob.lock   = self.now
+end
+
+function World:provoke(mob, target)
+    mob.locked   = target
+    mob.provoked = target ~= nil and self.now or nil
 end
 
 function World:held(mob)
-    return mob.locked ~= nil and self.now - (mob.lock or 0) <= RULES.lock
+    return mob.locked ~= nil and mob.provoked ~= nil and self.now - mob.provoked <= RULES.lock
 end
 
 function World:strike(mob, direction)
@@ -495,15 +491,20 @@ function BEHAVIORS.AGGRESSIVE(world, mob)
         world:wander(mob)
         return
     end
-    local adjacent = world:adjacent(mob, target) ~= nil and target or world:ranged(mob)
-    local facing   = world:adjacent(mob, adjacent)
+    local facing = world:adjacent(mob, target)
     if facing ~= nil then
-        if adjacent ~= target then
-            world:lock(mob, adjacent)
-        end
         world:strike(mob, facing)
+        return
+    end
+    if world:approach(mob, target) then
+        return
+    end
+    local adjacent = world:ranged(mob)
+    local beside   = adjacent ~= nil and world:adjacent(mob, adjacent) or nil
+    if beside ~= nil then
+        world:strike(mob, beside)
     else
-        world:chase(mob, target)
+        world:wander(mob)
     end
 end
 

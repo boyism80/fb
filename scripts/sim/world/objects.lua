@@ -191,7 +191,12 @@ function Life:nears(kind, points)
     return found
 end
 
-function Life:target()
+function Life:target(...)
+    if select("#", ...) > 0 then
+        local target = ...
+        self.inner.world:provoke(self.inner, target ~= nil and target.inner or nil)
+        return
+    end
     return face(self.inner.locked)
 end
 

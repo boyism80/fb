@@ -26,6 +26,7 @@ function M.member(profile)
         heading   = profile.heading,
         pinned    = profile.pinned,
         peril     = profile.peril,
+        dealt     = profile.dealt,
         rescue    = profile.rescue,
         going     = profile.going,
         errand    = profile.errand,
