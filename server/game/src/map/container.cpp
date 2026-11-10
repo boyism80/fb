@@ -477,16 +477,6 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
     builder.func = [this, map](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
         params->add_map(map);
-        auto spawn_table = table::mob_spawn.get();
-        if (spawn_table->contains(map->model().id))
-        {
-            auto& spawns = (*spawn_table)[map->model().id];
-            for (uint32_t i = 0; i < spawns.size(); i++)
-            {
-                params->rezens.push_back(
-                    std::make_shared<fb::game::rezen>(this->server, spawn_table, map->model().id, i, map));
-            }
-        }
         co_return;
     };
     builder.enqueue();
@@ -730,14 +720,7 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
     {
         auto builder = thread->new_builder<void>();
         builder.func = [map](auto& thread) -> async::task<void> {
-            auto  params = thread.template data<thread_params>();
-            auto& rezens = params->rezens;
-            rezens.erase(std::remove_if(rezens.begin(),
-                                        rezens.end(),
-                                        [id = map->id](const auto& rezen) {
-                                            return rezen->map_id() == id;
-                                        }),
-                         rezens.end());
+            auto params = thread.template data<thread_params>();
             params->remove_map(map->id);
             co_return;
         };
@@ -755,9 +738,12 @@ void map::container::rezen_force()
         auto builder = thread->new_builder<void>();
         builder.func = [](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
-            for (auto& rezen : params->rezens)
+            for (auto& [map_id, rezens] : params->rezens)
             {
-                rezen->force_spawn(thread.id());
+                for (auto& rezen : rezens)
+                {
+                    rezen->force_spawn(thread.id());
+                }
             }
             co_return;
         };
@@ -773,18 +759,13 @@ async::task<void> map::container::rebuild_rezens()
     {
         auto builder = thread->new_builder<void>();
         builder.func = [this, spawn_table](auto& thread) -> async::task<void> {
-            auto  params  = thread.template data<thread_params>();
-            auto& rezens  = params->rezens;
-            auto  removed = std::vector<std::shared_ptr<fb::game::rezen>>();
-            auto  rebuilt = 0;
+            auto params  = thread.template data<thread_params>();
+            auto removed = std::vector<std::shared_ptr<fb::game::rezen>>();
+            auto rebuilt = 0;
             for (auto& [_, map] : params->maps)
             {
-                auto current = std::vector<std::shared_ptr<fb::game::rezen>>();
-                for (auto& rezen : rezens)
-                {
-                    if (rezen->map_id() == map->id)
-                        current.push_back(rezen);
-                }
+                auto found   = params->rezens.find(map->id);
+                auto current = found != params->rezens.end() ? found->second : thread_params::rezen_list{};
 
                 auto latest = spawn_table->find(map->model().id);
                 auto same   = (latest != nullptr ? latest->size() : 0) == current.size();
@@ -810,19 +791,8 @@ async::task<void> map::container::rebuild_rezens()
                 }
                 else
                 {
-                    rezens.erase(std::remove_if(rezens.begin(),
-                                                rezens.end(),
-                                                [id = map->id](const auto& rezen) {
-                                                    return rezen->map_id() == id;
-                                                }),
-                                 rezens.end());
                     removed.insert(removed.end(), current.begin(), current.end());
-
-                    for (uint32_t i = 0; latest != nullptr && i < latest->size(); i++)
-                    {
-                        rezens.push_back(
-                            std::make_shared<fb::game::rezen>(this->server, spawn_table, map->model().id, i, map));
-                    }
+                    params->load_rezens(map, spawn_table);
                     rebuilt++;
                 }
             }

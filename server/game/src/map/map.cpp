@@ -485,10 +485,13 @@ void map::rezen_force() const
     auto builder = thread->new_builder<void>();
     builder.func = [map_id = this->id](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
-        for (auto& rezen : params->rezens)
+        auto found  = params->rezens.find(map_id);
+        if (found == params->rezens.end())
+            co_return;
+
+        for (auto& rezen : found->second)
         {
-            if (rezen->map_id() == map_id)
-                rezen->force_spawn(thread.id());
+            rezen->force_spawn(thread.id());
         }
         co_return;
     };

@@ -41,9 +41,12 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
         auto builder = thread->new_builder<void>();
         builder.func = [shift](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
-            for (auto& rezen : params->rezens)
+            for (auto& [map_id, rezens] : params->rezens)
             {
-                rezen->shift(shift);
+                for (auto& rezen : rezens)
+                {
+                    rezen->shift(shift);
+                }
             }
 
             for (auto& [map_id, map] : params->maps)

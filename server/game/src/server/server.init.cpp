@@ -220,20 +220,10 @@ async::task<void> fb::game::server::init_thread_params()
     {
         auto builder = thread->new_builder<void>();
         builder.func = [this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto params      = std::make_unique<thread_params>(*this);
-            auto spawn_table = table::mob_spawn.get();
+            auto params = std::make_unique<thread_params>(*this);
             for (const auto& map : maps)
             {
                 params->add_map(map);
-                if (spawn_table->contains(map->model().id))
-                {
-                    auto& spawns = (*spawn_table)[map->model().id];
-                    for (uint32_t i = 0; i < spawns.size(); i++)
-                    {
-                        params->rezens.push_back(
-                            std::make_shared<fb::game::rezen>(*this, spawn_table, map->model().id, i, map));
-                    }
-                }
             }
             thread.data(std::move(params));
             co_return;

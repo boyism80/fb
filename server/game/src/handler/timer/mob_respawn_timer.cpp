@@ -18,15 +18,18 @@ async::task<void> mob_respawn_timer::handle(const fb::model::datetime& now, std:
 
     // Copy: a table reload or instance destroy may edit params->rezens while a spawn is suspended.
     auto rezens = params->rezens;
-    for (auto& rezen : rezens)
+    for (auto& [map_id, list] : rezens)
     {
-        try
+        for (auto& rezen : list)
         {
-            co_await rezen->spawn(id);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::warn("rezen spawn failed (map={}): {}", rezen->map_id(), e.what());
+            try
+            {
+                co_await rezen->spawn(id);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("rezen spawn failed (map={}): {}", rezen->map_id(), e.what());
+            }
         }
     }
     co_return;
