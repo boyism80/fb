@@ -255,16 +255,23 @@ int builtin::character::builtin_hair(lua_State* L)
     }
     else
     {
-        auto value    = (uint16_t)lua->tointeger(2);
+        auto value = lua->tointeger<uint16_t>(2);
+        if (value.has_value() == false)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->hair(value);
+            ch->hair(value.value());
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -299,16 +306,23 @@ int builtin::character::builtin_face(lua_State* L)
     }
     else
     {
-        auto value    = (uint8_t)lua->tointeger(2);
+        auto value = lua->tointeger<uint8_t>(2);
+        if (value.has_value() == false)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->face(value);
+            ch->face(value.value());
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -343,16 +357,23 @@ int builtin::character::builtin_ridable_id(lua_State* L)
     }
     else
     {
-        auto value    = (uint16_t)lua->tointeger(2);
+        auto value = lua->tointeger<uint16_t>(2);
+        if (value.has_value() == false)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->ridable_id(value);
+            ch->ridable_id(value.value());
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -437,16 +458,23 @@ int builtin::character::builtin_color(lua_State* L)
     }
     else
     {
-        auto value    = (uint8_t)lua->tointeger(2);
+        auto value = lua->tointeger<uint8_t>(2);
+        if (value.has_value() == false)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->color(value);
+            ch->color(value.value());
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -525,20 +553,18 @@ int builtin::character::builtin_money(lua_State* L)
     }
     else
     {
-        auto isnum = 0;
-        auto raw   = lua_tointegerx(*lua, 2, &isnum);
-        if (isnum == 0 || raw < 0)
+        auto value = lua->tointeger<uint64_t>(2);
+        if (value.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto value    = static_cast<uint64_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->money(value);
+            ch->money(value.value());
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
@@ -879,15 +905,15 @@ int builtin::character::builtin_has_items(lua_State* L)
 
     if (lua->is_string(2) && lua->is_number(3))
     {
-        auto name      = lua->tostring(2);
-        auto raw_count = lua->tointeger(3);
-        if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+        auto name  = lua->tostring(2);
+        auto count = lua->tointeger<uint16_t>(3, 1);
+        if (count.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
         if (!name.empty())
-            required.push_back({name, static_cast<uint16_t>(raw_count)});
+            required.push_back({name, count.value()});
     }
     else if (lua->is_table(2))
     {
@@ -897,12 +923,12 @@ int builtin::character::builtin_has_items(lua_State* L)
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name      = lua->tostring(-2);
-                auto raw_count = lua->tointeger(-1);
-                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                auto name  = lua->tostring(-2);
+                auto count = lua->tointeger<uint16_t>(-1);
+                if (count.has_value() == false)
                     invalid = true;
-                else if (!name.empty() && raw_count > 0)
-                    required.push_back({name, static_cast<uint16_t>(raw_count)});
+                else if (!name.empty() && count.value() > 0)
+                    required.push_back({name, count.value()});
             }
             lua->pop(1);
         }
@@ -1085,21 +1111,21 @@ int builtin::character::builtin_mkitem(lua_State* L)
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name      = lua->tostring(-2);
-                auto raw_count = lua->tointeger(-1);
-                auto model     = table::item->name2item(name);
+                auto name  = lua->tostring(-2);
+                auto count = lua->tointeger<uint16_t>(-1);
+                auto model = table::item->name2item(name);
                 if (model == nullptr)
                 {
                     fb::logger::warn("mkitem: unknown item name '{}'", name);
                     invalid = true;
                 }
-                else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                else if (count.has_value() == false)
                 {
                     invalid = true;
                 }
-                else if (raw_count > 0)
+                else if (count.value() > 0)
                 {
-                    id_to_count[model->id] += static_cast<uint16_t>(raw_count);
+                    id_to_count[model->id] += count.value();
                 }
             }
             lua->pop(1);
@@ -1113,13 +1139,13 @@ int builtin::character::builtin_mkitem(lua_State* L)
     else
     {
         auto name      = lua->tostring(2);
-        auto raw_count = lua->tointeger(3, 1);
-        if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+        auto requested = lua_isnoneornil(L, 3) ? std::optional<uint16_t>{1} : lua->tointeger<uint16_t>(3, 1);
+        if (requested.has_value() == false)
         {
             lua->pushnil();
             return 1;
         }
-        auto count = static_cast<uint16_t>(raw_count);
+        auto count = requested.value();
         if (name.empty())
         {
             lua->pushnil();
@@ -1229,21 +1255,21 @@ int builtin::character::builtin_rmitem(lua_State* L)
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name      = lua->tostring(-2);
-                auto raw_count = lua->tointeger(-1);
-                auto model     = table::item->name2item(name);
+                auto name  = lua->tostring(-2);
+                auto count = lua->tointeger<uint16_t>(-1);
+                auto model = table::item->name2item(name);
                 if (model == nullptr)
                 {
                     fb::logger::warn("rmitem: unknown item name '{}'", name);
                     valid = false;
                 }
-                else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                else if (count.has_value() == false)
                 {
                     valid = false;
                 }
-                else if (raw_count > 0)
+                else if (count.value() > 0)
                 {
-                    to_remove[model->id] += static_cast<uint16_t>(raw_count);
+                    to_remove[model->id] += count.value();
                 }
             }
             lua->pop(1);
@@ -1251,10 +1277,9 @@ int builtin::character::builtin_rmitem(lua_State* L)
     }
     else
     {
-        // lua_tointeger turns a non-integral count such as 0.5 into 0.
-        auto raw_count = lua->tointeger(3, 1);
-        valid          = raw_count > 0 && raw_count <= std::numeric_limits<uint16_t>::max();
-        count          = static_cast<uint16_t>(raw_count);
+        auto requested = lua_isnoneornil(L, 3) ? std::optional<uint16_t>{1} : lua->tointeger<uint16_t>(3, 1);
+        valid          = requested.has_value();
+        count          = requested.value_or(0);
         delete_attr    = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
 
         if (lua->is_userdata<fb::game::item>(2))
@@ -1564,21 +1589,21 @@ int builtin::character::exchange(lua_State* L,
             {
                 if (lua->is_string(-2) && lua->is_number(-1))
                 {
-                    auto name      = lua->tostring(-2);
-                    auto raw_count = lua->tointeger(-1);
-                    auto model     = table::item->name2item(name);
+                    auto name  = lua->tostring(-2);
+                    auto count = lua->tointeger<uint16_t>(-1);
+                    auto model = table::item->name2item(name);
                     if (model == nullptr)
                     {
                         fb::logger::warn("exchange: unknown {} item name '{}'", kind, name);
                         invalid = true;
                     }
-                    else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    else if (count.has_value() == false)
                     {
                         invalid = true;
                     }
-                    else if (raw_count > 0)
+                    else if (count.value() > 0)
                     {
-                        items[model->id] += static_cast<uint16_t>(raw_count);
+                        items[model->id] += count.value();
                     }
                 }
                 lua->pop(1);
@@ -2708,14 +2733,14 @@ int builtin::character::builtin_store_item(lua_State* L)
         return 0;
 
     auto item      = lua->touserdata<fb::game::item>(2);
-    auto raw_count = lua->tointeger(3, 1);
-    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+    auto requested = lua_isnoneornil(L, 3) ? std::optional<uint16_t>{1} : lua->tointeger<uint16_t>(3, 1);
+    if (requested.has_value() == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto count = static_cast<uint16_t>(raw_count);
+    auto count = requested.value();
 
     // Find the shared_ptr that contains this item
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -2747,14 +2772,14 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
         return 0;
 
     auto item      = lua->touserdata<fb::game::item>(2);
-    auto raw_count = lua->tointeger(3, 1);
-    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+    auto requested = lua_isnoneornil(L, 3) ? std::optional<uint16_t>{1} : lua->tointeger<uint16_t>(3, 1);
+    if (requested.has_value() == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto count        = static_cast<uint16_t>(raw_count);
+    auto count        = requested.value();
     auto to_inventory = lua->toboolean(4, true);
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -3181,29 +3206,20 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    if (!lua->is_number(2) || !lua->is_string(3) || !lua->is_number(4) || !lua->is_number(5))
-        return 0;
-
-    auto raw_icon  = lua->tointeger(4);
-    auto raw_color = lua->tointeger(5);
-    if (raw_icon < 0 || raw_icon > fb::game::achievement::MAX_ICON || raw_color < 0 ||
-        raw_color > fb::game::achievement::MAX_COLOR)
-        return 0;
-
-    if (lua_isinteger(L, 2) == false)
-        return 0;
-
-    auto raw_id = lua_tointeger(L, 2);
-    if (raw_id < 0 || raw_id > std::numeric_limits<uint32_t>::max())
+    auto requested_id    = lua->tointeger<uint32_t>(2);
+    auto requested_icon  = lua->tointeger<uint8_t>(4, 0, fb::game::achievement::MAX_ICON);
+    auto requested_color = lua->tointeger<uint16_t>(5, 0, fb::game::achievement::MAX_COLOR);
+    if (requested_id.has_value() == false || lua->is_string(3) == false || requested_icon.has_value() == false ||
+        requested_color.has_value() == false)
         return 0;
 
     auto text = lua->tostring(3);
     if (fb::text_length(text) > fb::game::achievement::MAX_TEXT_LENGTH)
         return 0;
 
-    auto id    = static_cast<uint32_t>(raw_id);
-    auto icon  = static_cast<uint8_t>(raw_icon);
-    auto color = static_cast<uint16_t>(raw_color);
+    auto id    = requested_id.value();
+    auto icon  = requested_icon.value();
+    auto color = requested_color.value();
 
     auto weak        = ch->weak_from_this_as<fb::game::character>();
     auto achievement = std::make_shared<std::shared_ptr<fb::game::achievement>>();
@@ -3860,20 +3876,18 @@ int builtin::character::builtin_base_str(lua_State* L)
     }
     else
     {
-        auto isnum = 0;
-        auto raw   = lua_tointegerx(*lua, 2, &isnum);
-        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        auto value = lua->tointeger<uint8_t>(2);
+        if (value.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_str(value, false);
+            ch->stat.base_str(value.value(), false);
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
@@ -3914,20 +3928,18 @@ int builtin::character::builtin_base_dex(lua_State* L)
     }
     else
     {
-        auto isnum = 0;
-        auto raw   = lua_tointegerx(*lua, 2, &isnum);
-        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        auto value = lua->tointeger<uint8_t>(2);
+        if (value.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_dex(value, false);
+            ch->stat.base_dex(value.value(), false);
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
@@ -3968,20 +3980,18 @@ int builtin::character::builtin_base_int(lua_State* L)
     }
     else
     {
-        auto isnum = 0;
-        auto raw   = lua_tointegerx(*lua, 2, &isnum);
-        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        auto value = lua->tointeger<uint8_t>(2);
+        if (value.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_int(value, false);
+            ch->stat.base_int(value.value(), false);
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
@@ -4162,7 +4172,14 @@ int builtin::character::builtin_armor_color(lua_State* L)
     {
         auto value = std::optional<uint8_t>{};
         if (lua->is_number(2))
-            value = lua->tointeger(2);
+        {
+            value = lua->tointeger<uint8_t>(2);
+            if (value.has_value() == false)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
 
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
@@ -4171,8 +4188,9 @@ int builtin::character::builtin_armor_color(lua_State* L)
             ch->armor_color(value);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -4212,7 +4230,14 @@ int builtin::character::builtin_weapon_color(lua_State* L)
     {
         auto value = std::optional<uint8_t>{};
         if (lua->is_number(2))
-            value = static_cast<uint8_t>(lua->tointeger(2));
+        {
+            value = lua->tointeger<uint8_t>(2);
+            if (value.has_value() == false)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
 
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
@@ -4221,8 +4246,9 @@ int builtin::character::builtin_weapon_color(lua_State* L)
             ch->weapon_color(value);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -4262,7 +4288,14 @@ int builtin::character::builtin_shield_color(lua_State* L)
     {
         auto value = std::optional<uint8_t>{};
         if (lua->is_number(2))
-            value = static_cast<uint8_t>(lua->tointeger(2));
+        {
+            value = lua->tointeger<uint8_t>(2);
+            if (value.has_value() == false)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
 
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
@@ -4271,8 +4304,9 @@ int builtin::character::builtin_shield_color(lua_State* L)
             ch->shield_color(value);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -6531,14 +6565,14 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         return 1;
     }
 
-    auto raw_id = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
-    if (raw_id < 0 || raw_id > fb::game::quest::MAX_VALUE)
+    auto requested = lua->tointeger<uint32_t>(2, 0, fb::game::quest::MAX_VALUE);
+    if (requested.has_value() == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto id       = static_cast<uint32_t>(raw_id);
+    auto id       = requested.value();
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
     auto builder  = lua->new_co_builder();
@@ -6650,14 +6684,14 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto raw_id = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
-    if (raw_id < 0 || raw_id > fb::game::quest::MAX_VALUE)
+    auto requested = lua->tointeger<uint32_t>(2, 0, fb::game::quest::MAX_VALUE);
+    if (requested.has_value() == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto id       = static_cast<uint32_t>(raw_id);
+    auto id       = requested.value();
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
     auto builder  = lua->new_co_builder();
@@ -6696,9 +6730,7 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
     std::optional<uint32_t> quest_id;
     if (lua_isinteger(L, 2))
     {
-        auto raw_id = lua_tointeger(L, 2);
-        if (raw_id >= 0 && raw_id <= fb::game::quest::MAX_VALUE)
-            quest_id = static_cast<uint32_t>(raw_id);
+        quest_id = lua->tointeger<uint32_t>(2, 0, fb::game::quest::MAX_VALUE);
     }
     else if (lua->is_userdata<fb::game::quest>(2))
     {

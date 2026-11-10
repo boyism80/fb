@@ -29,6 +29,9 @@ extern "C"
 #include <async/awaitable_then.h>
 #include <shared_mutex>
 #include <optional>
+#include <limits>
+#include <type_traits>
+#include <utility>
 #include <stdexcept>
 #include <json/json.h>
 
@@ -402,6 +405,21 @@ public:
     lua_Integer               tonumber(int offset, lua_Integer default_value = 0);
     uint64_t                  touint64(int offset, uint64_t default_value = 0);
     int64_t                   toint64(int offset, int64_t default_value = 0);
+
+    template <typename T>
+    std::optional<T> tointeger(int                     offset,
+                               std::type_identity_t<T> min = std::numeric_limits<T>::min(),
+                               std::type_identity_t<T> max = std::numeric_limits<T>::max())
+    {
+        if (this->argc() < offset || lua_isinteger(*this, offset) == 0)
+            return std::nullopt;
+
+        auto value = lua_tointeger(*this, offset);
+        if (std::cmp_less(value, min) || std::cmp_greater(value, max))
+            return std::nullopt;
+
+        return static_cast<T>(value);
+    }
 
     template <typename T>
     T toenum(int offset, T default_value = (T)0)

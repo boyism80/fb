@@ -1138,8 +1138,8 @@ M.functions = {
             local count = 1
             if args[2] ~= nil then
                 count = tonumber(args[2])
-                if not count or count < 1 then
-                    me:message("개수는 1 이상의 숫자여야 합니다.")
+                if count == nil then
+                    me:message("개수는 1~65535 사이의 숫자여야 합니다.")
                     return true
                 end
             end
@@ -1153,7 +1153,9 @@ M.functions = {
                 end
             end
 
-            me:mkitem(name, count, true, expire_sec)
+            if me:mkitem(name, count, true, expire_sec) == nil then
+                me:message("아이템을 만들지 못했습니다. 이름과 개수(1~65535)를 확인하세요.")
+            end
             return true
         end,
     },
@@ -1223,12 +1225,9 @@ M.functions = {
                 me:message("사용법: /머리바꾸기 <머리ID>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("머리 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:hair(tonumber(value)) then
+                me:message("머리 ID는 0~65535 사이의 숫자여야 합니다.")
             end
-            me:hair(value)
             return true
         end,
     },
@@ -1242,12 +1241,9 @@ M.functions = {
                 me:message("사용법: /얼굴바꾸기 <얼굴ID>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("얼굴 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:face(tonumber(value)) then
+                me:message("얼굴 ID는 0~255 사이의 숫자여야 합니다.")
             end
-            me:face(value)
             return true
         end,
     },
@@ -1287,12 +1283,9 @@ M.functions = {
                 me:message("사용법: /머리염색 <색상ID>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:color(tonumber(value)) then
+                me:message("색상 ID는 0~255 사이의 숫자여야 합니다.")
             end
-            me:color(value)
             return true
         end,
     },
@@ -1307,11 +1300,9 @@ M.functions = {
                 return true
             end
             value = tonumber(value)
-            if not value or value < 0 then
-                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if value == nil or not me:armor_color(value) then
+                me:message("색상 ID는 0~255 사이의 숫자여야 합니다.")
             end
-            me:armor_color(value)
             return true
         end,
     },
@@ -1326,11 +1317,9 @@ M.functions = {
                 return true
             end
             value = tonumber(value)
-            if not value or value < 0 then
-                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if value == nil or not me:weapon_color(value) then
+                me:message("색상 ID는 0~255 사이의 숫자여야 합니다.")
             end
-            me:weapon_color(value)
             return true
         end,
     },
@@ -1345,11 +1334,9 @@ M.functions = {
                 return true
             end
             value = tonumber(value)
-            if not value or value < 0 then
-                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
-                return true
+            if value == nil or not me:shield_color(value) then
+                me:message("색상 ID는 0~255 사이의 숫자여야 합니다.")
             end
-            me:shield_color(value)
             return true
         end,
     },

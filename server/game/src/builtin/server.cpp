@@ -936,17 +936,19 @@ int builtin::server::builtin_weather(lua_State* L)
     if (lua == nullptr)
         return 0;
 
+    using weather_value = std::underlying_type_t<WEATHER_TYPE>;
+
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
-    auto  isnum = 0;
-    auto  value = lua_tointegerx(*lua, 1, &isnum);
-    if (isnum == 0 || value < static_cast<lua_Integer>(WEATHER_TYPE::NORMAL) ||
-        value > static_cast<lua_Integer>(WEATHER_TYPE::BIRD))
+    auto  value = lua->tointeger<weather_value>(1,
+                                               static_cast<weather_value>(WEATHER_TYPE::NORMAL),
+                                               static_cast<weather_value>(WEATHER_TYPE::BIRD));
+    if (value.has_value() == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    srv.weather.set(static_cast<WEATHER_TYPE>(value));
+    srv.weather.set(static_cast<WEATHER_TYPE>(value.value()));
     lua->pushboolean(true);
     return 1;
 }

@@ -36,14 +36,14 @@ int builtin::quest::builtin_step(lua_State* L)
     auto argc = lua->argc();
     if (argc >= 2)
     {
-        auto raw_step = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
-        if (raw_step < 0 || raw_step > fb::game::quest::MAX_VALUE)
+        auto requested = lua->tointeger<uint32_t>(2, 0, fb::game::quest::MAX_VALUE);
+        if (requested.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto new_step = static_cast<uint32_t>(raw_step);
+        auto new_step = requested.value();
         auto stored   = std::make_shared<bool>(false);
         auto weak     = owner->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
@@ -92,14 +92,14 @@ int builtin::quest::builtin_progress(lua_State* L)
     auto argc = lua->argc();
     if (argc >= 2)
     {
-        auto raw_progress = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
-        if (raw_progress < 0 || raw_progress > fb::game::quest::MAX_VALUE)
+        auto requested = lua->tointeger<uint32_t>(2, 0, fb::game::quest::MAX_VALUE);
+        if (requested.has_value() == false)
         {
             lua->pushboolean(false);
             return 1;
         }
 
-        auto new_progress = static_cast<uint32_t>(raw_progress);
+        auto new_progress = requested.value();
         auto stored       = std::make_shared<bool>(false);
         auto weak         = owner->weak_from_this_as<fb::game::character>();
         auto builder      = lua->new_co_builder();
@@ -194,14 +194,12 @@ int builtin::quest::builtin_inc_progress(lua_State* L)
     if (owner == nullptr)
         return 0;
 
-    auto raw_value = lua_Integer{1};
-    if (lua->argc() >= 2)
-        raw_value = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{0};
-
-    if (raw_value <= 0 || raw_value > fb::game::quest::MAX_VALUE)
+    auto requested =
+        lua->argc() >= 2 ? lua->tointeger<uint32_t>(2, 1, fb::game::quest::MAX_VALUE) : std::optional<uint32_t>{1};
+    if (requested.has_value() == false)
         return 0;
 
-    auto value = static_cast<uint32_t>(raw_value);
+    auto value = requested.value();
 
     auto weak     = owner->weak_from_this_as<fb::game::character>();
     auto success  = std::make_shared<bool>();
@@ -231,14 +229,12 @@ int builtin::quest::builtin_inc_step(lua_State* L)
     if (owner == nullptr)
         return 0;
 
-    auto raw_value = lua_Integer{1};
-    if (lua->argc() >= 2)
-        raw_value = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{0};
-
-    if (raw_value <= 0 || raw_value > fb::game::quest::MAX_VALUE)
+    auto requested =
+        lua->argc() >= 2 ? lua->tointeger<uint32_t>(2, 1, fb::game::quest::MAX_VALUE) : std::optional<uint32_t>{1};
+    if (requested.has_value() == false)
         return 0;
 
-    auto value = static_cast<uint32_t>(raw_value);
+    auto value = requested.value();
 
     auto weak     = owner->weak_from_this_as<fb::game::character>();
     auto success  = std::make_shared<bool>();
