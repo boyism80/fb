@@ -119,6 +119,7 @@ public:
     void                                            load(item_ptr item, const fb::protocol::internal::Item& row);
     void                                            load(const fb::protocol::internal::Escrow& row);
     std::vector<fb::protocol::internal::Item>       to_protocol() const;
+    std::vector<fb::protocol::internal::Escrow>     to_escrow_protocol(uint32_t user) const;
     void                                            sync() const;
 
 private:

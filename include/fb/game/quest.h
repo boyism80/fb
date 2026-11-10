@@ -3,6 +3,7 @@
 
 #include <fb/lua.h>
 #include <fb/model/model.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 #include <cstdint>
 #include <limits>
@@ -10,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 namespace fb::game {
 
@@ -88,6 +90,9 @@ public:
     void add(uint32_t id, uint32_t step, uint32_t progress, bool completed, std::string param);
     bool start(uint32_t id);
     bool remove(uint32_t id);
+
+    std::vector<fb::protocol::internal::Quest> to_protocol(uint32_t user) const;
+    void                                       load(const std::vector<fb::protocol::internal::Quest>& rows);
 };
 
 } // namespace fb::game

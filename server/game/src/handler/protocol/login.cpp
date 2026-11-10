@@ -81,32 +81,6 @@ void login<V>::init_items(const std::vector<internal::Item>& response, character
 }
 
 template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_spells(const std::vector<internal::Spell>& response, character& ch)
-{
-    for (auto& x : response)
-    {
-        auto  spell_table = table::spell;
-        auto& model       = spell_table[x.model];
-        auto  delay       = fb::model::datetime(x.next) - this->server.now();
-        auto  sec         = delay.seconds();
-        if (sec >= 0)
-            sec += (delay.milliseconds() > 0 ? 1 : 0);
-        else
-            sec = 0;
-        std::ignore = ch.spells.add(model, x.slot, sec);
-    }
-}
-
-template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
-{
-    for (auto& x : response)
-    {
-        ch.quests.add(x.qid, x.step, x.progress, x.completed, x.param);
-    }
-}
-
-template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                  fb::game::character&                                    ch)
 {
@@ -416,10 +390,10 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->mail_box.init_system_mails(resp.system_mail_ids);
     this->server.system_mail.join(ch->id);
     ch->items.sync();
-    this->init_spells(resp.spells, *ch);
+    ch->spells.load(resp.spells);
     ch->matchmaker.load(resp.matchmaking_skills);
     this->init_achievements(resp.achievements, *ch);
-    this->init_quests(resp.quests, *ch);
+    ch->quests.load(resp.quests);
     ch->collections.load(resp.collection_unlocks);
     ch->unsettled.load(resp.unsettled_requests);
     // Releasing an entry nobody settles could duplicate a listing the marketplace already made, so it is only reported.

@@ -36,8 +36,6 @@ private:
     uint32_t              world(const game_reqs::login<V>& request) const;
     void                  init_option(const internal::Option& response, character& ch);
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
-    void                  init_spells(const std::vector<internal::Spell>& response, character& ch);
-    void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login<V>& request, fb::socket<character>& session);
     std::string           elapsed_message(std::string_view dt);

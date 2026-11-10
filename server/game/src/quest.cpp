@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 using namespace fb::game;
 
@@ -146,6 +147,29 @@ void quests::owner(std::weak_ptr<fb::game::character> owner)
 void quests::add(uint32_t id, uint32_t step, uint32_t progress, bool completed, std::string param)
 {
     this->insert({id, std::make_shared<quest>(id, this->_owner, step, progress, completed, param)});
+}
+
+std::vector<fb::protocol::internal::Quest> quests::to_protocol(uint32_t user) const
+{
+    auto result = std::vector<fb::protocol::internal::Quest>();
+    for (auto& [id, quest] : *this)
+    {
+        result.push_back(fb::protocol::internal::Quest{user,
+                                                       id,
+                                                       quest->step(),
+                                                       quest->progress(),
+                                                       quest->param(),
+                                                       quest->completed()});
+    }
+    return result;
+}
+
+void quests::load(const std::vector<fb::protocol::internal::Quest>& rows)
+{
+    for (auto& row : rows)
+    {
+        this->add(row.qid, row.step, row.progress, row.completed, row.param);
+    }
 }
 
 bool quests::start(uint32_t id)

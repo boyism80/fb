@@ -5,11 +5,13 @@
 #include <fb/game/inventory.h>
 #include <fb/lua.h>
 #include <fb/model/model.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 #include <cstdint>
 #include <memory>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 namespace fb::game {
 
@@ -33,6 +35,7 @@ public:
 public:
     // clang-format off
     spell(const fb::game::server& server, const fb::game::life& owner, const fb::model::spell& model, uint16_t delay = 0);
+    spell(const fb::game::server& server, const fb::game::life& owner, const fb::model::spell& model, const fb::model::datetime& next);
     ~spell();
     // clang-format on
 
@@ -75,6 +78,12 @@ public:
     uint8_t add(const fb::model::spell& model);
     bool    remove(uint8_t index) override;
     bool    swap(uint8_t src, uint8_t dst) override;
+    // clang-format on
+
+public:
+    // clang-format off
+    std::vector<fb::protocol::internal::Spell> to_protocol(uint32_t user) const;
+    void                                       load(const std::vector<fb::protocol::internal::Spell>& rows);
     // clang-format on
 };
 

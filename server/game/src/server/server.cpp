@@ -295,35 +295,13 @@ async::task<internal_resp::Unban> fb::game::server::unban(std::string_view actor
 
 internal::SavePayload fb::game::server::save_payload(const character& ch) const
 {
-    auto items   = ch.items.to_protocol();
-    auto escrows = std::vector<internal::Escrow>();
-    for (const auto& [id, money] : ch.items.escrow().entries())
-    {
-        escrows.push_back(internal::Escrow{ch.id, id, money});
-    }
-
-    auto spells = std::vector<internal::Spell>();
-    for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        auto spell = ch.spells[i];
-        if (spell == nullptr)
-            continue;
-
-        spells.push_back(internal::Spell{ch.id, i, spell->model().id, spell->next().to_string()});
-    }
+    auto items = ch.items.to_protocol();
 
     auto achievements = std::vector<internal::Achievement>();
     for (auto& [id, achievement] : ch.achievements)
     {
         achievements.push_back(
             internal::Achievement{ch.id, id, achievement->text, achievement->icon, achievement->color});
-    }
-
-    auto quests = std::vector<internal::Quest>();
-    for (auto& [qid, quest] : ch.quests)
-    {
-        quests.push_back(
-            internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
     auto matchmaking_skills = ch.matchmaker.to_protocol();
@@ -334,14 +312,14 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
 
     return internal::SavePayload(ch.to_protocol(),
                                  items,
-                                 spells,
+                                 ch.spells.to_protocol(ch.id),
                                  matchmaking_skills,
                                  achievements,
-                                 quests,
+                                 ch.quests.to_protocol(ch.id),
                                  collection_unlocks,
                                  snapshot_time,
                                  ch.unsettled.to_protocol(),
-                                 escrows,
+                                 ch.items.to_escrow_protocol(ch.id),
                                  ch.storage_box.to_save_dtos(ch.id, this->now()));
 }
 

@@ -25,6 +25,16 @@ spell::spell(const fb::game::server& server, const life& owner, const fb::model:
     _next(server.now() + std::chrono::seconds(delay))
 { }
 
+spell::spell(const fb::game::server&    server,
+             const life&                owner,
+             const fb::model::spell&    model,
+             const fb::model::datetime& next) :
+    server(server),
+    owner(owner),
+    _model_id(model.id),
+    _next(next)
+{ }
+
 spell::~spell()
 { }
 
@@ -187,6 +197,36 @@ uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
     auto& server  = owner->server;
     auto  created = server.make<spell>(*owner, model, delay);
     return this->add(created, slot);
+}
+
+std::vector<fb::protocol::internal::Spell> spells::to_protocol(uint32_t user) const
+{
+    auto result = std::vector<fb::protocol::internal::Spell>();
+    for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = this->at(i);
+        if (spell == nullptr)
+            continue;
+
+        result.push_back(fb::protocol::internal::Spell{user, i, spell->model().id, spell->next().to_string()});
+    }
+    return result;
+}
+
+void spells::load(const std::vector<fb::protocol::internal::Spell>& rows)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    owner->assert_thread();
+
+    auto& server = owner->server;
+    for (auto& row : rows)
+    {
+        auto created = server.make<spell>(*owner, fb::model::table::spell[row.model], fb::model::datetime(row.next));
+        std::ignore  = this->add(created, row.slot);
+    }
 }
 
 uint8_t spells::add(const fb::model::spell& model)

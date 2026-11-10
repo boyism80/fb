@@ -2088,6 +2088,16 @@ void items::load(const fb::protocol::internal::Escrow& row)
     this->_escrow.restore(row.id, row.money);
 }
 
+std::vector<fb::protocol::internal::Escrow> items::to_escrow_protocol(uint32_t user) const
+{
+    auto result = std::vector<fb::protocol::internal::Escrow>();
+    for (const auto& [id, money] : this->_escrow.entries())
+    {
+        result.push_back(fb::protocol::internal::Escrow{user, id, money});
+    }
+    return result;
+}
+
 std::vector<fb::protocol::internal::Item> items::to_protocol() const
 {
     auto result = std::vector<fb::protocol::internal::Item>();
