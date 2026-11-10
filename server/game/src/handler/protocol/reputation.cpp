@@ -25,7 +25,7 @@ async::task<bool> reputation<V>::handle(fb::socket<character>& session, game_req
     auto error = std::optional<std::string>{};
     try
     {
-        co_await me->evaluate(request.name, request.raise);
+        co_await me->evaluation.evaluate(request.name, request.raise);
     }
     catch (std::exception& e)
     {

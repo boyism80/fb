@@ -5763,7 +5763,7 @@ int builtin::character::builtin_evaluation(lua_State* L)
     if (argc == 1)
     {
         builder.yield = [=]() -> async::task<void> {
-            *evaluation = ch->evaluation();
+            *evaluation = ch->evaluation.score();
             co_return;
         };
     }
@@ -5772,7 +5772,7 @@ int builtin::character::builtin_evaluation(lua_State* L)
         auto value = static_cast<uint16_t>(
             std::clamp<lua_Integer>(lua->tointeger(2), 0, fb::model::const_value::reputation::MAX_EVALUATION));
         builder.yield = [=]() -> async::task<void> {
-            ch->evaluation(value);
+            ch->evaluation.score(value);
             *evaluation = value;
             co_return;
         };

@@ -22,12 +22,9 @@ async::task<void> evaluation_timer::handle(const fb::model::datetime& now, std::
         if (ch == nullptr || ch->inited() == false)
             co_return;
 
-        if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
-            co_return;
-
         try
         {
-            ch->accumulate_evaluation_playtime(now);
+            ch->evaluation.accumulate(now);
         }
         catch (std::exception& e)
         {

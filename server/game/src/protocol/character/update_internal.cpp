@@ -13,7 +13,7 @@ update_internal<V>::update_internal(const fb::game::character& ch, UPDATE_STATE_
     ch(ch),
     level(level),
     reputation(ch.reputation()),
-    evaluation(ch.evaluation())
+    evaluation(ch.evaluation.score())
 { }
 
 template <CLIENT_VERSION V>

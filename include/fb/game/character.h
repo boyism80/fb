@@ -126,14 +126,6 @@ public:
         bool                enabled        = false;
     };
 
-    struct evaluation_state_t
-    {
-        uint16_t                                score = 0;
-        fb::model::datetime                     tick;
-        std::chrono::milliseconds               playtime{0};
-        std::map<uint32_t, fb::model::datetime> targets;
-    };
-
     class clan
     {
     private:
@@ -201,6 +193,40 @@ public:
         // clang-format on
     };
 
+    class evaluation
+    {
+    private:
+        character&                              _owner;
+        uint16_t                                _score = 0;
+        fb::model::datetime                     _tick;
+        std::chrono::milliseconds               _playtime{0};
+        std::map<uint32_t, fb::model::datetime> _targets;
+
+    public:
+        // clang-format off
+        evaluation(character& owner, const fb::model::datetime& now, uint16_t score, uint32_t playtime, const std::map<uint32_t, fb::model::datetime>& targets);
+        // clang-format on
+
+    private:
+        // clang-format off
+        static bool               cooling_down(const fb::model::datetime& evaluated_at, const fb::model::datetime& now);
+        std::chrono::milliseconds earned(const fb::model::datetime& now) const;
+        void                      assign(uint16_t value);
+        void                      spend(uint32_t target, const fb::model::datetime& now);
+        void                      refund(uint32_t target, const std::optional<fb::model::datetime>& previous);
+        // clang-format on
+
+    public:
+        // clang-format off
+        uint16_t                        score() const;
+        void                            score(uint16_t value);
+        void                            accumulate(const fb::model::datetime& now);
+        void                            shift(const fb::model::timespan& delta);
+        [[nodiscard]] async::task<void> evaluate(std::string target_name, bool raise);
+        void                            to_protocol(fb::protocol::internal::Character& dto) const;
+        // clang-format on
+    };
+
     class dialog
     {
     public:
@@ -257,7 +283,6 @@ private:
     std::atomic<LOGIN_STATE>                         _login_state = LOGIN_STATE::LOADING; // raced by login and on_disconnected
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
-    evaluation_state_t                               _evaluation;
     fb::game::marriage                               _marriage;
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
@@ -283,6 +308,7 @@ public:
     class clan                                    clan;
     class friends                                 friends;
     class group                                   group;
+    class evaluation                              evaluation;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
     class dialog                                  dialog;
@@ -443,11 +469,6 @@ public:
     bool                                                      divine_beast(DIVINE_BEAST value);
     int16_t                                                   reputation() const;
     void                                                      reputation(int16_t value);
-    uint16_t                                                  evaluation() const;
-    void                                                      evaluation(uint16_t value);
-    void                                                      accumulate_evaluation_playtime(const fb::model::datetime& now);
-    void                                                      shift_evaluation(const fb::model::timespan& delta);
-    [[nodiscard]] async::task<void>                           evaluate(std::string target_name, bool raise);
     uint8_t                                                   level() const;
     void                                                      level(uint8_t value);
     GENDER                                                    gender() const;

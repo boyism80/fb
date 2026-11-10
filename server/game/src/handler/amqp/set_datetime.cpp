@@ -31,7 +31,7 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
                 spell->delay(0);
         }
         ch->stat.shift_recovery(shift);
-        ch->shift_evaluation(shift);
+        ch->evaluation.shift(shift);
         ch->ping_state().last_ping_time += shift;
         co_return;
     });

@@ -293,11 +293,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.evaluation_playtime = resp.character.evaluation_playtime;
     for (auto& evaluated : resp.character.evaluated_targets)
     {
-        auto evaluated_at = std::min(fb::model::datetime(evaluated.evaluated_at), this->server.now());
-        if (this->server.now() - evaluated_at >= fb::model::const_value::reputation::EVALUATION_COOLDOWN)
-            continue;
-
-        params.evaluated_targets.insert_or_assign(evaluated.target, evaluated_at);
+        params.evaluated_targets.insert_or_assign(evaluated.target, fb::model::datetime(evaluated.evaluated_at));
     }
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
