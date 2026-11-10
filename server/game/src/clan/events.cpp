@@ -218,11 +218,7 @@ async::task<void> clan::container::on_create(uint32_t                           
         {
             // A later message may have loaded a newer clan first. Its state stays, but the master still
             // has to be attached, which no later message does.
-            if (guard.value()->revision() < revision)
-            {
-                guard.value()->update(name, clan_title, members);
-                guard.value()->revision(revision);
-            }
+            guard.value()->update(name, clan_title, members, revision);
 
             clan_name = guard.value()->name();
             if (master_name.has_value() == false || guard.value()->contains(master_name.value()) == false)
@@ -364,21 +360,17 @@ async::task<void> clan::container::on_set_title(uint32_t                   clan_
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() > revision)
-            co_return;
         auto& clan = guard.value();
 
-        old_title = clan->title();
-        clan_name = clan->name();
-        if (clan->revision() + 1 == revision)
-        {
+        old_title   = clan->title();
+        clan_name   = clan->name();
+        auto result = clan->apply(revision, [&] {
             clan->title(new_title);
-            clan->revision(revision);
-        }
-        else if (clan->revision() < revision)
-        {
-            reload = true;
-        }
+        });
+        if (result == apply_result::STALE)
+            co_return;
+
+        reload = result == apply_result::RELOAD;
     }
 
     if (reload)
@@ -410,19 +402,14 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() > revision)
-            co_return;
-        auto& clan = guard.value();
-
-        if (clan->revision() + 1 == revision)
-        {
+        auto& clan   = guard.value();
+        auto  result = clan->apply(revision, [&] {
             clan->join(clan_member{joined_member_name, role});
-            clan->revision(revision);
-        }
-        else if (clan->revision() < revision)
-        {
-            reload = true;
-        }
+        });
+        if (result == apply_result::STALE)
+            co_return;
+
+        reload = result == apply_result::RELOAD;
 
         auto ch = this->_server.characters.find(joined_member_name);
         if (ch != nullptr && ch->clan.id().has_value() == false)
@@ -504,9 +491,14 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() > revision)
+        auto& clan   = guard.value();
+        auto  result = clan->apply(revision, [&] {
+            clan->leave(deleted_member_name);
+        });
+        if (result == apply_result::STALE)
             co_return;
-        auto& clan = guard.value();
+
+        reload = result == apply_result::RELOAD;
 
         auto ch = this->_server.characters.find(deleted_member_name);
         if (ch != nullptr)
@@ -514,16 +506,6 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
             weak  = ch->template weak_from_this_as<character>();
             ch_id = ch->id;
             clan->detach(weak);
-        }
-
-        if (clan->revision() + 1 == revision)
-        {
-            clan->leave(deleted_member_name);
-            clan->revision(revision);
-        }
-        else if (clan->revision() < revision)
-        {
-            reload = true;
         }
         clan_name = clan->name();
         members   = clan->online_characters();
@@ -578,9 +560,14 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() > revision)
+        auto& clan   = guard.value();
+        auto  result = clan->apply(revision, [&] {
+            clan->leave(deleted_member_name);
+        });
+        if (result == apply_result::STALE)
             co_return;
-        auto& clan = guard.value();
+
+        reload = result == apply_result::RELOAD;
 
         auto ch = this->_server.characters.find(deleted_member_name);
         if (ch != nullptr)
@@ -588,16 +575,6 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
             weak  = ch->template weak_from_this_as<character>();
             ch_id = ch->id;
             clan->detach(weak);
-        }
-
-        if (clan->revision() + 1 == revision)
-        {
-            clan->leave(deleted_member_name);
-            clan->revision(revision);
-        }
-        else if (clan->revision() < revision)
-        {
-            reload = true;
         }
         clan_name = clan->name();
         members   = clan->online_characters();
@@ -651,37 +628,30 @@ async::task<void> clan::container::on_ally(uint32_t                clan_id,
     auto reload_other = false;
     {
         auto guard = co_await this->enter_write(clan_id);
-        if (guard.holds_lock() && guard.value() != nullptr && guard.value()->revision() <= revision)
+        if (guard.holds_lock() && guard.value() != nullptr)
         {
-            if (guard.value()->revision() + 1 == revision)
-            {
+            auto result = guard.value()->apply(revision, [&] {
                 guard.value()->allied_clan_id(other_id);
-                guard.value()->revision(revision);
-            }
-            else if (guard.value()->revision() < revision)
-            {
-                reload = true;
-            }
-            members = guard.value()->online_characters();
+            });
+            reload      = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
+                members = guard.value()->online_characters();
         }
     }
 
     {
         auto other_guard = co_await this->enter_write(other_id);
-        if (other_guard.holds_lock() && other_guard.value() != nullptr &&
-            other_guard.value()->revision() <= related_revision)
+        if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            if (other_guard.value()->revision() + 1 == related_revision)
-            {
+            auto result  = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->allied_clan_id(clan_id);
-                other_guard.value()->revision(related_revision);
-            }
-            else if (other_guard.value()->revision() < related_revision)
+            });
+            reload_other = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
             {
-                reload_other = true;
+                auto others = other_guard.value()->online_characters();
+                members.insert(members.end(), others.begin(), others.end());
             }
-            auto others = other_guard.value()->online_characters();
-            members.insert(members.end(), others.begin(), others.end());
         }
     }
 
@@ -708,18 +678,14 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
     auto reload_other = false;
     {
         auto guard = co_await this->enter_write(clan_id);
-        if (guard.holds_lock() && guard.value() != nullptr && guard.value()->revision() <= revision)
+        if (guard.holds_lock() && guard.value() != nullptr)
         {
-            if (guard.value()->revision() + 1 == revision)
-            {
+            auto result = guard.value()->apply(revision, [&] {
                 guard.value()->allied_clan_id(std::nullopt);
-                guard.value()->revision(revision);
-            }
-            else if (guard.value()->revision() < revision)
-            {
-                reload = true;
-            }
-            members = guard.value()->online_characters();
+            });
+            reload      = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
+                members = guard.value()->online_characters();
         }
     }
 
@@ -727,20 +693,17 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
     {
         auto other_id    = related_clan_id.value();
         auto other_guard = co_await this->enter_write(other_id);
-        if (other_guard.holds_lock() && other_guard.value() != nullptr &&
-            other_guard.value()->revision() <= related_revision)
+        if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            if (other_guard.value()->revision() + 1 == related_revision)
-            {
+            auto result  = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->allied_clan_id(std::nullopt);
-                other_guard.value()->revision(related_revision);
-            }
-            else if (other_guard.value()->revision() < related_revision)
+            });
+            reload_other = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
             {
-                reload_other = true;
+                auto others = other_guard.value()->online_characters();
+                members.insert(members.end(), others.begin(), others.end());
             }
-            auto others = other_guard.value()->online_characters();
-            members.insert(members.end(), others.begin(), others.end());
         }
     }
 
@@ -772,37 +735,30 @@ async::task<void> clan::container::on_enemy(uint32_t                clan_id,
     auto reload_other = false;
     {
         auto guard = co_await this->enter_write(clan_id);
-        if (guard.holds_lock() && guard.value() != nullptr && guard.value()->revision() <= revision)
+        if (guard.holds_lock() && guard.value() != nullptr)
         {
-            if (guard.value()->revision() + 1 == revision)
-            {
+            auto result = guard.value()->apply(revision, [&] {
                 guard.value()->add_enemy_clan(other_id);
-                guard.value()->revision(revision);
-            }
-            else if (guard.value()->revision() < revision)
-            {
-                reload = true;
-            }
-            members = guard.value()->online_characters();
+            });
+            reload      = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
+                members = guard.value()->online_characters();
         }
     }
 
     {
         auto other_guard = co_await this->enter_write(other_id);
-        if (other_guard.holds_lock() && other_guard.value() != nullptr &&
-            other_guard.value()->revision() <= related_revision)
+        if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            if (other_guard.value()->revision() + 1 == related_revision)
-            {
+            auto result  = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->add_enemy_clan(clan_id);
-                other_guard.value()->revision(related_revision);
-            }
-            else if (other_guard.value()->revision() < related_revision)
+            });
+            reload_other = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
             {
-                reload_other = true;
+                auto others = other_guard.value()->online_characters();
+                members.insert(members.end(), others.begin(), others.end());
             }
-            auto others = other_guard.value()->online_characters();
-            members.insert(members.end(), others.begin(), others.end());
         }
     }
 
@@ -834,37 +790,30 @@ async::task<void> clan::container::on_unenemy(uint32_t                clan_id,
     auto reload_other = false;
     {
         auto guard = co_await this->enter_write(clan_id);
-        if (guard.holds_lock() && guard.value() != nullptr && guard.value()->revision() <= revision)
+        if (guard.holds_lock() && guard.value() != nullptr)
         {
-            if (guard.value()->revision() + 1 == revision)
-            {
+            auto result = guard.value()->apply(revision, [&] {
                 guard.value()->remove_enemy_clan(other_id);
-                guard.value()->revision(revision);
-            }
-            else if (guard.value()->revision() < revision)
-            {
-                reload = true;
-            }
-            members = guard.value()->online_characters();
+            });
+            reload      = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
+                members = guard.value()->online_characters();
         }
     }
 
     {
         auto other_guard = co_await this->enter_write(other_id);
-        if (other_guard.holds_lock() && other_guard.value() != nullptr &&
-            other_guard.value()->revision() <= related_revision)
+        if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            if (other_guard.value()->revision() + 1 == related_revision)
-            {
+            auto result  = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->remove_enemy_clan(clan_id);
-                other_guard.value()->revision(related_revision);
-            }
-            else if (other_guard.value()->revision() < related_revision)
+            });
+            reload_other = result == apply_result::RELOAD;
+            if (result != apply_result::STALE)
             {
-                reload_other = true;
+                auto others = other_guard.value()->online_characters();
+                members.insert(members.end(), others.begin(), others.end());
             }
-            auto others = other_guard.value()->online_characters();
-            members.insert(members.end(), others.begin(), others.end());
         }
     }
 
@@ -897,21 +846,16 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() > revision)
-            co_return;
-        auto& clan = guard.value();
-
-        if (clan->revision() + 1 == revision)
-        {
+        auto& clan   = guard.value();
+        auto  result = clan->apply(revision, [&] {
             auto member = clan->member(target_name.value());
             if (member != nullptr && new_role.has_value())
                 member->role = static_cast<CLAN_ROLE>(new_role.value());
-            clan->revision(revision);
-        }
-        else if (clan->revision() < revision)
-        {
-            reload = true;
-        }
+        });
+        if (result == apply_result::STALE)
+            co_return;
+
+        reload = result == apply_result::RELOAD;
 
         for (auto& [uid, weak] : clan->characters())
         {
@@ -983,15 +927,10 @@ async::task<void> clan::container::on_set_money(uint32_t clan_id, uint64_t money
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
-        if (guard.value()->revision() + 1 == revision)
-        {
+        auto result = guard.value()->apply(revision, [&] {
             guard.value()->money(money);
-            guard.value()->revision(revision);
-        }
-        else if (guard.value()->revision() < revision)
-        {
-            reload = true;
-        }
+        });
+        reload      = result == apply_result::RELOAD;
     }
 
     if (reload)

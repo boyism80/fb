@@ -47,6 +47,15 @@ private:
     uint64_t                     _revision = 0;
 
 public:
+    enum class apply_result : uint8_t
+    {
+        STALE,
+        CURRENT,
+        APPLIED,
+        RELOAD,
+    };
+
+public:
     // clang-format off
     clan(server& server, uint32_t id, std::string_view name, const std::optional<std::string>& title, const member_map& members, uint64_t revision, const std::optional<uint32_t>& allied_clan_id = std::nullopt, const std::unordered_set<uint32_t>& enemy_clan_ids = {}, uint64_t money = 0);
     clan(const clan&) = delete;
@@ -56,7 +65,7 @@ public:
 
 public:
     // clang-format off
-    void                                update(std::string_view name, const std::optional<std::string>& title, const member_map& members);
+    void                                update(std::string_view name, const std::optional<std::string>& title, const member_map& members, uint64_t revision);
     void                                reload(const clan& fresh);
     uint32_t                            id() const;
     const std::string&                  name() const;
@@ -84,8 +93,30 @@ public:
     uint64_t                            money() const;
     void                                money(uint64_t value);
     uint64_t                            revision() const;
-    void                                revision(uint64_t value);
     // clang-format on
+
+    template <typename F>
+    apply_result apply(uint64_t revision, F&& change)
+    {
+        if (revision < this->_revision)
+        {
+            return apply_result::STALE;
+        }
+        else if (revision == this->_revision)
+        {
+            return apply_result::CURRENT;
+        }
+        else if (revision == this->_revision + 1)
+        {
+            change();
+            this->_revision = revision;
+            return apply_result::APPLIED;
+        }
+        else
+        {
+            return apply_result::RELOAD;
+        }
+    }
 };
 
 class clan::container : public lazy_container<clan>

@@ -79,6 +79,5 @@ async::task<void> clan::container::reload(uint32_t id)
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
 
-    if (guard.value()->revision() < fresh->revision())
-        guard.value()->reload(*fresh);
+    guard.value()->reload(*fresh);
 }

@@ -51,15 +51,25 @@ clan::clan(clan&& r) :
     _revision(r._revision)
 { }
 
-void clan::update(std::string_view name, const std::optional<std::string>& title, const member_map& members)
+void clan::update(std::string_view                  name,
+                  const std::optional<std::string>& title,
+                  const member_map&                 members,
+                  uint64_t                          revision)
 {
-    this->_name    = std::string(name);
-    this->_title   = title;
-    this->_members = members;
+    if (revision <= this->_revision)
+        return;
+
+    this->_name     = std::string(name);
+    this->_title    = title;
+    this->_members  = members;
+    this->_revision = revision;
 }
 
 void clan::reload(const clan& fresh)
 {
+    if (fresh._revision <= this->_revision)
+        return;
+
     this->_name           = fresh._name;
     this->_title          = fresh._title;
     this->_members        = fresh._members;
@@ -239,11 +249,6 @@ void clan::money(uint64_t value)
 uint64_t clan::revision() const
 {
     return this->_revision;
-}
-
-void clan::revision(uint64_t value)
-{
-    this->_revision = value;
 }
 
 std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const
