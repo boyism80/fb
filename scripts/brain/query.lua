@@ -36,6 +36,9 @@ function M.bind(brain, bot)
         steps = function(map, x, y, goals)
             return brain:steps(map, x, y, goals)
         end,
+        detour = function(map, from, to, avoided)
+            return terrain.detour(brain, map, from, to, avoided)
+        end,
         floor = function(map, x, y)
             return terrain.floor(brain, map, x, y)
         end,

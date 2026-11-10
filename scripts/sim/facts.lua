@@ -56,6 +56,9 @@ function M.bind(mind, snap, world)
         steps = function(map, x, y, goals)
             return mind:steps(map, x, y, goals)
         end,
+        detour = function(map, from, to, avoided)
+            return terrain.detour(mind, map, from, to, avoided)
+        end,
         floor = function(map, x, y)
             return terrain.floor(mind, map, x, y)
         end,

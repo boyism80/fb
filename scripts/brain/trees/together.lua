@@ -180,7 +180,11 @@ local function clear_way(snap, facts)
             local gap = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
             local moved = gap >= data.adjacent and in_way(snap, member, going.x, going.y) and
                 aside(snap, facts, member, going) or nil
-            if moved ~= nil then
+            -- I am in the member's way only when its walk round me is longer than my step aside and back: on
+            -- open floor its walker turns round me at once, and the tile I stepped aside to was the lane it
+            -- turned to, so we both switched lanes in step for 90s (offline RO+PO 흉가 seed 0, map 92, 240-330s).
+            if moved ~= nil and
+                facts.detour(snap.world.map, member.world, going, snap.world) > 2 * moved.dest.steps then
                 return moved
             end
         end

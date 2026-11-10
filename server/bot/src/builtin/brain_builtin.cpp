@@ -2539,9 +2539,24 @@ int builtin::brain::builtin_steps(lua_State* L)
     auto left  = goals.size();
     auto start =
         atlas::position(static_cast<uint16_t>(lua_tointeger(L, 3)), static_cast<uint16_t>(lua_tointeger(L, 4)));
-    auto size   = static_cast<size_t>(grid->width) * grid->height;
-    auto steps  = std::vector<int32_t>(size, -1);
-    auto queue  = std::vector<atlas::position>{};
+    auto size    = static_cast<size_t>(grid->width) * grid->height;
+    auto steps   = std::vector<int32_t>(size, -1);
+    auto avoided = std::vector<bool>(size, false);
+    auto queue   = std::vector<atlas::position>{};
+    if (lua_istable(L, 6))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, 6, i) == LUA_TTABLE; i++)
+        {
+            lua_getfield(L, -1, "x");
+            lua_getfield(L, -2, "y");
+            auto x = lua_tointeger(L, -2);
+            auto y = lua_tointeger(L, -1);
+            if (x >= 0 && y >= 0 && x < grid->width && y < grid->height)
+                avoided[static_cast<size_t>(y) * grid->width + static_cast<size_t>(x)] = true;
+            lua_pop(L, 3);
+        }
+        lua_pop(L, 1);
+    }
     auto settle = [&goals, &found, &left](const atlas::position& at, int32_t distance) {
         for (auto i = size_t{0}; i < goals.size(); i++)
         {
@@ -2572,7 +2587,7 @@ int builtin::brain::builtin_steps(lua_State* L)
                 continue;
             auto next  = atlas::forward(at, direction);
             auto index = static_cast<size_t>(next.y) * grid->width + next.x;
-            if (steps[index] >= 0)
+            if (steps[index] >= 0 || avoided[index])
                 continue;
             steps[index] = distance + 1;
             queue.push_back(next);

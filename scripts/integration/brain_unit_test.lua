@@ -1802,6 +1802,10 @@ test_suite {
                                 end
                                 return found
                             end,
+                            detour = function(_, from, to, avoided)
+                                local between = (avoided.x - from.x) * (avoided.x - to.x) <= 0
+                                return avoided.y == row and between and math.huge or 0
+                            end,
                         }, { __index = bound })
                         local found                                = require("brain.tree").run(together.make_way, snap,
                             corridor)
@@ -1844,6 +1848,24 @@ test_suite {
                             (dest.x == 3 and dest.y == 2)
                         return ahead and dest.steps == 1,
                             string.format("dest=%s,%s steps=%s", tostring(dest.x), tostring(dest.y), tostring(dest.steps))
+                    end),
+                    case("a member on open floor does not step aside for a crewmate that can walk round it", function()
+                        local together                             = require("brain.trees.together")
+                        local snap, bound                          = state("poet65")
+                        local mate                                 = state("rogue50")
+                        snap.world.map, snap.world.x, snap.world.y = 92, 17, 11
+                        mate.world.map, mate.world.x, mate.world.y = 92, 16, 11
+                        snap.group                                 = { mate.self.name, snap.self.name }
+                        snap.leader                                = mate.self.name
+                        snap.party                                 = { party.profile(mate, bound, nil) }
+                        snap.party[1].task                         = "FIELD"
+                        snap.party[1].going                        = { map = 92, x = 27, y = 19 }
+                        local found                                = require("brain.tree").run(together.make_way, snap,
+                            bound)
+                        local dest                                 = found ~= nil and found.action ~= nil and
+                            found.action.dest or nil
+                        return dest == nil,
+                            string.format("dest=%s,%s", tostring(dest and dest.x), tostring(dest and dest.y))
                     end),
                     case("a member whose moves keep failing beside its crew is posted pinned", function()
                         local snap, bound                          = state("rogue50")
