@@ -112,7 +112,7 @@ local function off_landing(snap, facts, member)
         end
     end
     return best ~= nil and { kind = ACTION.MOVE, dest = { map = snap.world.map, x = best.x, y = best.y, range = 0 } } or
-    nil
+        nil
 end
 
 local function clear_way(snap, facts)
@@ -245,10 +245,13 @@ M.advance = choose({
 -- The gap between casts walks toward the crew: a healer that stood 6 tiles off while healing never closed
 -- in, and fell 50 steps behind when the warrior walked off round a wall (WA+PO 세작, 525-546s). Only the
 -- steps that fit the gap are walked, so the next cast is not held back. Beside a mob I stay: leaving it
--- costs the fight its target.
-function M.closer(snap, gap)
+-- costs the fight its target. Off the ground the entrance is the meeting point that every member walks to
+-- on its own: closing in on a warrior just out of its shop sent a poet waiting at the entrance on a 57s
+-- walk across 국내성 and back (online group, 16:22).
+function M.closer(snap, facts, gap)
     local steps  = math.floor(gap / (snap.pace.step or data.walk) + 0.5)
-    local center = M.grouped(snap) and steps > 0 and snap.world.x ~= nil and escort.center(snap) or nil
+    local center = M.grouped(snap) and steps > 0 and snap.world.x ~= nil and M.on_ground(snap, facts) and
+        escort.center(snap) or nil
     if center == nil or math.abs(center.x - snap.world.x) + math.abs(center.y - snap.world.y) <= data.adjacent then
         return nil
     end

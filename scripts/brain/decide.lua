@@ -37,7 +37,7 @@ local function idle(snap, facts, casting, gap)
         (casting == false or combat.casting(action) == false) then
         return action, found.name
     end
-    local closer = together.closer(snap, gap)
+    local closer = together.closer(snap, facts, gap)
     if closer ~= nil then
         return closer, "FIELD"
     end

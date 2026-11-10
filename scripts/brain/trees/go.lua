@@ -155,9 +155,11 @@ function M.jumps(snap, urgent, leaving)
     return jumps
 end
 
+-- A walk of a few steps is never a trip: a jump lands at its own spot, not the steps closer. Taken for the
+-- one step a poet closed in between casts, it cast 비영사천문 twice (online group, 16:22).
 function M.choose(snap, facts, destination, detour)
     detour.leaving = leaving(snap, facts, destination)
-    detour.jumps   = M.jumps(snap, destination.urgent, detour.leaving)
+    detour.jumps   = destination.steps == nil and M.jumps(snap, destination.urgent, detour.leaving) or {}
     detour.spent   = detour.spent or {}
     detour.leap    = nil
     detour.side    = nil

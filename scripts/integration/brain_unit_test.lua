@@ -844,12 +844,12 @@ test_suite {
                     end),
                     case("the gap between casts walks the steps that fit toward a far crewmate", function()
                         local together = require("brain.trees.together")
-                        local snap = apart_floors("poet65", "rogue50")
+                        local snap, bound = apart_floors("poet65", "rogue50")
                         local mate = snap.party[1]
                         mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + data.adjacent + 4,
                             snap.world.y
-                        local step = together.closer(snap, combat.interval() - 100)
-                        local short = together.closer(snap, data.walk / 4)
+                        local step = together.closer(snap, bound, combat.interval() - 100)
+                        local short = together.closer(snap, bound, data.walk / 4)
                         local dest = step ~= nil and step.dest or {}
                         return step ~= nil and step.kind == ACTION.MOVE and dest.steps == 1 and dest.x == mate.world.x and
                             dest.range == data.adjacent and short == nil,
@@ -857,16 +857,38 @@ test_suite {
                                 tostring(dest.steps), tostring(dest.x), tostring(dest.range),
                                 tostring(short and short.kind))
                     end),
+                    case("off the ground the gap between casts waits at the entrance and never jumps", function()
+                        local together                             = require("brain.trees.together")
+                        local go                                   = require("brain.trees.go")
+                        local snap, bound                          = apart_floors("poet65", "rogue50")
+                        local mate                                 = snap.party[1]
+                        mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + data.adjacent + 4,
+                            snap.world.y
+                        local inside                               = together.closer(snap, bound, combat.interval() - 100)
+                        local detour                               = { avoid = {}, closed = {} }
+                        go.choose(snap, bound, inside ~= nil and inside.dest or {}, detour)
+                        local stepped = #detour.jumps
+                        local trip    = { avoid = {}, closed = {} }
+                        go.choose(snap, bound, { maps = { 22 } }, trip)
+                        local tripped = #trip.jumps
+                        snap.world.map, mate.world.map = 22, 22
+                        snap.world.x, snap.world.y = 146, 20
+                        mate.world.x, mate.world.y = 48, 150
+                        local outside = together.closer(snap, bound, combat.interval() - 100)
+                        return inside ~= nil and stepped == 0 and tripped > 0 and outside == nil,
+                            string.format("inside=%s jumps=%s trip=%s outside=%s", tostring(inside and inside.kind),
+                                tostring(stepped), tostring(tripped), tostring(outside and outside.kind))
+                    end),
                     case("a crewmate within reach or a mob beside me keeps the gap between casts still", function()
                         local together = require("brain.trees.together")
-                        local snap = apart_floors("poet65", "rogue50")
+                        local snap, bound = apart_floors("poet65", "rogue50")
                         local mate = snap.party[1]
                         mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + data.adjacent,
                             snap.world.y
-                        local near = together.closer(snap, combat.interval())
+                        local near = together.closer(snap, bound, combat.interval())
                         mate.world.x = snap.world.x + data.adjacent + 4
                         snap.world.mobs = { mob_named("칼든해골", snap.world.x - 1, snap.world.y, 501) }
-                        local fighting = together.closer(snap, combat.interval())
+                        local fighting = together.closer(snap, bound, combat.interval())
                         return near == nil and fighting == nil,
                             string.format("near=%s fighting=%s", tostring(near and near.kind),
                                 tostring(fighting and fighting.kind))
