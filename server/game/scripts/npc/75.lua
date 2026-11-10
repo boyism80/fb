@@ -893,7 +893,8 @@ local function run_crown_prince_accept(me, npc)
 end
 
 local function run_crown_prince_turnin_orb(me, npc)
-    if not me:has_items(ITEM_ORB, 1) then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:progress() < 1 or not me:has_items(ITEM_ORB, 1) then
         me:dialog(npc, "어서 청의태자를 물리치고 여의주를 되찾아 와 주시게", { prev = false, next = false })
         return
     end
@@ -925,15 +926,12 @@ local function run_crown_prince_turnin_orb(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
-    local q = me:quest(quest.QUEST_DRAGON_KING)
-    if q == nil then
-        return
-    end
     if not me:rmitem(ITEM_ORB, 1, ITEM_DELETE_TYPE.GIVE) then
         return
     end
     q:step(19)
-    me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [1/2]", 7, 1)
+    q:progress(0)
+    me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [2/2]", 7, 1)
 end
 
 local function run_crown_prince_complete(me, npc)
