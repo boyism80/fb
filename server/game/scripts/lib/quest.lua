@@ -130,23 +130,12 @@ end
 
 function M.red_clay_on_move(me)
     local RED_CLAY_ACHIEVEMENT_ID = 22
-    local RED_CLAY_PARENT_MAP_NAMES = { ['고균도'] = true, ['가릉도'] = true, ['폭염도'] = true }
     local RED_CLAY_MAX_PROGRESS = 10
     local SOUND_RED_CLAY = 313
     local ACTION_GATHER = 10
     local DURATION_GATHER = 30
     local quest = me:quest(M.QUEST_RED_CLAY)
     if quest == nil or quest:completed() then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-
-    local root = map:model():root()
-    if root == nil or not RED_CLAY_PARENT_MAP_NAMES[root:name()] then
         return
     end
 
@@ -192,8 +181,6 @@ function M.cheongsimcho_on_move(me)
     local ITEM_CHEONGSIMCHO = '청심초'
     local ITEM_CHEONGSIMSAJU = '청심사주'
     local CHEONGSIMCHO_MAX = 5
-    local NAMGYEONG_MAP_ID_MIN = 957
-    local NAMGYEONG_MAP_ID_MAX = 966
 
     local quest = me:quest(M.QUEST_ALCOHOLIC_DRINK)
     if quest == nil or quest:completed() then
@@ -204,15 +191,6 @@ function M.cheongsimcho_on_move(me)
         return
     end
     if step == 3 and me:has_items(ITEM_CHEONGSIMSAJU, 1) then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    local map_id = map:model():id()
-    if map_id < NAMGYEONG_MAP_ID_MIN or map_id > NAMGYEONG_MAP_ID_MAX then
         return
     end
 
@@ -244,20 +222,9 @@ end
 --- Chance to repair Great Wall when moving on 만리장성1-4 (map id 856-859). Consumes 벽돌; 70% success adds progress. Quest 199 step 1.
 function M.greatwall_repair_on_move(me)
     local GREATWALL_ACHIEVEMENT_ID = 21
-    local MAP_ID_MIN = 856
-    local MAP_ID_MAX = 859
 
     local quest = me:quest(M.QUEST_GREATWALL)
     if quest == nil or quest:completed() then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    local map_id = map:model():id()
-    if map_id < MAP_ID_MIN or map_id > MAP_ID_MAX then
         return
     end
 
@@ -293,33 +260,9 @@ function M.greatwall_repair_on_move(me)
 end
 
 --- Chance to find 복건성태자 quest toys when moving. Quest 202 step 1. 복건성 -> 상아주사위, 상해1/2/3 -> 오색폭죽, 강서성 -> 청옥팽이.
-function M.crown_prince_toys_on_move(me)
+function M.crown_prince_toys_on_move(me, item_name, msg)
     local quest = me:quest(M.QUEST_FIND_TOYS)
     if quest == nil or quest:step() ~= 1 then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    local map_name = map:model():name()
-    local region -- 1 = 복건성 (상아주사위), 2 = 상해1/2/3 (오색폭죽), 3 = 강서성 (청옥팽이)
-    local item_name
-    local msg
-    if map_name == '복건성' then
-        region = 1
-        item_name = '상아주사위'
-        msg = '상아로 만든 예쁜 주사위를 주웠다!'
-    elseif map_name == '상해1' or map_name == '상해2' or map_name == '상해3' then
-        region = 2
-        item_name = '오색폭죽'
-        msg = '다섯가지 색 불꽃이 나는 신기한 폭죽을 주웠다!'
-    elseif map_name == '강서성' then
-        region = 3
-        item_name = '청옥팽이'
-        msg = '푸른색 옥으로 만든 멋진 팽이를 주웠다!'
-    else
         return
     end
 
@@ -328,7 +271,7 @@ function M.crown_prince_toys_on_move(me)
         return
     end
 
-    if not M.moved_two_steps(me, 'crown_prince_toys_move:' .. region) then
+    if not M.moved_two_steps(me, 'crown_prince_toys_move:' .. item_name) then
         return
     end
 
@@ -344,7 +287,7 @@ function M.crown_prince_toys_on_move(me)
 end
 
 --- Chance to find 인삼/동충하초 when moving. Quest 204 (돈유합의달인) step 1 or 2. 국경지대 -> 인삼, 대방성입구 -> 동충하초.
-function M.dongchung_insam_on_move(me)
+function M.dongchung_insam_on_move(me, item_name, msg)
     local quest = me:quest(M.QUEST_DONUHAP)
     if quest == nil then
         return
@@ -354,32 +297,12 @@ function M.dongchung_insam_on_move(me)
         return
     end
 
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    local map_name = map:model():name()
-    local region -- 1 = 국경지대 (인삼), 2 = 대방성입구 (동충하초)
-    local item_name
-    local msg
-    if map_name == '국경지대' then
-        region = 1
-        item_name = '인삼'
-        msg = '드디어 인삼을 찾았다! 정말 구하기 힘들구나.'
-    elseif map_name == '대방성입구' then
-        region = 2
-        item_name = '동충하초'
-        msg = '드디어 동충하초를 찾았다! 정말 구하기 힘들구나.'
-    else
-        return
-    end
-
     local item = me:item(item_name)
     if item ~= nil and item:count() >= 1 then
         return
     end
 
-    if not M.moved_two_steps(me, 'dongchung_insam_move:' .. region) then
+    if not M.moved_two_steps(me, 'dongchung_insam_move:' .. item_name) then
         return
     end
 
@@ -405,14 +328,6 @@ function M.ghost_talisman_on_move(me)
         return
     end
 
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    if map:model():name() ~= '귀기서린집' then
-        return
-    end
-
     local item = me:item('귀신퇴치부적')
     if item == nil or item:count() < 1 then
         return
@@ -434,7 +349,6 @@ function M.ghost_talisman_on_move(me)
 end
 
 function M.goddess_dew_on_move(me)
-    local MAP_POGYEOMDO = '폭염도'
     local ITEM_DEW = '여신의이슬'
     local DEW_ACHIEVEMENT_ID = 42
     local TOTEM_WATER_MAX = 50
@@ -445,11 +359,6 @@ function M.goddess_dew_on_move(me)
         return
     end
     if quest:step() ~= 1 then
-        return
-    end
-
-    local map = me:map()
-    if map == nil or map:model():name() ~= MAP_POGYEOMDO then
         return
     end
 
@@ -504,8 +413,6 @@ function M.goddess_dew_on_move(me)
 end
 
 function M.manrihyang_seed_on_move(me)
-    local MAP_ID_MIN = 1100
-    local MAP_ID_MAX = 1119
     local ITEM_SEED = '만리향씨앗'
     local SEED_ACHIEVEMENT_ID = 35
 
@@ -514,15 +421,6 @@ function M.manrihyang_seed_on_move(me)
         return
     end
     if quest:step() ~= 6 then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    local map_id = map:model():id()
-    if map_id < MAP_ID_MIN or map_id > MAP_ID_MAX then
         return
     end
 
