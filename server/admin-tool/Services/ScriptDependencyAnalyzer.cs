@@ -182,23 +182,12 @@ namespace AdminTool.Services
             }
 
             var name = module.Trim().Replace('\\', '/');
-            if (!name.StartsWith("lib.", StringComparison.OrdinalIgnoreCase) &&
-                !name.StartsWith("lib/", StringComparison.OrdinalIgnoreCase))
+            if (name.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                name = name[..^".lua".Length];
             }
 
-            if (name.StartsWith("lib.", StringComparison.OrdinalIgnoreCase))
-            {
-                name = "lib/" + name["lib.".Length..].Replace('.', '/');
-            }
-
-            if (!name.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
-            {
-                name += ".lua";
-            }
-
-            return NormalizeRelativePath(name);
+            return NormalizeRelativePath(name.Replace('.', '/') + ".lua");
         }
     }
 }

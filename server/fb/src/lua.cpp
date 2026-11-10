@@ -926,6 +926,7 @@ root::root(fb::async_executor& executor, fb::thread& thread) :
     context(executor, ::luaL_newstate(), thread)
 {
     luaL_openlibs(*this);
+    this->_builtin_packages = this->loaded_packages();
     ::lua_pushlightuserdata(*this, this);
     ::lua_setfield(*this, LUA_REGISTRYINDEX, root::REGISTRY_KEY);
 }
@@ -1043,7 +1044,6 @@ bool root::dump(std::string_view path)
 
     ::lua_dump(*this, callback, params, 1);
 
-    const auto outermost = (this->_loading == 0);
     this->_loading++;
     if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
@@ -1063,9 +1063,6 @@ bool root::dump(std::string_view path)
         return false;
     }
 
-    this->remember_lib_from_path(path_str);
-    if (outermost)
-        this->capture_loaded_libs();
     this->_loading--;
     return true;
 }
@@ -1078,7 +1075,7 @@ bool root::load_module(lua_State* L, std::string_view path)
     const auto outermost = (this->_loading == 0);
     this->_loading++;
     if (outermost)
-        this->unload_remembered_libs();
+        this->unload_script_packages();
 
     auto ok = false;
     if (auto status = luaL_loadfile(L, path_str.c_str()); status != LUA_OK)
@@ -1101,11 +1098,8 @@ bool root::load_module(lua_State* L, std::string_view path)
     else
     {
         ok = true;
-        this->remember_lib_from_path(path_str);
     }
 
-    if (outermost)
-        this->capture_loaded_libs();
     this->_loading--;
     return ok;
 #else
@@ -1191,7 +1185,7 @@ void root::invalidate_all()
     lua_newtable(*this);
     lua_setfield(*this, LUA_REGISTRYINDEX, MODULES_KEY);
 
-    this->unload_remembered_libs();
+    this->unload_script_packages();
 }
 
 void root::invalidate(std::string_view path)
@@ -1550,9 +1544,7 @@ async::task<void> fb::lua::context_pool::dump(std::string_view path)
     }
 }
 
-namespace {
-
-std::string script_disk_path(std::string_view relative)
+std::string fb::lua::context_pool::script_disk_path(std::string_view relative)
 {
     auto path = std::string(relative);
     while (!path.empty() && (path.front() == '/' || path.front() == '\\'))
@@ -1562,84 +1554,12 @@ std::string script_disk_path(std::string_view relative)
     return std::format("scripts/{}", path);
 }
 
-std::string lib_module_name_from_path(std::string_view path)
+void root::unload_script_packages()
 {
-    auto normalized = std::string(path);
-    for (auto& ch : normalized)
+    for (const auto& name : this->loaded_packages())
     {
-        if (ch == '\\')
-            ch = '/';
-    }
-    while (!normalized.empty() && normalized.front() == '/')
-        normalized.erase(normalized.begin());
-
-    constexpr std::string_view scripts_prefix = "scripts/";
-    if (normalized.size() >= scripts_prefix.size() && normalized.compare(0, scripts_prefix.size(), scripts_prefix) == 0)
-        normalized.erase(0, scripts_prefix.size());
-
-    constexpr std::string_view prefix = "lib/";
-    if (normalized.size() < prefix.size() || normalized.compare(0, prefix.size(), prefix) != 0)
-        return {};
-
-    auto module = normalized.substr(prefix.size());
-    if (module.size() >= 4 && module.ends_with(".lua"))
-        module.resize(module.size() - 4);
-    for (auto& ch : module)
-    {
-        if (ch == '/')
-            ch = '.';
-    }
-    if (module.empty())
-        return {};
-    return std::format("lib.{}", module);
-}
-
-} // namespace
-
-void root::remember_lib_from_path(std::string_view path)
-{
-    auto name = lib_module_name_from_path(path);
-    if (name.empty() == false)
-        this->_lib_modules.insert(std::move(name));
-}
-
-void root::capture_loaded_libs()
-{
-    // Called only after pcall/require has returned on this root, never while
-    // another load is inserting into package.loaded.
-    lua_getglobal(*this, "package");
-    if (lua_istable(*this, -1) == false)
-    {
-        lua_pop(*this, 1);
-        return;
-    }
-
-    lua_getfield(*this, -1, "loaded");
-    if (lua_istable(*this, -1) == false)
-    {
-        lua_pop(*this, 2);
-        return;
-    }
-
-    lua_pushnil(*this);
-    while (lua_next(*this, -2) != 0)
-    {
-        if (lua_type(*this, -2) == LUA_TSTRING)
-        {
-            auto key = lua_tostring(*this, -2);
-            if (key != nullptr && std::string_view(key).starts_with("lib."))
-                this->_lib_modules.emplace(key);
-        }
-        lua_pop(*this, 1);
-    }
-    lua_pop(*this, 2);
-}
-
-void root::unload_remembered_libs()
-{
-    for (const auto& name : this->_lib_modules)
-    {
-        this->unload_package(name);
+        if (this->_builtin_packages.contains(name) == false)
+            this->unload_package(name);
     }
 }
 
@@ -1647,35 +1567,16 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
 {
     auto disk_paths = std::vector<std::string>{};
     disk_paths.reserve(relative_paths.size());
-    auto lib_modules = std::vector<std::string>{};
     for (const auto& relative : relative_paths)
     {
         disk_paths.push_back(script_disk_path(relative));
-        auto module = lib_module_name_from_path(relative);
-        if (module.empty() == false)
-            lib_modules.push_back(std::move(module));
     }
 
     auto failures = std::vector<std::string>{};
     for (auto& [_, root] : this->_roots)
     {
         co_await root->switching();
-        if (lib_modules.empty())
-        {
-            for (const auto& disk : disk_paths)
-            {
-                root->invalidate(disk);
-            }
-        }
-        else
-        {
-            root->invalidate_all();
-            for (const auto& module : lib_modules)
-            {
-                root->unload_package(module);
-            }
-        }
-
+        root->invalidate_all();
         for (const auto& disk : disk_paths)
         {
             if (root->dump(disk) == false)

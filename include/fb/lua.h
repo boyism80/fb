@@ -566,13 +566,11 @@ public:
 
 private:
     bytecode_set                    _bytecodes;
-    std::unordered_set<std::string> _lib_modules;
+    std::unordered_set<std::string> _builtin_packages;
     int                             _loading = 0;
 
-    void                            remember_lib_from_path(std::string_view path);
-    void                            capture_loaded_libs();
-    void                            unload_remembered_libs();
     std::unordered_set<std::string> loaded_packages();
+    void                            unload_script_packages();
     bool                            execute_module(std::string_view path);
     static int                      call_builtin(lua_State* ctx);
     void                            push_builtin(lua_CFunction fn);
@@ -682,7 +680,8 @@ public:
     context_pool& operator= (const context_pool&) = delete;
 
 private:
-    context* new_context();
+    context*           new_context();
+    static std::string script_disk_path(std::string_view relative);
 
 public:
     // clang-format off
