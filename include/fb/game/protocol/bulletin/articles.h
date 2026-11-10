@@ -46,9 +46,9 @@ public:
 
 public:
 #ifndef BOT
-    bulletin_articles(const fb::model::bulletin&                    bulletin,
-                      const std::list<fb::game::bulletin::article>& article_list,
-                      BULLETIN_BUTTON_ENABLE                        button_flags);
+    // clang-format off
+    bulletin_articles(const fb::model::bulletin& bulletin, const std::list<fb::game::bulletin::article>& article_list, BULLETIN_BUTTON_ENABLE button_flags);
+    // clang-format on
 #else
     bulletin_articles() = default;
 #endif

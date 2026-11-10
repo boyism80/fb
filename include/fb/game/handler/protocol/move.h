@@ -20,11 +20,10 @@ public:
     move& operator= (const move&) = delete;
     move& operator= (move&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>&      session,
-                             DIRECTION                   direction,
-                             const fb::model::point16_t& position,
-                             uint8_t                     walk_queue_slot);
+    // clang-format off
+    async::task<bool> handle(fb::socket<character>& session, DIRECTION direction, const fb::model::point16_t& position, uint8_t walk_queue_slot);
     async::task<bool> handle(fb::socket<character>& session, game_reqs::move<V>& request) override;
+    // clang-format on
 };
 
 } // namespace fb::game::handler::protocol

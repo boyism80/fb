@@ -46,14 +46,10 @@ private:
     std::thread             _worker;
 
 public:
-    log_collector(std::string_view        hostname,
-                  uint16_t                port,
-                  std::string_view        uid,
-                  std::string_view        pwd,
-                  std::string_view        server_id,
-                  std::string_view        server_name,
-                  std::optional<uint32_t> world);
+    // clang-format off
+    log_collector(std::string_view hostname, uint16_t port, std::string_view uid, std::string_view pwd, std::string_view server_id, std::string_view server_name, std::optional<uint32_t> world);
     ~log_collector();
+    // clang-format on
 
     log_collector(const log_collector&)             = delete;
     log_collector(log_collector&&)                  = delete;

@@ -78,15 +78,16 @@ public:
     explicit marketplace(character& owner);
 
 public:
-    async::task<listing>
-                      list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
-    async::task<bool> cancel(uint64_t id);
+    // clang-format off
+    async::task<listing>              list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
+    async::task<bool>                 cancel(uint64_t id);
     async::task<uint32_t>             clear();
     async::task<listing>              purchase(uint64_t listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const std::vector<uint64_t>& listing_ids, uint32_t buyer_id = 0);
     async::task<void>                 settle_list(uint64_t listing_id);
     async::task<void>                 settle_purchase(uint64_t purchase_id);
+    // clang-format on
 
 private:
     static std::string rejection_message(fb::model::enum_value::ERROR_CODE error, std::string fallback);

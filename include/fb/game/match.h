@@ -89,15 +89,16 @@ public:
     async::task<void> close();
 
 private:
-    void cancel_timer();
-    void enqueue_play();
-    void enqueue_close();
-    void on_leave();
-    async::task<void>
-    invoke(std::string_view func, character& ch, std::shared_ptr<object> extra = nullptr, bool wait = true);
+    // clang-format off
+    void                                    cancel_timer();
+    void                                    enqueue_play();
+    void                                    enqueue_close();
+    void                                    on_leave();
+    async::task<void>                       invoke(std::string_view func, character& ch, std::shared_ptr<object> extra = nullptr, bool wait = true);
     std::vector<std::shared_ptr<character>> snapshot();
     uint32_t                                live_count_locked();
     async::task<void>                       play();
+    // clang-format on
 };
 
 class match::team : public fb::lua::luable
@@ -140,10 +141,11 @@ public:
     explicit container(server& server);
 
 public:
-    async::task<void>
-    join(character& ch, uint64_t match_id, uint32_t match_type, uint32_t team, uint32_t expected, uint32_t team_count);
-    void leave(character& ch);
-    void remove(uint64_t match_id);
+    // clang-format off
+    async::task<void> join(character& ch, uint64_t match_id, uint32_t match_type, uint32_t team, uint32_t expected, uint32_t team_count);
+    void              leave(character& ch);
+    void              remove(uint64_t match_id);
+    // clang-format on
 };
 
 } // namespace fb::game

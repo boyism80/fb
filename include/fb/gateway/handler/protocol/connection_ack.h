@@ -18,8 +18,9 @@ public:
     connection_ack& operator= (const connection_ack&) = delete;
     connection_ack& operator= (connection_ack&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::gateway::session>& session,
-                             gateway_reqs::connection_ack<V>&  request) override;
+    // clang-format off
+    async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::connection_ack<V>& request) override;
+    // clang-format on
 };
 
 } // namespace fb::gateway::handler::protocol

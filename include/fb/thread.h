@@ -194,20 +194,19 @@ public:
     }
 
 public:
-    std::shared_ptr<fb::timer>          settimer(fb::timer::handle_callback_type&& fn,
-                                                 const fb::model::timespan&        duration,
-                                                 fb::timer::repeat_type            repeat = fb::timer::repeat_type::repeat);
+    // clang-format off
+    std::shared_ptr<fb::timer>          settimer(fb::timer::handle_callback_type&& fn, const fb::model::timespan& duration, fb::timer::repeat_type repeat = fb::timer::repeat_type::repeat);
     [[nodiscard]] thread_switch_awaiter sleep(const fb::model::timespan& duration);
+    // clang-format on
 
     template <typename T = void> [[nodiscard]] builder<T> new_builder()
     {
         return builder<T>(*this);
     }
 
-    void enqueue(handle_func_type<void>&&  fn,
-                 handle_error_type&&       error,
-                 std::function<void()>&&   callback,
-                 async::propagation::token context = {});
+    // clang-format off
+    void enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback, async::propagation::token context = {});
+    // clang-format on
 
     template <typename ReturnType> void enqueue(handle_func_type<ReturnType>&&      fn,
                                                 handle_error_type&&                 error,

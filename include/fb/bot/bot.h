@@ -70,11 +70,9 @@ public:
     const uint32_t id;
 
 protected:
-    base_bot(fb::async_executor&                                                 executor,
-             base_bot_controller&                                                bot_controller,
-             std::function<async::task<void>(fb::socket<void*>&, fb::stream&)>&& on_receive,
-             std::function<async::task<void>(fb::socket<void*>&)>&&              on_closed,
-             uint32_t                                                            id);
+    // clang-format off
+    base_bot(fb::async_executor& executor, base_bot_controller& bot_controller, std::function<async::task<void>(fb::socket<void*>&, fb::stream&)>&& on_receive, std::function<async::task<void>(fb::socket<void*>&)>&& on_closed, uint32_t id);
+    // clang-format on
 
 public:
     virtual ~base_bot();
@@ -269,94 +267,27 @@ protected:
 
 public:
     // protocol may be nullptr for wait-only (arm response hook without sending a request).
-    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
-        std::shared_ptr<BotType>                                                          target,
-        uint8_t                                                                           response_opcode,
-        const fb::protocol::header*                                                       protocol,
-        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
-        const fb::model::timespan&                                                        timeout = 0s,
-        bool                                                                              encrypt = true,
-        bool                                                                              wrap    = true,
-        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
-
-    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
-        std::shared_ptr<BotType>                                                          target,
-        uint8_t                                                                           response_opcode,
-        const fb::protocol::header&                                                       protocol,
-        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
-        const fb::model::timespan&                                                        timeout = 0s,
-        bool                                                                              encrypt = true,
-        bool                                                                              wrap    = true,
-        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
-
-    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
-        uint8_t                                                                           response_opcode,
-        const fb::protocol::header*                                                       protocol,
-        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
-        const fb::model::timespan&                                                        timeout = 0s,
-        bool                                                                              encrypt = true,
-        bool                                                                              wrap    = true,
-        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
-
-    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
-        uint8_t                                                                           response_opcode,
-        const fb::protocol::header&                                                       protocol,
-        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
-        const fb::model::timespan&                                                        timeout = 0s,
-        bool                                                                              encrypt = true,
-        bool                                                                              wrap    = true,
-        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
-
-    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
-    first_of(const std::vector<uint8_t>& opcodes,
-             const fb::protocol::header& protocol,
-             const fb::model::timespan&  timeout);
-    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
-    first_of(const std::vector<uint8_t>&                                      opcodes,
-             const fb::protocol::header*                                      protocol,
-             const std::function<bool(uint8_t, const fb::protocol::header&)>& condition,
-             const fb::model::timespan&                                       timeout);
-
-    template <typename ResponseType> async::task<ResponseType>
-    request(std::shared_ptr<BotType>                             target,
-            const fb::protocol::header&                          protocol,
-            const std::function<bool(const ResponseType& resp)>& condition,
-            const fb::model::timespan&                           timeout = 0s,
-            bool                                                 encrypt = true,
-            bool                                                 wrap    = true);
-
+    // clang-format off
+    async::task<std::shared_ptr<fb::protocol::header>>                     request_by_opcode(std::shared_ptr<BotType> target, uint8_t response_opcode, const fb::protocol::header* protocol, const std::function<bool(const fb::protocol::header& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true, std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone = nullptr);
+    async::task<std::shared_ptr<fb::protocol::header>>                     request_by_opcode(std::shared_ptr<BotType> target, uint8_t response_opcode, const fb::protocol::header& protocol, const std::function<bool(const fb::protocol::header& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true, std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone = nullptr);
+    async::task<std::shared_ptr<fb::protocol::header>>                     request_by_opcode(uint8_t response_opcode, const fb::protocol::header* protocol, const std::function<bool(const fb::protocol::header& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true, std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone = nullptr);
+    async::task<std::shared_ptr<fb::protocol::header>>                     request_by_opcode(uint8_t response_opcode, const fb::protocol::header& protocol, const std::function<bool(const fb::protocol::header& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true, std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone = nullptr);
+    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>> first_of(const std::vector<uint8_t>& opcodes, const fb::protocol::header& protocol, const fb::model::timespan& timeout);
+    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>> first_of(const std::vector<uint8_t>& opcodes, const fb::protocol::header* protocol, const std::function<bool(uint8_t, const fb::protocol::header&)>& condition, const fb::model::timespan& timeout);
     template <typename ResponseType>
-    async::task<ResponseType> request(const fb::protocol::header&                          protocol,
-                                      const std::function<bool(const ResponseType& resp)>& condition,
-                                      const fb::model::timespan&                           timeout = 0s,
-                                      bool                                                 encrypt = true,
-                                      bool                                                 wrap    = true);
-
-    template <typename ResponseType> async::task<ResponseType> request(std::shared_ptr<BotType>    target,
-                                                                       const fb::protocol::header& protocol,
-                                                                       const fb::model::timespan&  timeout = 0s,
-                                                                       bool                        encrypt = true,
-                                                                       bool                        wrap    = true);
-
+    async::task<ResponseType>                                              request(std::shared_ptr<BotType> target, const fb::protocol::header& protocol, const std::function<bool(const ResponseType& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
     template <typename ResponseType>
-    async::task<ResponseType> request(const fb::protocol::header& protocol,
-                                      const fb::model::timespan&  timeout = 0s,
-                                      bool                        encrypt = true,
-                                      bool                        wrap    = true);
-
+    async::task<ResponseType>                                              request(const fb::protocol::header& protocol, const std::function<bool(const ResponseType& resp)>& condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
+    template <typename ResponseType>
+    async::task<ResponseType>                                              request(std::shared_ptr<BotType> target, const fb::protocol::header& protocol, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
+    template <typename ResponseType>
+    async::task<ResponseType>                                              request(const fb::protocol::header& protocol, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
     template <template <fb::protocol::CLIENT_VERSION> class ResponseType, typename Condition>
     requires std::predicate<const Condition&, const ResponseType<fb::protocol::CLIENT_VERSION::v550>&>
-    async::task<std::shared_ptr<fb::protocol::header>> request(const fb::protocol::header& protocol,
-                                                               Condition                   condition,
-                                                               const fb::model::timespan&  timeout = 0s,
-                                                               bool                        encrypt = true,
-                                                               bool                        wrap    = true);
-
+    async::task<std::shared_ptr<fb::protocol::header>>                     request(const fb::protocol::header& protocol, Condition condition, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
     template <template <fb::protocol::CLIENT_VERSION> class ResponseType>
-    async::task<std::shared_ptr<fb::protocol::header>> request(const fb::protocol::header& protocol,
-                                                               const fb::model::timespan&  timeout = 0s,
-                                                               bool                        encrypt = true,
-                                                               bool                        wrap    = true);
+    async::task<std::shared_ptr<fb::protocol::header>>                     request(const fb::protocol::header& protocol, const fb::model::timespan& timeout = 0s, bool encrypt = true, bool wrap = true);
+    // clang-format on
 };
 
 } // namespace fb::bot

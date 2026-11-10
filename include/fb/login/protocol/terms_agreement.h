@@ -49,12 +49,9 @@ public:
 #ifndef BOT
     agreement() = default;
 #else
-    agreement(uint8_t        type,
-              uint8_t        ksize,
-              const uint8_t* key,
-              uint8_t        from,
-              CLIENT_VERSION client_version,
-              CLIENT_UI_MODE ui_mode = CLIENT_UI_MODE::OLD);
+    // clang-format off
+    agreement(uint8_t type, uint8_t ksize, const uint8_t* key, uint8_t from, CLIENT_VERSION client_version, CLIENT_UI_MODE ui_mode = CLIENT_UI_MODE::OLD);
+    // clang-format on
 #endif
 
 public:

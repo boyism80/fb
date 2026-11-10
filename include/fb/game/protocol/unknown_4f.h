@@ -72,12 +72,9 @@ public:
 #ifdef BOT
     unknown_4f() = default;
 #else
-    unknown_4f(uint32_t                      token   = 0,
-               uint32_t                      body_a  = 0,
-               uint8_t                       alloc   = 0,
-               uint8_t                       flag    = 0,
-               uint32_t                      body_b  = 0,
-               std::vector<unknown_4f_entry> entries = {});
+    // clang-format off
+    unknown_4f(uint32_t token = 0, uint32_t body_a = 0, uint8_t alloc = 0, uint8_t flag = 0, uint32_t body_b = 0, std::vector<unknown_4f_entry> entries = {});
+    // clang-format on
 #endif
 
 public:

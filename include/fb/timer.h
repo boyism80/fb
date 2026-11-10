@@ -44,14 +44,13 @@ public:
     fb::model::datetime             begin;
 
 private:
-    timer(const handle_callback_type& fn,
-          const fb::model::timespan&  duration,
-          repeat_type                 repeat,
-          async::propagation::token   context);
+    // clang-format off
+    timer(const handle_callback_type& fn, const fb::model::timespan& duration, repeat_type repeat, async::propagation::token context);
     timer(const timer&)             = delete;
     timer(timer&&)                  = delete;
     timer& operator= (timer&)       = delete;
     timer& operator= (const timer&) = delete;
+    // clang-format on
 
 public:
     ~timer() = default;

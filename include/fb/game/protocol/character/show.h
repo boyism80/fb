@@ -59,15 +59,11 @@ public:
 
 public:
 #ifndef BOT
+    // clang-format off
     show(const fb::game::character& ch, const fb::game::object& to);
-    show(uint32_t                                 oid,
-         const fb::model::point<uint16_t>&        position,
-         DIRECTION                                direction,
-         HEAD_MARKER                              head_marker,
-         std::string                              name,
-         const fb::game::character_appearance<V>& appearance,
-         CLIENT_UI_MODE                           ui_mode);
+    show(uint32_t oid, const fb::model::point<uint16_t>& position, DIRECTION direction, HEAD_MARKER head_marker, std::string name, const fb::game::character_appearance<V>& appearance, CLIENT_UI_MODE ui_mode);
     show(const show&) = delete;
+    // clang-format on
 #else
     show() = default;
 #endif

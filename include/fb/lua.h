@@ -521,12 +521,9 @@ public:
     private:
         explicit co_builder(context& lua, fb::async_executor& executor);
 
-        static async::task<std::optional<int>> run_pipeline(fb::async_executor& executor,
-                                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
-                                                            context*                                            lua_ptr,
-                                                            std::weak_ptr<char>                                 lease,
-                                                            std::function<async::task<void>()> yield_fn,
-                                                            std::function<async::task<int>()>  resume_fn);
+        // clang-format off
+        static async::task<std::optional<int>> run_pipeline(fb::async_executor& executor, std::optional<std::weak_ptr<fb::thread_switchable>> weak, context* lua_ptr, std::weak_ptr<char> lease, std::function<async::task<void>()> yield_fn, std::function<async::task<int>()> resume_fn);
+        // clang-format on
 
     public:
         int run();
@@ -690,7 +687,6 @@ public:
     async::task<void>   dump(std::string_view path);
     async::task<void>   validate_scripts(const std::vector<std::string>& relative_paths);
     async::task<void>   reload_scripts(const std::vector<std::string>& relative_paths);
-
     base_type::iterator begin();
     base_type::iterator end();
     // clang-format on

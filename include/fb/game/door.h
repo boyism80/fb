@@ -36,12 +36,11 @@ public:
     const uint16_t                     width;
 
 public:
-    door(std::weak_ptr<fb::game::map> map,
-         const fb::model::door&       model,
-         const fb::model::point16_t&  pivot,
-         bool                         opened);
+    // clang-format off
+    door(std::weak_ptr<fb::game::map> map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened);
     door(const door&) = delete;
     ~door();
+    // clang-format on
 
 public:
     const fb::model::door& model() const;

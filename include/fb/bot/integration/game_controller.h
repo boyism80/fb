@@ -107,9 +107,9 @@ private:
     void              finish_suite_if_done();
 
 protected:
-    async::task<void> on_integration_hook_execution(uint8_t                     opcode,
-                                                    game_bot&                   bot,
-                                                    const fb::protocol::header& header) override;
+    // clang-format off
+    async::task<void> on_integration_hook_execution(uint8_t opcode, game_bot& bot, const fb::protocol::header& header) override;
+    // clang-format on
 
 public:
     virtual async::task<void> on_bot_connected(game_bot& bot) override;

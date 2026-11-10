@@ -40,30 +40,11 @@ public:
     const uint32_t                   oid;
 
 public:
-    dialog_input_ext(const fb::model::object&   obj,
-                     std::optional<std::string> message,
-                     std::string_view           top,
-                     std::string_view           bottom,
-                     int                        maxlen,
-                     bool                       button_prev,
-                     bool                       password = false,
-                     uint32_t                   oid      = 0xFFFFFFFD);
-    dialog_input_ext(const fb::game::object&    object,
-                     std::optional<std::string> message,
-                     std::string_view           top,
-                     std::string_view           bottom,
-                     int                        maxlen,
-                     bool                       button_prev,
-                     bool                       password = false,
-                     uint32_t                   oid      = 0xFFFFFFFD);
-    dialog_input_ext(appearance_ptr&&           appearance,
-                     std::optional<std::string> message,
-                     std::string_view           top,
-                     std::string_view           bottom,
-                     int                        maxlen,
-                     bool                       button_prev,
-                     bool                       password = false,
-                     uint32_t                   oid      = 0xFFFFFFFD);
+    // clang-format off
+    dialog_input_ext(const fb::model::object& obj, std::optional<std::string> message, std::string_view top, std::string_view bottom, int maxlen, bool button_prev, bool password = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_input_ext(const fb::game::object& object, std::optional<std::string> message, std::string_view top, std::string_view bottom, int maxlen, bool button_prev, bool password = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_input_ext(appearance_ptr&& appearance, std::optional<std::string> message, std::string_view top, std::string_view bottom, int maxlen, bool button_prev, bool password = false, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

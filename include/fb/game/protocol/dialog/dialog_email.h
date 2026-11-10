@@ -38,27 +38,11 @@ public:
     const uint32_t       oid;
 
 public:
-    dialog_email(const fb::model::object& obj,
-                 std::string_view         message,
-                 std::string_view         str1,
-                 std::string_view         str2,
-                 bool                     button_prev = false,
-                 bool                     button_next = false,
-                 uint32_t                 oid         = 0xFFFFFFFD);
-    dialog_email(const fb::game::object& object,
-                 std::string_view        message,
-                 std::string_view        str1,
-                 std::string_view        str2,
-                 bool                    button_prev = false,
-                 bool                    button_next = false,
-                 uint32_t                oid         = 0xFFFFFFFD);
-    dialog_email(appearance_ptr&& appearance,
-                 std::string_view message,
-                 std::string_view str1,
-                 std::string_view str2,
-                 bool             button_prev = false,
-                 bool             button_next = false,
-                 uint32_t         oid         = 0xFFFFFFFD);
+    // clang-format off
+    dialog_email(const fb::model::object& obj, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_email(const fb::game::object& object, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_email(appearance_ptr&& appearance, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

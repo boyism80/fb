@@ -39,21 +39,11 @@ public:
     const uint32_t                      oid;
 
 public:
-    dialog_item(const fb::model::object&            obj,
-                const fb::game::dialog::item_pairs& items,
-                std::string_view                    message,
-                uint32_t                            oid     = 0xFFFFFFFD,
-                uint16_t                            pursuit = 0xFFFF);
-    dialog_item(const fb::game::object&             object,
-                const fb::game::dialog::item_pairs& items,
-                std::string_view                    message,
-                uint32_t                            oid     = 0xFFFFFFFD,
-                uint16_t                            pursuit = 0xFFFF);
-    dialog_item(appearance_ptr&&                    appearance,
-                const fb::game::dialog::item_pairs& items,
-                std::string_view                    message,
-                uint32_t                            oid     = 0xFFFFFFFD,
-                uint16_t                            pursuit = 0xFFFF);
+    // clang-format off
+    dialog_item(const fb::model::object& obj, const fb::game::dialog::item_pairs& items, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    dialog_item(const fb::game::object& object, const fb::game::dialog::item_pairs& items, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    dialog_item(appearance_ptr&& appearance, const fb::game::dialog::item_pairs& items, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

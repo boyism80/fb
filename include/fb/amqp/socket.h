@@ -35,19 +35,13 @@ public:
     ~socket();
 
 public:
-    bool   connect(std::string_view hostname,
-                   uint16_t         port,
-                   std::string_view id,
-                   std::string_view pw,
-                   std::string_view vhost,
-                   uint16_t         heartbeat = 0);
+    // clang-format off
+    bool   connect(std::string_view hostname, uint16_t port, std::string_view id, std::string_view pw, std::string_view vhost, uint16_t heartbeat = 0);
     queue& declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads);
     bool   select(const timeval* timeout = nullptr);
     bool   confirm_select();
-    bool   publish(std::string_view               exchange,
-                   std::string_view               routing_key,
-                   const std::vector<uint8_t>&    message,
-                   const amqp_basic_properties_t* properties = nullptr);
+    bool   publish(std::string_view exchange, std::string_view routing_key, const std::vector<uint8_t>& message, const amqp_basic_properties_t* properties = nullptr);
+    // clang-format on
 
 public:
     operator amqp_connection_state_t ();

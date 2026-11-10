@@ -134,39 +134,21 @@ public:
     static position     landing(uint16_t map);
 
 public:
+    // clang-format off
     const grid*                                             find_grid(uint16_t map) const;
     const std::vector<warp>&                                warps(uint16_t map) const;
     bool                                                    warp_at(uint16_t map, const position& at) const;
     const std::vector<spawn>&                               spawns(uint16_t map) const;
     const std::unordered_map<uint16_t, std::vector<spawn>>& spawns() const;
     std::optional<uint32_t>                                 mob(uint16_t map, uint16_t look, uint8_t color) const;
-    std::vector<uint16_t>        habitats(const std::unordered_set<std::string>& names) const;
-    std::vector<dweller>         dwellers(const std::unordered_set<std::string>& names) const;
-    bool                         reaches(uint16_t map, const position& from, const position& gate) const;
-    std::optional<plan>          route(uint16_t                            from,
-                                       const position&                     at,
-                                       const std::unordered_set<uint16_t>& targets,
-                                       uint8_t                             level,
-                                       const std::unordered_set<uint64_t>& closed,
-                                       const std::unordered_set<uint32_t>& perilous,
-                                       const std::unordered_set<uint16_t>& shunned) const;
-    std::unordered_set<uint16_t> reach(uint16_t                            from,
-                                       const position&                     at,
-                                       uint8_t                             level,
-                                       const std::unordered_set<uint64_t>& closed,
-                                       const std::unordered_set<uint32_t>& perilous,
-                                       const std::unordered_set<uint16_t>& shunned) const;
-    leap_options                 leaps(uint16_t                            from,
-                                       const position&                     at,
-                                       const std::unordered_set<uint16_t>& targets,
-                                       const std::optional<position>&      goal,
-                                       uint8_t                             level,
-                                       const std::unordered_set<uint64_t>& closed,
-                                       const std::unordered_set<uint32_t>& perilous,
-                                       const std::unordered_set<uint16_t>& shunned,
-                                       const std::vector<teleport>&        teleports) const;
-    std::optional<std::vector<DIRECTION>>
-    path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
+    std::vector<uint16_t>                                   habitats(const std::unordered_set<std::string>& names) const;
+    std::vector<dweller>                                    dwellers(const std::unordered_set<std::string>& names) const;
+    bool                                                    reaches(uint16_t map, const position& from, const position& gate) const;
+    std::optional<plan>                                     route(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
+    std::unordered_set<uint16_t>                            reach(uint16_t from, const position& at, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
+    leap_options                                            leaps(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, const std::optional<position>& goal, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned, const std::vector<teleport>& teleports) const;
+    std::optional<std::vector<DIRECTION>>                   path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
+    // clang-format on
 };
 
 } // namespace fb::bot

@@ -22,10 +22,10 @@ public:
     async::task<bool> handle(fb::socket<character>& session, game_reqs::update_option<V>& request) override;
 };
 
+// clang-format off
 template <>
-async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
-    fb::socket<character>&                                        session,
-    game_reqs::update_option<fb::protocol::CLIENT_VERSION::v651>& request);
+async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(fb::socket<character>& session, game_reqs::update_option<fb::protocol::CLIENT_VERSION::v651>& request);
+// clang-format on
 
 } // namespace fb::game::handler::protocol
 

@@ -24,9 +24,10 @@ public:
     const fb::protocol::CLIENT_UI_MODE ui_mode;
 
 public:
-    session(fb::protocol::CLIENT_VERSION client_version,
-            fb::protocol::CLIENT_UI_MODE ui_mode = fb::protocol::CLIENT_UI_MODE::OLD);
+    // clang-format off
+    session(fb::protocol::CLIENT_VERSION client_version, fb::protocol::CLIENT_UI_MODE ui_mode = fb::protocol::CLIENT_UI_MODE::OLD);
     ~session();
+    // clang-format on
 };
 
 } // namespace fb::login

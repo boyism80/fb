@@ -278,6 +278,7 @@ public:
     ~brain() = default;
 
 public:
+    // clang-format off
     void               attach(game_bot& bot, const profile& profile);
     void               persona(uint32_t bot, const std::unordered_map<std::string, double>& values);
     void               detach(game_bot& bot);
@@ -288,14 +289,13 @@ public:
     async::task<event> walk(std::shared_ptr<game_bot> bot, const destination& destination, const detour& detour);
     async::task<event> engage(std::shared_ptr<game_bot> bot, uint32_t oid, const maneuver& maneuver);
     async::task<bool>  synced(std::shared_ptr<game_bot> bot);
-    async::task<event> talk(std::shared_ptr<game_bot>             bot,
-                            std::shared_ptr<fb::protocol::header> opening,
-                            std::vector<answer>                   answers);
+    async::task<event> talk(std::shared_ptr<game_bot> bot, std::shared_ptr<fb::protocol::header> opening, std::vector<answer> answers);
     void               act(uint32_t bot, std::string_view activity);
     void               casting(uint32_t bot);
     void               swinging(uint32_t bot);
     void               close(game_bot& bot);
     bool               talking(const game_bot& bot) const;
+    // clang-format on
     template <typename Fn>
     auto read(uint32_t bot, Fn&& fn) const -> std::optional<std::invoke_result_t<Fn, const mind&>>
     {

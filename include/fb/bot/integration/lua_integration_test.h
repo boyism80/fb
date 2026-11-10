@@ -81,11 +81,10 @@ public:
         std::vector<std::string> labels;
     };
 
-    lua_integration_test(game_bot_controller&  controller,
-                         std::filesystem::path script_path,
-                         bool                  serial     = false,
-                         bool                  extra_slot = false);
+    // clang-format off
+    lua_integration_test(game_bot_controller& controller, std::filesystem::path script_path, bool serial = false, bool extra_slot = false);
     ~lua_integration_test() override;
+    // clang-format on
 
     static std::vector<discovered_script> catalog();
     static std::vector<discovered_script> discover_scripts();
@@ -125,12 +124,11 @@ private:
     void release_lua_refs();
     void clear_all_hooks();
 
+    // clang-format off
     async::task<bool> run_lua_function(int func_ref);
     async::task<void> run_lua_void(int func_ref, std::optional<uint32_t> extra_arg = std::nullopt);
-    async::task<void> invoke_lua_hook(int                         lua_ref,
-                                      fb::bot::game_bot&          bot,
-                                      const fb::protocol::header& header,
-                                      const protocol_entry*       entry);
+    async::task<void> invoke_lua_hook(int lua_ref, fb::bot::game_bot& bot, const fb::protocol::header& header, const protocol_entry* entry);
+    // clang-format on
 };
 
 } // namespace fb::bot::integration

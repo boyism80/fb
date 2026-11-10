@@ -58,19 +58,11 @@ public:
     static character_appearance from(const character& ch);
 
 public:
+    // clang-format off
     character_appearance() = default;
-    character_appearance(GENDER                  gender,
-                         std::optional<STATE>    state,
-                         uint16_t                hair,
-                         std::optional<uint8_t>  hair_color,
-                         std::optional<uint16_t> weapon,
-                         std::optional<uint8_t>  weapon_color,
-                         std::optional<uint8_t>  armor,
-                         std::optional<uint8_t>  armor_color,
-                         std::optional<uint8_t>  shield,
-                         std::optional<uint8_t>  shield_color,
-                         std::optional<uint16_t> disguise);
+    character_appearance(GENDER gender, std::optional<STATE> state, uint16_t hair, std::optional<uint8_t> hair_color, std::optional<uint16_t> weapon, std::optional<uint8_t> weapon_color, std::optional<uint8_t> armor, std::optional<uint8_t> armor_color, std::optional<uint8_t> shield, std::optional<uint8_t> shield_color, std::optional<uint16_t> disguise);
     character_appearance(const character_appearance&) = default;
+    // clang-format on
 
     template <fb::protocol::CLIENT_VERSION Other>
     character_appearance(const character_appearance<Other>& right) :
@@ -127,19 +119,11 @@ public:
     static character_appearance from(const character& ch);
 
 public:
+    // clang-format off
     character_appearance() = default;
-    character_appearance(GENDER                  gender,
-                         std::optional<STATE>    state,
-                         uint16_t                hair,
-                         std::optional<uint8_t>  hair_color,
-                         std::optional<uint16_t> weapon,
-                         std::optional<uint8_t>  weapon_color,
-                         std::optional<uint8_t>  armor,
-                         std::optional<uint8_t>  armor_color,
-                         std::optional<uint8_t>  shield,
-                         std::optional<uint8_t>  shield_color,
-                         std::optional<uint16_t> disguise);
+    character_appearance(GENDER gender, std::optional<STATE> state, uint16_t hair, std::optional<uint8_t> hair_color, std::optional<uint16_t> weapon, std::optional<uint8_t> weapon_color, std::optional<uint8_t> armor, std::optional<uint8_t> armor_color, std::optional<uint8_t> shield, std::optional<uint8_t> shield_color, std::optional<uint16_t> disguise);
     character_appearance(const character_appearance&) = default;
+    // clang-format on
 
     template <fb::protocol::CLIENT_VERSION Other>
     character_appearance(const character_appearance<Other>& right) :

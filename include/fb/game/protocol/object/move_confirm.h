@@ -37,14 +37,10 @@ public:
 
 public:
 #ifndef BOT
-    move_confirm(DIRECTION                         direction,
-                 const fb::model::point<uint16_t>& position,
-                 const fb::model::point<uint16_t>& viewport,
-                 uint8_t                           walk_queue_slot);
-    move_confirm(const fb::game::object&           object,
-                 const fb::model::point<uint16_t>& position,
-                 const fb::model::point<uint16_t>& viewport,
-                 uint8_t                           walk_queue_slot);
+    // clang-format off
+    move_confirm(DIRECTION direction, const fb::model::point<uint16_t>& position, const fb::model::point<uint16_t>& viewport, uint8_t walk_queue_slot);
+    move_confirm(const fb::game::object& object, const fb::model::point<uint16_t>& position, const fb::model::point<uint16_t>& viewport, uint8_t walk_queue_slot);
+    // clang-format on
 #else
     move_confirm() = default;
 #endif

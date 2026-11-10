@@ -36,21 +36,11 @@ public:
     const uint32_t       oid;
 
 public:
-    dialog_0x30_10(const fb::model::object& obj,
-                   std::string_view         message,
-                   bool                     button_prev = false,
-                   bool                     button_next = false,
-                   uint32_t                 oid         = 0xFFFFFFFD);
-    dialog_0x30_10(const fb::game::object& object,
-                   std::string_view        message,
-                   bool                    button_prev = false,
-                   bool                    button_next = false,
-                   uint32_t                oid         = 0xFFFFFFFD);
-    dialog_0x30_10(appearance_ptr&& appearance,
-                   std::string_view message,
-                   bool             button_prev = false,
-                   bool             button_next = false,
-                   uint32_t         oid         = 0xFFFFFFFD);
+    // clang-format off
+    dialog_0x30_10(const fb::model::object& obj, std::string_view message, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_0x30_10(const fb::game::object& object, std::string_view message, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    dialog_0x30_10(appearance_ptr&& appearance, std::string_view message, bool button_prev = false, bool button_next = false, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

@@ -50,12 +50,9 @@ public:
 #ifdef BOT
     name_list() = default;
 #else
-    name_list(uint8_t                                       subtype,
-              uint16_t                                      count,
-              std::string                                   name  = {},
-              uint32_t                                      crc   = 0,
-              std::string                                   body  = {},
-              std::vector<std::pair<std::string, uint32_t>> names = {});
+    // clang-format off
+    name_list(uint8_t subtype, uint16_t count, std::string name = {}, uint32_t crc = 0, std::string body = {}, std::vector<std::pair<std::string, uint32_t>> names = {});
+    // clang-format on
 #endif
 
 public:

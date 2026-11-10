@@ -39,21 +39,11 @@ public:
     const std::optional<std::string> ext;
 
 public:
-    dialog_menu(const fb::model::object&        obj,
-                const std::vector<std::string>& menus,
-                std::string_view                message,
-                uint32_t                        oid = 0xFFFFFFFD,
-                std::optional<std::string>      ext = std::nullopt);
-    dialog_menu(const fb::game::object&         object,
-                const std::vector<std::string>& menus,
-                std::string_view                message,
-                uint32_t                        oid = 0xFFFFFFFD,
-                std::optional<std::string>      ext = std::nullopt);
-    dialog_menu(appearance_ptr&&                appearance,
-                const std::vector<std::string>& menus,
-                std::string_view                message,
-                uint32_t                        oid = 0xFFFFFFFD,
-                std::optional<std::string>      ext = std::nullopt);
+    // clang-format off
+    dialog_menu(const fb::model::object& obj, const std::vector<std::string>& menus, std::string_view message, uint32_t oid = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt);
+    dialog_menu(const fb::game::object& object, const std::vector<std::string>& menus, std::string_view message, uint32_t oid = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt);
+    dialog_menu(appearance_ptr&& appearance, const std::vector<std::string>& menus, std::string_view message, uint32_t oid = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

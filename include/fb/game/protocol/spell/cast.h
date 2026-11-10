@@ -41,11 +41,9 @@ public:
 #ifndef BOT
     spell_cast() = default;
 #else
-    spell_cast(SPELL_TYPE                        type,
-               uint8_t                           slot,
-               std::string_view                  message,
-               uint32_t                          oid,
-               const fb::model::point<uint16_t>& position);
+    // clang-format off
+    spell_cast(SPELL_TYPE type, uint8_t slot, std::string_view message, uint32_t oid, const fb::model::point<uint16_t>& position);
+    // clang-format on
 #endif
 
 public:

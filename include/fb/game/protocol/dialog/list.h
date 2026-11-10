@@ -38,21 +38,11 @@ public:
     const uint32_t                   oid;
 
 public:
-    dialog_list(const fb::game::object&         object,
-                const std::vector<std::string>& list,
-                std::optional<std::string>      message,
-                bool                            button_prev,
-                uint32_t                        oid = 0xFFFFFFFD);
-    dialog_list(const fb::model::object&        object,
-                const std::vector<std::string>& list,
-                std::optional<std::string>      message,
-                bool                            button_prev,
-                uint32_t                        oid = 0xFFFFFFFD);
-    dialog_list(appearance_ptr&&                appearance,
-                const std::vector<std::string>& list,
-                std::optional<std::string>      message,
-                bool                            button_prev,
-                uint32_t                        oid = 0xFFFFFFFD);
+    // clang-format off
+    dialog_list(const fb::game::object& object, const std::vector<std::string>& list, std::optional<std::string> message, bool button_prev, uint32_t oid = 0xFFFFFFFD);
+    dialog_list(const fb::model::object& object, const std::vector<std::string>& list, std::optional<std::string> message, bool button_prev, uint32_t oid = 0xFFFFFFFD);
+    dialog_list(appearance_ptr&& appearance, const std::vector<std::string>& list, std::optional<std::string> message, bool button_prev, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

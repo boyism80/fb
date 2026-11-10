@@ -37,21 +37,11 @@ public:
     const uint32_t                 oid;
 
 public:
-    dialog_pursuit(const fb::model::object&        obj,
-                   const std::vector<std::string>& options,
-                   std::string_view                message,
-                   uint32_t                        oid     = 0xFFFFFFFD,
-                   uint16_t                        pursuit = 0xFFFF);
-    dialog_pursuit(const fb::game::object&         object,
-                   const std::vector<std::string>& options,
-                   std::string_view                message,
-                   uint32_t                        oid     = 0xFFFFFFFD,
-                   uint16_t                        pursuit = 0xFFFF);
-    dialog_pursuit(appearance_ptr&&                appearance,
-                   const std::vector<std::string>& options,
-                   std::string_view                message,
-                   uint32_t                        oid     = 0xFFFFFFFD,
-                   uint16_t                        pursuit = 0xFFFF);
+    // clang-format off
+    dialog_pursuit(const fb::model::object& obj, const std::vector<std::string>& options, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    dialog_pursuit(const fb::game::object& object, const std::vector<std::string>& options, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    dialog_pursuit(appearance_ptr&& appearance, const std::vector<std::string>& options, std::string_view message, uint32_t oid = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

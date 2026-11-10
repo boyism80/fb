@@ -51,11 +51,11 @@ public:
     static const protocol_entry* find(protocol_direction direction, const char* name);
     static const protocol_entry* find_by_type_key(const char* type_key);
 
+    // clang-format off
     static void register_all();
     static void bind_default(game_bot_controller& controller);
-    static void marshal_lua_stub(lua_State*                   L,
-                                 const fb::protocol::header&  header,
-                                 fb::protocol::CLIENT_VERSION version);
+    static void marshal_lua_stub(lua_State* L, const fb::protocol::header& header, fb::protocol::CLIENT_VERSION version);
+    // clang-format on
 };
 
 } // namespace fb::bot::integration

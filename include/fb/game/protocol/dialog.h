@@ -54,15 +54,9 @@ public:
 #ifndef BOT
     dialog() = default;
 #else
-    dialog(fb::game::dialog::type type,
-           uint8_t                action,
-           std::string            message,
-           uint16_t               index,
-           uint16_t               pursuit,
-           std::string            name,
-           uint32_t               oid = 0,
-           uint16_t               seq = 0,
-           std::string            ext = {});
+    // clang-format off
+    dialog(fb::game::dialog::type type, uint8_t action, std::string message, uint16_t index, uint16_t pursuit, std::string name, uint32_t oid = 0, uint16_t seq = 0, std::string ext = {});
+    // clang-format on
 #endif
 
 public:
@@ -111,17 +105,9 @@ public:
 #ifndef BOT
     dialog() = default;
 #else
-    dialog(fb::game::dialog::type type,
-           uint8_t                action,
-           std::string            message,
-           uint16_t               index,
-           uint16_t               pursuit,
-           std::string            name,
-           uint32_t               oid   = 0,
-           uint16_t               seq   = 0,
-           std::string            ext   = {},
-           uint32_t               id    = 0,
-           uint8_t                count = 0);
+    // clang-format off
+    dialog(fb::game::dialog::type type, uint8_t action, std::string message, uint16_t index, uint16_t pursuit, std::string name, uint32_t oid = 0, uint16_t seq = 0, std::string ext = {}, uint32_t id = 0, uint8_t count = 0);
+    // clang-format on
 #endif
 
 public:
@@ -162,13 +148,9 @@ public:
 #ifndef BOT
     dialog_list() = default;
 #else
-    dialog_list(fb::game::dialog::list_type type,
-                uint8_t                     action,
-                std::string                 message,
-                uint16_t                    index,
-                DIALOG_RESULT               button,
-                uint32_t                    oid = 0,
-                uint16_t                    seq = 0);
+    // clang-format off
+    dialog_list(fb::game::dialog::list_type type, uint8_t action, std::string message, uint16_t index, DIALOG_RESULT button, uint32_t oid = 0, uint16_t seq = 0);
+    // clang-format on
 #endif
 
 public:
@@ -202,22 +184,12 @@ public:
     const uint32_t                   oid;
 
 public:
+    // clang-format off
     dialog(std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
-    dialog(const fb::model::object&   object,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
-    dialog(const fb::game::object&    object,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
-    dialog(appearance_ptr&&           appearance,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
+    dialog(const fb::model::object& object, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
+    dialog(const fb::game::object& object, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
+    dialog(appearance_ptr&& appearance, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

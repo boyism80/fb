@@ -38,18 +38,11 @@ public:
     const uint32_t             oid;
 
 public:
-    dialog_slot(const fb::model::object&    obj,
-                const std::vector<uint8_t>& slots,
-                std::string_view            message,
-                uint32_t                    oid = 0xFFFFFFFD);
-    dialog_slot(const fb::game::object&     object,
-                const std::vector<uint8_t>& slots,
-                std::string_view            message,
-                uint32_t                    oid = 0xFFFFFFFD);
-    dialog_slot(appearance_ptr&&            appearance,
-                const std::vector<uint8_t>& slots,
-                std::string_view            message,
-                uint32_t                    oid = 0xFFFFFFFD);
+    // clang-format off
+    dialog_slot(const fb::model::object& obj, const std::vector<uint8_t>& slots, std::string_view message, uint32_t oid = 0xFFFFFFFD);
+    dialog_slot(const fb::game::object& object, const std::vector<uint8_t>& slots, std::string_view message, uint32_t oid = 0xFFFFFFFD);
+    dialog_slot(appearance_ptr&& appearance, const std::vector<uint8_t>& slots, std::string_view message, uint32_t oid = 0xFFFFFFFD);
+    // clang-format on
 
 public:
     void serialize(fb::stream_writer<big_endian>& writer) const;

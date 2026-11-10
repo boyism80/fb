@@ -54,13 +54,11 @@ public:
 
 public:
 #ifndef BOT
+    // clang-format off
     update_external(const fb::game::character& ch, const fb::game::object& to);
-    update_external(uint32_t                                 oid,
-                    HEAD_MARKER                              head_marker,
-                    std::string                              name,
-                    const fb::game::character_appearance<V>& appearance,
-                    CLIENT_UI_MODE                           ui_mode);
+    update_external(uint32_t oid, HEAD_MARKER head_marker, std::string name, const fb::game::character_appearance<V>& appearance, CLIENT_UI_MODE ui_mode);
     update_external(const update_external&) = delete;
+    // clang-format on
 #else
     update_external() = default;
 #endif
