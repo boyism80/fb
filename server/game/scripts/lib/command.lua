@@ -1994,7 +1994,7 @@ M.functions = {
             end
 
             if me:push_achievement(id, text, icon, color) == nil then
-                me:message("업적을 추가하지 못했습니다. 업적은 255개, 텍스트는 128자까지 넣을 수 있습니다.")
+                me:message("업적을 추가하지 못했습니다. 업적은 255개, 텍스트는 127자까지 넣을 수 있습니다.")
             end
             return true
         end,

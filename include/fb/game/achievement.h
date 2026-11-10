@@ -21,7 +21,7 @@ public:
     static constexpr int64_t MAX_ICON        = 0xFF;
     static constexpr int64_t MAX_COLOR       = 0xFF;
     static constexpr size_t  MAX_COUNT       = 0xFF;
-    static constexpr size_t  MAX_TEXT_LENGTH = 128;
+    static constexpr size_t  MAX_TEXT_LENGTH = 127;
 
 public:
     const uint32_t    id;
