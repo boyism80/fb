@@ -1021,8 +1021,7 @@ std::shared_ptr<helmet> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
     this->_helmet = helmet;
     this->notify_equipment_swap(EQUIPMENT_PARTS::HELMET, before, helmet);
     owner->update_external();
-    if (owner->option(OPTION::VISIBLE_HELMET))
-        owner->group.refresh_portrait();
+    owner->group.refresh_portrait();
 
     return before;
 }

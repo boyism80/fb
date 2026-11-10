@@ -500,19 +500,19 @@ game_resp::group_portrait_entry group::container::portrait_entry(const character
 {
     ch.assert_thread();
 
+    auto look = character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(ch);
+
     game_resp::group_portrait_entry e;
     e.name           = ch.name();
     e.leader         = leader ? 1 : 0;
-    e.hair           = static_cast<uint16_t>(200 + ch.face());
-    e.color          = static_cast<uint8_t>(ch.hair());
-    e.face_hair_tint = ch.color();
-
-    auto helmet = ch.items.helmet();
-    if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
+    e.hair           = static_cast<uint16_t>(200 + look.face);
+    e.color          = static_cast<uint8_t>(look.hair);
+    e.face_hair_tint = look.hair_color.value_or(0);
+    if (look.helmet.has_value())
     {
         e.hair_to_hat  = 1;
-        e.helmet       = static_cast<uint8_t>(helmet->model().dress);
-        e.helmet_color = helmet->color();
+        e.helmet       = look.helmet.value();
+        e.helmet_color = look.helmet_color.value_or(0);
     }
 
     e.accessory_pack = 0xFFFF;

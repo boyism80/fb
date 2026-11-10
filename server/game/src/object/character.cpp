@@ -1544,8 +1544,7 @@ void character::option(OPTION key, bool value, bool notify)
         if (key == OPTION::VISIBLE_HELMET && this->client_version == fb::protocol::CLIENT_VERSION::v651)
         {
             this->update_external();
-            if (this->items.helmet() != nullptr)
-                this->group.refresh_portrait();
+            this->group.refresh_portrait();
         }
     }
 }
