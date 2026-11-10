@@ -159,11 +159,12 @@ private:
     using storage_rejection = std::pair<std::string, uint32_t>;
 
     // clang-format off
-    static std::optional<storage_rejection> read_storage_box(lua_State* L, int index, std::vector<fb::model::dsl>& attachments);
-    static repair_entries                   read_repair_entries(lua_State* L, int index);
-    static std::optional<uint64_t>          repair_cost(fb::game::character& ch, const repair_entries& entries, std::vector<std::shared_ptr<fb::game::equipment>>& targets, uint64_t minimum);
-    static int                              exchange(lua_State* L, int cost_index, int reward_index, int delete_type_index, bool boolean_result);
-    static int                              transfer_money(lua_State* L, bool deposit);
+    static std::optional<storage_rejection>         read_storage_box(lua_State* L, int index, std::vector<fb::model::dsl>& attachments);
+    static repair_entries                           read_repair_entries(lua_State* L, int index);
+    static std::optional<fb::game::dialog::speaker> read_speaker(lua_State* L, int index);
+    static std::optional<uint64_t>                  repair_cost(fb::game::character& ch, const repair_entries& entries, std::vector<std::shared_ptr<fb::game::equipment>>& targets, uint64_t minimum);
+    static int                                      exchange(lua_State* L, int cost_index, int reward_index, int delete_type_index, bool boolean_result);
+    static int                                      transfer_money(lua_State* L, bool deposit);
     // clang-format on
 };
 

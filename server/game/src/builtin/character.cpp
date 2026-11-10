@@ -697,23 +697,9 @@ int builtin::character::builtin_item(lua_State* L)
     }
 
     // item dialog — yields a 1-based row index, same as list/menu/pursuit
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = lua->tostring(3);
     auto items   = fb::game::dialog::item_pairs();
@@ -796,10 +782,7 @@ int builtin::character::builtin_item(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, items, oid, pursuit);
-        else
-            ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
+        ch->listener.on_dialog(*ch, speaker->look(*ch), message, items, speaker->oid(), pursuit);
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
@@ -5783,14 +5766,10 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     if (argc < 3)
         throw std::runtime_error("not enough parameters");
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-        obj = lua->touserdata<fb::game::object>(2);
-    else if (lua->is_userdata<fb::model::object>(2))
-        model = lua->touserdata<fb::model::object>(2).get();
-    else if (lua->is_nil(2) == false)
+    auto speaker = std::optional<fb::game::dialog::speaker>{fb::game::dialog::speaker{}};
+    if (lua->is_nil(2) == false)
+        speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
 
     auto message = std::optional<std::string>{std::nullopt};
@@ -5825,12 +5804,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, obj->portrait() ? oid : obj->oid());
-        else if (model != nullptr)
-            ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
-        else
-            ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
+        ch->listener.on_dialog(*ch, speaker->look(*ch), message, button_prev, button_next, speaker->oid());
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::TEXT);
@@ -5855,65 +5829,9 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid    = uint32_t{0xFFFFFFFD};
-    auto obj    = std::shared_ptr<fb::game::object>(nullptr);
-    auto model  = static_cast<const fb::model::object*>(nullptr);
-    auto custom = std::shared_ptr<fb::game::character_appearance<>>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj = lua->touserdata<fb::game::object>(2);
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else if (lua->is_table(2))
-    {
-        custom = std::make_shared<fb::game::character_appearance<>>();
-        lua->pushstring("gender");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->gender = static_cast<GENDER>(lua->tointeger(-1));
-
-        lua->pushstring("state");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->state = static_cast<STATE>(lua->tointeger(-1));
-
-        lua->pushstring("hair");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->hair = lua->tointeger(-1);
-
-        lua->pushstring("hair_color");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->hair_color = lua->tointeger(-1);
-
-        lua->pushstring("weapon");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->weapon = lua->tointeger(-1);
-
-        lua->pushstring("weapon_color");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->weapon_color = lua->tointeger(-1);
-
-        lua->pushstring("armor");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->armor = lua->tointeger(-1);
-
-        lua->pushstring("armor_color");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->armor_color = lua->tointeger(-1);
-
-        lua->pushstring("shield");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->shield = lua->tointeger(-1);
-
-        lua->pushstring("shield_color");
-        if (lua_rawget(L, 2) == LUA_TNUMBER)
-            custom->shield_color = lua->tointeger(-1);
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = std::optional<std::string>{std::nullopt};
     if (lua->is_nil(3) == false)
@@ -5948,17 +5866,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (custom != nullptr)
-            ch->listener.on_dialog(*ch,
-                                   std::make_unique<fb::game::character_appearance<>>(*custom),
-                                   message,
-                                   menus,
-                                   button_prev,
-                                   oid);
-        else if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, obj->portrait() ? oid : obj->oid());
-        else
-            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
+        ch->listener.on_dialog(*ch, speaker->look(*ch), message, menus, button_prev, speaker->oid());
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::LIST, static_cast<uint16_t>(menus.size()));
@@ -5987,23 +5895,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto argc    = lua->argc();
     auto message = std::optional<std::string>{std::nullopt};
@@ -6082,18 +5976,13 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
         if (use_list_input)
         {
-            if (obj != nullptr)
-                ch->listener.on_dialog(*ch, *obj, message, top, bottom, maxlen, prev, password, oid);
-            else
-                ch->listener.on_dialog(*ch, *model, message, top, bottom, maxlen, prev, password, oid);
+            ch->listener
+                .on_dialog(*ch, speaker->look(*ch), message, top, bottom, maxlen, prev, password, speaker->oid());
         }
         else
         {
             auto msg = message.value_or(std::string{});
-            if (obj != nullptr)
-                ch->listener.on_dialog(*ch, *obj, msg, oid, ext, pursuit);
-            else
-                ch->listener.on_dialog(*ch, *model, msg, oid, ext, pursuit);
+            ch->listener.on_dialog(*ch, speaker->look(*ch), msg, speaker->oid(), ext, pursuit);
         }
 
         if (immediate == false)
@@ -6125,23 +6014,9 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = lua->tostring(3);
     auto size    = lua->rawlen(4);
@@ -6174,10 +6049,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, menus, oid, ext);
-        else
-            ch->listener.on_dialog(*ch, *model, message, menus, oid, ext);
+        ch->listener.on_dialog(*ch, speaker->look(*ch), message, menus, speaker->oid(), ext);
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::MENU);
@@ -6202,23 +6074,9 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = lua->tostring(3);
     auto slots   = std::vector<uint8_t>();
@@ -6247,10 +6105,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, slots, oid);
-        else
-            ch->listener.on_dialog(*ch, *model, message, slots, oid);
+        ch->listener.on_dialog(*ch, speaker->look(*ch), message, slots, speaker->oid());
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
@@ -6277,23 +6132,9 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = lua->tostring(3);
     if (lua->is_table(4) == false)
@@ -6341,10 +6182,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog_pursuit(*ch, *obj, message, options, oid, pursuit);
-        else
-            ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
+        ch->listener.on_dialog_pursuit(*ch, speaker->look(*ch), message, options, speaker->oid(), pursuit);
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
@@ -6375,23 +6213,9 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message = lua->tostring(3);
     if (lua->is_table(4) == false)
@@ -6493,10 +6317,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog_buy(*ch, *obj, message, entries, oid, pursuit);
-        else
-            ch->listener.on_dialog_buy(*ch, *model, message, entries, oid, pursuit);
+        ch->listener.on_dialog_buy(*ch, speaker->look(*ch), message, entries, speaker->oid(), pursuit);
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::BUY);
@@ -6526,23 +6347,9 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return builtin::life::builtin_spell(L);
-    }
 
     auto message   = lua->tostring(3);
     auto pursuit   = uint16_t{0xFFFF};
@@ -6567,10 +6374,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog_spell(*ch, *obj, message, oid, pursuit);
-        else
-            ch->listener.on_dialog_spell(*ch, *model, message, oid, pursuit);
+        ch->listener.on_dialog_spell(*ch, speaker->look(*ch), message, speaker->oid(), pursuit);
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
@@ -6597,23 +6401,9 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message   = lua->tostring(3);
     auto immediate = false;
@@ -6632,10 +6422,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
         if (immediate == false)
             ch->dialog.cancel("dialog replaced");
 
-        if (obj != nullptr)
-            ch->listener.on_dialog_email(*ch, *obj, message, "", "", false, false, oid);
-        else
-            ch->listener.on_dialog_email(*ch, *model, message, "", "", false, false, oid);
+        ch->listener.on_dialog_email(*ch, speaker->look(*ch), message, "", "", false, false, speaker->oid());
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::INPUT);
@@ -6661,33 +6448,16 @@ int fb::game::builtin::character::builtin_dialog_0x30_10(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
-    {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
-    }
-    else if (lua->is_userdata<fb::model::object>(2))
-    {
-        model = lua->touserdata<fb::model::object>(2).get();
-    }
-    else
-    {
+    auto speaker = read_speaker(L, 2);
+    if (speaker.has_value() == false)
         return 0;
-    }
 
     auto message  = lua->tostring(3);
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        if (obj != nullptr)
-            ch->listener.on_dialog_0x30_10(*ch, *obj, message, oid);
-        else
-            ch->listener.on_dialog_0x30_10(*ch, *model, message, oid);
+        ch->listener.on_dialog_0x30_10(*ch, speaker->look(*ch), message, speaker->oid());
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -7099,6 +6869,78 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         co_return 1;
     };
     return builder.run();
+}
+
+std::optional<fb::game::dialog::speaker> builtin::character::read_speaker(lua_State* L, int index)
+{
+    auto lua     = fb::lua::get(L);
+    auto speaker = fb::game::dialog::speaker{};
+    if (lua->is_userdata<fb::game::object>(index))
+    {
+        speaker.object = lua->touserdata<fb::game::object>(index);
+    }
+    else if (lua->is_userdata<fb::model::object>(index))
+    {
+        speaker.model = lua->touserdata<fb::model::object>(index).get();
+    }
+    else if (lua->is_table(index))
+    {
+        speaker.custom = std::make_shared<fb::game::character_appearance<>>();
+        lua->pushstring("gender");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->gender = static_cast<GENDER>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("state");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->state = static_cast<STATE>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("hair");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->hair = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("hair_color");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->hair_color = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("weapon");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->weapon = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("weapon_color");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->weapon_color = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("armor");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->armor = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("armor_color");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->armor_color = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("shield");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->shield = lua->tointeger(-1);
+        lua_pop(L, 1);
+
+        lua->pushstring("shield_color");
+        if (lua_rawget(L, index) == LUA_TNUMBER)
+            speaker.custom->shield_color = lua->tointeger(-1);
+        lua_pop(L, 1);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+    return speaker;
 }
 
 std::optional<builtin::character::storage_rejection>
