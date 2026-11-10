@@ -15,16 +15,23 @@ unsettled_requests::unsettled_requests(character& owner) :
     _owner(owner)
 { }
 
-uint64_t unsettled_requests::add(UNSETTLED_TYPE type, uint64_t target, Json::Value detail)
+std::optional<uint64_t> unsettled_requests::add(UNSETTLED_TYPE                         type,
+                                                uint64_t                               target,
+                                                uint64_t                               money,
+                                                const std::vector<items::escrow_part>& parts,
+                                                Json::Value                            detail)
 {
     this->_owner.assert_thread();
 
-    auto id            = this->_owner.server.ids.next();
+    auto id = this->_owner.server.ids.next();
+    if (this->_owner.items.hold(id, money, parts) == false)
+        return std::nullopt;
+
     this->_entries[id] = entry{type, target, std::move(detail), true};
     return id;
 }
 
-unsettled_requests::entry* unsettled_requests::find(uint64_t id)
+const unsettled_requests::entry* unsettled_requests::find(uint64_t id) const
 {
     this->_owner.assert_thread();
 
@@ -47,10 +54,55 @@ std::optional<uint64_t> unsettled_requests::find(UNSETTLED_TYPE type, uint64_t t
     return std::nullopt;
 }
 
-void unsettled_requests::erase(uint64_t id)
+bool unsettled_requests::held(uint64_t id) const
 {
     this->_owner.assert_thread();
+    return this->_owner.items.escrow().contains(id);
+}
+
+void unsettled_requests::confirm(uint64_t id)
+{
+    this->_owner.assert_thread();
+    this->_owner.items.take(id);
     this->_entries.erase(id);
+}
+
+void unsettled_requests::refuse(uint64_t id)
+{
+    this->_owner.assert_thread();
+    this->_owner.items.release(id);
+    this->_entries.erase(id);
+}
+
+void unsettled_requests::leave(uint64_t id)
+{
+    this->_owner.assert_thread();
+
+    auto found = this->_entries.find(id);
+    if (found != this->_entries.end())
+        found->second.in_flight = false;
+}
+
+void unsettled_requests::retry(uint64_t id)
+{
+    this->_owner.assert_thread();
+
+    auto found = this->_entries.find(id);
+    if (found != this->_entries.end())
+        found->second.in_flight = true;
+}
+
+bool unsettled_requests::charge(uint64_t id)
+{
+    this->_owner.assert_thread();
+
+    auto found = this->_entries.find(id);
+    if (found == this->_entries.end() || this->held(id) == false)
+        return false;
+
+    this->_owner.items.take(id);
+    found->second.in_flight = false;
+    return true;
 }
 
 const unsettled_requests::entry_map& unsettled_requests::entries() const

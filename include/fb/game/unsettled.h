@@ -2,6 +2,7 @@
 #define FB_GAME_UNSETTLED_H
 
 #include <async/task.h>
+#include <fb/game/item/items.h>
 #include <json/json.h>
 
 #include <cstdint>
@@ -47,10 +48,17 @@ public:
     explicit unsettled_requests(character& owner);
 
 public:
-    uint64_t add(UNSETTLED_TYPE type, uint64_t target, Json::Value detail = Json::Value{Json::objectValue});
-    entry*   find(uint64_t id);
+    // clang-format off
+    std::optional<uint64_t> add(UNSETTLED_TYPE type, uint64_t target, uint64_t money, const std::vector<items::escrow_part>& parts, Json::Value detail = Json::Value{Json::objectValue});
+    // clang-format on
+    const entry*            find(uint64_t id) const;
     std::optional<uint64_t> find(UNSETTLED_TYPE type, uint64_t target) const;
-    void                    erase(uint64_t id);
+    bool                    held(uint64_t id) const;
+    void                    confirm(uint64_t id);
+    void                    refuse(uint64_t id);
+    void                    leave(uint64_t id);
+    void                    retry(uint64_t id);
+    bool                    charge(uint64_t id);
     const entry_map&        entries() const;
     void                    load(const std::vector<dto>& rows);
     std::vector<dto>        to_protocol() const;
