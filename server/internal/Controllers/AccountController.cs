@@ -5,6 +5,7 @@ using Http;
 using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
+using MySqlConnector;
 using System.Data;
 using Request = fb.protocol.@internal.request;
 using Response = fb.protocol.@internal.response;
@@ -125,7 +126,7 @@ namespace Internal.Controllers
             {
                 await using var conn = _dbContext.GetUnifiedConnection();
                 await conn.OpenAsync();
-                await using var transaction = await conn.BeginTransactionAsync();
+                await using var transaction = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted);
                 var entry = await conn.QuerySingleOrDefaultAsync<NameRegistryEntry>(
                     """
                     SELECT `id` AS Id, `world` AS World,
@@ -163,7 +164,7 @@ namespace Internal.Controllers
                 await transaction.CommitAsync();
                 return new Response.ReserveName { Success = true, Uid = Convert.ToUInt32(uid) };
             }
-            catch (Exception)
+            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
             {
                 return new Response.ReserveName { Success = false, Uid = 0 };
             }
