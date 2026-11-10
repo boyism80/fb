@@ -201,7 +201,7 @@ public class MarketplaceService
         // A listing that is not found anywhere gets an ABORTED tombstone, so a late list request fails on the primary key.
         await using var conn = _dbContext.GetUnifiedConnection();
         await conn.OpenAsync();
-        await using var transaction = await conn.BeginTransactionAsync();
+        await using var transaction = await conn.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
 
         var listing = await _dbContext.Marketplace.GetAnyListingByIdForUpdateAsync(listingId, transaction)
             ?? await _dbContext.Marketplace.GetArchivedListingByIdAsync(listingId, transaction);
@@ -708,7 +708,7 @@ public class MarketplaceService
         // A purchase that is not found gets an aborted tombstone, so a late purchase request fails on the primary key.
         await using var conn = _dbContext.GetUnifiedConnection();
         await conn.OpenAsync();
-        await using var transaction = await conn.BeginTransactionAsync();
+        await using var transaction = await conn.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
 
         var purchase = await _dbContext.MarketplacePurchase.GetAnyPurchaseByIdForUpdateAsync(purchaseId, transaction);
         if (purchase == null)
