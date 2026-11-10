@@ -1851,10 +1851,17 @@ test_suite {
                         snap.group                                 = { lead.self.name, snap.self.name }
                         snap.leader                                = lead.self.name
                         snap.party                                 = { party.profile(lead, bound, nil) }
-                        snap.record.memory.spot                    = { map = snap.world.map, x = snap.world.x, y = snap
-                        .world.y, at = snap.now - 5000 }
-                        snap.record.memory.blocked                 = { map = snap.world.map, at = snap.now - 100, since =
-                        snap.now - 100 }
+                        snap.record.memory.spot                    = {
+                            map = snap.world.map,
+                            x = snap.world.x,
+                            y = snap.world.y,
+                            at = snap.now - 5000
+                        }
+                        snap.record.memory.blocked                 = {
+                            map = snap.world.map,
+                            at = snap.now - 100,
+                            since = snap.now - 100
+                        }
                         local walking                              = party.profile(snap, bound,
                             { kind = ACTION.MOVE, task = "FIELD" })
                         local drinking                             = party.profile(snap, bound,
@@ -1873,7 +1880,7 @@ test_suite {
                             .name }
                         snap.leader                                   = snap.self.name
                         snap.party                                    = { party.profile(poet, bound, nil), party.profile(
-                        rogue, bound, nil) }
+                            rogue, bound, nil) }
                         snap.party[1].task                            = "FIELD"
                         snap.party[2].task, snap.party[2].pinned      = "FIELD", true
                         local rally                                   = party.rally(snap, bound)
