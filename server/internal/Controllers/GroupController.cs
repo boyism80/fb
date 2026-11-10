@@ -128,32 +128,7 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
-                var actor = await _dbContext.Character.Get(world, request.Master) ??
-                    throw new Exception($"user {request.Master} not found");
-
-                if (actor.Name == request.Member)
-                {
-                    throw new LogicException(ErrorCode.CannotGroupSelf);
-                }
-
-                if (await _sessionService.Get(world, actor.Name) == null)
-                {
-                    throw new Exception($"user {request.Master} is offline");
-                }
-
-                var targetSession = await _sessionService.Get(world, request.Member) ??
-                    throw new LogicException(ErrorCode.Offline);
-
-                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
-                    throw new LogicException(ErrorCode.Offline);
-
-                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
-                    throw new Exception($"user option {request.Member} not found");
-
-                if (memberSetting.SuperHide && target.Role > actor.Role)
-                {
-                    throw new LogicException(ErrorCode.Offline);
-                }
+                var (actor, target, memberSetting) = await FindTarget(world, request.Master, request.Member);
 
                 // Lock in uid order so a simultaneous Create(A, B) and Create(B, A)
                 // can't acquire the two character locks in opposite order.
@@ -282,32 +257,7 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
-                var actor = await _dbContext.Character.Get(world, request.Master) ??
-                    throw new Exception($"user {request.Master} not found");
-
-                if (actor.Name == request.Member)
-                {
-                    throw new LogicException(ErrorCode.CannotGroupSelf);
-                }
-
-                if (await _sessionService.Get(world, actor.Name) == null)
-                {
-                    throw new Exception($"user {request.Master} is offline");
-                }
-
-                var targetSession = await _sessionService.Get(world, request.Member) ??
-                    throw new LogicException(ErrorCode.Offline);
-
-                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
-                    throw new LogicException(ErrorCode.Offline);
-
-                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
-                    throw new Exception($"user option {request.Member} not found");
-
-                if (memberSetting.SuperHide && target.Role > actor.Role)
-                {
-                    throw new LogicException(ErrorCode.Offline);
-                }
+                var (actor, target, memberSetting) = await FindTarget(world, request.Master, request.Member);
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
                 // concurrent call on the same pair.
@@ -738,7 +688,7 @@ namespace Internal.Controllers
                     var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
                         throw new Exception($"user option {request.Member} not found");
 
-                    if (memberSetting.SuperHide && target.Role > actor.Role)
+                    if (memberSetting.HiddenTo(target.Role, actor.Role))
                     {
                         throw new LogicException(ErrorCode.Offline);
                     }
@@ -786,6 +736,38 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
+        }
+
+        private async Task<(Character Actor, Character Target, Http.Model.Option TargetOption)> FindTarget(uint world, uint master, string member)
+        {
+            var actor = await _dbContext.Character.Get(world, master) ??
+                throw new Exception($"user {master} not found");
+
+            if (actor.Name == member)
+            {
+                throw new LogicException(ErrorCode.CannotGroupSelf);
+            }
+
+            if (await _sessionService.Get(world, actor.Name) == null)
+            {
+                throw new Exception($"user {master} is offline");
+            }
+
+            var targetSession = await _sessionService.Get(world, member) ??
+                throw new LogicException(ErrorCode.Offline);
+
+            var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
+                throw new LogicException(ErrorCode.Offline);
+
+            var targetOption = await _dbContext.Option.Get(world, target.Id) ??
+                throw new Exception($"user option {member} not found");
+
+            if (targetOption.HiddenTo(target.Role, actor.Role))
+            {
+                throw new LogicException(ErrorCode.Offline);
+            }
+
+            return (actor, target, targetOption);
         }
 
         private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, uint host)

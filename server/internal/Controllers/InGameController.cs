@@ -304,7 +304,7 @@ namespace Internal.Controllers
                 var targetOption = await _dbContext.Option.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
 
-                if (targetOption.SuperHide && target.Role > sender.Role)
+                if (targetOption.HiddenTo(target.Role, sender.Role))
                 {
                     throw new LogicException(ErrorCode.Offline);
                 }

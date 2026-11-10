@@ -26,6 +26,11 @@ namespace Http.Model
         public bool VisibleHelmet { get; set; } = true;
         public bool SuperHide { get; set; }
 
+        public bool HiddenTo(Fb.Model.EnumValue.Role owner, Fb.Model.EnumValue.Role viewer)
+        {
+            return SuperHide && owner > viewer;
+        }
+
         public static string DistributedLockKey(uint user)
         {
             return $"fb:lock:option:{user}";
