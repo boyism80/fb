@@ -51,6 +51,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     group(*this),
     evaluation(*this, server.now(), params.evaluation, params.evaluation_playtime, params.evaluated_targets),
     options(*this),
+    home(*this),
     matchmaker(*this),
     life(server,
          table::life[0],
@@ -420,8 +421,8 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
     if (this->begin_transfer() == false)
         co_return transfer_result::NOT_STARTED;
 
-    auto result             = transfer_result::STARTED;
-    auto saved_return_point = false;
+    auto result = transfer_result::STARTED;
+    auto pinned = false;
     try
     {
         if (before && co_await before() == false)
@@ -433,10 +434,7 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
         else
         {
             if (option.match.has_value())
-            {
-                this->matchmaker.save_return_point();
-                saved_return_point = true;
-            }
+                pinned = this->home.pin();
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
@@ -448,15 +446,15 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
     }
     catch (std::exception& e)
     {
-        if (saved_return_point)
-            this->matchmaker.clear_return_point();
+        if (pinned)
+            this->home.unpin();
         this->cancel_transfer(e.what());
         result = transfer_result::FAILED;
     }
     catch (boost::system::error_code& /*e*/)
     {
-        if (saved_return_point)
-            this->matchmaker.clear_return_point();
+        if (pinned)
+            this->home.unpin();
         this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
         result = transfer_result::FAILED;
     }
@@ -2309,45 +2307,14 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
-    if (this->matchmaker.has_return_point())
-    {
-        dto.map      = this->matchmaker.return_map();
-        dto.position = fb::protocol::internal::Position{this->matchmaker.return_position().x,
-                                                        this->matchmaker.return_position().y};
-    }
-    else if (!fb::config<std::optional<uint32_t>>("world"))
-    {
-        fb::logger::fatal("Character {} cross to_protocol without home snapshot", this->_name);
-        dto.map      = 0;
-        dto.position = fb::protocol::internal::Position{1, 1};
-    }
-    else if (this->_map != nullptr && this->_map->model().return_to.has_value())
-    {
-        auto return_map_id = this->_map->model().return_to.value();
-        dto.map            = return_map_id;
-        auto spawn         = fb::model::point16_t{0, 0};
-        if (table::map->contains(return_map_id))
-            spawn = table::map[return_map_id].spawn_position().value_or(fb::model::point16_t{0, 0});
-        dto.position = fb::protocol::internal::Position{spawn.x, spawn.y};
-    }
-    else if (this->_map != nullptr)
-    {
-        dto.map      = this->_map->model().id;
-        dto.position = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    }
-    else
-    {
-        dto.map      = 0;
-        dto.position = fb::protocol::internal::Position{1, 1};
-    }
-    dto.direction       = static_cast<uint8_t>(this->_direction);
-    dto.state           = static_cast<uint8_t>(this->_state);
-    dto.class_type      = static_cast<uint8_t>(this->_class);
-    dto.promotion       = this->_promotion;
-    dto.level           = this->_level;
-    dto.exp             = this->_experience;
-    dto.money           = this->_money;
-    dto.deposited_money = this->items.deposited();
+    dto.direction        = static_cast<uint8_t>(this->_direction);
+    dto.state            = static_cast<uint8_t>(this->_state);
+    dto.class_type       = static_cast<uint8_t>(this->_class);
+    dto.promotion        = this->_promotion;
+    dto.level            = this->_level;
+    dto.exp              = this->_experience;
+    dto.money            = this->_money;
+    dto.deposited_money  = this->items.deposited();
     if (this->_mimicry.has_value())
     {
         auto const& p         = this->_mimicry.value();
@@ -2389,12 +2356,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.title            = this->_title;
     dto.speed            = this->stat.base_speed();
     dto.reputation       = this->_reputation;
-    if (!fb::config<std::optional<uint32_t>>("world") && this->_state == STATE::GHOST)
-    {
-        dto.state = static_cast<uint8_t>(STATE::NORMAL);
-        dto.hp    = revived_hp(dto.hp);
-    }
-
+    this->home.to_protocol(dto);
     this->evaluation.to_protocol(dto);
 
     for (auto& [_, buff] : this->buffs)

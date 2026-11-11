@@ -843,47 +843,6 @@ void matchmaker::session(std::shared_ptr<fb::game::match> value)
     this->_session = value;
 }
 
-void matchmaker::save_return_point()
-{
-    this->owner.assert_thread();
-
-    auto map = this->owner.map();
-    if (map == nullptr)
-        return;
-
-    this->_return_map      = map->model().id;
-    this->_return_position = this->owner.position();
-}
-
-void matchmaker::clear_return_point()
-{
-    this->owner.assert_thread();
-    this->_return_map      = std::nullopt;
-    this->_return_position = std::nullopt;
-}
-
-void matchmaker::restore_return_point(uint32_t map, const fb::model::point16_t& position)
-{
-    this->owner.assert_thread();
-    this->_return_map      = map;
-    this->_return_position = position;
-}
-
-bool matchmaker::has_return_point() const
-{
-    return this->_return_map.has_value() && this->_return_position.has_value();
-}
-
-uint32_t matchmaker::return_map() const
-{
-    return this->_return_map.value_or(0);
-}
-
-fb::model::point16_t matchmaker::return_position() const
-{
-    return this->_return_position.value_or(fb::model::point16_t{0, 0});
-}
-
 void matchmaker::disconnect_after_failed_return()
 {
     fb::logger::warn("Character {} could not return home from the cross server; disconnecting", this->owner.name());
@@ -894,14 +853,15 @@ void matchmaker::disconnect_after_failed_return()
 async::task<bool> matchmaker::transfer_home()
 {
     this->owner.assert_thread();
-    if (this->has_return_point() == false)
+    auto pinned = this->owner.home.pinned();
+    if (pinned.has_value() == false)
         co_return false;
 
-    auto dest = this->owner.server.maps.find(this->_return_map.value());
+    auto dest = this->owner.server.maps.find(pinned->map);
     if (dest == nullptr)
         co_return false;
 
-    auto position = this->_return_position.value();
+    auto position = pinned->position;
     if (fb::config<std::optional<uint32_t>>("world"))
     {
         co_return co_await this->owner.map(dest, position);

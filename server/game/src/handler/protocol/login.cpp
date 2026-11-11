@@ -262,12 +262,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     auto ch   = this->server.template make<character>(params);
     auto weak = ch->template weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
-    if (!fb::config<std::optional<uint32_t>>("world"))
-    {
-        ch->matchmaker.restore_return_point(resp.character.map,
-                                            fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
-                                                                 static_cast<uint16_t>(resp.character.position.y)});
-    }
+    ch->home.restore(resp.character.map,
+                     fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
+                                          static_cast<uint16_t>(resp.character.position.y)});
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
     ch->stat.hp(revive ? character::revived_hp(resp.character.hp) : resp.character.hp, false);

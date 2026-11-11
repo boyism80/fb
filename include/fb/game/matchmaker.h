@@ -59,8 +59,6 @@ private:
     bool                                            _reconciling = false;
     std::chrono::steady_clock::time_point           _last_activity;
     std::weak_ptr<fb::game::match>                  _session;
-    std::optional<uint32_t>                         _return_map;
-    std::optional<fb::model::point16_t>             _return_position;
 
     void                                    touch();
     void                                    set_pending_match_id(uint64_t match_id);
@@ -99,12 +97,6 @@ public:
     async::task<void>                        decline(uint64_t match_id);
     std::shared_ptr<fb::game::match>         session() const;
     void                                     session(std::shared_ptr<fb::game::match> value);
-    void                                     save_return_point();
-    void                                     clear_return_point();
-    void                                     restore_return_point(uint32_t map, const fb::model::point16_t& position);
-    bool                                     has_return_point() const;
-    uint32_t                                 return_map() const;
-    fb::model::point16_t                     return_position() const;
     [[nodiscard]] async::task<bool>          transfer_home();
     void                                     disconnect_after_failed_return();
 };

@@ -190,7 +190,7 @@ async::task<bool> fb::game::server::save(character& ch, bool release)
     if (ch.transferring() == false && (ch.inited() == false || ch.loaded() == false))
         co_return false;
 
-    if (!fb::config<std::optional<uint32_t>>("world") && ch.matchmaker.has_return_point() == false)
+    if (ch.home.savable() == false)
     {
         fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
         co_return false;
@@ -333,7 +333,7 @@ async::task<void> fb::game::server::save(fb::thread& thread)
         if (!character->inited() || !character->loaded())
             return;
 
-        if (!fb::config<std::optional<uint32_t>>("world") && character->matchmaker.has_return_point() == false)
+        if (character->home.savable() == false)
         {
             fb::logger::fatal("Character {} cross save without home snapshot", character->name());
             return;

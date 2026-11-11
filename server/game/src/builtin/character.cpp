@@ -4541,18 +4541,19 @@ int builtin::character::builtin_return_point(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    if (ch->matchmaker.has_return_point() == false)
+    auto pinned = ch->home.pinned();
+    if (pinned.has_value() == false)
     {
         lua->pushnil();
         return 1;
     }
 
     lua->new_table();
-    lua->pushinteger(ch->matchmaker.return_map());
+    lua->pushinteger(pinned->map);
     lua_setfield(*lua, -2, "map");
-    lua->pushinteger(ch->matchmaker.return_position().x);
+    lua->pushinteger(pinned->position.x);
     lua_setfield(*lua, -2, "x");
-    lua->pushinteger(ch->matchmaker.return_position().y);
+    lua->pushinteger(pinned->position.y);
     lua_setfield(*lua, -2, "y");
     return 1;
 }

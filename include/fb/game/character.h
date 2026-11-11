@@ -227,6 +227,33 @@ public:
         // clang-format on
     };
 
+    class home
+    {
+    public:
+        struct spot
+        {
+            uint32_t             map = 0;
+            fb::model::point16_t position;
+        };
+
+    private:
+        character&          _owner;
+        std::optional<spot> _spot;
+
+    public:
+        explicit home(character& owner);
+
+    public:
+        // clang-format off
+        const std::optional<spot>& pinned() const;
+        bool                       pin();
+        void                       unpin();
+        void                       restore(uint32_t map, const fb::model::point16_t& position);
+        bool                       savable() const;
+        void                       to_protocol(fb::protocol::internal::Character& dto) const;
+        // clang-format on
+    };
+
     class options
     {
     private:
@@ -331,6 +358,7 @@ public:
     class group                                   group;
     class evaluation                              evaluation;
     class options                                 options;
+    class home                                    home;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
     class dialog                                  dialog;
