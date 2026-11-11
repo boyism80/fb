@@ -2,12 +2,15 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using MySqlConnector;
 using System.Data;
 
 namespace Http.Reepository
 {
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
+        public const string ExpiredReservation = "`reserved_at` <= UTC_TIMESTAMP(3) - INTERVAL 120 SECOND";
+
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -245,6 +248,17 @@ namespace Http.Reepository
             return await conn.QueryFirstOrDefaultAsync<CharacterName>(
                 "SELECT id, world, name FROM name_registry WHERE name = @name AND reserved_at IS NULL",
                 new { name });
+        }
+
+        public async Task ReleaseReservation(MySqlConnection conn, MySqlTransaction transaction, uint id, uint world)
+        {
+            if (world != 0)
+            {
+                Delete(world, new CharacterKey { Id = id });
+                await _dbContext.SaveChangesAsync();
+            }
+
+            await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id }, transaction);
         }
 
         public async Task<uint?> GetWorld(uint id)

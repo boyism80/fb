@@ -1,5 +1,5 @@
 using Dapper;
-using Http.Model;
+using Http.Reepository;
 using Http.Service;
 
 namespace Internal.Services
@@ -7,7 +7,6 @@ namespace Internal.Services
     public class NameReservationCleanupBackgroundService : BackgroundService
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(5);
-        private const int ReservationThresholdSeconds = 120;
         private const int RowLimit = 500;
 
         private readonly IServiceScopeFactory _scopeFactory;
@@ -56,13 +55,13 @@ namespace Internal.Services
             await using var conn = dbContext.GetUnifiedConnection();
             await conn.OpenAsync();
             var ids = (await conn.QueryAsync<uint>(
-                """
+                $"""
                 SELECT `id` FROM `name_registry`
-                WHERE `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND AND `id` > @after
+                WHERE `reserved_at` IS NOT NULL AND {CharacterRepository.ExpiredReservation} AND `id` > @after
                 ORDER BY `id`
                 LIMIT @limit
                 """,
-                new { threshold = ReservationThresholdSeconds, after = _after, limit = RowLimit })).ToList();
+                new { after = _after, limit = RowLimit })).ToList();
             _after = ids.Count >= RowLimit ? ids[^1] : 0;
 
             var deleted = 0;
@@ -74,12 +73,12 @@ namespace Internal.Services
                 {
                     await using var transaction = await conn.BeginTransactionAsync();
                     world = await conn.QuerySingleOrDefaultAsync<uint?>(
-                        """
+                        $"""
                         SELECT `world` FROM `name_registry`
-                        WHERE `id` = @id AND `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND
+                        WHERE `id` = @id AND `reserved_at` IS NOT NULL AND {CharacterRepository.ExpiredReservation}
                         FOR UPDATE
                         """,
-                        new { id, threshold = ReservationThresholdSeconds },
+                        new { id },
                         transaction);
                     if (world == null || failedWorlds.Contains(world.Value))
                     {
@@ -87,13 +86,7 @@ namespace Internal.Services
                         continue;
                     }
 
-                    if (world.Value != 0)
-                    {
-                        dbContext.Character.Delete(world.Value, new CharacterKey { Id = id });
-                        await dbContext.SaveChangesAsync();
-                    }
-
-                    await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id }, transaction);
+                    await dbContext.Character.ReleaseReservation(conn, transaction, id, world.Value);
                     await transaction.CommitAsync();
                     deleted++;
                 }

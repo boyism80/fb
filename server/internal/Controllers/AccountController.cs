@@ -3,6 +3,7 @@ using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
+using Http.Reepository;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -16,8 +17,6 @@ namespace Internal.Controllers
     [Route("account")]
     public class AccountController : ControllerBase
     {
-        private const int NameReservationThresholdSeconds = 120;
-
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly ILogger<AccountController> _logger;
@@ -127,14 +126,14 @@ namespace Internal.Controllers
                 await conn.OpenAsync();
                 await using var transaction = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted);
                 var entry = await conn.QuerySingleOrDefaultAsync<NameRegistryEntry>(
-                    """
+                    $"""
                     SELECT `id` AS Id, `world` AS World,
                            CAST(`reserved_at` IS NULL AS UNSIGNED) AS Confirmed,
-                           CAST(IFNULL(`reserved_at` <= UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND, 0) AS UNSIGNED) AS Expired
+                           CAST(IFNULL({CharacterRepository.ExpiredReservation}, 0) AS UNSIGNED) AS Expired
                     FROM `name_registry` WHERE `name` = @name
                     FOR UPDATE
                     """,
-                    new { name = request.Name, threshold = NameReservationThresholdSeconds },
+                    new { name = request.Name },
                     transaction);
 
                 if (entry != null)
@@ -145,12 +144,7 @@ namespace Internal.Controllers
                         return new Response.ReserveName { Success = false, Uid = 0 };
                     }
 
-                    if (entry.World != 0)
-                    {
-                        _dbContext.Character.Delete(entry.World, new CharacterKey { Id = entry.Id });
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id = entry.Id }, transaction);
+                    await _dbContext.Character.ReleaseReservation(conn, transaction, entry.Id, entry.World);
                 }
 
                 var uid = await conn.ExecuteScalarAsync<ulong>(
@@ -214,9 +208,7 @@ namespace Internal.Controllers
                     return new Response.ReserveName { Success = false, Uid = request.Uid };
                 }
 
-                _dbContext.Character.Delete(request.World, new CharacterKey { Id = request.Uid });
-                await _dbContext.SaveChangesAsync();
-                await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id = request.Uid }, transaction);
+                await _dbContext.Character.ReleaseReservation(conn, transaction, request.Uid, request.World);
                 await transaction.CommitAsync();
                 return new Response.ReserveName { Success = true, Uid = request.Uid };
             }
