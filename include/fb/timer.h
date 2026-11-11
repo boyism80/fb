@@ -33,7 +33,7 @@ public:
     using handle_callback_type = std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>;
 
 private:
-    bool              _canceled = false;
+    std::atomic<bool> _canceled{false};
     std::atomic<bool> _running{false};
 
 public:
@@ -58,12 +58,12 @@ public:
 public:
     void cancel()
     {
-        this->_canceled = true;
+        this->_canceled.store(true, std::memory_order_release);
     }
 
     bool canceled() const
     {
-        return this->_canceled;
+        return this->_canceled.load(std::memory_order_acquire);
     }
 
     bool running() const
