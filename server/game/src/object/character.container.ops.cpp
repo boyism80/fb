@@ -26,7 +26,7 @@ void character::container::broadcast(std::string_view message, MESSAGE_TYPE type
 {
     auto message_str = std::string(message);
     this->foreach_enqueue([message_str, type, respect_roar](auto& ch) -> async::task<void> {
-        if (respect_roar && ch->option(OPTION::ROAR) == false)
+        if (respect_roar && ch->options.enabled(OPTION::ROAR) == false)
             co_return;
 
         ch->message(message_str, type);

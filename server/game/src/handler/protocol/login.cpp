@@ -40,23 +40,6 @@ login<V>::login(fb::game::server& server) :
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_option(const internal::Option& response, fb::game::character& ch)
-{
-    ch.option(OPTION::WHISPER, response.whisper, false);
-    ch.option(OPTION::GROUP, response.group, false);
-    ch.option(OPTION::ROAR, response.roar, false);
-    ch.option(OPTION::NEWS, response.news, false);
-    ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
-    ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
-    ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
-    ch.option(OPTION::TRADE, response.trade, false);
-    ch.option(OPTION::FAST_MOVE, response.fast_move, false);
-    ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
-    ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
-    ch.option(OPTION::VISIBLE_HELMET, response.visible_helmet, false);
-}
-
-template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
@@ -403,7 +386,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             fb::logger::warn("{} escrow {} has no unsettled request (money {})", ch->name(), escrow_id, money);
     }
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes, resp.archived_storage_boxes);
-    this->init_option(resp.option, *ch);
+    ch->options.load(resp.option);
     {
         auto entries = std::vector<friend_entry>{};
         entries.reserve(resp.friends.size());

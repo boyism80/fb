@@ -17,7 +17,7 @@ async::task<void> announce::handle()
     auto i           = random<uint16_t>(0, static_cast<uint16_t>(table::announce.size() - 1));
     auto message_str = table::announce[i].message;
     this->server.characters.foreach_enqueue([message_str](auto& ch) -> async::task<void> {
-        if (ch->option(OPTION::NEWS) == false)
+        if (ch->options.enabled(OPTION::NEWS) == false)
             co_return;
 
         ch->message(message_str, MESSAGE_TYPE::WORLD);

@@ -4,7 +4,7 @@
 #include <fb/game/server.h>
 
 #include <cstdint>
-#include <exception>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -24,7 +24,6 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto weak   = ch->weak_from_this_as<character>();
     auto option = OPTION(request.option);
     switch (option)
     {
@@ -47,55 +46,9 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         break;
 
     default:
-        auto next = !ch->option(option);
-
-        if (option == OPTION::GROUP && !next)
-        {
-            auto group_id = ch->group.id();
-            if (group_id.has_value())
-            {
-                auto left = true;
-                try
-                {
-                    left = co_await this->server.groups.handle_action(*ch, ch->name());
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::warn("update_option: groups.handle_action failed: {}", e.what());
-                }
-
-                auto ptr = weak.lock();
-                if (ptr == nullptr)
-                    co_return true;
-
-                if (left == false)
-                {
-                    ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-                    ptr->update_option();
-                    co_return true;
-                }
-            }
-        }
-
-        auto   world = ch->world();
-        auto&& resp  = co_await this->server.http.post(
-            weak,
-            "internal",
-            "/in-game/option",
-            internal_reqs::SetOption{world, ch->id, {{static_cast<uint8_t>(option), next}}});
-        auto ptr = weak.lock();
-        if (ptr == nullptr)
-            co_return true;
-
-        if (resp.success)
-        {
-            ptr->option(option, next);
-        }
-        else
-        {
-            ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-            ptr->update_option();
-        }
+        std::ignore = co_await ch->options.change({
+            {option, !ch->options.enabled(option)}
+        });
         break;
     }
     co_return true;
@@ -113,7 +66,6 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
     if (request.options.empty())
         co_return true;
 
-    auto weak = ch->weak_from_this_as<character>();
     if (request.options.size() == 1 && request.options.front() == OPTION::EXTENSION)
     {
         if (request.ride)
@@ -130,75 +82,16 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
     }
     else
     {
-        auto world   = ch->world();
-        auto current = weak.lock();
-        auto changes = std::vector<internal::OptionChange>{};
-        auto applied = std::vector<std::pair<OPTION, bool>>{};
+        auto changes = std::vector<std::pair<OPTION, bool>>{};
         for (auto option : request.options)
         {
-            if (current == nullptr)
-                co_return true;
-
             if (option == OPTION::EXTENSION || option == OPTION::SUPER_HIDE)
                 continue;
 
-            auto next = !current->option(option);
-            if (option == OPTION::GROUP && !next)
-            {
-                auto group_id = current->group.id();
-                if (group_id.has_value())
-                {
-                    auto left = true;
-                    try
-                    {
-                        left = co_await this->server.groups.handle_action(*current, current->name());
-                    }
-                    catch (std::exception& e)
-                    {
-                        fb::logger::warn("update_option: groups.handle_action failed: {}", e.what());
-                    }
-
-                    current = weak.lock();
-                    if (current == nullptr)
-                        co_return true;
-
-                    if (left == false)
-                    {
-                        current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-                        current->update_option();
-                        continue;
-                    }
-                }
-            }
-
-            changes.emplace_back(static_cast<uint8_t>(option), next);
-            applied.emplace_back(option, next);
+            changes.emplace_back(option, !ch->options.enabled(option));
         }
 
-        if (changes.empty())
-            co_return true;
-
-        auto   uid  = current->id;
-        auto&& resp = co_await this->server.http.post(weak,
-                                                      "internal",
-                                                      "/in-game/option",
-                                                      internal_reqs::SetOption{world, uid, std::move(changes)});
-        current     = weak.lock();
-        if (current == nullptr)
-            co_return true;
-
-        if (resp.success)
-        {
-            for (auto& [option, next] : applied)
-            {
-                current->option(option, next);
-            }
-        }
-        else
-        {
-            current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-            current->update_option();
-        }
+        std::ignore = co_await ch->options.change(std::move(changes));
     }
     co_return true;
 }

@@ -227,6 +227,28 @@ public:
         // clang-format on
     };
 
+    class options
+    {
+    private:
+        character& _owner;
+        bool       _values[static_cast<uint8_t>(OPTION::VISIBLE_HELMET) + 1] = {
+            1,
+        };
+
+    public:
+        explicit options(character& owner);
+
+    private:
+        void assign(OPTION key, bool value, bool notify);
+
+    public:
+        // clang-format off
+        bool                            enabled(OPTION key) const;
+        void                            load(const fb::protocol::internal::Option& row);
+        [[nodiscard]] async::task<bool> change(std::vector<std::pair<OPTION, bool>> changes);
+        // clang-format on
+    };
+
     class dialog
     {
     public:
@@ -289,7 +311,6 @@ private:
     ping_state_t                                     _ping_state;
     std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
     bool                                             _settling_death = false;
-    bool                                             _options[static_cast<uint8_t>(OPTION::VISIBLE_HELMET) + 1] = {1,};
     // clang-format on
 
 public:
@@ -309,6 +330,7 @@ public:
     class friends                                 friends;
     class group                                   group;
     class evaluation                              evaluation;
+    class options                                 options;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
     class dialog                                  dialog;
@@ -373,7 +395,6 @@ private:
     bool                            level_up();
     bool                            max_level() const;
     float                           experience_percent() const;
-    bool                            option_toggle(OPTION key, bool notify = true);
     void                            stop_bgm(uint16_t bgm_id = 0);
     [[nodiscard]] async::task<void> death_warp();
     void                            award_exp(uint64_t exp);
@@ -493,8 +514,6 @@ public:
     uint64_t                                                  money_add(uint64_t value);
     void                                                      money_reduce(uint64_t value);
     [[nodiscard]] async::task<fb::game::cash*>                money_drop(uint64_t value);
-    bool                                                      option(OPTION key) const;
-    void                                                      option(OPTION key, bool value, bool notify = true);
     void                                                      update_option();
     void                                                      update_map();
     void                                                      update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc = 0);

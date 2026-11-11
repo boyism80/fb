@@ -17,11 +17,11 @@ void option<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT));
-    writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));
-    writer.write<uint8_t>(this->ch.option(OPTION::NEWS));
-    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
-    writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::WEATHER_EFFECT));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::MAGIC_EFFECT));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::NEWS));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::FAST_MOVE));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::EFFECT_SOUND));
 }
 
 template <>
@@ -29,12 +29,12 @@ void option<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT));
-    writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));
-    writer.write<uint8_t>(this->ch.option(OPTION::NEWS));
-    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
-    writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));
-    writer.write<uint8_t>(this->ch.option(OPTION::VISIBLE_HELMET));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::WEATHER_EFFECT));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::MAGIC_EFFECT));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::NEWS));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::FAST_MOVE));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::EFFECT_SOUND));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::VISIBLE_HELMET));
 }
 #else
 template <CLIENT_VERSION V>

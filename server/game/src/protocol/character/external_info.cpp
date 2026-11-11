@@ -101,8 +101,8 @@ void external_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string>(sstream.str());
 
     writer.write<uint32_t>(this->ch.oid());
-    writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
-    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::GROUP));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::TRADE));
     writer.write<uint32_t>(0x00000000);
 
     writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
@@ -198,8 +198,8 @@ void external_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     writer.write<std::string>(sstream.str());
 
     writer.write<uint32_t>(this->ch.oid());
-    writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
-    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::GROUP));
+    writer.write<uint8_t>(this->ch.options.enabled(OPTION::TRADE));
     writer.write<uint8_t>(0);
     writer.write<int16_t>(this->ch.reputation());
     writer.write<uint16_t>(0);

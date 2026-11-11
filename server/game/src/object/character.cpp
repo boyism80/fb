@@ -50,6 +50,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     friends(*this),
     group(*this),
     evaluation(*this, server.now(), params.evaluation, params.evaluation_playtime, params.evaluated_targets),
+    options(*this),
     matchmaker(*this),
     life(server,
          table::life[0],
@@ -1325,67 +1326,6 @@ async::task<fb::game::cash*> character::money_drop(uint64_t value)
     co_return nullptr;
 }
 
-bool character::option(OPTION key) const
-{
-    this->assert_thread();
-
-    auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
-        throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
-
-    return this->_options[opt];
-}
-
-void character::option(OPTION key, bool value, bool notify)
-{
-    this->assert_thread();
-
-    auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
-        return;
-
-    if (this->_options[opt] == value)
-        return;
-
-    this->_options[opt] = value;
-
-    if (key == OPTION::FIXED_MOVE)
-    {
-        if (value)
-            this->_camera_pivot.reset();
-        else
-            this->camera_pivot();
-    }
-
-    if (key == OPTION::VISIBLE_HELMET)
-        this->show();
-
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
-    this->update_option();
-
-    if (notify)
-    {
-        this->listener.on_option_changed(*this, key, value);
-        if (key == OPTION::VISIBLE_HELMET && this->client_version == fb::protocol::CLIENT_VERSION::v651)
-        {
-            this->update_external();
-            this->group.refresh_portrait();
-        }
-    }
-}
-
-bool character::option_toggle(OPTION key, bool notify)
-{
-    this->assert_thread();
-
-    auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
-        throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
-
-    this->option(key, !this->_options[opt], notify);
-    return this->_options[opt];
-}
-
 void character::update_option()
 {
     this->listener.on_update_option(*this);
@@ -1487,7 +1427,7 @@ void character::camera_pivot() const
 {
     this->assert_thread();
 
-    if (this->option(OPTION::FIXED_MOVE))
+    if (this->options.enabled(OPTION::FIXED_MOVE))
     {
         this->_camera_pivot.reset();
         return;
@@ -1529,7 +1469,7 @@ fb::model::point16_t character::viewport() const
 {
     this->assert_thread();
 
-    if (this->option(OPTION::FIXED_MOVE) == false)
+    if (this->options.enabled(OPTION::FIXED_MOVE) == false)
         this->camera_pivot();
 
     return this->viewport(this->position());
@@ -1543,7 +1483,7 @@ fb::model::point16_t character::viewport(const fb::model::point16_t& position) c
     if (map == nullptr)
         return fb::model::point16_t{0, 0};
 
-    if (this->option(OPTION::FIXED_MOVE))
+    if (this->options.enabled(OPTION::FIXED_MOVE))
         return this->viewport_centered(position);
 
     if (this->_camera_pivot.has_value() == false)
@@ -1677,7 +1617,7 @@ async::task<bool> character::move(DIRECTION direction, const fb::model::point16_
     else
     {
         auto viewport = this->viewport(before);
-        if (this->option(OPTION::FIXED_MOVE) == false)
+        if (this->options.enabled(OPTION::FIXED_MOVE) == false)
             this->camera_pivot();
 
         auto v651 = this->client_version == fb::protocol::CLIENT_VERSION::v651;
@@ -1685,7 +1625,7 @@ async::task<bool> character::move(DIRECTION direction, const fb::model::point16_
         {
             this->listener.on_move_confirm(*this, this->_position, this->viewport(), walk_queue_slot);
         }
-        else if (this->option(OPTION::FAST_MOVE) == false)
+        else if (this->options.enabled(OPTION::FAST_MOVE) == false)
         {
             this->listener.on_move_confirm(*this, before, viewport, walk_queue_slot);
         }
@@ -1929,7 +1869,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
         co_return;
     }
 
-    if (this->option(OPTION::WHISPER) == false)
+    if (this->options.enabled(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
     message = fb::model::table::blocked_word->filter(message);
@@ -1947,7 +1887,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
             if (receiver->hidden(*this))
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), receiver_name));
 
-            if (receiver->option(OPTION::WHISPER) == false)
+            if (receiver->options.enabled(OPTION::WHISPER) == false)
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 
             auto target_name = receiver->name();

@@ -57,7 +57,7 @@ character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(const character& 
     app.face       = ch.face();
     app.ridable_id = ch.state() == STATE::RIDING ? ch.ridable_id() : uint16_t{0};
     auto helmet    = ch.items.helmet();
-    if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
+    if (helmet != nullptr && ch.options.enabled(OPTION::VISIBLE_HELMET))
     {
         app.helmet       = static_cast<uint8_t>(helmet->model().dress);
         app.helmet_color = helmet->color();

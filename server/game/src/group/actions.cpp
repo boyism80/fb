@@ -28,7 +28,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
     auto weak            = me.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
 
-    if (me.option(OPTION::GROUP) == false)
+    if (me.options.enabled(OPTION::GROUP) == false)
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
     if (me.group.id().has_value())
@@ -52,7 +52,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
             if (target->group.id().has_value())
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_GROUP_ALREADY_JOINED), target_name_str));
 
-            if (target->option(OPTION::GROUP) == false)
+            if (target->options.enabled(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
 
             if (target->matchmaker.queued())
@@ -124,7 +124,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
             if (target->world() != actor.world())
                 throw std::runtime_error("다른 월드 플레이어와는 그룹할 수 없습니다.");
 
-            if (target->option(OPTION::GROUP) == false)
+            if (target->options.enabled(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
 
             if (target->group.id() != actor.group.id() && target->matchmaker.queued())
@@ -245,7 +245,7 @@ async::task<bool> group::container::handle_action(character& actor, std::string_
 {
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
-    if (actor.option(OPTION::GROUP) == false)
+    if (actor.options.enabled(OPTION::GROUP) == false)
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
     auto self     = (actor.name() == target_name_str);

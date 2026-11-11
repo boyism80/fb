@@ -23,7 +23,7 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(opcode);
 
     auto flags = this->level;
-    if (this->ch.option(OPTION::FIXED_MOVE) == false)
+    if (this->ch.options.enabled(OPTION::FIXED_MOVE) == false)
         flags |= UPDATE_STATE_LEVEL::FOLLOW_CAMERA;
     writer.write<uint8_t>(static_cast<uint8_t>(flags));
 
@@ -72,7 +72,7 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     }
 
     writer.write<uint8_t>(this->ch.mail_box.unread_count());
-    writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
+    writer.write<bool>(this->ch.options.enabled(OPTION::FAST_MOVE));
     auto speed = this->ch.stat.speed();
     if (speed > 5)
         speed = 5;
@@ -86,7 +86,7 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     writer.write<uint8_t>(opcode);
 
     auto flags = this->level;
-    if (this->ch.option(OPTION::FIXED_MOVE) == false)
+    if (this->ch.options.enabled(OPTION::FIXED_MOVE) == false)
         flags |= UPDATE_STATE_LEVEL::FOLLOW_CAMERA;
     writer.write<uint8_t>(static_cast<uint8_t>(flags));
 
@@ -141,26 +141,26 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     }
 
     writer.write<uint8_t>(this->ch.mail_box.unread_count());
-    writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
+    writer.write<bool>(this->ch.options.enabled(OPTION::FAST_MOVE));
 
     auto bits = 0u;
-    if (this->ch.option(OPTION::WHISPER))
+    if (this->ch.options.enabled(OPTION::WHISPER))
         bits |= 1u << 0;
-    if (this->ch.option(OPTION::ROAR))
+    if (this->ch.options.enabled(OPTION::ROAR))
         bits |= 1u << 2;
-    if (this->ch.option(OPTION::NEWS))
+    if (this->ch.options.enabled(OPTION::NEWS))
         bits |= 1u << 3;
-    if (this->ch.option(OPTION::MAGIC_EFFECT))
+    if (this->ch.options.enabled(OPTION::MAGIC_EFFECT))
         bits |= 1u << 4;
-    if (this->ch.option(OPTION::WEATHER_EFFECT))
+    if (this->ch.options.enabled(OPTION::WEATHER_EFFECT))
         bits |= 1u << 5;
-    if (this->ch.option(OPTION::FIXED_MOVE))
+    if (this->ch.options.enabled(OPTION::FIXED_MOVE))
         bits |= 1u << 6;
-    if (this->ch.option(OPTION::FAST_MOVE))
+    if (this->ch.options.enabled(OPTION::FAST_MOVE))
         bits |= 1u << 8;
-    if (this->ch.option(OPTION::EFFECT_SOUND))
+    if (this->ch.options.enabled(OPTION::EFFECT_SOUND))
         bits |= 1u << 12;
-    if (this->ch.option(OPTION::VISIBLE_HELMET))
+    if (this->ch.options.enabled(OPTION::VISIBLE_HELMET))
         bits |= 1u << 13;
     writer.write<uint32_t>(bits);
 }

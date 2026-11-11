@@ -85,7 +85,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
         writer.template write<std::string>(sstream.str());
     }
 
-    writer.template write<uint8_t>(this->ch.option(OPTION::GROUP));
+    writer.template write<uint8_t>(this->ch.options.enabled(OPTION::GROUP));
 
     auto     cls      = this->ch.cls();
     auto     level    = this->ch.level();
@@ -148,8 +148,8 @@ void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
     }
 
     writer.template write<uint8_t>(0x00);
-    writer.template write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.template write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
+    writer.template write<uint8_t>(this->ch.options.enabled(OPTION::TRADE));
+    writer.template write<uint8_t>(this->ch.options.enabled(OPTION::PK_PROTECT));
 
     writer.template write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)
@@ -180,8 +180,8 @@ void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     serialize_equipment_v651(writer, nullptr); // parts 22 unknown
 
     // no fixed 0x00
-    writer.template write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.template write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
+    writer.template write<uint8_t>(this->ch.options.enabled(OPTION::TRADE));
+    writer.template write<uint8_t>(this->ch.options.enabled(OPTION::PK_PROTECT));
 
     writer.template write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)

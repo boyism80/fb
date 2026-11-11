@@ -34,7 +34,6 @@ public:
 private:
     // clang-format off
     uint32_t              world(const game_reqs::login<V>& request) const;
-    void                  init_option(const internal::Option& response, character& ch);
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login<V>& request, fb::socket<character>& session);

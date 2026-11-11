@@ -155,7 +155,7 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
                               if (ch.sight(me) && me.hidden(ch) == false)
                                   return true;
 
-                              return ch.option(OPTION::ROAR);
+                              return ch.options.enabled(OPTION::ROAR);
                           }});
     }
     else

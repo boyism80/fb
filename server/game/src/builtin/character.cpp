@@ -3411,14 +3411,18 @@ int builtin::character::builtin_option(lua_State* L)
     if (argc >= 3)
     {
         auto value    = lua->toboolean(3);
+        auto changed  = std::make_shared<bool>(false);
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->option(key, value);
+            *changed = co_await ch->options.change({
+                {key, value}
+            });
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*changed);
+            co_return 1;
         };
         return builder.run();
     }
@@ -3427,7 +3431,7 @@ int builtin::character::builtin_option(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *value = ch->option(key);
+        *value = ch->options.enabled(key);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

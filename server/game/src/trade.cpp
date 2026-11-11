@@ -48,11 +48,11 @@ bool trade::begin(character& me, character& you)
             return false;
 
         // The owner has refused the trade
-        if (me.option(OPTION::TRADE) == false)
+        if (me.options.enabled(OPTION::TRADE) == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_REFUSED_BY_ME));
 
         // The partner has refused the trade
-        if (you.option(OPTION::TRADE) == false)
+        if (you.options.enabled(OPTION::TRADE) == false)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER), you.name()));
 
         // The trade is already in progress
