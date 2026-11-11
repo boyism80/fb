@@ -194,7 +194,11 @@ end
 function Life:target(...)
     if select("#", ...) > 0 then
         local target = ...
-        self.inner.world:provoke(self.inner, target ~= nil and target.inner or nil)
+        if target ~= nil then
+            self.inner.world:provoke(self.inner, target.inner)
+        else
+            self.inner.world:lock(self.inner, nil)
+        end
         return
     end
     return face(self.inner.locked)

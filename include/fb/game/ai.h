@@ -31,10 +31,11 @@ private:
     using datetime      = fb::model::datetime;
     using damage_record = std::pair<uint64_t, datetime>;
     using damage_map    = std::map<std::weak_ptr<life>, damage_record, std::owner_less<std::weak_ptr<life>>>;
+    using provocation   = std::pair<std::weak_ptr<life>, datetime>;
 
 private:
-    damage_map              _recent_damage;
-    std::optional<datetime> _provoked_time;
+    damage_map                 _recent_damage;
+    std::optional<provocation> _provoked;
 
 public:
     virtual ~ai() = default;

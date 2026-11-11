@@ -109,10 +109,8 @@ void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount
 void ai::provoke(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
 {
     mob_obj.target(target);
-    if (target != nullptr)
-        this->_provoked_time = now;
-    else
-        this->_provoked_time.reset();
+    this->_recent_damage.clear();
+    this->_provoked = provocation{target, now};
 }
 
 std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
@@ -283,10 +281,10 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
 bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
 {
     auto target = mob_obj.target();
-    if (target == nullptr || !this->_provoked_time.has_value())
+    if (target == nullptr || !this->_provoked.has_value() || target != this->_provoked->first.lock())
         return false;
 
-    return (now - this->_provoked_time.value()) <= TARGET_LOCK_DURATION;
+    return (now - this->_provoked->second) <= TARGET_LOCK_DURATION;
 }
 
 void ai::lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime&)

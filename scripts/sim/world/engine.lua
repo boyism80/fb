@@ -457,11 +457,14 @@ end
 
 function World:provoke(mob, target)
     mob.locked   = target
-    mob.provoked = target ~= nil and self.now or nil
+    mob.damaged  = {}
+    mob.provoked = { target = target, at = self.now }
 end
 
 function World:held(mob)
-    return mob.locked ~= nil and mob.provoked ~= nil and self.now - mob.provoked <= RULES.lock
+    local provoked = mob.provoked
+    return mob.locked ~= nil and provoked ~= nil and mob.locked == provoked.target and
+        self.now - provoked.at <= RULES.lock
 end
 
 function World:strike(mob, direction)
