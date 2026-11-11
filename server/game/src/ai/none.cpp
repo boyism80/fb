@@ -19,6 +19,9 @@ async::task<bool> none_ai::execute(mob& mob_obj, const datetime& now)
     // Check if current target is still valid
     auto target = mob_obj.target();
     if (target == nullptr || !super::should_maintain_target(mob_obj, now))
+        target = super::strongest_attacker(mob_obj, false);
+
+    if (target == nullptr)
     {
         // Clear target and move randomly when no target
         mob_obj.target(nullptr);
@@ -27,6 +30,7 @@ async::task<bool> none_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     // Run away from target
+    super::lock_target(mob_obj, target, now);
     co_await super::run_from_target(mob_obj, target);
 
     co_return true;

@@ -559,12 +559,17 @@ function BEHAVIORS.STATIONARY(world, mob)
 end
 
 function BEHAVIORS.NONE(world, mob)
-    if mob.locked == nil or mob.locked.dead or world:held(mob) == false then
+    local target = mob.locked
+    if target == nil or target.dead or world:held(mob) == false then
+        target = world:strongest(mob, false)
+    end
+    if target == nil then
         mob.locked = nil
         world:wander(mob)
         return
     end
-    world:flee(mob, mob.locked)
+    world:lock(mob, target)
+    world:flee(mob, target)
 end
 
 function BEHAVIORS.INERT()
