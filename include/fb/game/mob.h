@@ -137,6 +137,7 @@ private:
 
 public:
     // clang-format off
+    bool                            targetable(const fb::game::life& target) const;
     bool                            near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
     [[nodiscard]] async::task<bool> move_step(const fb::model::point16_t& position);
     // clang-format on

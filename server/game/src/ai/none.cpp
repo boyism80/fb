@@ -30,7 +30,7 @@ async::task<bool> none_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     // Run away from target
-    super::lock_target(mob_obj, target, now);
+    mob_obj.target(target);
     co_await super::run_from_target(mob_obj, target);
 
     co_return true;

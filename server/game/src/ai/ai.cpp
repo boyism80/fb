@@ -103,7 +103,7 @@ void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount
 
     auto strongest = this->strongest_attacker(mob_obj, false);
     if (strongest != nullptr)
-        this->lock_target(mob_obj, strongest, now);
+        mob_obj.target(strongest);
 }
 
 void ai::provoke(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
@@ -121,12 +121,7 @@ std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
     for (const auto& [weak, record] : this->_recent_damage)
     {
         auto attacker = weak.lock();
-        if (attacker == nullptr)
-            continue;
-
-        if (attacker == mob_obj.oblivion())
-            continue;
-        if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
+        if (attacker == nullptr || mob_obj.targetable(*attacker) == false)
             continue;
 
         DIRECTION attack_dir;
@@ -166,12 +161,7 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
     for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto potential_target = std::static_pointer_cast<life>(obj);
-
-        if (potential_target.get() == mob_obj.oblivion().get())
-            continue;
-        if (!potential_target->alive())
-            continue;
-        if (potential_target->hidden(mob_obj))
+        if (mob_obj.targetable(*potential_target) == false)
             continue;
 
         auto target_pos = potential_target->position();
@@ -208,12 +198,7 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto potential_target = std::static_pointer_cast<life>(obj);
-
-        if (potential_target == mob_obj.oblivion())
-            continue;
-        if (!potential_target->alive())
-            continue;
-        if (potential_target->hidden(mob_obj))
+        if (mob_obj.targetable(*potential_target) == false)
             continue;
 
         DIRECTION attack_dir;
@@ -285,11 +270,6 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
         return false;
 
     return (now - this->_provoked->second) <= TARGET_LOCK_DURATION;
-}
-
-void ai::lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime&)
-{
-    mob_obj.target(target);
 }
 
 void ai::record_damage(std::shared_ptr<life> attacker, uint64_t amount, const datetime& now)

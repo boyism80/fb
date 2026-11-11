@@ -408,23 +408,8 @@ std::shared_ptr<life> mob::target() const
 {
     this->assert_thread();
 
-    if (this->_target.expired())
-        return nullptr;
-
     auto shared = this->_target.lock();
-    if (shared == nullptr)
-        return nullptr;
-
-    if (shared->map() != this->map())
-        return nullptr;
-
-    if (shared->alive() == false)
-        return nullptr;
-
-    if (this->sight(*shared) == false)
-        return nullptr;
-
-    if (shared->hidden(*this))
+    if (shared == nullptr || this->targetable(*shared) == false)
         return nullptr;
 
     return shared;
@@ -458,11 +443,24 @@ void mob::oblivion(std::shared_ptr<life> value)
     this->_oblivion = value;
 }
 
+bool mob::targetable(const life& target) const
+{
+    this->assert_thread();
+
+    if (target.map() != this->map() || target.alive() == false)
+        return false;
+
+    if (this->sight(target) == false || target.hidden(*this))
+        return false;
+
+    return &target != this->oblivion().get();
+}
+
 bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const
 {
     this->assert_thread();
 
-    if (target == nullptr || target->map() != this->map() || target->hidden(*this))
+    if (target == nullptr)
         return false;
 
     for (int i = 0; i < 4; i++)

@@ -54,7 +54,6 @@ protected:
     void                            cleanup_expired_damage(const datetime& now);
     bool                            should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
     bool                            should_maintain_target(const mob& mob_obj, const datetime& now) const;
-    void                            lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime& now);
     void                            record_damage(std::shared_ptr<life> attacker, uint64_t amount, const datetime& now);
     std::shared_ptr<life>           strongest_attacker(mob& mob_obj, bool adjacent) const;
     [[nodiscard]] async::task<void> run_from_target(mob& mob_obj, std::shared_ptr<life> target);

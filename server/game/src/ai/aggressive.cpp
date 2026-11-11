@@ -19,7 +19,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     {
         target = super::find_target_in_sight(mob_obj, now);
         if (target != nullptr)
-            super::lock_target(mob_obj, target, now);
+            mob_obj.target(target);
     }
 
     if (target == nullptr)
