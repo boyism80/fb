@@ -3,8 +3,6 @@ local siege = require('schedule.siege')
 
 local M = {}
 
-local QUEST_MAX_VALUE = 2147483647
-
 local function is_clan_master(me)
     local clan = me:clan()
     if clan == nil then
@@ -149,12 +147,9 @@ M.functions = {
                 me:message("사용법: /경험치 <경험치>")
                 return true
             end
-            exp = tonumber(exp)
-            if not exp or exp < 0 then
-                me:message("경험치는 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:exp(tonumber(exp)) then
+                me:message("경험치는 0 이상의 정수여야 합니다.")
             end
-            me:exp(exp)
             return true
         end,
     },
@@ -948,12 +943,9 @@ M.functions = {
                 me:message("사용법: /레벨바꾸기 <레벨> (0~255)")
                 return true
             end
-            level = tonumber(level)
-            if not level or level < 0 or level > 255 then
-                me:message("레벨은 0~255 사이의 숫자여야 합니다.")
-                return true
+            if not me:level(tonumber(level)) then
+                me:message("레벨은 0~255 사이의 정수여야 합니다.")
             end
-            me:level(level)
             return true
         end,
     },
@@ -1909,12 +1901,9 @@ M.functions = {
                 me:message("사용법: /금전 <금액>")
                 return true
             end
-            money = tonumber(money)
-            if not money or money < 0 then
-                me:message("금액은 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:money(tonumber(money)) then
+                me:message("금액은 0 이상의 정수여야 합니다.")
             end
-            me:money(money)
             return true
         end,
     },
@@ -2066,13 +2055,8 @@ M.functions = {
                 me:message("사용법: /퀘스트완료 <ID>")
                 return true
             end
-            id = math.tointeger(tonumber(id))
-            if not id or id < 0 or id > QUEST_MAX_VALUE then
-                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
 
-            local quest = me:quest(id)
+            local quest = me:quest(tonumber(id))
             if not quest then
                 me:message("존재하지 않는 퀘스트입니다.")
                 return true
@@ -2095,32 +2079,32 @@ M.functions = {
                 return true
             end
 
-            id = math.tointeger(tonumber(id))
-            if not id or id < 0 or id > QUEST_MAX_VALUE then
-                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
-            step = math.tointeger(tonumber(step))
-            if step == nil or step < 0 or step > QUEST_MAX_VALUE then
-                me:message(string.format("스텝은 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
-            progress = math.tointeger(tonumber(progress))
-            if progress == nil or progress < 0 or progress > QUEST_MAX_VALUE then
-                me:message(string.format("진행도는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
+            id = tonumber(id)
             param = tostring(param or '')
             local quest = me:quest(id)
+            local started = false
             if not quest then
                 quest = me:start_quest(id)
                 if not quest then
                     me:message("퀘스트를 시작할 수 없습니다.")
                     return true
                 end
+                started = true
             end
-            quest:step(step)
-            quest:progress(progress)
+            if not quest:step(tonumber(step)) then
+                if started then
+                    me:remove_quest(id)
+                end
+                me:message("스텝은 0 이상의 정수여야 합니다.")
+                return true
+            end
+            if not quest:progress(tonumber(progress)) then
+                if started then
+                    me:remove_quest(id)
+                end
+                me:message("진행도는 0 이상의 정수여야 합니다.")
+                return true
+            end
             if not quest:param(param) then
                 me:message("파라미터는 255바이트까지 입력할 수 있습니다.")
             end
@@ -2138,13 +2122,9 @@ M.functions = {
                 return true
             end
 
-            id = math.tointeger(tonumber(id))
-            if not id or id < 0 or id > QUEST_MAX_VALUE then
-                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
+            if not me:remove_quest(tonumber(id)) then
+                me:message("존재하지 않는 퀘스트입니다.")
             end
-
-            me:remove_quest(id)
             return true
         end,
     },
@@ -2159,23 +2139,17 @@ M.functions = {
                 me:message("사용법: /퀘스트진행 <ID> <진행도>")
                 return true
             end
-            id = math.tointeger(tonumber(id))
-            value = math.tointeger(tonumber(value))
-            if not id or id < 0 or id > QUEST_MAX_VALUE then
-                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
-            if not value or value < 0 or value > QUEST_MAX_VALUE then
-                me:message(string.format("진행도는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
-                return true
-            end
-            local quest = me:quest(id)
+            local quest = me:quest(tonumber(id))
             if not quest then
                 me:message("해당 퀘스트를 보유하고 있지 않습니다. 퀘스트를 먼저 수락하세요.")
                 return true
             end
-            quest:progress(value)
-            me:message(string.format("퀘스트 %d 진행도를 %d로 설정했습니다.", id, value))
+            value = tonumber(value)
+            if not quest:progress(value) then
+                me:message("진행도는 0 이상의 정수여야 합니다.")
+                return true
+            end
+            me:message(string.format("퀘스트 %s 진행도를 %d로 설정했습니다.", id, value))
             return true
         end,
     },
@@ -2252,12 +2226,11 @@ M.functions = {
         ['usage'] = '<값> - 인품 설정 (-32768 ~ 32767)',
         ['command'] = function(me, args)
             local value = tonumber(table.unpack(args))
-            if value == nil or value ~= math.floor(value) or value < -32768 or value > 32767 then
+            if not me:reputation(value) then
                 me:message("사용법: /인품설정 <값> (-32768 ~ 32767)")
                 return true
             end
 
-            me:reputation(value)
             me:message(string.format("인품을 %d로 설정했습니다.", value), MESSAGE_TYPE.STATE)
             return true
         end,
@@ -2269,12 +2242,11 @@ M.functions = {
         ['command'] = function(me, args)
             local max = CONST.REPUTATION.MAX_EVALUATION
             local value = tonumber(table.unpack(args))
-            if value == nil or value ~= math.floor(value) or value < 0 or value > max then
+            if not me:evaluation(value) then
                 me:message(string.format("사용법: /평가권설정 <개수> (0 ~ %d)", max))
                 return true
             end
 
-            me:evaluation(value)
             me:message(string.format("인품 평가권을 %d개로 설정했습니다.", value), MESSAGE_TYPE.STATE)
             return true
         end,
