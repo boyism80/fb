@@ -55,7 +55,6 @@ function M.weight(snap, steps)
     local over   = (steps - escort.reach()) / stride
     return over <= 0 and math.exp(over) or 1 + over
 end
-
 -- With several crewmates I stand where the sum is least, which is between them and nearer the one that
 -- loses most alone; my own loss counts toward the nearest one, who would come to me first. The first tile
 -- is where I stand: a crewmate I can reach from there and not from another tile makes that tile endless,
@@ -118,12 +117,15 @@ function M.place(snap, query, budget)
         for _, member in ipairs(crew(snap)) do
             taken[member.world.x .. "," .. member.world.y] = true
         end
+        -- A tile that warps leaves the floor: a poet closing in on its rogue by the stairs of 흉가 93 stepped on
+        -- the warp to 92, and the rally sent it back, five times in 10s (online team, 19:53).
         local tiles = { { x = snap.world.x, y = snap.world.y } }
         for dx = -budget, budget do
             for dy = -(budget - math.abs(dx)), budget - math.abs(dx) do
                 local x, y = snap.world.x + dx, snap.world.y + dy
                 if (dx ~= 0 or dy ~= 0) and x >= 0 and y >= 0 and taken[x .. "," .. y] == nil and
-                    (query.floor == nil or query.floor(snap.world.map, x, y)) then
+                    (query.floor == nil or query.floor(snap.world.map, x, y)) and
+                    (query.warp == nil or query.warp(snap.world.map, x, y) == false) then
                     table.insert(tiles, { x = x, y = y })
                 end
             end

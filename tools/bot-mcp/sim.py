@@ -1013,6 +1013,27 @@ def attack_spells():
         return set(re.findall(r'\["([^"]+)"\] = \{ role = "(?:ATTACK|AREA)"', source.read()))
 
 
+def spells_of(pattern):
+    with open(os.path.join(ROOT, 'scripts', 'brain', 'data', 'spells.lua'), encoding='utf-8') as source:
+        return set(re.findall(r'\["([^"]+)"\] = \{\s*role = ' + pattern, source.read()))
+
+
+def swings_by_role(finished):
+    casts = finished.get('casts') or {}
+    return finished.get('class') == 'WARRIOR' or any(name in casts for name in spells_of('"STRIKE"'))
+
+
+def heals_by_role(finished):
+    casts = finished.get('casts') or {}
+    return finished.get('class') == 'POET' or any(name in casts for name in spells_of('"HEAL"[^}]*self = false'))
+
+
+def fuels_strike(finished, entries):
+    strikes = spells_of('"STRIKE"')
+    return heals_by_role(finished) and any(entry.get('kind') == 'episode' and entry.get('bot') != finished.get('bot') and
+                                           any(name in (entry.get('casts') or {}) for name in strikes) for entry in entries)
+
+
 def habit_rules(entries):
     violations = []
     costs = {}
@@ -1031,7 +1052,7 @@ def habit_rules(entries):
         bot = finished.get('bot')
         cost = costs.get(bot)
         spared = [step for step in swings.get(bot, []) if cost is not None and step.get('mp', 0) >= cost]
-        if finished.get('class') != 'WARRIOR' and spared and '투명' not in (finished.get('casts') or {}):
+        if swings_by_role(finished) is False and fuels_strike(finished, entries) is False and spared and '투명' not in (finished.get('casts') or {}):
             violations.append({'rule': 'swing_with_spell', 'bot': bot, 'count': len(spared), 'cost': cost})
         points = frail.get(bot, [])
         if points:
@@ -1055,7 +1076,7 @@ def group_rules(run_id, team=''):
             if entry.get('kind') == 'act' and entry.get('x') is not None:
                 places.setdefault(entry['bot'], []).append(entry)
         for finished in [entry for entry in entries if entry.get('kind') == 'episode']:
-            if finished['stats'].get('kills', 0) == 0 and finished.get('class') != 'POET':
+            if finished['stats'].get('kills', 0) == 0 and heals_by_role(finished) is False:
                 violations.append({'rule': 'no_kills', 'team': key[0], 'seed': key[1], 'bot': finished.get('bot')})
             if finished.get('died'):
                 violations.append({'rule': 'died', 'team': key[0], 'seed': key[1], 'bot': finished.get('bot')})

@@ -4,6 +4,7 @@ local combat   = require("brain.policies.combat")
 local escort   = require("brain.policies.escort")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
+local score    = require("brain.policies.score")
 local value    = require("brain.policies.value")
 
 local M = {}
@@ -31,6 +32,18 @@ local function approachable(snap, mob)
         snap.self.hp > combat.spike(snap, { { mob = mob, count = 1 } })
 end
 
+-- A mob I would walk to strike is in a crewmate's reach when the crewmate can walk to the fight (escort.tethered),
+-- not by a straight line across walls; one I strike from where I stand is in reach by the straight line, and across
+-- a wall it cannot strike back (user, 11-11).
+local function walking(snap, query, mob)
+    local choice = battle.choose(snap, query, mob)
+    return choice == nil or choice.approach == true
+end
+
+-- The fight stays within a straight sight's reach of every crewmate, and whether the crewmate can walk there is
+-- tethered's to judge. Counting that walk here too, a warrior took six skeletons 8-16 steps from its poet for out of
+-- reach, left for the next floor, and they caught the poet on the way (offline profile pair rooted striker seed 0,
+-- 579-587s, run 08:53; user 11-11).
 local function allowed(snap, mob)
     if approachable(snap, mob) == false then
         return false
@@ -61,7 +74,7 @@ function M.target(snap, query, names)
             if type(shared) == "table" and shared.map == snap.world.map then
                 local found = battle.target(snap, query, function(mob)
                     return mob.oid == shared.oid and wanted[mob.name] ~= nil and M.castable(snap, query, mob) and
-                        approachable(snap, mob) and escort.tethered(snap, mob.x, mob.y)
+                        approachable(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, walking(snap, query, mob))
                 end)
                 if found ~= nil then
                     return found
@@ -69,9 +82,19 @@ function M.target(snap, query, names)
             end
         end
     end
+    -- A crewmate that heals the others does not lead with attacks (user, 11-06): it strikes only what it reaches from
+    -- where it stands. Walking to its own prey, a poet went nine steps for a skeleton beside its warrior's passing
+    -- spot while the warrior walked on to the next floor, and was left alone among skeletons (offline profile pair
+    -- rooted healer seed 1, 687-697s, run 08:08).
+    local healer = #party.members(snap) > 0 and party.vanguard_name(snap, query) ~= snap.self.name and
+        score.capability(snap, query).hps.others > 0
     return battle.target(snap, query, function(mob)
-        return wanted[mob.name] ~= nil and M.castable(snap, query, mob) and allowed(snap, mob) and
-            escort.tethered(snap, mob.x, mob.y)
+        if wanted[mob.name] == nil or M.castable(snap, query, mob) == false then
+            return false
+        end
+        local walk = walking(snap, query, mob)
+        return (healer == false or walk == false or math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1) and
+            allowed(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, walk)
     end)
 end
 

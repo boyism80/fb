@@ -41,7 +41,6 @@ function M.new(options)
         mobs = {},
         killed = {},
         rezens = {},
-        births = {},
         characters = {},
         serial = 0,
         stats = { swings = 0, hits = 0, misses = 0, struck = 0, taken = 0, kills = 0, exp = 0 },
@@ -121,7 +120,6 @@ function World:spawn(rezen, x, y)
     rezen.alive = rezen.alive + 1
     self.map:enter(mob)
     self.mobs[mob.oid] = mob
-    table.insert(self.births, mob)
     return mob
 end
 

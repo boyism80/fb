@@ -1,5 +1,6 @@
 local data     = require("brain.data.combat")
 local magic    = require("brain.data.spells")
+local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
@@ -20,16 +21,6 @@ local function copy(source, changes)
         result[key] = entry
     end
     return result
-end
-
-local function targets(snap)
-    local found = {}
-    for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.oid ~= nil then
-            found[mob.oid] = mob
-        end
-    end
-    return found
 end
 
 local function pressure(snap, member, window)
@@ -58,36 +49,6 @@ local function rescue(snap, query, member, current, restored, heal, worth)
     return (math.exp(-current / blows) - math.exp(-(current + restored) / blows)) * danger.loss(member, query, worth)
 end
 
-local function convertible(member, mob)
-    local best = 0
-    for _, choice in ipairs(combat.options(member, mob).strike) do
-        if (choice.hp or 0) > 0 and (choice.damage or 0) > 0 then
-            best = math.max(best, choice.damage / choice.hp)
-        end
-    end
-    return best * combat.gain(mob, member) / math.max(mob.hp or 1, 1)
-end
-
--- The mob a crewmate fights is the one its last battle names, or else one beside it that strikes while it hunts or
--- defends: the battle a warrior shares lags its fights, and a poet that missed it priced the warrior's hp as if it
--- fed no 건곤대나이, healing it late (online group, 14:45, warrior at 1200-3600 of 4769).
-local function fought(snap, member, seen)
-    local shared = member.battle
-    if type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] ~= nil then
-        return seen[shared.oid]
-    end
-    if (member.task ~= "DEFEND" and member.task ~= "FIELD") or member.world.x == nil then
-        return nil
-    end
-    for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and combat.hits(mob) and
-            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
-            return mob
-        end
-    end
-    return nil
-end
-
 local function volley(snap, member)
     local attackers = {}
     for _, mob in ipairs(member.world.map == snap.world.map and member.world.x ~= nil and snap.world.mobs or {}) do
@@ -103,7 +64,7 @@ local function heals(snap, query, slots, worth)
     local found   = {}
     local mana    = value.spend(snap, query, nil)
     local reserve = recovery.spare(snap)
-    local seen    = targets(snap)
+    local seen    = value.targets(snap)
     for _, member in ipairs(party.members(snap)) do
         local ally = query.ally(member.self.name)
         if ally == nil and member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil and
@@ -118,7 +79,7 @@ local function heals(snap, query, slots, worth)
             if best > 0 and steps > 0 then
                 local hunted = member.battle
                 local target = type(hunted) == "table" and seen[hunted.oid] or nil
-                local fuel   = target ~= nil and convertible(member, target) or 0
+                local fuel   = target ~= nil and value.convertible(member, target) or 0
                 table.insert(found, {
                     urgent = pressure(snap, member, combat.cast(snap)) >= member.self.hp,
                     walk = { x = member.world.x, y = member.world.y },
@@ -137,8 +98,8 @@ local function heals(snap, query, slots, worth)
                 local refused = memory ~= nil and memory.oid == ally.oid and memory.refused == heal.name
                 if heal.others and slots[heal.name] ~= nil and heal.mp + (dying and 0 or reserve) <= (snap.self.mp or 0) and refused == false then
                     local restored = math.min(deficit, heal.hp)
-                    local target   = fought(snap, member, seen)
-                    local fuel     = target ~= nil and convertible(member, target) or 0
+                    local target   = value.fought(snap, member, seen)
+                    local fuel     = target ~= nil and value.convertible(member, target) or 0
                     local saved    = math.max(restored * fuel,
                         recovery.useful(heal.hp, deficit, member.self.max_hp or 0) *
                         value.vigor(member, query, worth, mana))
@@ -196,7 +157,7 @@ local function heals(snap, query, slots, worth)
         local helped  = (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
         local shared  = (snap.record.memory.battle or {}).oid
         local engaged = shared ~= nil and seen[shared] or nil
-        local fuel    = engaged ~= nil and convertible(snap, engaged) or 0
+        local fuel    = engaged ~= nil and value.convertible(snap, engaged) or 0
         for _, heal in ipairs(combat.options(snap, {}).heal) do
             if slots[heal.name] ~= nil and heal.mp + reserve <= (snap.self.mp or 0) then
                 local restored = math.max(0, math.min(deficit, heal.hp) - helped)
@@ -241,7 +202,7 @@ end
 local function debuffs(snap, query, slots, worth)
     local found  = {}
     local mana   = value.mana(snap, query)
-    local seen   = targets(snap)
+    local seen   = value.targets(snap)
     local helper = escort.crew({ snap }, query)
     for _, member in ipairs(party.members(snap)) do
         local shared = member.battle
@@ -433,29 +394,16 @@ function M.value(snap, query)
     return best_of(snap, query, gainful).value
 end
 
--- What one mp is worth as a heal for a crewmate that turns hp into damage (건곤대나이) in its fight: the poet's
--- mana is the warrior's fuel, which a refill price alone does not see. A crewmate between fights burns its hp on
--- the mobs of this ground all the same, so the mob I weigh stands in for its next one: a poet spent 1560 mp on
--- 화염주 while its warrior walked to the next skeleton and had to charge for the heal right after (online group,
--- 16:23). Only a crewmate in sight is fuelled: one out of sight cannot be healed, and pricing my mana for it left a
--- poet ten tiles from its warrior taking blows without striking back (offline stage supply seed 18, 818-823s).
 function M.fueling(snap, query, mob)
-    local seen = targets(snap)
-    local best = 0
-    for _, member in ipairs(party.members(snap)) do
-        if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil and
-            math.abs(member.world.x - snap.world.x) <= data.sight.x and
-            math.abs(member.world.y - snap.world.y) <= data.sight.y then
-            local target = fought(snap, member, seen) or mob
-            local fuel   = target ~= nil and convertible(member, target) or 0
-            for _, heal in ipairs(fuel > 0 and combat.options(snap, {}).heal or {}) do
-                if heal.others and heal.mp > 0 and heal.hp > 0 then
-                    best = math.max(best, heal.hp / heal.mp * fuel)
-                end
-            end
-        end
-    end
-    return best
+    return value.fuel(snap, snap, party.members(snap), mob)
+end
+
+-- A strike is worth its share of the kill less what its mana would heal into a crewmate that turns hp into damage,
+-- wherever I strike from: freeing a walled crewmate, clearing my own way, hunting or saving a crewmate. Only the
+-- rescue went unpriced, and a poet sent to save a rogue cast 화염주 five tiles from its 건곤대나이 warrior at 1644 hp
+-- (offline profile trio rooted seed 2, 516.8s, 7 of 25 rescue 화염주 beside such a warrior, run 21:55).
+function M.outweighs(snap, query, found)
+    return battle.marginal(snap, found) >= (found.choice.mp or 0) * M.fueling(snap, query, found.mob)
 end
 
 return M

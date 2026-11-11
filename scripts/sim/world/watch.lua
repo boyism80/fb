@@ -4,6 +4,7 @@ local combat   = require("brain.policies.combat")
 local escort   = require("brain.policies.escort")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
+local value    = require("brain.policies.value")
 local rest     = require("brain.tasks.rest")
 
 local M = {}
@@ -204,7 +205,14 @@ function M.check(actor, snap, bound, decision, path)
             near = near + 1
         end
     end
-    local melee = me.class == "WARRIOR" or (me.class == "ROGUE" and cloak == false) or outswings(snap, bound)
+    local target = nil
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if decision ~= nil and mob.oid == decision.oid then
+            target = mob
+        end
+    end
+    local fueled = target ~= nil and value.fuel(snap, snap, party.members(snap), target) > 0
+    local melee  = me.class == "WARRIOR" or (me.class == "ROGUE" and cloak == false) or outswings(snap, bound) or fueled
     if counted(dog, "swings", key == "SWING" and snap.self.cloaked ~= true and near > 0 and melee == false and
             (spare or cloak)) >= M.SWINGS then
         actor:violate("swing_with_spell")

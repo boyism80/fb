@@ -30,6 +30,7 @@ local M = {}
 
 local LIMIT = 80
 local OIDS  = 1000000
+local PING  = 5000
 
 local function copy(value)
     if type(value) ~= "table" then
@@ -539,13 +540,6 @@ function Actor:enter(map, x, y)
     end
     local spot    = spots[math.random(1, #spots)]
     self.me.world = world
-    self.known    = {}
-    self.born     = #world.births
-    if next(world.characters) == nil then
-        for oid, mob in pairs(world.mobs) do
-            self.known[oid] = { x = mob.x, y = mob.y }
-        end
-    end
     world:place(self.me, spot[1], spot[2])
     self.active = world
     self:publish()
@@ -593,25 +587,15 @@ end
 function Actor:visible()
     local found = {}
     local world = self.active
-    for index = self.born + 1, #world.births do
-        local mob = world.births[index]
-        self.known[mob.oid] = { x = mob.x, y = mob.y }
-    end
-    self.born = #world.births
-    for oid, mob in pairs(world.mobs) do
-        local seen = world.map:sight(self.me, mob)
-        if seen then
-            self.known[oid] = { x = mob.x, y = mob.y }
-        end
-        local known = self.known[oid]
-        if known ~= nil then
+    for _, mob in pairs(world.mobs) do
+        if world.map:sight(self.me, mob) then
             local entry = copy(mob.data)
             entry.drops = nil
             entry.oid   = mob.oid
             entry.id    = mob.data.id
             entry.name  = mob.data.name
-            entry.x     = known.x
-            entry.y     = known.y
+            entry.x     = mob.x
+            entry.y     = mob.y
             entry.ratio = mob.hp / mob.max_hp
             table.insert(found, entry)
         end
@@ -758,7 +742,8 @@ end
 
 function Actor:wait(revisit)
     local before   = self:signature()
-    local deadline = revisit ~= nil and self.clock + math.max(revisit, 1) or self.ends
+    local ping     = (self.clock // PING + 1) * PING
+    local deadline = math.min(revisit ~= nil and self.clock + math.max(revisit, 1) or self.ends, ping)
     while self.clock < math.min(deadline, self.ends) and self.me.dead == false do
         self:advance(100)
         if self:signature() ~= before then
@@ -883,7 +868,7 @@ function Actor:sighted(oid)
     local mob   = world.mobs[oid]
     if mob == nil then
         return nil, world.killed[oid] and "KILLED" or "LOST"
-    elseif world.map:sight(self.me, mob) == false and self.known[oid] == nil then
+    elseif world.map:sight(self.me, mob) == false then
         return nil, "LOST"
     end
     return mob
@@ -1135,8 +1120,9 @@ function Actor:walk(dest, kinds, braves)
     local range  = dest.range or 0
     kinds        = kinds or {}
     local braved = {}
+    local aim    = { map = world.map.id, x = dest.x, y = dest.y, range = dest.range }
     if self.rooted ~= nil and self.clock >= self.rooted.from and self.clock < self.rooted.to then
-        self.memory.blocked = { at = self.clock, since = self.rooted.from, map = world.map.id }
+        self.memory.blocked = { at = self.clock, since = self.rooted.from, map = world.map.id, dest = aim }
         return false, "BLOCKED"
     end
     local function goal(x, y)
@@ -1181,7 +1167,7 @@ function Actor:walk(dest, kinds, braves)
         end
         local prior = self.memory.blocked
         local since = type(prior) == "table" and prior.map == world.map.id and prior.since or self.clock
-        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, detail = "THREAT" }
+        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, detail = "THREAT", dest = aim }
         return nil, "THREATENED"
     end
     local barred, seen = self:threatened(kinds, braved)
@@ -1199,7 +1185,7 @@ function Actor:walk(dest, kinds, braves)
     if path == nil then
         local prior = self.memory.blocked
         local since = type(prior) == "table" and prior.walls and prior.map == world.map.id and prior.since or self.clock
-        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, walls = true }
+        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, walls = true, dest = aim }
         return false, "NO_ROUTE"
     end
     local hp     = self.me.hp
@@ -1230,40 +1216,6 @@ function Actor:walk(dest, kinds, braves)
         if path[index] == nil then
             break
         end
-        if dest.leash ~= nil then
-            local _, nx, ny = world.map:passable(self.me.x, self.me.y, path[index], self.me)
-            local pulled    = false
-            for _, name in ipairs(dest.leash.names) do
-                local mate = self.session:find(name)
-                if nx ~= nil and mate ~= nil and mate.active == self.active and mate.me.dead ~= true then
-                    local at    = world.map:sight(self.me, mate.me) and mate.me or (dest.leash.at or {})[name]
-                    local steps = at ~= nil and self.mind:steps(world.map.id, at.x, at.y, {
-                        { x = nx, y = ny, range = 0 },
-                        { x = self.me.x, y = self.me.y, range = 0 },
-                    }) or {}
-                    if type(steps[1]) == "number" and type(steps[2]) == "number" then
-                        pulled = pulled or (steps[1] > dest.leash.steps and steps[1] > steps[2])
-                    end
-                end
-            end
-            if pulled then
-                local crew = {}
-                for _, name in ipairs(dest.leash.names) do
-                    local mate = self.session:find(name)
-                    if mate ~= nil and mate.active == self.active and world.map:sight(self.me, mate.me) then
-                        crew[name] = { x = mate.me.x, y = mate.me.y }
-                    end
-                end
-                self.memory.leashed = {
-                    map = world.map.id,
-                    x = self.me.x,
-                    y = self.me.y,
-                    crew = crew,
-                    dest = { map = dest.map, x = dest.x, y = dest.y, range = dest.range }
-                }
-                return true, "LEASHED"
-            end
-        end
         if world:move(self.me, path[index]) == false then
             local around = world.map:route(self.me, goal, nil, barred)
             local yielded, alerted = false, false
@@ -1275,7 +1227,7 @@ function Actor:walk(dest, kinds, braves)
             elseif (around == nil or #around == 0) and yielded then
                 around = { table.unpack(path, index) }
             elseif around == nil or #around == 0 then
-                return self:clear(path[index])
+                return self:clear(path[index], aim)
             end
             path  = around
             index = 1
@@ -1323,7 +1275,7 @@ function Actor:yielded(direction, remaining, crew)
     return false, false, crew
 end
 
-function Actor:clear(direction)
+function Actor:clear(direction, aim)
     local world = self.active
     local x, y  = world.map:step(self.me.x, self.me.y, direction)
     local prior = self.memory.blocked
@@ -1332,7 +1284,15 @@ function Actor:clear(direction)
         self.clock - prior.at < combat.rerank then
         since = prior.since
     end
-    self.memory.blocked = { at = self.clock, since = since, map = world.map.id }
+    local detail = nil
+    for _, object in ipairs(world.map:at(x, y)) do
+        if world.mobs[object.oid] == object then
+            detail = "MOB"
+        elseif world.characters[object] == true then
+            detail = detail or "CHARACTER"
+        end
+    end
+    self.memory.blocked = { at = self.clock, since = since, map = world.map.id, dest = aim, detail = detail }
     for _, object in ipairs(world.map:at(x, y)) do
         if world.mobs[object.oid] == object then
             local snap = self:snapshot()

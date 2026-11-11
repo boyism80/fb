@@ -50,6 +50,48 @@ function M.stuck(snap, span)
         blocked.map == snap.world.map and blocked.at >= spot.at
 end
 
+-- Walled in means every tile beside me is a wall or a mob, so I cannot walk with the crew whatever I am doing
+-- this moment. A poet walled in on 흉가 96 went DEFEND, REST and FIELD within one fight, and each FIELD let its
+-- rogue leave for the next floor and the rally send it straight back (offline RO+PO 흉가 seed 2, 682-688s).
+-- Crewmates are not walls: they step aside (together.make_way).
+function M.walled(snap, query)
+    local taken = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil then
+            taken[mob.x .. "," .. mob.y] = true
+        end
+    end
+    for _, side in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
+        local x, y = snap.world.x + side[1], snap.world.y + side[2]
+        if query.floor(snap.world.map, x, y) and taken[x .. "," .. y] == nil then
+            return false
+        end
+    end
+    return true
+end
+
+-- Pinned: my last walk failed and I have not moved since, though not for want of a way or for a character in it:
+-- a destination no path reaches leaves me free to walk anywhere else, and a character walks on or, if a crewmate,
+-- steps aside (together.make_way). Counted pinned, a rogue and a warrior that had bumped into each other held
+-- their crew at the rally for good (offline profile trio seed 12, 125-300s, run 13:15).
+function M.pinned(snap)
+    local blocked = snap.record.memory.blocked
+    return M.stuck(snap, snap.pace.swing or combat.swing) and blocked.walls ~= true and blocked.detail ~= "CHARACTER"
+end
+
+-- Back in the ground since the servicing began: I last entered it after the servicing began, and on a hunting floor
+-- whose entry is not noted yet I am entering it now, as the entry is noted only after the decision (decide.entered).
+-- Counting only the entry noted before, a poet that followed its warrior back in after servicing cast a curse
+-- first, then took its servicing as unfinished and walked out to town and back (offline WA+PO seeds 0-2, 375-392s).
+function M.returned(snap)
+    local memory = snap.record.memory
+    local at     = memory.joined
+    if ground.floor_at(snap.world.map) ~= nil then
+        at = memory.entry ~= nil and memory.entry.at or snap.now
+    end
+    return memory.servicing ~= nil and at ~= nil and at > memory.servicing.at
+end
+
 function M.stalled(snap, span)
     local spot = snap.record.memory.spot
     return M.stuck(snap, span) or (spot ~= nil and spot.map == snap.world.map and snap.now - spot.at >= span and
@@ -78,13 +120,14 @@ function M.profile(snap, query, decision)
         looted    = snap.record.memory.looted or 0,
         task      = decision ~= nil and decision.task or nil,
         errand    = grouped and decision ~= nil and M.errands[decision.task] and decision.dest or nil,
-        -- Pinned means trying to move and failing. A member standing in a shop to drink was posted as pinned,
-        -- and the leader left the entrance to fetch it at a spot it had already left (online group, 14:44:52).
-        -- It holds beside the crew too: posted only once apart, a rogue rooted four tiles from its warrior at the
-        -- entrance looked free, and the warrior and poet went in and waited inside without it (offline profile
-        -- trio rooted seed 1, 204-262s).
-        pinned    = grouped and decision ~= nil and decision.kind == ACTION.MOVE and
-            M.stuck(snap, snap.pace.swing or combat.swing) or nil,
+        -- Pinned means my last walk failed and I have not moved since, whatever I do now. Posted only while
+        -- walking, a poet rooted beside its warrior healed and then waited for it to cross, looked free and was
+        -- left a floor behind (offline profile pair rooted healer seed 2, 273.9s); a member drinking in a shop is
+        -- not fetched for it, as fetching is for the hunting floors (hunt stage). It holds beside the crew too:
+        -- posted only once apart, a rogue rooted four tiles from its warrior at the entrance looked free, and the
+        -- warrior and poet went in and waited inside without it (offline profile trio rooted seed 1, 204-262s).
+        pinned    = grouped and M.pinned(snap) or nil,
+        walled    = grouped and snap.world.x ~= nil and M.walled(snap, query) or nil,
         peril     = grouped and M.peril(snap, query) or nil,
         dealt     = grouped and require("brain.policies.battle").recent(snap.record.memory.dealt, snap.now) or nil,
         fallen    = snap.record.death ~= nil and
@@ -437,7 +480,26 @@ end
 -- the hunting the helper gives up on the way, priced by the crew's one plan. A rogue that kills its
 -- attackers itself is worth little and a poet that cannot is worth its life: a poet under blows waited a
 -- minute for a warrior held by its own attackers (offline stage supply seed 2, 165-210s).
+-- A helper's spells count only where they pay for their mana as the helper prices its own strikes (aid.outweighs):
+-- counted in full, the poet beside a 건곤대나이 warrior was the one sent and then kept its mana for heals, so the
+-- warrior was never sent (offline profile trio rooted seed 2, 516.8s, run 21:55).
 local rescues = setmetatable({}, { __mode = "k" })
+
+local function casts_pay(snap, helper, team, attacker, strong)
+    if attacker == nil or strong.blow.mana <= 0 then
+        return true
+    end
+    local crew = {}
+    for _, other in ipairs(team) do
+        if other ~= helper then
+            table.insert(crew, other.member)
+        end
+    end
+    local value = require("brain.policies.value")
+    local share = strong.blow.ranged / math.max(attacker.hp or 1, 1) *
+        require("brain.policies.combat").gain(attacker, helper.member)
+    return share >= strong.blow.mana * value.fuel(snap, helper.member, crew, attacker)
+end
 
 local function weigh_rescue(snap, query)
     local worth = require("brain.policies.value").baseline(snap, query)
@@ -463,19 +525,27 @@ local function weigh_rescue(snap, query)
             end
             local drain = peril.drain - healing
             if drain > 0 and member.self.hp > 0 then
-                local alone = peril.dps > 0 and peril.hp / peril.dps or math.huge
-                local risk  = math.exp(-member.self.hp / (drain * alone))
-                local loss  = danger.loss(member, query, worth)
+                local alone    = peril.dps > 0 and peril.hp / peril.dps or math.huge
+                local risk     = math.exp(-member.self.hp / (drain * alone))
+                local loss     = danger.loss(member, query, worth)
+                local attacker = nil
+                for _, mob in ipairs(snap.world.mobs or {}) do
+                    for _, oid in ipairs(peril.attackers or {}) do
+                        attacker = attacker or (mob.oid == oid and mob or nil)
+                    end
+                end
                 for _, helper in ipairs(team) do
                     local world  = helper.member.world
                     local strong = helper ~= victim and score.capability(helper.member, query) or nil
-                    local dps    = strong ~= nil and strong.dps.single or 0
+                    local spells = strong ~= nil and casts_pay(snap, helper, team, attacker, strong)
+                    local dps    = strong ~= nil and (spells and strong.dps.single or strong.dps.melee) or 0
+                    local burst  = strong ~= nil and (spells and strong.burst or strong.blow.strike) or 0
                     if dps > 0 and world.map == member.world.map and world.x ~= nil then
                         local steps = escort.steps(snap, query, helper.member,
                             { { x = member.world.x, y = member.world.y } })[1]
                         if type(steps) == "number" then
                             local arrive = steps * ((helper.member.pace or {}).step or combat.walk) / 1000
-                            local left   = math.max(0, peril.hp - peril.dps * arrive - strong.burst)
+                            local left   = math.max(0, peril.hp - peril.dps * arrive - burst)
                             local ended  = arrive + left / (peril.dps + dps)
                             local saved  = (risk - math.exp(-member.self.hp / (drain * ended))) * loss
                             local net    = saved - arrive * worth.value
@@ -547,8 +617,8 @@ end
 -- Walking toward the chosen point lowers its cost, so the choice does not flip back while members move.
 local rallies = setmetatable({}, { __mode = "k" })
 
-local function held_in_place(member)
-    return member.pinned == true or member.task == "DEFEND"
+function M.held(member)
+    return member.pinned == true or member.task == "DEFEND" or member.walled == true
 end
 
 local function walk_cost(member, query, target, worth, loss, companions)
@@ -625,7 +695,7 @@ local function compute_rally(snap, query)
             local blocked = snap.record.memory.blocked
             return M.stuck(snap, swing) and blocked.detail == "THREAT" and snap.now - blocked.at < combat.rerank
         end
-        return held_in_place(member)
+        return M.held(member)
     end
     local held = false
     for _, member in ipairs(team) do
@@ -668,8 +738,12 @@ local function compute_rally(snap, query)
                             table.insert(companions, score.rested(other, ground.mode(other)))
                         end
                     end
+                    -- A member that cannot come reaches no spot but its own, however near: counted there when four
+                    -- tiles off in a straight line, a poet walled in by scorpions beside a wall kept the rally on its
+                    -- rogue, which waited while the poet walked into the scorpions for nine minutes (offline RO+PO 흉가
+                    -- seed 1, 330-870s, run 07:36).
                     local walk = walk_cost(member, query, target, prices[index].worth, prices[index].loss, companions)
-                    if walk > 0 and (fixed(member) or walk == math.huge) then
+                    if fixed(member) or walk == math.huge then
                         blocked = blocked + 1
                     elseif walk < math.huge then
                         cost = cost + walk
@@ -738,7 +812,7 @@ end
 function M.rally(snap, query)
     local held = false
     for _, member in ipairs(M.members(snap)) do
-        held = held or (member.self.ghost == false and held_in_place(member))
+        held = held or (member.self.ghost == false and M.held(member))
     end
     if #M.members(snap) == 0 or (escort.complete(snap, query) and held == false) then
         return nil

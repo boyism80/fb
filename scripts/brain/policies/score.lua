@@ -221,6 +221,8 @@ function M.capability(snap, query)
         blow     = {
             adjacent = math.max(swing, opener ~= nil and opener.damage or 0),
             ranged   = single ~= nil and single.damage or 0,
+            mana     = single ~= nil and single.mp or 0,
+            strike   = opener ~= nil and opener.damage or 0,
         },
         ehp      = snap.self.hp / guard,
         hps      = {

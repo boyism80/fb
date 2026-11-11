@@ -41,8 +41,15 @@ function M.barred(snap, query)
     return barring(snap, query) ~= nil
 end
 
+-- Clearing my way is a strike like any other: walled in beside a warrior that turns hp into damage, a poet cast
+-- 화염주 to get out, spent the heal its mana was worth and drew the mob onto itself (261 of the 401 offline 화염주
+-- of poets with 건곤대나이 warriors, run 21:08). It heals and is freed by its crew instead (hunt free_member).
 function M.clear_path(snap, query)
-    return battle.propose(barring(snap, query))
+    local found = barring(snap, query)
+    if aid.outweighs(snap, query, found) == false then
+        return nil
+    end
+    return battle.propose(found)
 end
 
 local function passing(snap, query, mob, fight)
@@ -126,8 +133,13 @@ function M.holds_ground(snap, query)
     return passing(snap, query, found.mob, combat.outcome(snap, query, found.mob)) == false
 end
 
+-- Striking back, the mobs on the crewmate the leader sent me to save are mine to strike too, weighed with the rescue
+-- (battle.target): picking only from the mobs on me, a warrior beside its poet fought its own three skeletons while
+-- three more beat the poet into a flight for 15s (offline stage group seed 1, 173-188s, run 08:29; user 11-11).
 function M.strike_back(snap, query)
-    return battle.propose(attacker(snap, query))
+    return battle.propose(battle.target(snap, query, function(mob)
+        return (battle.attacking(snap, mob) and battle.struck(snap, mob)) or party.rescue_share(snap, query, mob) > 0
+    end))
 end
 
 return M

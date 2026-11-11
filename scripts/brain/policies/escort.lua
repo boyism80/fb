@@ -25,6 +25,7 @@ function M.member(profile)
         battle    = profile.battle,
         heading   = profile.heading,
         pinned    = profile.pinned,
+        walled    = profile.walled,
         peril     = profile.peril,
         dealt     = profile.dealt,
         rescue    = profile.rescue,
@@ -156,12 +157,25 @@ local function near(snap, query, member)
     return type(steps) == "number" and steps <= combat.sight.x + combat.sight.y
 end
 
-function M.tethered(snap, x, y)
+-- A tile is with the crew when it is in each crewmate's sight, and when I walk to it also no farther for the
+-- crewmate to walk than the corner of sight is on open ground, as a crewmate is (near). Counted by sight alone,
+-- skeletons across a wall five tiles from a poet were with the crew, and its warrior walked about 40 steps round
+-- the wall for one while the poet that followed was caught on the way and fought alone (offline profile pair
+-- rooted striker seed 1, 33-45s, run 13:15). A tile I strike from where I stand needs no walk.
+function M.tethered(snap, query, x, y, walking)
     for _, profile in ipairs(snap.party or {}) do
         local world = profile.world
         if world ~= nil and profile.self ~= nil and profile.self.ghost == false and world.map == snap.world.map and
-            world.x ~= nil and (math.abs(world.x - x) > combat.sight.x or math.abs(world.y - y) > combat.sight.y) then
-            return false
+            world.x ~= nil then
+            if math.abs(world.x - x) > combat.sight.x or math.abs(world.y - y) > combat.sight.y then
+                return false
+            end
+            if walking then
+                local steps = M.steps(snap, query, M.member(profile), { { x = x, y = y } })[1]
+                if type(steps) ~= "number" or steps > combat.sight.x + combat.sight.y then
+                    return false
+                end
+            end
         end
     end
     return true

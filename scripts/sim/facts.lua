@@ -62,6 +62,9 @@ function M.bind(mind, snap, world)
         floor = function(map, x, y)
             return terrain.floor(mind, map, x, y)
         end,
+        warp = function(map, x, y)
+            return mind:warp_at(map, x, y)
+        end,
         ally = function(name)
             return world.ally ~= nil and world.ally(name) or nil
         end,

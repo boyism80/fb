@@ -92,12 +92,14 @@ local function stage(snap, facts, maps, hunting)
     end
     -- At the exit the group crosses together; a member busy with something else on this spot is waited
     -- for. Entering from outside, the exit is the meeting point: every member walks here on its own after
-    -- its own servicing, so the leader waits instead of walking off to fetch anyone. Only a member that
-    -- cannot come (moves keep failing, or it is fighting) is fetched, or the wait would never end. A
-    -- member already inside the ground is not waited for; the leader goes in to it. A member on the floor I
-    -- am leaving is not inside yet: counted so, a vanguard crossed to the next floor without a rogue that was
-    -- rooted on its own floor, and a rogue went on and came back for a poet held at the exit (offline profile
-    -- trio rooted seed 2, 244-250s; RO+PO 흉가 seed 1, 219-222s).
+    -- its own servicing, so the leader waits instead of walking off to fetch anyone, a member that cannot
+    -- come included: fetching is for the hunting floors, and a leader that left the entrance for a member
+    -- drinking in a shop found it gone (online group, 14:44:52). That member walks here once it can and the
+    -- wait lasts as long as it cannot (user, 11-11). A member already inside the ground is not waited for;
+    -- the leader goes in to it. A member on the floor I am leaving is not inside yet: counted so, a vanguard
+    -- crossed to the next floor without a rogue that was rooted on its own floor, and a rogue went on and
+    -- came back for a poet held at the exit (offline profile trio rooted seed 2, 244-250s; RO+PO 흉가 seed 1,
+    -- 219-222s).
     local plan = party.plan(snap, facts)
     for _, member in ipairs(party.members(snap)) do
         local world   = member.world
@@ -109,10 +111,9 @@ local function stage(snap, facts, maps, hunting)
             through = through or (floor.map == world.map and world.map ~= snap.world.map)
         end
         if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
-                member.pinned or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
+                party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
                 math.abs(snap.world.x - world.x) + math.abs(snap.world.y - world.y) > 2 * data.adjacent) then
-            local fetch = hunting == true or member.pinned or member.task == "DEFEND"
-            return (fetch and together.to_rally(snap, facts)) or { kind = ACTION.HOLD }
+            return (hunting == true and together.to_rally(snap, facts)) or { kind = ACTION.HOLD }
         end
     end
     return { kind = ACTION.MOVE, dest = { maps = maps } }
@@ -263,8 +264,24 @@ local enter = choose({
     act("FIELD", claimed(follow_entry), "follow_entry"),
 }, "enter_ground")
 
+-- A prey I must walk round a wall for is walked to the whole way round, not to the tiles nearest it in a straight
+-- line: those stood by the wall, the swing found no way and the next walk went round anyway (offline profile pair
+-- rooted striker seed 1, 34-45s, run 13:15).
+local function close_on(snap, found)
+    local range = stride(snap, found.mob.x, found.mob.y, 1)
+    local round = found.steps ~= nil and found.distance ~= nil and found.steps > found.distance - 1
+    if found.choice.approach and (round or range > 1) then
+        return {
+            kind = ACTION.MOVE,
+            dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = round and 1 or range }
+        }
+    end
+    return battle.propose(found)
+end
+
 -- The crewmate the leader sent me to save comes before my own prey: the mob in my way to it first, then the
--- ones on it (party.rescue_share), and with none in sight I walk to it.
+-- ones on it (party.rescue_share), and with none in sight I walk to it. The strike is priced like any other
+-- (aid.outweighs); one its mana does not pay for leaves the crewmate to my heals and the crew.
 local function rescue(snap, facts)
     local victim = together.on_ground(snap, facts) and party.rescued(snap, facts) or nil
     if victim == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or
@@ -276,23 +293,26 @@ local function rescue(snap, facts)
     end)
     if found == nil then
         return { kind = ACTION.MOVE, dest = { map = victim.world.map, x = victim.world.x, y = victim.world.y, range = 1 } }
+    elseif aid.outweighs(snap, facts, found) == false then
+        return nil
     end
-    local range = stride(snap, found.mob.x, found.mob.y, 1)
-    if found.choice.approach and range > 1 then
-        return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = range } }
-    end
-    return battle.propose(found)
+    return close_on(snap, found)
 end
 
+-- A crewmate walled in is freed by striking the mobs on it: nobody struck the foxes round a poet on 흉가 91
+-- that were no prey of the floor, and the group waited for good (offline RO+PO 흉가 seed 2, 300s). The strike
+-- is worth what any strike is (below): freeing its warrior, a poet cast 화염주 that a heal was worth more than
+-- (online team, 20:26 and 21:00).
 local function free_member(snap, facts)
     for _, member in ipairs(party.members(snap)) do
         local world = member.world
-        if member.pinned and member.self.ghost == false and world.map == snap.world.map and world.x ~= nil then
+        if (member.pinned or member.walled) and member.self.ghost == false and world.map == snap.world.map and
+            world.x ~= nil then
             local found = battle.target(snap, facts, function(mob)
                 return math.abs(mob.x - world.x) + math.abs(mob.y - world.y) <= 1 and combat.hits(mob) and
                     field.castable(snap, facts, mob)
             end)
-            if found ~= nil then
+            if found ~= nil and aid.outweighs(snap, facts, found) then
                 return battle.propose(found)
             end
         end
@@ -312,15 +332,10 @@ local function strike(snap, facts)
     -- heal (online group, 16:23, 14 of 66 화염주). A vanguard that holds back still has prey here for its crew,
     -- so it stays instead of moving on: falling through to the next floor, the one in front left its warrior
     -- fighting on 국내해골굴1 (online group, 16:47).
-    local fuel = aid.fueling(snap, facts, found.mob)
-    if battle.marginal(snap, found) < (found.choice.mp or 0) * fuel then
+    if aid.outweighs(snap, facts, found) == false then
         return vanguard(snap, facts) and { kind = ACTION.HOLD } or nil
     else
-        local range = stride(snap, found.mob.x, found.mob.y, 1)
-        if found.choice.approach and range > 1 then
-            return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = range } }
-        end
-        return battle.propose(found)
+        return close_on(snap, found)
     end
 end
 
@@ -328,10 +343,23 @@ local function several(snap, facts)
     return #party.plan(snap, facts).floors > 1
 end
 
+-- A crewmate hurting a mob still alive here is busy here though its task is the hunt: one shooting a skeleton across
+-- a wall looked free, and its vanguard, that may not walk round the wall to join it (escort.tethered), went on to the
+-- next floor without it (healer_waits_beside_leader). Hurting is the damage it dealt within the aggro memory (dealt):
+-- its last battle stays named after a curse or once the fight is over, and a skeleton a poet had cursed across a
+-- wall held its whole crew waiting (offline profile trio seed 12, run 14:24).
 local function crew_busy_here(snap)
+    local alive = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        alive[tostring(mob.oid)] = true
+    end
     for _, member in ipairs(party.members(snap)) do
-        if member.world.map == snap.world.map and member.self.ghost == false and member.task ~= nil and
-            member.task ~= "FIELD" and member.task ~= "NOTHING" then
+        local fighting = false
+        for oid in pairs(member.world.map == snap.world.map and member.dealt or {}) do
+            fighting = fighting or alive[oid] == true
+        end
+        if member.world.map == snap.world.map and member.self.ghost == false and (party.held(member) or fighting or
+                member.task ~= nil and member.task ~= "FIELD" and member.task ~= "NOTHING") then
             return true
         end
     end
@@ -556,11 +584,11 @@ local on_ground = choose({
 local function servicing_on_floor(snap)
     local servicing = snap.record.memory.servicing
     if together.grouped(snap) == false or servicing == nil or servicing.leave ~= true or
-        ground.floor_at(snap.world.map) == nil then
+        ground.floor_at(snap.world.map) == nil or party.returned(snap) then
         return false
     end
     for _, member in ipairs(party.members(snap)) do
-        if member.self.ghost == false and member.world.map == snap.world.map and member.task == "DEFEND" then
+        if member.self.ghost == false and member.world.map == snap.world.map and party.held(member) then
             return false
         end
     end

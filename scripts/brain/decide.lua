@@ -110,32 +110,38 @@ local function decision(snap, facts, found, revisit)
                 tostring(snap.self.hp), tostring(snap.self.max_hp), tostring(snap.self.mp), tostring(snap.self.max_mp),
                 tostring(snap.self.exp), seen, close, far, tostring(snap.self.level), partner, tostring(result.text)))
     end
-    -- The vanguard's walk on a hunting floor keeps the crew within reach: the walker stops (LEASHED) before
-    -- a step that takes it farther than walking reach from a crewmate already beyond it, and the group decides
-    -- again. A leader that walked the long way round a wall left its poet behind and died alone 15 tiles away
-    -- (WA+PO 세작, 534-546s). Only the vanguard is leashed: it walks in front and the crew follows it;
-    -- leashing everyone made each wait for the other to move. Every crewmate on the floor holds it, one that
-    -- cannot move or is out of sight too: leaving those to the rally walked the vanguard to the next floor
-    -- away from a rooted rogue (offline profile trio rooted seed 2, 244-250s). Steps back toward one are never
-    -- held back, and a crewmate out of sight is held at the spot it last posted.
+    -- The vanguard's walk on a hunting floor keeps the crew within walking reach, and that is decided here once:
+    -- a walk away from a crewmate goes only as far as keeps it within walking reach, and with nothing left the
+    -- vanguard waits (leashed) for the crew to close in. A leader that walked the long way round a wall left its
+    -- poet behind and died alone 15 tiles away (WA+PO 세작, 534-546s). Stopping the walk midway instead made the
+    -- vanguard and its crew wait for each other: the crew walked on to where the vanguard was going while the
+    -- vanguard waited where it stopped (offline RO+PO 흉가 and trio scenes, run 08:53). A walk toward a crewmate
+    -- is never held back, and a crewmate out of sight is measured from the spot it last posted. One with no
+    -- walk to me is not waited for: it cannot come, and the rally takes the group to it.
     if result.kind == ACTION.MOVE and result.dest ~= nil and result.dest.x ~= nil and result.dest.map == snap.world.map and
         name ~= "ESCAPE" and party.vanguard_name(snap, facts) == snap.self.name and ground.floor_at(snap.world.map) ~= nil then
-        local names = {}
-        local at    = {}
+        local here  = { x = snap.world.x, y = snap.world.y }
+        local there = { x = result.dest.x, y = result.dest.y }
+        local leg   = nil
         for _, member in ipairs(party.members(snap)) do
             if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil then
-                local ally = facts.ally(member.self.name)
-                local spot = ally ~= nil and ally.x ~= nil and ally or member.world
-                table.insert(names, member.self.name)
-                at[member.self.name] = { x = spot.x, y = spot.y }
+                local ally  = facts.ally(member.self.name)
+                local spot  = ally ~= nil and ally.x ~= nil and ally or member.world
+                local mate  = { self = member.self, world = { map = snap.world.map, x = spot.x, y = spot.y } }
+                local steps = escort.steps(snap, facts, mate, { here, there })
+                if type(steps[1]) == "number" and type(steps[2]) == "number" and steps[2] > steps[1] then
+                    leg = math.min(leg or math.huge, escort.reach() - steps[1])
+                end
             end
         end
-        if #names > 0 then
+        if leg ~= nil and leg <= 0 then
+            result = { kind = ACTION.HOLD, leashed = true }
+        elseif leg ~= nil then
             local dest = {}
             for key, entry in pairs(result.dest) do
                 dest[key] = entry
             end
-            dest.leash  = { names = names, at = at, steps = escort.reach() }
+            dest.steps  = (dest.steps or 0) > 0 and math.min(dest.steps, leg) or leg
             result.dest = dest
         end
     end
@@ -442,8 +448,7 @@ function M.lap(brain, bot, snap, decision, facts)
     -- Servicing is over once I hunt again, or once I came back into the ground after it began: only the one in
     -- front takes a hunting spot, so a poet that followed its warrior back in kept its servicing and walked
     -- out again every time it entered (offline WA+PO, 482-911s).
-    if memory.servicing ~= nil and decision.task == "FIELD" and
-        (decision.occupy ~= nil or (memory.joined ~= nil and memory.joined > memory.servicing.at)) then
+    if memory.servicing ~= nil and decision.task == "FIELD" and (decision.occupy ~= nil or party.returned(snap)) then
         local crew_busy = false
         for _, member in ipairs(party.members(snap)) do
             crew_busy = crew_busy or (member.errand ~= nil and member.self.ghost == false)

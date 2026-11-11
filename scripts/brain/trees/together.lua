@@ -30,6 +30,36 @@ function M.apart(snap, facts)
     return M.grouped(snap) and escort.complete(snap, facts) == false
 end
 
+-- A member on another floor comes to mine when its way to the floor it heads for ends here or runs through here.
+-- Counting only where it heads, a healer that crossed ahead to the floor between saw its vanguard heading past
+-- it, walked back to the floor the vanguard was leaving and bounced between the two (offline profile swap seed 1,
+-- 618-627s and seed 2, 835-841s). A member that cannot move is not coming, and the crew fetches it (party.pinned).
+local function passing(snap, facts, member)
+    if member.world.map == snap.world.map or member.world.x == nil or member.heading == nil or member.pinned == true then
+        return false
+    end
+    local through = false
+    for _, map in ipairs(member.heading) do
+        through = through or map == snap.world.map
+    end
+    if through == false then
+        local route = facts.path({ maps = member.heading }, {}, {},
+            { map = member.world.map, x = member.world.x, y = member.world.y, level = member.self.level })
+        for _, hop in ipairs(route ~= nil and route.path or {}) do
+            through = through or hop.dest == snap.world.map
+        end
+    end
+    return through
+end
+
+-- A member the leader sent a crewmate to save stays for it where it stands, and under blows fights there: walking
+-- to the rally while its rescuer walked to it, a rogue and its warrior passed each other across the floor in one
+-- walk each, and the poet left between them fought alone (offline profile trio rooted seed 1, 507-520s, run 07:05).
+local function awaiting(snap, facts)
+    local rescue = snap.leader == snap.self.name and party.rescue(snap, facts) or (party.leader(snap) or {}).rescue
+    return rescue ~= nil and rescue.name == snap.self.name and rescue.by ~= snap.self.name
+end
+
 -- Moving while the group is scattered always goes through the rally point the leader chose
 -- (party.rally). This is the only place that decides where scattered members meet; see party.rally
 -- for why the per-branch choices it replaced bounced and deadlocked.
@@ -37,17 +67,15 @@ function M.to_rally(snap, facts)
     local rally = party.rally(snap, facts)
     if rally == nil then
         return nil
+    elseif awaiting(snap, facts) then
+        return { kind = ACTION.HOLD }
     end
     -- A vanguard on its way to my floor is met where I stand: walking back to the floor it was leaving made a
     -- warrior that crossed first bounce between the two floors until its poet came (offline profile swap seed 2,
     -- 837-841s).
     local lead = party.vanguard(snap, facts)
-    if lead ~= nil and lead.world.map ~= snap.world.map and M.on_ground(snap, facts) then
-        for _, map in ipairs(lead.heading or {}) do
-            if map == snap.world.map then
-                return { kind = ACTION.HOLD }
-            end
-        end
+    if lead ~= nil and M.on_ground(snap, facts) and passing(snap, facts, lead) then
+        return { kind = ACTION.HOLD }
     end
     -- A rally on a member whose moves failed means the crew comes to fetch it. That member still keeps
     -- walking toward the vanguard: one that cannot move fails again and stays fetched, one that can rejoins.
@@ -78,6 +106,9 @@ function M.to_rally(snap, facts)
 end
 
 local function to_center(snap, facts)
+    if awaiting(snap, facts) then
+        return nil
+    end
     local center = escort.center(snap)
     local reach  = recovery.heal(snap) ~= nil and escort.complete(snap, facts) and
         math.min(data.sight.x, data.sight.y) or data.adjacent
@@ -98,11 +129,7 @@ local function in_way(snap, member, x, y)
 end
 
 local function off_landing(snap, facts, member)
-    local coming = false
-    for _, map in ipairs(member.heading or {}) do
-        coming = coming or map == snap.world.map
-    end
-    if coming == false or member.world.map == snap.world.map or member.world.x == nil then
+    if passing(snap, facts, member) == false then
         return nil
     end
     local route = facts.path({ maps = { snap.world.map } }, {}, {},
@@ -192,26 +219,65 @@ local function clear_way(snap, facts)
     return nil
 end
 
+-- A member walks to where the vanguard stands now, not to where it is going: heading for the vanguard's goal, a
+-- crewmate took another way at a fork and the group split (offline trio scene on 흉가 91). Near is counted in
+-- walking steps: a poet 4 tiles from its waiting rogue but 12 steps round a wall counted itself close, and both
+-- waited (offline RO+PO 흉가 seed 2, 495-516s, run 10:40). While the vanguard moves I walk a short leg and look
+-- again, so I head for where it is then.
+local function to_vanguard(snap, facts, lead, budget)
+    local ally = facts.ally(lead.self.name)
+    local spot = ally ~= nil and ally.x ~= nil and ally or lead.world
+    local walk = escort.steps(snap, facts, snap, { { x = spot.x, y = spot.y } })[1]
+    if type(walk) ~= "number" or walk <= data.adjacent then
+        return nil
+    end
+    return {
+        kind = ACTION.MOVE,
+        dest = {
+            map = snap.world.map,
+            x = spot.x,
+            y = spot.y,
+            range = 1,
+            steps = math.min(budget, walk - data.adjacent)
+        }
+    }
+end
+
 local function along(snap, facts)
     local cleared = clear_way(snap, facts)
     if cleared ~= nil then
         return cleared
     end
-    local lead  = party.vanguard(snap, facts)
-    local going = lead ~= nil and lead.going or nil
-    if going == nil or going.map ~= snap.world.map then
+    local lead = party.vanguard(snap, facts)
+    if lead == nil or lead.going == nil or lead.going.map ~= snap.world.map or lead.world.map ~= snap.world.map or
+        lead.world.x == nil then
         return nil
     end
-    local gap = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
-    if gap <= data.adjacent then
+    return to_vanguard(snap, facts, lead, escort.reach() - data.adjacent)
+end
+
+local function waiting_lead(snap, facts)
+    local lead = party.vanguard(snap, facts)
+    if lead == nil or lead.leashed ~= true or lead.world.map ~= snap.world.map or lead.world.x == nil then
         return nil
     end
-    local leg = math.min(data.sight.x, data.sight.y) - data.adjacent
-    return { kind = ACTION.MOVE, dest = { map = going.map, x = going.x, y = going.y, range = math.max(data.adjacent, gap - leg) } }
+    return lead
 end
 
 local function wait(_snap, _facts)
     return { kind = ACTION.HOLD }
+end
+
+-- A member that has not moved since its walk failed walks it again instead of waiting for its crew: the crew waits
+-- for a pinned member as long as it is pinned, so a poet rooted beside its warrior that kept waiting for the
+-- warrior to cross would have stood with it for good once free (offline profile pair rooted healer seed 2). The
+-- failure backoff paces the tries, and the first that goes through ends the pin.
+local function retry(snap, _facts)
+    local blocked = snap.record.memory.blocked
+    if party.pinned(snap) == false or blocked.dest == nil then
+        return nil
+    end
+    return { kind = ACTION.MOVE, dest = blocked.dest }
 end
 
 -- Crossing to the next floor is one move of the whole group: when the vanguard standing beside me heads
@@ -235,41 +301,9 @@ local function cross_with(snap, facts)
     return nil
 end
 
--- After a walk stopped on the leash I wait where I stopped until a leashed crewmate moves; repeating the
--- same walk at once would stop again before its first step, forever. The wait is published (leashed)
--- so the crew closes in to me (close_in), and then the walk goes on. A hitter beside me ends the wait.
-local function leashed_here(snap, facts)
-    local leashed = snap.record.memory.leashed
-    if party.vanguard_name(snap, facts) ~= snap.self.name or leashed == nil or leashed.map ~= snap.world.map or
-        leashed.x ~= snap.world.x or
-        leashed.y ~= snap.world.y or
-        require("brain.tasks.escape").adjacent_hitter(snap) ~= nil then
-        return false
-    end
-    local count = 0
-    for name, at in pairs(leashed.crew or {}) do
-        local ally = facts.ally(name)
-        if ally == nil or ally.x ~= at.x or ally.y ~= at.y then
-            return false
-        end
-        count = count + 1
-    end
-    return count > 0
-end
-
-local function wait_leashed(_snap, _facts)
-    return { kind = ACTION.HOLD, leashed = true }
-end
-
-M.wait_leash = when(leashed_here, act("FIELD", wait_leashed, "wait_leashed"), "leash")
-
 local function close_in(snap, facts)
-    local lead = party.vanguard(snap, facts)
-    if lead == nil or lead.leashed ~= true or lead.world.map ~= snap.world.map or lead.world.x == nil or
-        math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
-        return nil
-    end
-    return { kind = ACTION.MOVE, dest = { map = lead.world.map, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
+    local lead = waiting_lead(snap, facts)
+    return lead ~= nil and to_vanguard(snap, facts, lead, escort.reach() - data.adjacent) or nil
 end
 
 -- Regrouping first meets at the rally point; only a group already on one map tightens toward its centre.
@@ -297,12 +331,14 @@ M.keep = when(M.apart, when(M.on_ground, choose({
     act("FIELD", cross_with, "cross_with"),
     M.regroup,
     act("FIELD", along, "along"),
+    act("FIELD", retry, "retry_walk"),
     act("FIELD", wait, "wait_crew"),
 })), "keep_together")
 
 M.follow = choose({
     act("FIELD", close_in, "close_in"),
     M.regroup,
+    act("FIELD", retry, "retry_walk"),
     act("FIELD", wait, "wait_leader"),
 }, "follow_crew")
 
@@ -314,6 +350,7 @@ M.advance = choose({
     act("FIELD", M.to_rally, "rally"),
     act("FIELD", along, "along"),
     act("FIELD", beside, "beside"),
+    act("FIELD", retry, "retry_walk"),
     act("FIELD", wait, "wait_leader"),
 }, "advance_crew")
 
@@ -322,7 +359,9 @@ M.advance = choose({
 -- steps that fit the gap are walked, so the next cast is not held back. Beside a mob I stay: leaving it
 -- costs the fight its target. Off the ground the entrance is the meeting point that every member walks to
 -- on its own: closing in on a warrior just out of its shop sent a poet waiting at the entrance on a 57s
--- walk across 국내성 and back (online group, 16:22).
+-- walk across 국내성 and back (online group, 16:22). While the vanguard waits for the crew my place is beside it:
+-- placing myself between my crewmates walked a poet and a rogue round each other, each out of the waiting
+-- warrior's walking reach in turn, and the trio stood 100s on 흉가 91 (unit: trio moves to the next floor).
 local function placed(snap, facts, budget)
     if M.grouped(snap) == false or budget <= 0 or snap.world.x == nil or M.on_ground(snap, facts) == false then
         return nil
@@ -332,10 +371,15 @@ local function placed(snap, facts, budget)
             return nil
         end
     end
-    local place = spacing.place(snap, facts, budget)
-    return place ~= nil and
-        { kind = ACTION.MOVE, dest = { map = snap.world.map, x = place.x, y = place.y, range = 0, steps = place.steps } } or
-        nil
+    local lead = waiting_lead(snap, facts)
+    if lead ~= nil then
+        return to_vanguard(snap, facts, lead, budget)
+    else
+        local place = spacing.place(snap, facts, budget)
+        return place ~= nil and
+            { kind = ACTION.MOVE, dest = { map = snap.world.map, x = place.x, y = place.y, range = 0, steps = place.steps } } or
+            nil
+    end
 end
 
 function M.closer(snap, facts, gap)
@@ -347,7 +391,8 @@ function M.gather(snap, facts)
 end
 
 -- A healer weighs closing the gap against its heals: one action's walk, worth the gap cost it saves. Beside
--- its crew that is little and heals come first; the farther it is the more the walk is worth.
+-- its crew that is little and heals come first; the farther it is the more the walk is worth. While the vanguard
+-- waits for the crew the walk is to the vanguard (close_in), not to a place among the crew.
 local function stride(snap)
     return math.floor(require("brain.policies.combat").cast(snap) / (snap.pace.step or data.walk) + 0.5)
 end
@@ -357,7 +402,7 @@ local supports = setmetatable({}, { __mode = "k" })
 function M.supporting(snap, facts)
     if supports[snap] == nil then
         supports[snap] = M.grouped(snap) and party.vanguard_name(snap, facts) ~= snap.self.name and
-            require("brain.policies.score").capability(snap, facts).hps.others > 0
+            waiting_lead(snap, facts) == nil and require("brain.policies.score").capability(snap, facts).hps.others > 0
     end
     return supports[snap]
 end

@@ -607,6 +607,73 @@ test_suite {
                         out:close()
                         return true, trace.described(decision)
                     end),
+                    case("a vanguard takes the skeletons a few steps round from its poet before it leaves the floor", function()
+                        local snap, bound = recorded("vanguard_leaves_near_skeletons")
+                        local near        = { [79] = true, [26] = true, [65] = true, [43] = true }
+                        local plan        = party.plan(snap, bound)
+                        local targets     = {}
+                        for _, floor in ipairs(plan.floors) do
+                            if floor.map == snap.world.map then
+                                targets = floor.targets
+                            end
+                        end
+                        local found = require("brain.tasks.field").target(snap, bound, targets)
+                        data.trace  = true
+                        decide.choose(snap, bound, nil, nil)
+                        local rows = decide.offers[snap.self.name] or {}
+                        data.trace = false
+                        local path = rows[1] ~= nil and rows[1].path or ""
+                        return found ~= nil and near[found.mob.oid] == true and
+                            string.find(path, "next_floor", 1, true) == nil,
+                            string.format("prey=%s path=%s", tostring(found and found.mob.oid), path)
+                    end),
+                    case("a vanguard takes no prey across a wall from its poet, though the wall is within sight", function()
+                        local snap, bound = recorded("vanguard_wall_prey")
+                        local poet        = snap.party[1]
+                        local escort      = require("brain.policies.escort")
+                        local across      = 0
+                        for _, mob in ipairs(snap.world.mobs) do
+                            local seen  = math.abs(mob.x - poet.world.x) <= data.sight.x and
+                                math.abs(mob.y - poet.world.y) <= data.sight.y
+                            local steps = escort.steps(snap, bound, party.members(snap)[1], { { x = mob.x, y = mob.y } })
+                            [1]
+                            if seen and type(steps) == "number" and steps > data.sight.x + data.sight.y then
+                                across = across + 1
+                            end
+                        end
+                        if across == 0 then
+                            return false, "premise: no prey across a wall in the poet's sight"
+                        end
+                        local plan   = party.plan(snap, bound)
+                        local picked = require("brain.tasks.field").target(snap, bound, plan.floors[1].targets)
+                        local walk   = picked ~= nil and
+                            escort.steps(snap, bound, party.members(snap)[1], { { x = picked.mob.x, y = picked.mob.y } })
+                            [1] or nil
+                        return picked == nil or (type(walk) == "number" and walk <= math.min(data.sight.x, data.sight.y)),
+                            string.format("across=%d picked=%s walk=%s", across, tostring(picked and picked.mob.oid),
+                                tostring(walk))
+                    end),
+                    case("a caster shoots a mob across a wall from beside its poet, where a hitter would walk round", function()
+                        local wall, seen          = recorded("vanguard_wall_prey")
+                        local snap, bound         = state("mage60")
+                        local targets             = party.plan(wall, seen).floors[1].targets
+                        snap.world                = wall.world
+                        snap.party                = wall.party
+                        snap.group                = wall.group
+                        snap.leader               = wall.leader
+                        snap.record.memory.commit = wall.record.memory.commit
+                        snap.self.mp              = snap.self.max_mp
+                        local escort              = require("brain.policies.escort")
+                        local picked              = require("brain.tasks.field").target(snap, bound, targets)
+                        local walk                = picked ~= nil and
+                            escort.steps(snap, bound, party.members(snap)[1], { { x = picked.mob.x, y = picked.mob.y } })
+                            [1] or nil
+                        return picked ~= nil and picked.choice.approach ~= true and type(walk) == "number" and
+                            walk > data.sight.x + data.sight.y,
+                            string.format("picked=%s key=%s approach=%s walk=%s", tostring(picked and picked.mob.oid),
+                                tostring(picked and picked.choice.key), tostring(picked and picked.choice.approach),
+                                tostring(walk))
+                    end),
                     case("walker keeps off the tiles beside a threat, also after it steps into the way", function()
                         local results = {}
                         for _, setup in ipairs({ { from = { 4, 2 } }, { from = { 4, 0 }, to = { 4, 2 }, at = 500 } }) do
@@ -1015,7 +1082,7 @@ test_suite {
                         return earlier == nil and elsewhere == nil,
                             string.format("earlier=%s elsewhere=%s", tostring(earlier ~= nil), tostring(elsewhere ~= nil))
                     end),
-                    case("a member standing to drink is not pinned, one failing to move is", function()
+                    case("a member that has not moved since its walk failed is pinned while it drinks, not for want of a way or a character in it", function()
                         local snap, bound          = apart_floors("rogue50", "poet65")
                         snap.record.memory.spot    = {
                             map = snap.world.map,
@@ -1029,8 +1096,16 @@ test_suite {
                             { task = "REST", kind = ACTION.USE, item = "동동주" })
                         local walking              = party.profile(snap, bound,
                             { task = "FIELD", kind = ACTION.MOVE, dest = { maps = { snap.world.map } } })
-                        return drinking.pinned == nil and walking.pinned == true,
-                            string.format("drinking=%s walking=%s", tostring(drinking.pinned), tostring(walking.pinned))
+                        snap.record.memory.blocked = { map = snap.world.map, at = snap.now - 1000, walls = true }
+                        local walled               = party.profile(snap, bound,
+                            { task = "FIELD", kind = ACTION.MOVE, dest = { maps = { snap.world.map } } })
+                        snap.record.memory.blocked = { map = snap.world.map, at = snap.now - 1000, detail = "CHARACTER" }
+                        local crowded              = party.profile(snap, bound,
+                            { task = "FIELD", kind = ACTION.MOVE, dest = { maps = { snap.world.map } } })
+                        return drinking.pinned == true and walking.pinned == true and walled.pinned == nil and
+                            crowded.pinned == nil,
+                            string.format("drinking=%s walking=%s walled=%s crowded=%s", tostring(drinking.pinned),
+                                tostring(walking.pinned), tostring(walled.pinned), tostring(crowded.pinned))
                     end),
                     case("a member outside waits at the entrance, not where the leader stands", function()
                         local snap, bound                          = state("warrior63")
@@ -1172,14 +1247,17 @@ test_suite {
                                     math.abs(mate.world.x - snap.world.x) <= data.sight.x and
                                     { oid = 9001, percent = percent } or nil
                             end
-                            return require("brain.tasks.defend").value(snap, bound)
+                            local defend        = require("brain.tasks.defend")
+                            return defend.value(snap, bound), defend.strike_back(snap, bound).key
                         end
-                        local full, hurt, alone = strike(100, 420), strike(30, 420), strike(100, 22)
-                        local far               = strike(30, 420, 37)
-                        return full < 0 and hurt < 0 and alone >= 0 and far >= 0,
-                            string.format("full=%s hurt=%s alone=%s far=%s", tostring(full), tostring(hurt),
-                                tostring(alone),
-                                tostring(far))
+                        local full, full_key   = strike(100, 420)
+                        local hurt, hurt_key   = strike(30, 420)
+                        local alone, alone_key = strike(100, 22)
+                        local far, far_key     = strike(30, 420, 37)
+                        return full <= 0 and hurt <= 0 and full_key ~= "화염주" and hurt_key ~= "화염주" and alone >= 0 and
+                            far >= 0,
+                            string.format("full=%s/%s hurt=%s/%s alone=%s/%s far=%s/%s", tostring(full), full_key,
+                                tostring(hurt), hurt_key, tostring(alone), alone_key, tostring(far), far_key)
                     end),
                     case("a poet hit beside a low warrior heals instead of striking back", function()
                         local snap, bound                          = state("poet65")
@@ -1298,7 +1376,7 @@ test_suite {
                         local found, pick, path, fuel = hunting(420)
                         local _, _, _, apart          = hunting(22)
                         local struck                  = path:match("strike$") ~= nil
-                        return found ~= nil and found.choice.key == "화염주" and fuel > 0 and apart == 0 and struck == false,
+                        return found ~= nil and found.choice.key ~= "화염주" and fuel > 0 and apart == 0 and struck == false,
                             string.format("key=%s fuel=%s apart=%s pick=%s/%s path=%s",
                                 tostring(found and found.choice.key),
                                 tostring(fuel), tostring(apart), tostring(pick and pick.task),
@@ -1483,6 +1561,7 @@ test_suite {
                             local snap, bound            = apart_floors("poet65", "warrior63")
                             snap.record.memory.servicing = { at = 1000, leave = true }
                             snap.record.memory.joined    = joined
+                            snap.record.memory.entry     = { roster = ground.roster_of(snap.world.map), at = joined }
                             decide.lap({ remember = function() end }, 1, snap, { kind = ACTION.HOLD, task = "FIELD" },
                                 bound)
                             return snap.record.memory.servicing
@@ -1566,6 +1645,7 @@ test_suite {
                         local snap, bound = apart_floors("rogue50", "poet65")
                         snap.party[1].servicing = { at = snap.now - 1000, leave = true }
                         snap.record.memory.servicing, snap.record.memory.serviced = nil, snap.now - 60000
+                        snap.record.memory.entry = { roster = ground.roster_of(snap.world.map), at = snap.now - 60000 }
                         decide.lap({ remember = function() end }, 1, snap, { kind = ACTION.HOLD, task = "FIELD" }, bound)
                         local adopted = snap.record.memory.servicing
                         local gate = party.entry_gate(snap, bound, party.plan(snap, bound))
@@ -1576,47 +1656,80 @@ test_suite {
                                 tostring(pick and pick.task), tostring(pick and pick.kind), tostring(maps[1]),
                                 tostring(gate))
                     end),
-                    case("a walker stopped on the leash waits until the crewmate moves", function()
-                        local snap = apart_floors("rogue50", "poet65")
-                        local mate = snap.party[1]
-                        mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + 3, snap.world.y
-                        local spot = { x = mate.world.x, y = mate.world.y }
-                        snap.record.memory.leashed = {
-                            map = snap.world.map,
-                            x = snap.world.x,
-                            y = snap.world.y,
-                            crew = { [mate.self.name] = { x = spot.x, y = spot.y } }
-                        }
-                        local _, brain_ = shared()
-                        local bound = require("sim.facts").bind(brain_, snap, {
-                            ally = function()
-                                return { x = spot.x, y = spot.y, percent = 100 }
-                            end
-                        })
-                        local still = decide.choose(snap, bound, nil, nil)
-                        spot.x = spot.x - 1
-                        local moved = decide.choose(snap, bound, nil, nil)
-                        return still ~= nil and still.leashed == true and (moved == nil or moved.leashed ~= true),
-                            string.format("still=%s moved=%s", tostring(still and still.task),
-                                tostring(moved and moved.task))
+                    case("a member coming back onto the floor after servicing does not walk straight out again", function()
+                        local function path(entry)
+                            local snap, bound            = apart_floors("poet65", "warrior63")
+                            snap.record.memory.servicing = { at = snap.now - 5000, leave = true }
+                            snap.record.memory.serviced  = nil
+                            snap.record.memory.entry     = entry ~= nil and
+                                { roster = ground.roster_of(snap.world.map), at = snap.now + entry } or nil
+                            data.trace                   = true
+                            decide.choose(snap, bound, nil, nil)
+                            local rows = decide.offers[snap.self.name] or {}
+                            data.trace = false
+                            return rows[1] ~= nil and rows[1].path or ""
+                        end
+                        local entering = path(nil)
+                        local inside   = path(-60000)
+                        return string.find(entering, "leave_for_service", 1, true) == nil and
+                            string.find(inside, "leave_for_service", 1, true) ~= nil,
+                            string.format("entering=%s inside=%s", entering, inside)
                     end),
-                    case("a member closes in to the vanguard waiting on the leash", function()
+                    case("the vanguard waits for a crewmate at the edge of walking reach and walks once it closes in", function()
+                        local escort = require("brain.policies.escort")
+                        local function pick(x, y)
+                            local snap, bound                          = apart_floors("warrior63", "poet65")
+                            local mate                                 = snap.party[1]
+                            snap.world.x, snap.world.y                 = 18, 6
+                            mate.world.map, mate.world.x, mate.world.y = snap.world.map, x, y
+                            mate.task                                  = "FIELD"
+                            local plan                                 = party.plan(snap, bound)
+                            local name                                 = nil
+                            for _, floor in ipairs(plan.floors) do
+                                if floor.map == snap.world.map then
+                                    name = floor.targets[1]
+                                end
+                            end
+                            snap.world.mobs = { mob_named(name, 22, 3, 777) }
+                            local walk      = bound.steps(snap.world.map, x, y, { { x = 18, y = 6, range = 0 } })[1]
+                            return decide.choose(snap, bound, nil, nil), walk
+                        end
+                        local far        = pick(14, 9)
+                        local near, walk = pick(16, 8)
+                        local dest       = near ~= nil and near.dest or {}
+                        return far ~= nil and far.kind == ACTION.HOLD and far.leashed == true and near ~= nil and
+                            near.kind == ACTION.MOVE and dest.steps == escort.reach() - walk,
+                            string.format("far=%s/%s near=%s steps=%s walk=%s", tostring(far and far.kind),
+                                tostring(far and far.leashed), tostring(near and near.kind), tostring(dest.steps),
+                                tostring(walk))
+                    end),
+                    case("a member closes in to the vanguard waiting for it, counted in walking steps", function()
+                        local escort                               = require("brain.policies.escort")
                         local snap, bound                          = apart_floors("poet65", "rogue50")
                         local lead                                 = snap.party[1]
                         lead.world.map, lead.world.x, lead.world.y = snap.world.map, snap.world.x + 6, snap.world.y
                         lead.leashed, lead.task                    = true, "FIELD"
                         local pick                                 = decide.choose(snap, bound, nil, nil)
                         local dest                                 = pick ~= nil and pick.dest or {}
-                        local steps                                = bound.steps(snap.world.map, lead.world.x,
-                            lead.world.y, {
-                                { x = dest.x or snap.world.x, y = dest.y or snap.world.y, range = 0 },
-                                { x = snap.world.x, y = snap.world.y, range = 0 },
-                            })
-                        return pick ~= nil and pick.kind == ACTION.MOVE and type(steps[1]) == "number" and
-                            type(steps[2]) == "number" and steps[1] < steps[2],
-                            string.format("task=%s kind=%s dest=%s,%s walk=%s/%s", tostring(pick and pick.task),
-                                tostring(pick and pick.kind), tostring(dest.x), tostring(dest.y), tostring(steps[1]),
-                                tostring(steps[2]))
+                        local walk                                 = bound.steps(snap.world.map, snap.world.x,
+                            snap.world.y, { { x = lead.world.x, y = lead.world.y, range = 0 } })[1]
+                        local walled, seen                         = recorded("poet_behind_leashed_rogue")
+                        local rogue                                = walled.party[1]
+                        local round                                = escort.steps(walled, seen, walled,
+                            { { x = rogue.world.x, y = rogue.world.y } })[1]
+                        local fetch                                = decide.choose(walled, seen, nil, nil)
+                        local goal                                 = fetch ~= nil and fetch.dest or {}
+                        return pick ~= nil and pick.kind == ACTION.MOVE and dest.x == lead.world.x and
+                            dest.y == lead.world.y and type(walk) == "number" and
+                            dest.steps == math.min(escort.reach(), walk) - data.adjacent and type(round) == "number" and
+                            round > data.adjacent and fetch ~= nil and fetch.kind == ACTION.MOVE and
+                            goal.x == rogue.world.x and goal.y == rogue.world.y,
+                            string.format(
+                                "task=%s kind=%s dest=%s,%s steps=%s walk=%s walled=%s/%s %s,%s rogue=%s,%s round=%s",
+                                tostring(pick and pick.task), tostring(pick and pick.kind), tostring(dest.x),
+                                tostring(dest.y), tostring(dest.steps), tostring(walk), tostring(fetch and fetch.task),
+                                tostring(fetch and fetch.kind), tostring(goal.x), tostring(goal.y),
+                                tostring(rogue.world.x), tostring(rogue.world.y), tostring(round))
                     end),
                     case("the gap between casts walks the steps that fit toward a far crewmate", function()
                         local together                             = require("brain.trees.together")
@@ -1693,13 +1806,38 @@ test_suite {
                             string.format("middle=%s side=%s", middle and (middle.x .. "," .. middle.y) or "stay",
                                 side and (side.x .. "," .. side.y) or "stay")
                     end),
-                    case("the vanguard's walk is held by a crewmate that cannot move too", function()
+                    case("a healer closing in never steps on a warp tile", function()
+                        local spacing = require("brain.policies.spacing")
+                        local function placed(query)
+                            local snap, bound                                                     = apart_floors(
+                                "poet65", "warrior63")
+                            local rogue                                                           = state("rogue50")
+                            rogue.world.map                                                       = snap.world.map
+                            snap.party[1].world.map, snap.party[1].world.x, snap.party[1].world.y = snap.world.map, 4, 10
+                            rogue.world.x, rogue.world.y                                          = 16, 10
+                            table.insert(snap.party, party.profile(rogue, bound, nil))
+                            table.insert(snap.group, rogue.self.name)
+                            snap.world.x, snap.world.y = 22, 10
+                            return spacing.place(snap, query ~= nil and setmetatable(query, { __index = bound }) or bound,
+                                2)
+                        end
+                        local free   = placed(nil)
+                        local warped = free ~= nil and placed({
+                            warp = function(_, x, y)
+                                return x == free.x and y == free.y
+                            end,
+                        }) or nil
+                        return free ~= nil and (warped == nil or warped.x ~= free.x or warped.y ~= free.y),
+                            string.format("free=%s warped=%s", free and (free.x .. "," .. free.y) or "stay",
+                                warped and (warped.x .. "," .. warped.y) or "stay")
+                    end),
+                    case("the vanguard's walk toward a crewmate at the edge of walking reach is not shortened", function()
                         local escort                               = require("brain.policies.escort")
                         local snap, bound                          = apart_floors("warrior63", "poet65")
                         local mate                                 = snap.party[1]
-                        snap.world.x, snap.world.y                 = 5, 14
-                        mate.world.map, mate.world.x, mate.world.y = snap.world.map, 5, 19
-                        mate.pinned, mate.task                     = true, "FIELD"
+                        snap.world.x, snap.world.y                 = 18, 6
+                        mate.world.map, mate.world.x, mate.world.y = snap.world.map, 14, 9
+                        mate.task                                  = "FIELD"
                         local plan                                 = party.plan(snap, bound)
                         local name                                 = nil
                         for _, floor in ipairs(plan.floors) do
@@ -1707,18 +1845,15 @@ test_suite {
                                 name = floor.targets[1]
                             end
                         end
-                        snap.world.mobs = { mob_named(name, 12, 14, 777) }
+                        snap.world.mobs = { mob_named(name, 15, 8, 777) }
+                        local walk      = bound.steps(snap.world.map, 14, 9, { { x = 18, y = 6, range = 0 } })[1]
                         local pick      = decide.choose(snap, bound, nil, nil)
-                        local leash     = pick ~= nil and pick.dest ~= nil and pick.dest.leash or {}
-                        local at        = (leash.at or {})[mate.self.name] or {}
-                        local held      = false
-                        for _, entry in ipairs(leash.names or {}) do
-                            held = held or entry == mate.self.name
-                        end
-                        return held and at.x == 5 and at.y == 19 and leash.steps == escort.reach(),
-                            string.format("kind=%s held=%s at=%s,%s steps=%s", tostring(pick and pick.kind),
-                                tostring(held),
-                                tostring(at.x), tostring(at.y), tostring(leash.steps))
+                        local dest      = pick ~= nil and pick.dest or {}
+                        return walk == escort.reach() and pick ~= nil and pick.kind == ACTION.MOVE and
+                            dest.x == 15 and dest.y == 8 and (dest.steps or 0) == 0,
+                            string.format("walk=%s kind=%s task=%s dest=%s,%s steps=%s", tostring(walk),
+                                tostring(pick and pick.kind), tostring(pick and pick.task), tostring(dest.x),
+                                tostring(dest.y), tostring(dest.steps))
                     end),
                     case("the leader sends help to the poet that cannot end its attackers, not the rogue that can", function()
                         local snap, bound                             = apart_floors("warrior63", "poet65")
@@ -1889,7 +2024,7 @@ test_suite {
                             { kind = ACTION.MOVE, task = "FIELD" })
                         local drinking                             = party.profile(snap, bound,
                             { kind = ACTION.ITEM or ACTION.HOLD, task = "REST" })
-                        return walking.pinned == true and drinking.pinned == nil,
+                        return walking.pinned == true and drinking.pinned == true,
                             string.format("walking=%s drinking=%s", tostring(walking.pinned), tostring(drinking.pinned))
                     end),
                     case("a crew inside meets a member that cannot move at the entrance outside", function()
@@ -1910,14 +2045,23 @@ test_suite {
                         return rally ~= nil and rally.name == rogue.self.name,
                             string.format("rally=%s", tostring(rally and rally.name))
                     end),
-                    case("a warrior its poet heals keeps 건곤대나이's mana for it instead of casting 백열장", function()
+                    case("a warrior keeps 건곤대나이's mana for it instead of casting 백열장, healed, alone or under 운기", function()
                         local value = require("brain.policies.value")
-                        local function pick(grouped)
+                        local function pick(grouped, surging)
                             local snap, bound = state("warrior63")
                             local mob         = mob_named("칼든해골", snap.world.x + 1, snap.world.y, 801)
                             snap.world.mobs   = { mob }
                             snap.self.hp      = snap.self.max_hp // 3
                             snap.self.mp      = snap.self.max_mp // 2
+                            if surging then
+                                local known = false
+                                for _, learned in ipairs(snap.spells) do
+                                    known = known or learned.name == "운기"
+                                end
+                                if known == false then
+                                    table.insert(snap.spells, { name = "운기", slot = 99 })
+                                end
+                            end
                             if grouped then
                                 local poet                                 = state("poet65")
                                 poet.world.map, poet.world.x, poet.world.y = snap.world.map, snap.world.x - 1,
@@ -1929,12 +2073,120 @@ test_suite {
                             local choice = battle.choose(snap, bound, mob, true)
                             return choice and choice.key, value.held(snap, bound, mob)
                         end
-                        local alone, free  = pick(false)
-                        local beside, held = pick(true)
-                        return beside ~= "백열장" and held > 0 and free == 0,
-                            string.format("alone=%s free=%.1f beside=%s held=%.1f", tostring(alone), free,
-                                tostring(beside),
-                                held)
+                        local alone, kept    = pick(false)
+                        local beside, held   = pick(true)
+                        local surged, banked = pick(false, true)
+                        return beside ~= "백열장" and held > 0 and alone ~= "백열장" and kept > 0 and surged ~= "백열장" and
+                            banked > 0,
+                            string.format("alone=%s kept=%.1f beside=%s held=%.1f surged=%s banked=%.1f", tostring(alone),
+                                kept, tostring(beside), held, tostring(surged), banked)
+                    end),
+                    case("a poet beside its warrior takes no prey it must walk to, only one beside it", function()
+                        local function prey(gap)
+                            local snap, bound                                   = state("poet65")
+                            local warrior                                       = state("warrior63")
+                            snap.world.map, snap.world.x, snap.world.y          = 420, 25, 26
+                            warrior.world.map, warrior.world.x, warrior.world.y = 420, 24, 26
+                            snap.world.mobs                                     = { mob_named("해골", 25 + gap, 26, 903) }
+                            snap.world.mobs[1].applied                          = { ["혼마술"] = true }
+                            snap.record.memory.marks                            = { ["903"] = { ["혼마술"] = snap.now } }
+                            snap.party                                          = { party.profile(warrior, bound, nil) }
+                            snap.group                                          = { warrior.self.name, snap.self.name }
+                            snap.leader                                         = warrior.self.name
+                            if party.vanguard_name(snap, bound) ~= warrior.self.name then
+                                return false, "premise: the warrior is not the vanguard"
+                            end
+                            local found = require("brain.tasks.field").target(snap, bound, { "해골" })
+                            return found ~= nil, found ~= nil and found.choice.key or nil
+                        end
+                        local far, far_key   = prey(4)
+                        local near, near_key = prey(1)
+                        return far == false and near == true,
+                            string.format("far=%s/%s near=%s/%s", tostring(far), tostring(far_key), tostring(near),
+                                tostring(near_key))
+                    end),
+                    case("a warrior struck beside its poet draws the poet's attacker once sent to save it", function()
+                        local function strike(sent)
+                            local snap, bound                          = state("warrior63")
+                            local poet                                 = state("poet65")
+                            snap.world.map, snap.world.x, snap.world.y = 420, 25, 26
+                            poet.world.map, poet.world.x, poet.world.y = 420, 26, 26
+                            snap.self.struck                           = 0
+                            snap.world.mobs                            = { mob_named("해골", 24, 26, 901),
+                                mob_named("해골", 27, 26, 902) }
+                            snap.party                                 = { party.profile(poet, bound, nil) }
+                            snap.group                                 = { poet.self.name, snap.self.name }
+                            snap.leader                                = poet.self.name
+                            snap.party[1].rescue                       = sent and
+                                { name = poet.self.name, by = snap.self.name, value = 5000000 } or
+                                nil
+                            local action                               = require("brain.tasks.defend").strike_back(snap,
+                                bound)
+                            return action ~= nil and action.oid, action ~= nil and action.key
+                        end
+                        local own, own_key     = strike(false)
+                        local drawn, drawn_key = strike(true)
+                        return own == 901 and drawn == 902,
+                            string.format("unsent=%s/%s sent=%s/%s", tostring(own), tostring(own_key), tostring(drawn),
+                                tostring(drawn_key))
+                    end),
+                    case("a poet struck beside the warrior its heals feed keeps its mana from 화염주, and spends it alone", function()
+                        local function pick(crewed)
+                            local snap, bound         = state("poet65")
+                            local mob                 = mob_named("칼든해골", snap.world.x + 1, snap.world.y, 811)
+                            snap.world.mobs           = { mob }
+                            snap.self.mp              = snap.self.max_mp
+                            snap.record.memory.battle = {
+                                oid = mob.oid, map = snap.world.map, applied = { ["혼마술"] = snap.now }
+                            }
+                            if crewed then
+                                local warrior                                       = state("warrior63")
+                                warrior.world.map, warrior.world.x, warrior.world.y = snap.world.map, snap.world.x - 1,
+                                    snap.world.y
+                                snap.group                                          = { snap.self.name, warrior.self
+                                    .name }
+                                snap.leader                                         = warrior.self.name
+                                snap.party                                          = { party.profile(warrior, bound, nil) }
+                            end
+                            local choice = battle.choose(snap, bound, mob)
+                            return choice and choice.key
+                        end
+                        local alone, beside = pick(false), pick(true)
+                        return alone == "화염주" and beside ~= "화염주",
+                            string.format("alone=%s beside=%s", tostring(alone), tostring(beside))
+                    end),
+                    case("a side swing splashes the mobs at my sides, as the server swings, not the ones round the mob", function()
+                        local snap, bound = state("rogue50")
+                        local x, y        = snap.world.x, snap.world.y
+                        local front       = mob_named("불여우", x - 1, y, 901)
+                        local side        = mob_named("불여우", x, y - 1, 902)
+                        local round       = mob_named("불여우", x - 1, y - 1, 903)
+                        snap.world.mobs   = { front, side, round }
+                        snap.buffs        = { "측면공격" }
+                        snap.spells       = {}
+                        snap.self.hp      = snap.self.max_hp
+                        local choice      = battle.choose(snap, bound, front)
+                        local hit         = {}
+                        for _, splash in ipairs(choice ~= nil and choice.key == "SWING" and choice.extra or {}) do
+                            hit[splash.mob.oid] = true
+                        end
+                        return choice ~= nil and choice.key == "SWING" and hit[902] == true and hit[903] == nil,
+                            string.format("key=%s side=%s round=%s", tostring(choice and choice.key), tostring(hit[902]),
+                                tostring(hit[903]))
+                    end),
+                    case("a warrior losing to a crab at full mana swings rather than casting 백열장 that hits no harder", function()
+                        local snap, bound = recorded("solo_crab_full_mana")
+                        local crab        = nil
+                        for _, mob in ipairs(snap.world.mobs) do
+                            if mob.oid == 50 then
+                                crab = mob
+                            end
+                        end
+                        if crab == nil or snap.self.mp < snap.self.max_mp then
+                            return false, "premise: no crab beside a full mana bar"
+                        end
+                        local choice = battle.choose(snap, bound, crab)
+                        return choice ~= nil and choice.key ~= "백열장", tostring(choice and choice.key)
                     end),
                     case("a mob turns on whoever hurt it most, keeps its target on a tie and holds a lure", function()
                         local engine = require("sim.world.engine")
@@ -2016,6 +2268,321 @@ test_suite {
                         return kept == 600 and later["901"] == nil and later["902"] == nil,
                             string.format("kept=%s later=%s/%s", tostring(kept), tostring(later["901"] ~= nil),
                                 tostring(later["902"] ~= nil))
+                    end),
+                    case("a leader keeps its floor while a crewmate there is walled in, not while it can walk", function()
+                        local function pick(walled)
+                            local first, seen                          = state("rogue50")
+                            local team                                 = state("poet65")
+                            first.party                                = { party.profile(team, seen, nil) }
+                            first.group                                = { team.self.name, first.self.name }
+                            first.leader                               = first.self.name
+                            local plan                                 = party.plan(first, seen)
+                            local snap, bound                          = state("rogue50")
+                            local crew                                 = state("poet65")
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 12, 10
+                            crew.group                                 = { crew.self.name, snap.self.name }
+                            local sides                                = walled and
+                                { { 13, 10 }, { 11, 10 }, { 12, 9 }, { 12, 11 } } or { { 13, 10 } }
+                            local still                                = nil
+                            for _, mob in pairs(hunting.mobs) do
+                                if mob.attack == "RETALIATE" and (still == nil or mob.name < still.name) then
+                                    still = mob
+                                end
+                            end
+                            crew.world.mobs = {}
+                            for index, side in ipairs(sides) do
+                                table.insert(crew.world.mobs, mob_named(still.name, side[1], side[2], 900 + index))
+                            end
+                            snap.party                = { party.profile(crew, bound,
+                                { task = "FIELD", kind = ACTION.HOLD }) }
+                            snap.group                = { crew.self.name, snap.self.name }
+                            snap.leader               = snap.self.name
+                            snap.record.memory.commit = plan.name
+                            snap.world.mobs           = {}
+                            snap.buffs                = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "BUFF" then
+                                    table.insert(snap.buffs, learned.name)
+                                end
+                            end
+                            data.trace = true
+                            decide.choose(snap, bound, nil, nil)
+                            local rows = decide.offers[snap.self.name] or {}
+                            data.trace = false
+                            return rows[1] ~= nil and rows[1].path or "", snap.party[1].walled == true, #plan.floors
+                        end
+                        local free, open, floors = pick(false)
+                        local held, shut         = pick(true)
+                        local moved              = string.find(free, "next_floor", 1, true) ~= nil
+                        local stayed             = string.find(held, "next_floor", 1, true) == nil
+                        return floors > 1 and open == false and shut and moved and stayed,
+                            string.format("floors=%d open=%s shut=%s free=%s held=%s", floors, tostring(open),
+                                tostring(shut),
+                                free, held)
+                    end),
+                    case("a hitter frees a crewmate walled in by mobs that are no prey, a poet does not spend a heal on it", function()
+                        local function pick(me, mate)
+                            local first, seen                          = state(me)
+                            local team                                 = state(mate)
+                            first.party                                = { party.profile(team, seen, nil) }
+                            first.group                                = { team.self.name, first.self.name }
+                            first.leader                               = first.self.name
+                            local plan                                 = party.plan(first, seen)
+                            local snap, bound                          = state(me)
+                            local crew                                 = state(mate)
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 12, 10
+                            crew.group                                 = { crew.self.name, snap.self.name }
+                            local prey                                 = {}
+                            for _, name in ipairs(plan.floors[1].targets or {}) do
+                                prey[name] = true
+                            end
+                            local still = nil
+                            for _, mob in pairs(hunting.mobs) do
+                                if mob.attack == "RETALIATE" and prey[mob.name] == nil and (still == nil or mob.name < still.name) then
+                                    still = mob
+                                end
+                            end
+                            local walls = {}
+                            for index, side in ipairs({ { 13, 10 }, { 11, 10 }, { 12, 9 }, { 12, 11 } }) do
+                                table.insert(walls, mob_named(still.name, side[1], side[2], 900 + index))
+                            end
+                            crew.world.mobs           = walls
+                            snap.party                = { party.profile(crew, bound,
+                                { task = "FIELD", kind = ACTION.HOLD }) }
+                            snap.group                = { crew.self.name, snap.self.name }
+                            snap.leader               = snap.self.name
+                            snap.record.memory.commit = plan.name
+                            snap.world.mobs           = walls
+                            snap.buffs                = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "BUFF" then
+                                    table.insert(snap.buffs, learned.name)
+                                end
+                            end
+                            data.trace = true
+                            decide.choose(snap, bound, nil, nil)
+                            local rows = decide.offers[snap.self.name] or {}
+                            data.trace = false
+                            local path = rows[1] ~= nil and rows[1].path or ""
+                            return snap.party[1].walled == true and string.find(path, "free_member", 1, true) ~= nil,
+                                path
+                        end
+                        local hitter, struck = pick("rogue50", "poet65")
+                        local healer, healed = pick("poet65", "warrior63")
+                        return hitter and healer == false,
+                            string.format("hitter=%s healer=%s | %s | %s", tostring(hitter), tostring(healer), struck,
+                                healed)
+                    end),
+                    case("a poet walled in beside its 건곤대나이 warrior keeps its mana for heals, alone it casts its way out", function()
+                        local defend = require("brain.tasks.defend")
+                        local function clear(grouped)
+                            local snap, bound = state("poet65")
+                            snap.world.mobs   = { mob_named("칼든해골", snap.world.x + 1, snap.world.y, 801) }
+                            if grouped then
+                                local warrior                                       = state("warrior63")
+                                warrior.world.map, warrior.world.x, warrior.world.y = snap.world.map, snap.world.x - 1,
+                                    snap.world.y
+                                warrior.group                                       = { warrior.self.name, snap.self
+                                    .name }
+                                snap.group                                          = warrior.group
+                                snap.leader                                         = warrior.self.name
+                                snap.party                                          = { party.profile(warrior, bound, nil) }
+                            end
+                            return defend.clear_path(snap, bound)
+                        end
+                        local alone  = clear(false)
+                        local crewed = clear(true)
+                        return alone ~= nil and alone.key ~= "SWING" and (crewed == nil or crewed.key == "SWING"),
+                            string.format("alone=%s crewed=%s", tostring(alone and alone.key),
+                                tostring(crewed and crewed.key))
+                    end),
+                    case("a leader keeps its floor while a crewmate there cannot move, whatever the crewmate does", function()
+                        local function pick(pinned)
+                            local first, seen                          = state("rogue50")
+                            local team                                 = state("poet65")
+                            first.party                                = { party.profile(team, seen, nil) }
+                            first.group                                = { team.self.name, first.self.name }
+                            first.leader                               = first.self.name
+                            local plan                                 = party.plan(first, seen)
+                            local snap, bound                          = state("rogue50")
+                            local crew                                 = state("poet65")
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 11, 10
+                            crew.world.mobs                            = {}
+                            crew.group                                 = { crew.self.name, snap.self.name }
+                            snap.party                                 = { party.profile(crew, bound,
+                                { task = "FIELD", kind = ACTION.HOLD }) }
+                            snap.party[1].pinned                       = pinned or nil
+                            snap.group                                 = { crew.self.name, snap.self.name }
+                            snap.leader                                = snap.self.name
+                            snap.record.memory.commit                  = plan.name
+                            snap.world.mobs                            = {}
+                            snap.buffs                                 = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "BUFF" then
+                                    table.insert(snap.buffs, learned.name)
+                                end
+                            end
+                            data.trace = true
+                            decide.choose(snap, bound, nil, nil)
+                            local rows = decide.offers[snap.self.name] or {}
+                            data.trace = false
+                            return rows[1] ~= nil and rows[1].path or "", #plan.floors
+                        end
+                        local free, floors = pick(false)
+                        local held         = pick(true)
+                        return floors > 1 and string.find(free, "next_floor", 1, true) ~= nil and
+                            string.find(held, "next_floor", 1, true) == nil,
+                            string.format("floors=%d free=%s held=%s", floors, free, held)
+                    end),
+                    case("a leader at the entrance waits for a crewmate that cannot move instead of fetching it", function()
+                        local snap, bound                          = state("warrior63")
+                        local poet, seen                           = state("poet65")
+                        snap.world.map, snap.world.x, snap.world.y = 22, 147, 17
+                        poet.world.map, poet.world.x, poet.world.y = 22, 60, 150
+                        snap.group                                 = { snap.self.name, poet.self.name }
+                        snap.leader                                = snap.self.name
+                        snap.record.memory.commit                  = "국내해골굴"
+                        snap.party                                 = { party.profile(poet, seen, nil) }
+                        snap.party[1].task                         = "FIELD"
+                        snap.buffs                                 = {}
+                        for _, learned in ipairs(snap.spells) do
+                            local spell = spells.spells[learned.name]
+                            if spell ~= nil and spell.role == "BUFF" then
+                                table.insert(snap.buffs, learned.name)
+                            end
+                        end
+                        local function pick(pinned)
+                            snap.party[1].pinned = pinned or nil
+                            data.trace           = true
+                            local chosen         = decide.choose(snap, bound, nil, nil)
+                            local rows           = decide.offers[snap.self.name] or {}
+                            data.trace           = false
+                            return chosen, rows[1] ~= nil and rows[1].path or ""
+                        end
+                        local held, path = pick(true)
+                        local dest       = held ~= nil and held.dest or {}
+                        return held ~= nil and string.find(path, "lead_gate", 1, true) ~= nil and
+                            (held.kind == ACTION.HOLD or (dest.x ~= nil and math.abs(dest.x - 147) + math.abs(dest.y - 17) <= data.adjacent)),
+                            string.format("%s/%s dest=%s(%s,%s) path=%s", tostring(held and held.task),
+                                tostring(held and held.kind), tostring(dest.map), tostring(dest.x), tostring(dest.y),
+                                path)
+                    end),
+                    case("a member that cannot move walks its blocked walk again instead of waiting for its crew", function()
+                        local function pick(pinned)
+                            local first, seen                          = state("rogue50")
+                            local team                                 = state("poet65")
+                            first.party                                = { party.profile(team, seen, nil) }
+                            first.group                                = { team.self.name, first.self.name }
+                            first.leader                               = first.self.name
+                            local plan                                 = party.plan(first, seen)
+                            local lead                                 = state("rogue50")
+                            local snap, bound                          = state("poet65")
+                            lead.world.map, lead.world.x, lead.world.y = plan.floors[1].map, 10, 10
+                            snap.world.map, snap.world.x, snap.world.y = lead.world.map, 11, 10
+                            lead.world.mobs, snap.world.mobs           = {}, {}
+                            lead.group                                 = { lead.self.name, snap.self.name }
+                            lead.leader                                = lead.self.name
+                            lead.party                                 = first.party
+                            lead.record.memory.commit                  = plan.name
+                            local buffs                                = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "BUFF" then
+                                    table.insert(buffs, learned.name)
+                                end
+                            end
+                            lead.buffs, snap.buffs    = buffs, buffs
+                            snap.party                = { party.profile(lead, seen,
+                                { task = "FIELD", kind = ACTION.HOLD }) }
+                            snap.group                = lead.group
+                            snap.leader               = lead.self.name
+                            snap.record.memory.commit = plan.name
+                            if pinned then
+                                snap.record.memory.spot    = { map = snap.world.map, x = 11, y = 10, at = snap.now - 5000 }
+                                snap.record.memory.blocked = {
+                                    map = snap.world.map,
+                                    at = snap.now - 1000,
+                                    since = snap.now - 5000,
+                                    dest = { map = snap.world.map, x = 11, y = 12, range = 0 }
+                                }
+                            end
+                            data.trace   = true
+                            local chosen = decide.choose(snap, bound, nil, nil)
+                            local rows   = decide.offers[snap.self.name] or {}
+                            data.trace   = false
+                            return chosen, rows[1] ~= nil and rows[1].path or ""
+                        end
+                        local free, waited  = pick(false)
+                        local held, retried = pick(true)
+                        local dest          = held ~= nil and held.dest or {}
+                        return string.find(waited, "retry_walk", 1, true) == nil and
+                            string.find(retried, "retry_walk", 1, true) ~= nil and dest.x == 11 and dest.y == 12,
+                            string.format("free=%s/%s held=%s/%s", tostring(free and free.kind), waited,
+                                tostring(held and held.kind), retried)
+                    end),
+                    case("a poet sent to save a crewmate beside its 건곤대나이 warrior keeps its mana, away from it it strikes", function()
+                        local function pick(near)
+                            local first, seen                                 = state("warrior63")
+                            local team                                        = state("poet65")
+                            first.party                                       = { party.profile(team, seen, nil) }
+                            first.group                                       = { team.self.name, first.self.name }
+                            first.leader                                      = first.self.name
+                            local plan                                        = party.plan(first, seen)
+                            local snap, bound                                 = state("poet65")
+                            local lead                                        = state("warrior63")
+                            local mage                                        = state("mage60")
+                            snap.world.map, snap.world.x, snap.world.y        = plan.floors[1].map, 10, 10
+                            lead.world.map, lead.world.x, lead.world.y        = snap.world.map, near and 9 or 30, 10
+                            mage.world.map, mage.world.x, mage.world.y        = snap.world.map, 12, 10
+                            local mob                                         = mob_named("칼든해골", 13, 10, 801)
+                            snap.world.mobs, lead.world.mobs, mage.world.mobs = { mob }, {}, {}
+                            local group                                       = { lead.self.name, snap.self.name, mage
+                                .self.name }
+                            lead.group, lead.leader                           = group, lead.self.name
+                            lead.party                                        = first.party
+                            lead.record.memory.commit                         = plan.name
+                            local buffs                                       = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "BUFF" then
+                                    table.insert(buffs, learned.name)
+                                end
+                            end
+                            lead.buffs, mage.buffs, snap.buffs = buffs, buffs, buffs
+                            snap.party                         = {
+                                party.profile(lead, seen, { task = "FIELD", kind = ACTION.HOLD }),
+                                party.profile(mage, seen, { task = "DEFEND", kind = ACTION.ATTACK }),
+                            }
+                            snap.party[1].rescue               = { name = mage.self.name, by = snap.self.name, value = 1e6 }
+                            local applied                      = {}
+                            for _, learned in ipairs(snap.spells) do
+                                local spell = spells.spells[learned.name]
+                                if spell ~= nil and spell.role == "DEBUFF" then
+                                    applied[learned.name] = snap.now
+                                end
+                            end
+                            snap.record.memory.battle = { oid = 801, map = snap.world.map, applied = applied }
+                            snap.group, snap.leader   = group, lead.self.name
+                            snap.record.memory.commit = plan.name
+                            local found, path         = require("brain.tree").run(require("brain.trees.hunt"), snap,
+                                bound)
+                            return found ~= nil and found.action or nil, table.concat(path or {}, ">")
+                        end
+                        local kept, beside = pick(true)
+                        local cast, apart  = pick(false)
+                        return string.find(apart, "rescue", 1, true) ~= nil and cast ~= nil and cast.key ~= nil and
+                            cast.key ~= "SWING" and string.find(beside, "rescue", 1, true) == nil and
+                            (kept == nil or kept.key ~= cast.key),
+                            string.format("beside=%s/%s %s | apart=%s/%s %s", tostring(kept and kept.kind),
+                                tostring(kept and kept.key), beside, tostring(cast and cast.kind),
+                                tostring(cast and cast.key),
+                                apart)
                     end),
                     case("walker beside a threat that strikes it does not wait for it to move off", function()
                         local walker, threat = threatened_walk(9, 1, { from = { 1, 0 }, speed = 1000 })
@@ -2392,14 +2959,77 @@ test_suite {
                         local pick = decide.choose(view, query, nil, nil)
                         return pick == nil or pick.task ~= "AID", tostring(pick and pick.task)
                     end),
-                    case("follower joins the target its leader shoots from afar", function()
-                        local snap, bound = recorded("healer_waits_beside_leader")
-                        snap.bag = driver.stocked(snap.bag.capacity)
-                        data.trace = true
-                        decide.choose(snap, bound, nil, nil)
-                        local rows = decide.offers[snap.self.name] or {}
-                        local path = rows[1] ~= nil and rows[1].path or ""
-                        return string.find(path, "strike", 1, true) ~= nil, path
+                    case("a vanguard stays with a crewmate shooting a mob across a wall, not walking round nor moving on", function()
+                        local function pick(shooting)
+                            local snap, bound = recorded("healer_waits_beside_leader")
+                            snap.bag          = driver.stocked(snap.bag.capacity)
+                            local mate        = snap.party[1]
+                            mate.dealt        = shooting and
+                                { [tostring(mate.battle.oid)] = { damage = 1000, at = snap.now } } or {}
+                            data.trace        = true
+                            local chosen      = decide.choose(snap, bound, nil, nil)
+                            local rows        = decide.offers[snap.self.name] or {}
+                            data.trace        = false
+                            local dest        = chosen ~= nil and chosen.dest or {}
+                            local far         = dest.x ~= nil and
+                                math.abs(dest.x - mate.world.x) + math.abs(dest.y - mate.world.y) > data.adjacent
+                            return rows[1] ~= nil and rows[1].path or "", dest.maps == nil and far == false
+                        end
+                        local stayed, kept = pick(true)
+                        local cursed       = pick(false)
+                        return stayed ~= "" and string.find(stayed, "next_floor", 1, true) == nil and
+                            string.find(stayed, "strike", 1, true) == nil and kept and
+                            string.find(cursed, "wait_leader", 1, true) == nil,
+                            string.format("shooting=%s cursed=%s", stayed, cursed)
+                    end),
+                    case("a leader takes the rally to a crewmate walled in four tiles off and walks to it", function()
+                        local snap, bound = recorded("rogue_waits_walled_poet")
+                        local poet        = party.members(snap)[1]
+                        if party.held(poet) == false then
+                            return false, "premise: the poet is not held"
+                        end
+                        local rally  = party.rally(snap, bound)
+                        local chosen = decide.choose(snap, bound, nil, nil)
+                        local dest   = chosen ~= nil and chosen.dest or {}
+                        return rally ~= nil and rally.name == poet.self.name and dest.x == poet.world.x and
+                            dest.y == poet.world.y,
+                            string.format("rally=%s dest=%s,%s", tostring(rally and rally.name), tostring(dest.x),
+                                tostring(dest.y))
+                    end),
+                    case("a member the leader sent a crewmate to save fights where it stands instead of walking to the rally", function()
+                        local function pick(saved)
+                            local snap, bound = recorded("poet_walled_rally")
+                            local lead        = snap.party[1]
+                            lead.rescue       = saved and { name = snap.self.name, by = lead.self.name, value = 1 } or
+                            nil
+                            local chosen      = decide.choose(snap, bound, nil, nil)
+                            local dest        = chosen ~= nil and chosen.dest or {}
+                            return dest.x == lead.rally.x and dest.y == lead.rally.y, chosen and chosen.task
+                        end
+                        local walked, before = pick(false)
+                        local stayed, task   = pick(true)
+                        return walked and stayed == false,
+                            string.format("unsaved=%s/%s saved=%s/%s", tostring(walked), tostring(before),
+                                tostring(stayed), tostring(task))
+                    end),
+                    case("a member a floor ahead on its vanguard's way waits there, and walks back only to one that cannot move", function()
+                        local function pick(pinned)
+                            local snap, bound    = recorded("swap_pass_through")
+                            snap.world.map       = 3002
+                            snap.world.x         = 2
+                            snap.world.y         = 17
+                            snap.world.mobs      = {}
+                            snap.party[1].pinned = pinned or nil
+                            data.trace           = true
+                            local chosen         = decide.choose(snap, bound, nil, nil)
+                            local rows           = decide.offers[snap.self.name] or {}
+                            data.trace           = false
+                            local dest           = chosen ~= nil and chosen.dest or {}
+                            return rows[1] ~= nil and rows[1].path or "", dest.maps ~= nil and dest.maps[1] == 3001
+                        end
+                        local waited, left  = pick(false)
+                        local fetched, went = pick(true)
+                        return left == false and went, string.format("waited=%s fetched=%s", waited, fetched)
                     end),
                     case("hurt leader stays by its healer instead of walking on", function()
                         local snap, bound = recorded("leader_walks_from_healer")
@@ -2548,10 +3178,11 @@ test_suite {
                         return string.find(path, "rally", 1, true) ~= nil and
                             (dest.map == pinned.world.map or (dest.maps or {})[1] == pinned.world.map), path
                     end),
-                    case("a solo fighter that heals itself and can buy mana needs no hp supplies", function()
+                    case("a solo fighter whose own heal falls short of its ground still plans hp supplies", function()
                         local snap, bound = recorded("rogue_no_food")
                         local need = require("brain.tasks.supply").need_of(snap, bound, "hp")
-                        return need == nil, tostring(need and need.usage)
+                        return need ~= nil and need.gain > 0 and need.usage > 0,
+                            string.format("gain=%s usage=%s", tostring(need and need.gain), tostring(need and need.usage))
                     end),
                     case("a solo fighter without a heal skill still plans hp supplies", function()
                         local snap, bound = state("warrior63")

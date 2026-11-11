@@ -10,7 +10,7 @@ local value    = require("brain.policies.value")
 
 local M = {}
 
-local function remember_block(brain, bot, event, walls)
+local function remember_block(brain, bot, event, destination, walls)
     local now   = snapshot.take(brain, bot).now
     local prior = brain:recall(bot, "blocked")
     local since = now
@@ -18,7 +18,15 @@ local function remember_block(brain, bot, event, walls)
         (now - prior.at < combat.rerank or (walls and prior.walls)) then
         since = prior.since
     end
-    brain:remember(bot, "blocked", { detail = event.detail, at = now, since = since, map = event.map, walls = walls })
+    local dest = {
+        map = destination.map,
+        maps = destination.maps,
+        x = destination.x,
+        y = destination.y,
+        range = destination.range
+    }
+    brain:remember(bot, "blocked",
+        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest })
 end
 
 local function patience(brain, bot, destination, detour, event)
@@ -137,22 +145,6 @@ local function journey(brain, bot, destination, detour)
         local final = destination.x == event.x and destination.y == event.y
         if event.type == "ARRIVED" then
             return true, event
-        elseif event.type == "LEASHED" then
-            local crew = {}
-            for _, name in ipairs(destination.leash.names) do
-                local ally = brain:ally(bot, name)
-                if ally ~= nil and ally.x ~= nil then
-                    crew[name] = { x = ally.x, y = ally.y }
-                end
-            end
-            brain:remember(bot, "leashed", {
-                map = event.map,
-                x = event.x,
-                y = event.y,
-                crew = crew,
-                dest = { map = destination.map, x = destination.x, y = destination.y, range = destination.range }
-            })
-            return true, event
         elseif event.type == "HOPPED" then
             detour.spent = {}
         elseif event.type == "LEAP_FAILED" then
@@ -165,7 +157,7 @@ local function journey(brain, bot, destination, detour)
                 { map = event.map, x = event.x, y = event.y, oid = event.detail == "MOB" and event.oid or nil })
         elseif event.type == "OCCUPIED" and blocker(brain, bot, event) ~= nil then
             local mob, action = blocker(brain, bot, event)
-            remember_block(brain, bot, event)
+            remember_block(brain, bot, event, destination)
             log("debug", string.format("[brain:travel] bot=%s clears %s %d at map=%d %d,%d", bot:name(), mob.name,
                 event.oid, event.map, event.x, event.y))
             local fought = battle.step(brain, bot, event.oid, action)
@@ -175,7 +167,7 @@ local function journey(brain, bot, destination, detour)
             end
         elseif event.type == "OCCUPIED" then
             local wait = patience(brain, bot, destination, detour, event)
-            remember_block(brain, bot, event)
+            remember_block(brain, bot, event, destination)
             log("debug", string.format("[brain:travel] bot=%s blocked by %s %d at map=%d %d,%d wait=%dms", bot:name(),
                 event.detail, event.oid, event.map, event.x, event.y, wait))
             local target = event.x == event.gx and event.y == event.gy
@@ -213,7 +205,7 @@ local function journey(brain, bot, destination, detour)
                     log("debug", string.format("[brain:travel] bot=%s braves %d beside %d steps at map=%d %d,%d",
                         bot:name(), event.oid, event.count or 0, event.map, event.x, event.y))
                 else
-                    remember_block(brain, bot, { map = event.map, detail = "THREAT" })
+                    remember_block(brain, bot, { map = event.map, detail = "THREAT" }, destination)
                     return false, event
                 end
             end
@@ -225,14 +217,21 @@ local function journey(brain, bot, destination, detour)
         elseif event.type == "DENIED" or (event.type == "BLOCKED" and final == false) then
             table.insert(detour.closed, { map = event.map, x = event.x, y = event.y })
         elseif event.type == "NO_ROUTE" and #detour.closed > 0 then
+            -- A walk the server keeps turning back is a block like any other: remembered only for occupants and
+            -- walls, a bot whose every step was corrected never looked stuck, and its crew crossed without it
+            -- (the online form of offline profile pair rooted healer seed 2, 273.9s).
             log("debug", string.format("[brain:travel] bot=%s blocked off at map=%d %d,%d", bot:name(), event.map,
                 event.x, event.y))
+            remember_block(brain, bot, { map = event.map, detail = detour.crowded and "CHARACTER" or event.detail },
+                destination)
             return false, { type = detour.crowded and "CROWDED" or "BLOCKED", map = event.map, x = event.x, y = event.y }
         else
             log("debug", string.format("[brain:travel] bot=%s stopped %s by %s at map=%d %d,%d", bot:name(), event.type,
                 tostring(event.detail), event.map, event.x, event.y))
             if event.type == "NO_ROUTE" then
-                remember_block(brain, bot, event, true)
+                remember_block(brain, bot, event, destination, true)
+            elseif event.type == "BLOCKED" then
+                remember_block(brain, bot, event, destination)
             end
             return false, event
         end

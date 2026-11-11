@@ -64,21 +64,23 @@ local function around(snap, except)
     return found
 end
 
+-- A swing splashes the tiles at my sides and my back as I face the mob it hits, each blow 8 times under 투명, as the
+-- server's swing does (interaction on_attack, lib.interaction damage); only a swing from beside the mob has those
+-- tiles known. Counted round the mob, the splash was credited on tiles the server never hits.
 local function splashed(snap, mob, damage)
     local found = {}
-    if mob.x == nil or damage <= 0 then
+    if mob.x == nil or damage <= 0 or math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) ~= 1 then
         return found
     end
-    local dx     = mob.x > snap.world.x and 1 or mob.x < snap.world.x and -1 or 0
-    local dy     = mob.y > snap.world.y and 1 or mob.y < snap.world.y and -1 or 0
+    local x, y   = snap.world.x, snap.world.y
+    local dx, dy = mob.x - x, mob.y - y
     local active = {}
     for _, name in ipairs(snap.buffs or {}) do
         active[name] = true
     end
     for name, splash in pairs(magic.splashes or {}) do
         if active[name] then
-            local tiles = splash.sides == 1 and { { mob.x + dx, mob.y + dy } } or
-                { { mob.x + dy, mob.y + dx }, { mob.x - dy, mob.y - dx } }
+            local tiles = splash.sides == 1 and { { x - dx, y - dy } } or { { x + dy, y + dx }, { x - dy, y - dx } }
             for _, tile in ipairs(tiles) do
                 local other = occupant(snap, tile[1], tile[2], mob.oid)
                 if other ~= nil then
@@ -453,6 +455,7 @@ local function candidates(snap, facts, mob, state, reachable)
                 kind = "CAST",
                 time = cast,
                 damage = strike * (factor - 1),
+                extra = splashed(snap, mob, strike * (factor - 1)),
                 mp = spell.mp or 0,
                 maneuver = { kind = MANEUVER.CAST, slot = slot, self = true, cost = spell.mp or 0 }
             })
@@ -480,7 +483,7 @@ local function candidates(snap, facts, mob, state, reachable)
             kind = "SWING",
             time = cast,
             damage = ready and strike * cloak or 0,
-            extra = ready and splashed(snap, mob, strike) or {},
+            extra = ready and splashed(snap, mob, strike * cloak) or {},
             approach = true,
             maneuver = { kind = MANEUVER.SWING }
         })
@@ -740,6 +743,13 @@ local function drawing(snap, facts, mob, damage)
     return mine <= most and mine + damage > most and rescue.value or 0
 end
 
+-- The same order picks the plan when none survives: taking the first listed of equal values, a solo warrior beaten
+-- by a crab cast 백열장 rather than the swing it tied with (offline solo seed 201, run 06:06).
+local function ahead(entry, other)
+    return other == nil or entry.value > other.value or (entry.value == other.value and
+        ((entry.damage or 0) > (other.damage or 0) or ((entry.damage or 0) == (other.damage or 0) and entry.key < other.key)))
+end
+
 function evaluate(snap, facts, mob, reachable)
     local baseline = value.baseline(snap, facts)
     local loss     = danger.loss(snap, facts, baseline)
@@ -774,12 +784,15 @@ function evaluate(snap, facts, mob, reachable)
             entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
         -- A spell that hits harder than a swing is worth the swing and the extra damage, less what its mana
         -- would make in a strike that mana holds back: counted free, 백열장 beat every swing and took the mana a
-        -- warrior's 건곤대나이 needed (online group, 12:28). Without such a strike it stays free, as before.
+        -- warrior's 건곤대나이 needed (online group, 12:28). Without such a strike it stays free, as before. One
+        -- that hits no harder is worth the swing less the more of that and its refill: priced by the refill alone,
+        -- which a full bar makes nothing, 백열장 tied the swing of a solo warrior whose 건곤대나이 needed the mana.
         if entry.kind == "CAST" and melee ~= nil and hemmed == false and (entry.mp or 0) > 0 then
             local direct = math.max(0, (entry.damage or 0) - (melee.damage or 0)) * share
             local empty  = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
-            entry.value  = direct > 0 and melee.value + direct - entry.mp * value.held(snap, facts, mob) or
-                math.min(entry.value, melee.value - entry.mp * empty * value.sip(snap, facts, mob))
+            local held   = value.held(snap, facts, mob)
+            entry.value  = direct > 0 and melee.value + direct - entry.mp * held or
+                math.min(entry.value, melee.value - entry.mp * math.max(held, empty * value.sip(snap, facts, mob)))
         elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
             local gain  = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
             entry.value = math.min(entry.value, melee.value + gain)
@@ -787,14 +800,12 @@ function evaluate(snap, facts, mob, reachable)
         if entry.kind == "CAST" and (entry.damage or 0) > 0 then
             entry.value = entry.value + drawing(snap, facts, mob, entry.damage)
         end
-        if last == nil or entry.value > last.value then
+        if ahead(entry, last) then
             last = entry
         end
         ending = math.max(ending, left)
         safest = math.min(safest, entry.plan.p_die)
-        if entry.survives and (best == nil or entry.value > best.value or
-                (entry.value == best.value and ((entry.damage or 0) > (best.damage or 0) or
-                    ((entry.damage or 0) == (best.damage or 0) and entry.key < best.key)))) then
+        if entry.survives and ahead(entry, best) then
             best = entry
         end
     end
@@ -908,7 +919,7 @@ function M.target(snap, facts, accept)
             local net    = choice ~= nil and
                 choice.value + guard - (choice.approach and travel + apart or 0) or nil
             if net ~= nil and (entry.reachable or net > 0) and (best == nil or net > best) then
-                found = { mob = entry.mob, choice = choice }
+                found = { mob = entry.mob, choice = choice, steps = entry.steps, distance = entry.distance }
                 best  = net
             end
         end

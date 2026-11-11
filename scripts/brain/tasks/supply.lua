@@ -88,16 +88,14 @@ local function sold(query, offer, map)
     return false
 end
 
--- Hp supplies are needed only when nothing else refills hp: my own heal skill with a way to refill the
--- mana it costs (a charge skill, or mana items carried or sold), or a crewmate with a heal skill, who
--- brings its own mana supplies. The group's makeup counts, not a member's state at the moment (a dead
--- healer comes back). Buying food anyway sent a warrior out mid-hunt for 229 hp items while its poet
--- had healed it 638 times and it had eaten 8 (WA+PO 세작, 563s).
+-- Hp supplies are not needed beside a crewmate with a heal skill, who brings its own mana supplies. The
+-- group's makeup counts, not a member's state at the moment (a dead healer comes back). Buying food anyway
+-- sent a warrior out mid-hunt for 229 hp items while its poet had healed it 638 times and it had eaten 8
+-- (WA+PO 세작, 563s). My own heal is weighed by the ground like any supply (evaluate), as it may heal far
+-- less than the ground wears: counted as enough whenever it was learned, a rogue that healed 200 hp for 100
+-- mp never bought 웅담 again once its 1000 were gone, fled its grounds eight times and hopped between them
+-- (offline solo seed 107, 297-717s, run 21:55).
 local function healed(snap)
-    local refills = recovery.spells(snap).charge ~= nil or #recovery.doses(snap, "mp") > 0 or #offers(snap, "mp") > 0
-    if recovery.heal(snap) ~= nil and refills then
-        return true
-    end
     for _, member in ipairs(party.members(snap)) do
         if recovery.heal(member) ~= nil then
             return true

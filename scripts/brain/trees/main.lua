@@ -18,7 +18,6 @@ return choose({
     end, must("DIALOG"), "dialog"),
     when(together.grouped, survive.notified),
     survive.danger,
-    when(together.grouped, together.wait_leash),
     fight,
     when(together.grouped, support.rescue),
     when(defend.walled_in, when(defend.barred, tree.act("DEFEND", defend.clear_path, "clear_path")), "walled_in"),

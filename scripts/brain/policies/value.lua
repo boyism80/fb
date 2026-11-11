@@ -85,10 +85,14 @@ end
 local sinks = setmetatable({}, { __mode = "k" })
 
 -- A strike that turns hp into damage makes the most of a point of mana, but only so far as mana is what holds
--- it back: it can strike as often as hp comes back, from its own heals and its crew's, and needs that many
--- times its mana; where its regeneration covers that, mana is plentiful and worth no more than its refill. A
+-- it back: where its regeneration covers striking as fast as it can cast, mana is plentiful and worth no more
+-- than its refill. Hp does not hold it back: heals, the crew and food bring it back (a warrior ate 720 웅담 a
+-- run), and short of hp a warrior swings while hp comes back instead of spending the mana (user, 11-10). A
 -- warrior beside its poet struck 건곤대나이 53 times and spent the mana between on 135 백열장 (online group, 12:28).
-local function sunk(snap, query, mob)
+-- Counted only as often as heals brought hp back, a warrior with no healer in reach held no mana and cast 백열장
+-- for its damage, 8,746 times beside 건곤대나이 offline (5,392 alone, run 21:55), and still 113 times alone
+-- under 운기 once mana without regeneration was held (run 12:51).
+local function sunk(snap, _query, mob)
     local known = sinks[snap]
     if known == nil then
         known = {}
@@ -100,14 +104,11 @@ local function sunk(snap, query, mob)
     end
     local sink = nil
     if mob ~= nil and (mob.hp or 0) > 0 then
-        local rates  = recovery.rates(snap)
-        local crew   = query ~= nil and require("brain.policies.escort").present(snap, query) or nil
-        local inflow = rates.hp + (crew ~= nil and crew.heal or 0)
-        local pace   = 1000 / combat.cast(snap)
+        local rates = recovery.rates(snap)
+        local pace  = 1000 / combat.cast(snap)
         for _, choice in ipairs(combat.options(snap, mob).strike) do
             if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
-                local casts   = (choice.hp or 0) > 0 and math.min(pace, inflow / choice.hp) or pace
-                local binding = math.min(1, casts * choice.mp / math.max(rates.mp, 1e-9))
+                local binding = rates.mp > 0 and math.min(1, pace * choice.mp / rates.mp) or 1
                 local each    = choice.damage / choice.mp * combat.gain(mob, snap) / mob.hp
                 sink          = sink or { each = each, held = each * binding }
                 sink.each     = math.max(sink.each, each)
@@ -182,10 +183,80 @@ function M.spend(snap, query, mob)
     return found < math.huge and found or 0
 end
 
--- What a point of mana would make in the best strike while mana holds that strike back; nothing without one.
+-- What a point of mana would make in the best strike while mana holds that strike back, mine or the one a crewmate
+-- turns my heals into (fuel); nothing without one. Counting only my own, a poet struck by scorpions answered with
+-- 화염주 twenty times running beside the rogue whose 필살검무 its heals fed (offline RO+PO seed 1, 589-600s, run
+-- 06:38; user 11-11).
 function M.held(snap, query, mob)
     local sink = sunk(snap, query, mob)
-    return sink ~= nil and sink.held or 0
+    return math.max(sink ~= nil and sink.held or 0, M.fuel(snap, snap, party.members(snap), mob))
+end
+
+function M.targets(snap)
+    local found = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.oid ~= nil then
+            found[mob.oid] = mob
+        end
+    end
+    return found
+end
+
+function M.convertible(member, mob)
+    local best = 0
+    for _, choice in ipairs(combat.options(member, mob).strike) do
+        if (choice.hp or 0) > 0 and (choice.damage or 0) > 0 then
+            best = math.max(best, choice.damage / choice.hp)
+        end
+    end
+    return best * combat.gain(mob, member) / math.max(mob.hp or 1, 1)
+end
+
+-- The mob a crewmate fights is the one its last battle names, or else one beside it that strikes while it hunts or
+-- defends: the battle a warrior shares lags its fights, and a poet that missed it priced the warrior's hp as if it
+-- fed no 건곤대나이, healing it late (online group, 14:45, warrior at 1200-3600 of 4769).
+function M.fought(snap, member, seen)
+    local shared = member.battle
+    if type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] ~= nil then
+        return seen[shared.oid]
+    end
+    if (member.task ~= "DEFEND" and member.task ~= "FIELD") or member.world.x == nil then
+        return nil
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and combat.hits(mob) and
+            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
+            return mob
+        end
+    end
+    return nil
+end
+
+-- What one mp of a healer is worth as a heal for a crewmate that turns hp into damage (건곤대나이) in its fight:
+-- the poet's mana is the warrior's fuel, which a refill price alone does not see. A crewmate between fights burns
+-- its hp on the mobs of this ground all the same, so the mob I weigh stands in for its next one: a poet spent 1560
+-- mp on 화염주 while its warrior walked to the next skeleton and had to charge for the heal right after (online
+-- group, 16:23). Only a crewmate in the healer's sight is fuelled: one out of sight cannot be healed, and pricing
+-- my mana for it left a poet ten tiles from its warrior taking blows without striking back (offline stage supply
+-- seed 18, 818-823s). The healer is any crewmate as the leader sees it, so the one it sends to a rescue is priced
+-- as that one prices its own strikes.
+function M.fuel(snap, healer, crew, mob)
+    local seen = M.targets(snap)
+    local best = 0
+    for _, member in ipairs(crew) do
+        if member.self.ghost == false and member.world.map == healer.world.map and member.world.x ~= nil and
+            healer.world.x ~= nil and math.abs(member.world.x - healer.world.x) <= data.sight.x and
+            math.abs(member.world.y - healer.world.y) <= data.sight.y then
+            local target = M.fought(snap, member, seen) or mob
+            local fuel   = target ~= nil and M.convertible(member, target) or 0
+            for _, heal in ipairs(fuel > 0 and combat.options(healer, {}).heal or {}) do
+                if heal.others and heal.mp > 0 and heal.hp > 0 then
+                    best = math.max(best, heal.hp / heal.mp * fuel)
+                end
+            end
+        end
+    end
+    return best
 end
 
 function M.sip(snap, query, mob)
