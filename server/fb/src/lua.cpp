@@ -573,11 +573,11 @@ void fb::lua::context::clear_on_error()
     this->_on_error = nullptr;
 }
 
-void fb::lua::context::report_error(std::string_view message)
+bool fb::lua::context::report_error(std::string_view message)
 {
     auto handler = this->_on_error;
     if (handler == nullptr || message.empty())
-        return;
+        return false;
 
     try
     {
@@ -591,6 +591,7 @@ void fb::lua::context::report_error(std::string_view message)
     {
         fb::logger::fatal("lua error handler failed");
     }
+    return true;
 }
 
 std::string_view fb::lua::context::script_path() const
@@ -618,14 +619,13 @@ void fb::lua::context::resume(int argc, int* n)
 
     if (this->owner == nullptr)
     {
-        this->_promise->set_exception(std::make_exception_ptr(std::runtime_error("this context is not lua thread")));
+        this->reject("this context is not lua thread");
         return;
     }
 
     if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        fb::logger::fatal("lua resume on a foreign thread: {}", this->script_path());
-        this->reject("lua resume on a foreign thread");
+        this->reject(std::format("lua resume on a foreign thread: {}", this->script_path()));
         return;
     }
 
@@ -662,21 +662,8 @@ void fb::lua::context::resume(int argc, int* n)
         const char* raw = lua_tostring(*this, -1);
         auto        message =
             std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
-        auto reported = this->_on_error != nullptr;
-        auto path     = std::string(this->script_path());
-        if (path.empty())
-            this->report_error(message);
-        else
-            this->report_error(std::format("{}: {}", path, message));
         lua_pop(*this, 1);
-        fb::logger::fatal(message);
-
-        auto promise   = promise_type{this->_promise};
-        this->_promise = nullptr;
-        if (reported)
-            promise->set_exception(std::make_exception_ptr(fb::lua::reported_error(message)));
-        else
-            promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
+        this->fail(std::make_exception_ptr(std::runtime_error(message)), this->script_path());
         this->finish_resume();
     }
     else
@@ -719,25 +706,54 @@ void context::release()
         root->revoke(*this);
 }
 
-void context::reject(std::string_view message)
-{
-    if (this->_promise == nullptr)
-        return;
-
-    auto promise    = this->_promise;
-    this->_promise  = nullptr;
-    auto error_text = message.empty() ? std::string("lua call rejected") : std::string(message);
-    promise->set_exception(std::make_exception_ptr(std::runtime_error(error_text)));
-}
-
-void context::cancel(std::string_view reason)
+void context::fail(std::exception_ptr error, std::string_view where)
 {
     if (this->_promise == nullptr)
         return;
 
     auto promise   = this->_promise;
     this->_promise = nullptr;
-    promise->set_exception(std::make_exception_ptr(fb::lua::cancelled(std::string(reason))));
+    auto message   = std::optional<std::string>{};
+    try
+    {
+        std::rethrow_exception(error);
+    }
+    catch (const fb::lua::cancelled&)
+    { }
+    catch (const fb::lua::reported_error&)
+    { }
+    catch (const fb::lua::logged_error& e)
+    {
+        message = e.what();
+    }
+    catch (const std::exception& e)
+    {
+        message = where.empty() ? std::string(e.what()) : std::format("{}: {}", where, e.what());
+        fb::logger::fatal("{}", message.value());
+    }
+    catch (...)
+    {
+        message = where.empty() ? std::string("lua call failed") : std::format("{}: lua call failed", where);
+        fb::logger::fatal("{}", message.value());
+    }
+
+    if (message.has_value() == false)
+        promise->set_exception(error);
+    else if (this->report_error(message.value()))
+        promise->set_exception(std::make_exception_ptr(fb::lua::reported_error(message.value())));
+    else
+        promise->set_exception(std::make_exception_ptr(fb::lua::logged_error(message.value())));
+}
+
+void context::reject(std::string_view message)
+{
+    auto error_text = message.empty() ? std::string("lua call rejected") : std::string(message);
+    this->fail(std::make_exception_ptr(std::runtime_error(error_text)));
+}
+
+void context::cancel(std::string_view reason)
+{
+    this->fail(std::make_exception_ptr(fb::lua::cancelled(std::string(reason))));
 }
 
 void context::drop(std::string_view message)
@@ -758,40 +774,8 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
 
     // Reject only; the owning guard returns the pool slot.
     const auto abort_pipeline = [lua_ptr, &lease](const char* phase, std::exception_ptr error) {
-        try
-        {
-            std::rethrow_exception(error);
-        }
-        catch (const fb::lua::cancelled& e)
-        {
-            if (lease.expired() == false)
-                lua_ptr->cancel(e.what());
-        }
-        catch (const fb::lua::reported_error& e)
-        {
-            if (lease.expired() == false)
-                lua_ptr->reject(e.what());
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("lua co_builder {} error: {}", phase, e.what());
-            if (lease.expired())
-                return;
-
-            auto error_text = std::string(e.what());
-            lua_ptr->report_error(std::format("{}: {}", phase, error_text));
-            lua_ptr->reject(error_text);
-        }
-        catch (...)
-        {
-            fb::logger::fatal("lua co_builder {} error", phase);
-            if (lease.expired())
-                return;
-
-            auto error_text = std::format("lua co_builder {} error", phase);
-            lua_ptr->report_error(std::format("{}: {}", phase, error_text));
-            lua_ptr->reject(error_text);
-        }
+        if (lease.expired() == false)
+            lua_ptr->fail(error, phase);
     };
 
     auto phase = "thread switch";
@@ -887,23 +871,11 @@ int fb::lua::context::co_builder::run()
                 else if (lease.expired() == false)
                     lua_ptr->resume(*n);
             }
-            catch (const fb::lua::cancelled&)
-            {
-                if (immediate)
-                    rejected = true;
-            }
-            catch (const std::exception& e)
+            catch (...)
             {
                 // abort_pipeline already rejected; lua_ptr must not be touched here.
                 if (immediate)
                     rejected = true;
-                fb::logger::fatal("lua co_builder async completion error: {}", e.what());
-            }
-            catch (...)
-            {
-                if (immediate)
-                    rejected = true;
-                fb::logger::fatal("lua co_builder async completion error: non-std exception");
             }
         });
 

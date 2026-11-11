@@ -33,6 +33,7 @@ extern "C"
 #include <type_traits>
 #include <utility>
 #include <stdexcept>
+#include <exception>
 #include <json/json.h>
 
 #define LUA_PROTOTYPE                                \
@@ -132,10 +133,16 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-class reported_error : public std::runtime_error
+class logged_error : public std::runtime_error
 {
 public:
     using std::runtime_error::runtime_error;
+};
+
+class reported_error : public logged_error
+{
+public:
+    using logged_error::logged_error;
 };
 
 context* get(lua_State* ctx);
@@ -324,6 +331,8 @@ private:
     std::shared_ptr<char>                 _lease = std::make_shared<char>();
 
     void finish_resume();
+    void fail(std::exception_ptr error, std::string_view where = {});
+    bool report_error(std::string_view message);
 
 protected:
     lua_State*  _ctx = nullptr;
@@ -501,7 +510,6 @@ public:
     void              clear_script_path();
     void              on_error(std::function<void(std::string_view)> handler);
     void              clear_on_error();
-    void              report_error(std::string_view message);
     std::string_view  script_path() const;
 
 public:
