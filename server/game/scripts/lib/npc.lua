@@ -284,11 +284,6 @@ function M.store_item(me, npc, name, count)
         return true
     end
 
-    if model:storage_fee() == nil then
-        npc:chat(string.format('%s 맡을 수 없습니다.', name_with(name, '은', '는')))
-        return true
-    end
-
     if count == nil then
         count = item:count()
     end
@@ -307,23 +302,19 @@ function M.store_item(me, npc, name, count)
         count = 1
     end
 
-    local fee = model:storage_fee()
-    if fee > 0 and me:consume({ money = fee }) ~= true then
-        npc:chat('돈이 모자랍니다.')
-        return true
-    end
-
-    if me:store_item(item, count) == false then
-        if fee > 0 then
-            me:exchange({}, { money = fee })
+    local result = me:store_item(item, count)
+    if result == 'done' then
+        if count > 1 then
+            npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
+        else
+            npc:chat(string.format('%s 맡았습니다.', name_with(name, '을', '를')))
         end
-        npc:chat('더 이상 맡을 수 없습니다.')
-        return true
-    end
-    if count > 1 then
-        npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
+    elseif result == 'lack_money' then
+        npc:chat('돈이 모자랍니다.')
+    elseif result == 'not_storable' then
+        npc:chat(string.format('%s 맡을 수 없습니다.', name_with(name, '은', '는')))
     else
-        npc:chat(string.format('%s 맡았습니다.', name_with(name, '을', '를')))
+        npc:chat('더 이상 맡을 수 없습니다.')
     end
 
     return true
@@ -945,15 +936,6 @@ function M.show_hold_item_menu(me, npc)
         if item:count() < count then
             return me:dialog(npc, '그만큼 가지고 있지 않습니다.', { prev = false, next = true })
         end
-
-        local stored_item = me:stored_item(model:name())
-        if stored_item ~= nil then
-            local stored_count = stored_item:count()
-            local capacity = 0xFFFF - stored_count
-            if count > capacity then
-                return me:dialog(npc, '더 이상 맡길 수 없습니다.', { prev = false, next = true })
-            end
-        end
     end
 
     local storage_fee = model:storage_fee()
@@ -962,23 +944,20 @@ function M.show_hold_item_menu(me, npc)
         if selected ~= 1 then
             return DIALOG_RESULT.NEXT
         end
-
-        if me:consume({ money = storage_fee }) ~= true then
-            return me:dialog(npc, '돈이 모자랍니다.')
-        end
     end
 
-    if me:store_item(item, count) == false then
-        if storage_fee > 0 then
-            me:exchange({}, { money = storage_fee })
+    local result = me:store_item(item, count)
+    if result == 'done' then
+        if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+            return me:dialog(npc, string.format('%s %d개를 맡았습니다.', model:name(), count), { prev = false, next = true })
+        else
+            return me:dialog(npc, string.format('%s 맡았습니다.', name_with(model:name()), count),
+                { prev = false, next = true })
         end
-        return me:dialog(npc, '더 이상 맡길 수 없습니다.', { prev = false, next = true })
-    end
-
-    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
-        return me:dialog(npc, string.format('%s %d개를 맡았습니다.', model:name(), count), { prev = false, next = true })
+    elseif result == 'lack_money' then
+        return me:dialog(npc, '돈이 모자랍니다.')
     else
-        return me:dialog(npc, string.format('%s 맡았습니다.', name_with(model:name()), count), { prev = false, next = true })
+        return me:dialog(npc, '더 이상 맡길 수 없습니다.', { prev = false, next = true })
     end
 end
 

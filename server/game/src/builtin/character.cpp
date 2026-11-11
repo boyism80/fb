@@ -2750,7 +2750,7 @@ int builtin::character::builtin_store_item(lua_State* L)
     auto requested = lua_isnoneornil(L, 3) ? std::optional<uint16_t>{1} : lua->tointeger<uint16_t>(3, 1);
     if (requested.has_value() == false)
     {
-        lua->pushboolean(false);
+        lua->pushstring("not_storable");
         return 1;
     }
 
@@ -2758,17 +2758,31 @@ int builtin::character::builtin_store_item(lua_State* L)
 
     // Find the shared_ptr that contains this item
     auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto success  = std::make_shared<bool>(false);
+    auto result   = std::make_shared<fb::game::items::item_storage>(fb::game::items::item_storage::NOT_STORABLE);
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto index = ch->items.index(item);
         if (index != 0xFF)
-            *success = co_await ch->items.store(index, count);
+            *result = co_await ch->items.store(index, count);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*success);
+        switch (*result)
+        {
+        case fb::game::items::item_storage::DONE:
+            lua->pushstring("done");
+            break;
+        case fb::game::items::item_storage::STORAGE_FULL:
+            lua->pushstring("storage_full");
+            break;
+        case fb::game::items::item_storage::LACK_MONEY:
+            lua->pushstring("lack_money");
+            break;
+        default:
+            lua->pushstring("not_storable");
+            break;
+        }
         co_return 1;
     };
     return builder.run();

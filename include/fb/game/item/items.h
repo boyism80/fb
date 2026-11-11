@@ -71,6 +71,14 @@ public:
         MONEY_FULL,
     };
 
+    enum class item_storage
+    {
+        DONE,
+        NOT_STORABLE,
+        STORAGE_FULL,
+        LACK_MONEY,
+    };
+
     static constexpr uint64_t MONEY_LIMIT = 0xFFFFFFFF;
 
 private:
@@ -98,9 +106,7 @@ public:
     [[nodiscard]] async::task<uint8_t>              add(item_ptr item);
     [[nodiscard]] async::task<std::vector<uint8_t>> add(const std::vector<item_ptr>& items, bool stop_if_remained = false);
     uint8_t                                         add(item_ptr item, uint8_t index) override;
-    bool                                            store(item_ptr item);
-    [[nodiscard]] async::task<bool>                 store(uint8_t index, uint16_t count);
-    [[nodiscard]] async::task<bool>                 store(std::string_view name, uint16_t count);
+    [[nodiscard]] async::task<item_storage>         store(uint8_t index, uint16_t count);
     item_ptr                                        stored(const fb::model::item& item) const;
     const std::vector<item_ptr>&                    stored() const;
     [[nodiscard]] async::task<item_ptr>             retrieve(size_t index, uint16_t count, bool to_inventory = true);

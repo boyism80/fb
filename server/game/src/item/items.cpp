@@ -335,106 +335,57 @@ void items::write_item_log(std::string_view                event,
     owner->server.log.write(event, log_data);
 }
 
-bool items::store(std::shared_ptr<item> item)
+async::task<items::item_storage> items::store(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return item_storage::NOT_STORABLE;
 
     owner->assert_thread();
 
-    auto& model     = item->model();
-    auto  item_id   = model.id;
-    auto  item_name = model.name;
-    auto  count     = item->count();
+    auto item = this->at(index);
+    if (item == nullptr || count == 0 || item->count() < count)
+        co_return item_storage::NOT_STORABLE;
 
-    if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+    auto& model = item->model();
+    if (model.storage_fee.has_value() == false)
+        co_return item_storage::NOT_STORABLE;
+
+    auto bundle = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->stored(model) : nullptr;
+    if (bundle != nullptr && count > 0xFFFF - bundle->count())
+        co_return item_storage::STORAGE_FULL;
+
+    auto fee = model.storage_fee.value();
+    if (owner->money() < fee)
+        co_return item_storage::LACK_MONEY;
+
+    auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
+    if (deleted == nullptr)
+        co_return item_storage::NOT_STORABLE;
+
+    if (bundle != nullptr)
     {
-        auto found = std::find_if(this->_stored.begin(),
-                                  this->_stored.end(),
-                                  [&item](const std::shared_ptr<fb::game::item>& stored) {
-                                      auto& model = stored->model();
-                                      return item->model() == model;
-                                  });
-
-        if (found == this->_stored.end())
-        {
-            this->_stored.push_back(item);
-        }
-        else
-        {
-            auto stored   = *found;
-            auto capacity = 0xFFFF - stored->count();
-            if (item->count() > capacity)
-                return false;
-
-            stored->count(stored->count() + item->count());
-        }
+        bundle->count(bundle->count() + deleted->count());
     }
     else
     {
-        this->_stored.push_back(item);
+        this->_stored.push_back(deleted);
+        deleted->container(this);
     }
-
-    item->container(this);
+    owner->money(owner->money() - fee);
 
     // Log item deposit event
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
     log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-    log_data["item_id"]        = static_cast<Json::Int64>(item_id);
-    log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
+    log_data["item_id"]        = static_cast<Json::Int64>(model.id);
+    log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
     log_data["count"]          = static_cast<Json::Int64>(count);
-    if (item->uid() != 0)
-        log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
+    if (deleted->uid() != 0)
+        log_data["item_uid"] = static_cast<Json::UInt64>(deleted->uid());
     owner->server.log.write("item_deposit", log_data);
 
-    return true;
-}
-
-async::task<bool> items::store(uint8_t index, uint16_t count)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        co_return false;
-
-    owner->assert_thread();
-
-    auto item = this->at(index);
-    if (item == nullptr)
-        co_return false;
-
-    if (count == 0 || item->count() < count)
-        co_return false;
-
-    auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
-    if (deleted == nullptr)
-        co_return false;
-
-    auto result = this->store(deleted);
-    if (result == false)
-        std::ignore = co_await this->add(deleted);
-
-    co_return result;
-}
-
-async::task<bool> items::store(std::string_view name, uint16_t count)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        co_return false;
-
-    owner->assert_thread();
-
-    auto item = this->find(name);
-    if (item == nullptr)
-        co_return false;
-
-    auto index = this->index(item);
-    if (index == 0xFF)
-        co_return false;
-
-    co_return co_await this->store(index, count);
+    co_return item_storage::DONE;
 }
 
 std::shared_ptr<item> items::stored(const fb::model::item& item) const

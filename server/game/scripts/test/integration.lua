@@ -1739,7 +1739,7 @@ return {
         if item == nil then
             return report(me, false, step, 'no held ' .. tostring(name))
         end
-        if me:store_item(item, tonumber(count)) ~= true then
+        if me:store_item(item, tonumber(count)) ~= 'done' then
             return report(me, false, step, string.format('cannot store %s=%s', name, tostring(count)))
         end
         report(me, true, step)
@@ -1821,7 +1821,10 @@ return {
         end
 
         local stored = me:mkitem(name, 1)
-        if stored == nil or me:store_item(stored, 1) ~= true then
+        if stored ~= nil then
+            me:exchange({}, { money = stored:model():storage_fee() })
+        end
+        if stored == nil or me:store_item(stored, 1) ~= 'done' then
             me:level(level)
             return report(me, false, step, 'cannot store ' .. name)
         end
