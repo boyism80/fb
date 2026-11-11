@@ -354,6 +354,16 @@ bool value::is_false() const
     return this->_type == type::BOOLEAN && this->_boolean == false;
 }
 
+bool value::is_true() const
+{
+    return this->_type == type::BOOLEAN && this->_boolean;
+}
+
+lua_Integer value::integer() const
+{
+    return this->_type == type::INTEGER ? this->_integer : 0;
+}
+
 context& context::push(const void* value)
 {
     lua_pushlightuserdata(this->_ctx, const_cast<void*>(value));
@@ -1482,17 +1492,22 @@ void fb::lua::run_async(context::guard g, int argc)
         });
 }
 
-async::task<bool> fb::lua::call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc)
+async::task<std::vector<value>> fb::lua::call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc)
 {
+    auto results = std::vector<value>{};
     if (!g)
-        co_return false;
+        co_return results;
 
     auto& threads = g->executor.threads;
-    auto  result  = false;
     auto  error   = std::exception_ptr{};
     try
     {
-        result = co_await g->call(argc);
+        std::ignore = co_await g->call(argc);
+        auto top    = lua_gettop(*g);
+        for (auto i = 1; i <= top; i++)
+        {
+            results.push_back(value::copy(*g, i));
+        }
     }
     catch (...)
     {
@@ -1503,7 +1518,7 @@ async::task<bool> fb::lua::call(context::guard g, std::weak_ptr<fb::thread_switc
     co_await threads.follow(std::move(pivot));
     if (error)
         std::rethrow_exception(error);
-    co_return result;
+    co_return results;
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

@@ -418,15 +418,9 @@ async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::stri
         arg.push(*lua);
     }
 
-    std::ignore = co_await lua->call(static_cast<int>(args.size()) + 1);
-
-    auto results = std::vector<fb::lua::value>{};
-    auto top     = lua_gettop(*lua);
-    for (auto i = 1; i <= top; i++)
-    {
-        results.push_back(fb::lua::value::copy(*lua, i));
-    }
-    co_return results;
+    co_return co_await fb::lua::call(std::move(lua),
+                                     this->weak_from_this_as<object>(),
+                                     static_cast<int>(args.size()) + 1);
 }
 
 void object::update_sector()

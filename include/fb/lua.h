@@ -276,6 +276,8 @@ public:
     static value copy_data(lua_State* L, int offset);
     void         push(context& ctx) const;
     bool         is_false() const;
+    bool         is_true() const;
+    lua_Integer  integer() const;
 };
 
 class context
@@ -712,8 +714,8 @@ public:
     ~thread();
 };
 
-void              run_async(context::guard g, int argc);
-async::task<bool> call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc);
+void                            run_async(context::guard g, int argc);
+async::task<std::vector<value>> call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc);
 
 // Called once, before the first resume of a script, with the argument count still on the stack.
 // The game server uses this to attach an admin-only error reporter. nullptr disables it.

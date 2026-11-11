@@ -273,18 +273,15 @@ async::task<void> life::attack(DURATION duration)
         co_return;
 
     // Execute attack interaction script and get attack count
-    auto     self         = this->weak_from_this_as<life>();
     uint32_t attack_count = 0;
+    auto     lua          = this->server.lua.open("scripts/interaction.lua", "on_attack");
+    if (lua)
     {
-        auto lua = this->server.lua.open("scripts/interaction.lua", "on_attack");
-        if (lua)
-        {
-            lua->pushobject(*this);
-            if (co_await lua->call(1))
-                attack_count = (uint32_t)lua->tointeger(1);
-        }
+        lua->pushobject(*this);
+        auto results = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<life>(), 1);
+        if (results.empty() == false)
+            attack_count = static_cast<uint32_t>(results.front().integer());
     }
-    co_await this->server.threads.follow(self);
 
     // Call listener for packet response
     this->listener.on_attack(*this, duration);
