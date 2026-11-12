@@ -133,6 +133,7 @@ public:
 public:
     // clang-format off
     async::task<void>                on_updated(const fb::protocol::internal::response::UpdatedClan& resp);
+    async::task<bool>                attach(character& ch);
     async::task<void>                create(character& me, std::string_view name);
     async::task<void>                destroy(character& me);
     async::task<void>                join_member(character& inviter, std::string_view target_name);

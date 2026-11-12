@@ -181,6 +181,32 @@ async::task<void> clan::container::on_error(uint32_t error)
     }
 }
 
+async::task<bool> clan::container::attach(character& ch)
+{
+    ch.assert_thread();
+
+    auto clan_id = ch.clan.id();
+    if (clan_id.has_value() == false)
+        co_return false;
+
+    auto attached = false;
+    try
+    {
+        auto guard = co_await this->enter_write(clan_id.value());
+        if (auto& clan = guard.value(); clan != nullptr && clan->contains(ch.name()))
+        {
+            clan->attach(ch.weak_from_this_as<character>());
+            attached = true;
+        }
+    }
+    catch (const std::runtime_error&)
+    { }
+
+    if (attached == false)
+        ch.clan.reset();
+    co_return attached;
+}
+
 async::task<void> clan::container::on_create(uint32_t                                     clan_id,
                                              std::string                                  name,
                                              std::string                                  title,
@@ -249,22 +275,8 @@ async::task<void> clan::container::on_create(uint32_t                           
     auto ptr = weak.lock();
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        auto attached = false;
-        try
-        {
-            attached = this->write(clan_id, [weak, name = ptr->name()](auto& clan) {
-                if (clan == nullptr || clan->contains(name) == false)
-                    return false;
-
-                clan->attach(weak);
-                return true;
-            });
-        }
-        catch (const std::runtime_error&)
-        { }
-
-        if (attached)
-            ptr->clan.id(clan_id);
+        ptr->clan.id(clan_id);
+        std::ignore = co_await this->attach(*ptr);
     }
 
     if (before != nullptr)
@@ -442,23 +454,12 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
     auto attached = false;
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        try
-        {
-            attached = this->write(clan_id, [weak, name = ptr->name()](auto& clan) {
-                if (clan == nullptr || clan->contains(name) == false)
-                    return false;
-
-                clan->attach(weak);
-                return true;
-            });
-        }
-        catch (const std::runtime_error&)
-        { }
+        ptr->clan.id(clan_id);
+        attached = co_await this->attach(*ptr);
     }
 
     if (attached)
     {
-        ptr->clan.id(clan_id);
         ptr->update_external();
         ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan_name), MESSAGE_TYPE::NOTIFY);
     }

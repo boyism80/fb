@@ -345,16 +345,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
 
     co_await this->server.groups.attach(*ch);
-
-    if (ch->clan.id().has_value())
-    {
-        auto cid   = ch->clan.id().value();
-        auto guard = co_await this->server.clans.enter_write(cid);
-        if (auto& clan = guard.value(); clan != nullptr)
-            clan->attach(weak);
-        else
-            ch->clan.reset();
-    }
+    std::ignore = co_await this->server.clans.attach(*ch);
 
     bool inserted = this->server.characters.insert(ch);
     if (inserted == false)
