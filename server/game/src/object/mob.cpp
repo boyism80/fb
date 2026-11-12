@@ -691,12 +691,10 @@ async::task<void> mob::destroy(DESTROY_TYPE destroy_type)
             if (part == nullptr)
                 continue;
 
-            part->_body.reset();
             // Parts already in settle (invincible) destroy themselves with their own exp/drop.
             if (part->invincible())
                 continue;
 
-            part->_destroying = true;
             part->kill(destroy_type);
             co_await part->destroy(destroy_type);
         }
