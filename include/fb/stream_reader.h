@@ -24,13 +24,14 @@ template <typename EndianType = big_endian>
 class stream_reader
 {
 private:
-    std::vector<uint8_t>& _stream;
-    uint32_t              _seek = 0;
+    const std::vector<uint8_t>& _stream;
+    uint32_t                    _seek = 0;
 
 public:
-    stream_reader(std::vector<uint8_t>& stream) :
+    stream_reader(const std::vector<uint8_t>& stream) :
         _stream(stream)
     { }
+    stream_reader(std::vector<uint8_t>&&) = delete;
 
 public:
     template <typename ValueType> ValueType read()
@@ -101,18 +102,6 @@ public:
     void seek(uint32_t value)
     {
         this->_seek = value;
-    }
-
-    void flush()
-    {
-        this->_stream.erase(this->_stream.begin(), this->_stream.begin() + this->_seek);
-        this->_seek = 0;
-    }
-
-    void clear()
-    {
-        this->_stream.clear();
-        this->_seek = 0;
     }
 };
 

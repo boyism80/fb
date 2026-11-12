@@ -19,8 +19,7 @@ login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id) :
 login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, const fb::stream& params) :
     login_bot(bot_controller, id)
 {
-    auto clone    = fb::stream{params};
-    auto reader   = fb::stream_reader<big_endian>(clone);
+    auto reader   = fb::stream_reader<big_endian>(params);
     auto enc_type = reader.read<uint8_t>();
     auto key_size = reader.read<uint8_t>();
     auto enc_key  = std::make_unique<uint8_t[]>(key_size);

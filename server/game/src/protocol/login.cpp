@@ -12,8 +12,7 @@ namespace fb::protocol::game::request {
 template <CLIENT_VERSION V>
 login<V>::login(const fb::stream& params)
 {
-    auto clone  = fb::stream{params};
-    auto reader = fb::stream_reader<big_endian>{clone};
+    auto reader = fb::stream_reader<big_endian>{params};
     this->deserialize(reader);
 }
 #endif

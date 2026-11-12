@@ -1,5 +1,6 @@
 #include <fb/stream.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -22,6 +23,11 @@ stream::stream(std::vector<uint8_t>&& v)
 stream::stream(const stream& right) :
     stream(right.data(), right.size())
 { }
+
+void stream::consume(size_t size)
+{
+    this->erase(this->begin(), this->begin() + static_cast<std::ptrdiff_t>(std::min(size, this->size())));
+}
 
 uint32_t stream::crc() const
 {

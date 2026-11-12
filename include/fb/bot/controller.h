@@ -302,7 +302,8 @@ public:
                     size             = encryption.decrypt(stream, reader.seek() - 1, size);
                 }
 
-                reader.flush();
+                stream.consume(reader.seek());
+                reader.seek(0);
 
                 std::shared_ptr<fb::protocol::header> protocol;
                 handle_func                           handler;
@@ -355,8 +356,8 @@ public:
                     builder.enqueue();
                 }
 
-                reader.seek(size - sizeof(uint8_t));
-                reader.flush();
+                stream.consume(size - sizeof(uint8_t));
+                reader.seek(0);
             }
             catch (std::exception& e)
             {
@@ -376,7 +377,7 @@ public:
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 }
-                reader.clear();
+                stream.clear();
                 break;
             }
             catch (...)
@@ -389,7 +390,7 @@ public:
                     fb::logger::fatal("bot_controller::on_receive: error=unknown\n{}",
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
 
-                reader.clear();
+                stream.clear();
                 break;
             }
         }

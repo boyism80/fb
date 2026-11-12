@@ -24,6 +24,9 @@ public:
     stream(const stream& right);
     ~stream() = default;
 
+public:
+    void consume(size_t size);
+
 #ifdef ZLIB_VERSION
     uint32_t crc() const;
     stream   compress() const;

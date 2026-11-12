@@ -165,7 +165,8 @@ private:
                 if (this->handler.protocol.should_decrypt(*opcode))
                     size = socket.encryption().decrypt(stream, reader.seek() - 1, size);
 
-                reader.flush(); // remove magic code and size
+                stream.consume(reader.seek()); // remove magic code and size
+                reader.seek(0);
 
                 // Session missing / version not established → deserialize as v550.
                 // A logic thread may release the session at any time; keep it alive while reading the version.
@@ -244,8 +245,8 @@ private:
                         builder.enqueue();
                 }
 
-                reader.seek(size - sizeof(uint8_t));
-                reader.flush(); // remove packet body
+                stream.consume(size - sizeof(uint8_t)); // remove packet body
+                reader.seek(0);
             }
 
             reader.seek(0);

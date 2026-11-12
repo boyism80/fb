@@ -65,7 +65,7 @@ struct tree_node
     std::vector<std::string> children;
 };
 
-std::vector<tree_node> parse_tree(std::vector<uint8_t>& data)
+std::vector<tree_node> parse_tree(const std::vector<uint8_t>& data)
 {
     auto reader    = fb::stream_reader<big_endian>(data);
     auto top_count = reader.read<uint16_t>();

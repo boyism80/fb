@@ -93,8 +93,7 @@ async::task<void> queue::invoke(const std::vector<uint8_t>& message)
 
 void queue::invoke_async(const std::vector<uint8_t>& message)
 {
-    auto stream = fb::stream(message.data(), message.size());
-    auto reader = fb::stream_reader<>(stream);
+    auto reader = fb::stream_reader<>(message);
     auto opcode = reader.read<uint32_t>();
     auto found  = this->_handler.find(opcode);
     if (found == this->_handler.end())
