@@ -367,7 +367,7 @@ async::task<void> mob::action(fb::model::datetime now)
     co_await this->AI(now);
 }
 
-async::task<void> mob::attack(DURATION duration)
+async::task<void> mob::attack(DURATION duration, std::shared_ptr<fb::game::life> victim)
 {
     this->assert_thread();
 
@@ -377,16 +377,15 @@ async::task<void> mob::attack(DURATION duration)
     if (lua)
     {
         lua->pushobject(this);
-        auto target = this->target();
-        if (target != nullptr)
-            lua->pushobject(target);
+        if (victim != nullptr)
+            lua->pushobject(victim);
         else
             lua->pushnil();
 
         std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<mob>(), 2);
     }
 
-    co_await life::attack(duration);
+    co_await life::attack(duration, victim);
     co_return;
 }
 

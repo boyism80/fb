@@ -145,7 +145,7 @@ public:
 public:
     // clang-format off
     [[nodiscard]] async::task<void> action(fb::model::datetime now);
-    async::task<void>               attack(DURATION duration = DURATION::ATTACK) override final;
+    async::task<void>               attack(DURATION duration = DURATION::ATTACK, std::shared_ptr<fb::game::life> victim = nullptr) override final;
     const fb::model::datetime&      action_time() const;
     void                            action_time(const fb::model::datetime& dt);
     std::shared_ptr<fb::game::life> target() const;

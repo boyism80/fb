@@ -280,9 +280,12 @@ function M.harmable_character(me, you, pk, blocks_pvp)
         return false
     end
 
-    -- Mob (or non-character) attackers keep previous AOE behavior: always may hit characters.
-    if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
+    if me == nil then
         return true
+    end
+
+    if not me:is(OBJECT_TYPE.CHARACTER) then
+        return not castle.blocks_siege_friendly_fire(me, you)
     end
 
     if pk == nil then

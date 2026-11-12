@@ -385,7 +385,16 @@ local function clan_changed(me)
     castle_lib.evict(me)
 end
 
-local function on_attack(me, additional_attack)
+local function strike(me, you, facing, rate, sound)
+    if you == nil or not spell.damageable_life(me, you) or lib.is_miss(me, you, facing) then
+        return 0
+    end
+
+    lib.damage(me, you, rate, sound)
+    return 1
+end
+
+local function on_attack(me, additional_attack, victim)
     local map = me:map()
     if map == nil then
         return 0
@@ -427,25 +436,9 @@ local function on_attack(me, additional_attack)
     local x, y = me:position()
     local direction = me:direction()
     if is_bow then
-        local target = me:front(enemy_type, 14)
-        if target ~= nil and not castle_lib.blocks_siege_friendly_fire(me, target) and not lib.is_miss(me, target, 'front') then
-            lib.damage(me, target, nil, 701)
-            count = count + 1
-        end
+        count = count + strike(me, me:front(enemy_type, 14), 'front', nil, 701)
     else
-        local front = nil
-        if me:is(OBJECT_TYPE.MOB) then
-            front = me:target()
-            if front ~= nil then
-                local x_front, y_front = front:position()
-                local x_diff = math.abs(x_front - x)
-                local y_diff = math.abs(y_front - y)
-                local is_near = (x_diff == 1 and y_diff == 0) or (y_diff == 1 and x_diff == 0)
-                if not is_near then
-                    front = nil
-                end
-            end
-        end
+        local front = victim
         if front == nil then
             front = me:front(enemy_type)
         end
@@ -453,10 +446,7 @@ local function on_attack(me, additional_attack)
         if weapon ~= nil then
             damaged_sound = SOUND.DAMAGE
         end
-        if front ~= nil and not castle_lib.blocks_siege_friendly_fire(me, front) and not lib.is_miss(me, front, 'front') then
-            lib.damage(me, front, nil, damaged_sound)
-            count = count + 1
-        end
+        count = count + strike(me, front, 'front', nil, damaged_sound)
 
         if me:isbuff('측면공격') then
             local points = {}
@@ -470,10 +460,7 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'side') then
-                    lib.damage(me, obj, 0.4, damaged_sound)
-                    count = count + 1
-                end
+                count = count + strike(me, obj, 'side', 0.4, damaged_sound)
             end
         end
 
@@ -491,10 +478,7 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'back') then
-                    lib.damage(me, obj, 0.5, damaged_sound)
-                    count = count + 1
-                end
+                count = count + strike(me, obj, 'back', 0.5, damaged_sound)
             end
         end
     end
@@ -504,7 +488,7 @@ local function on_attack(me, additional_attack)
     end
 
     if me:isbuff('분신') and not additional_attack then
-        count = count + on_attack(me, true)
+        count = count + on_attack(me, true, victim)
     end
 
     lib.any_action(me)

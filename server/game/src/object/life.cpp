@@ -263,7 +263,7 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
     co_await this->server.threads.follow(attacker->weak_from_this_as<life>());
 }
 
-async::task<void> life::attack(DURATION duration)
+async::task<void> life::attack(DURATION duration, std::shared_ptr<life> victim)
 {
     this->assert_thread();
     if (this->_map == nullptr)
@@ -278,7 +278,12 @@ async::task<void> life::attack(DURATION duration)
     if (lua)
     {
         lua->pushobject(*this);
-        auto results = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<life>(), 1);
+        lua->pushboolean(false);
+        if (victim != nullptr)
+            lua->pushobject(victim);
+        else
+            lua->pushnil();
+        auto results = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<life>(), 3);
         if (results.empty() == false)
             attack_count = static_cast<uint32_t>(results.front().integer());
     }

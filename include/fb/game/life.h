@@ -87,7 +87,7 @@ public:
 
 public:
     // clang-format off
-    virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
+    virtual async::task<void> attack(DURATION duration = DURATION::ATTACK, std::shared_ptr<life> victim = nullptr);
     virtual uint64_t          exp() const;
     virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     void                      update_hp(uint64_t diff, bool critical, bool notify = true);

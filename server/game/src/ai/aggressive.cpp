@@ -32,7 +32,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     if (mob_obj.near_target(target, attack_dir))
     {
         mob_obj.direction(attack_dir);
-        co_await mob_obj.attack();
+        co_await mob_obj.attack(DURATION::ATTACK, target);
         co_return true;
     }
 
@@ -43,7 +43,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     if (adjacent != nullptr && mob_obj.near_target(adjacent, attack_dir))
     {
         mob_obj.direction(attack_dir);
-        co_await mob_obj.attack();
+        co_await mob_obj.attack(DURATION::ATTACK, adjacent);
     }
     else
     {

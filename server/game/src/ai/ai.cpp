@@ -67,7 +67,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         if (mob_obj.near_target(target, direction))
         {
             mob_obj.direction(direction);
-            co_await mob_obj.attack();
+            co_await mob_obj.attack(DURATION::ATTACK, target);
         }
         else
         {

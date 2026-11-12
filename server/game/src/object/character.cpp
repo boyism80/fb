@@ -543,13 +543,13 @@ void character::role(ROLE value)
     this->server.log.write("role_change", log_data);
 }
 
-async::task<void> character::attack(DURATION duration)
+async::task<void> character::attack(DURATION duration, std::shared_ptr<life> victim)
 {
     this->assert_thread();
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
-        co_await life::attack(duration);
+        co_await life::attack(duration, victim);
     }
     catch (const std::exception& e)
     {

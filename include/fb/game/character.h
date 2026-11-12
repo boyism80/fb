@@ -447,7 +447,7 @@ public:
     [[nodiscard]] async::task<size_t>        send_immediate(const fb::stream& stream, bool encrypt = true, bool wrap = true);
     [[nodiscard]] async::task<size_t>        send_immediate(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
     OBJECT_TYPE                              what() const override final;
-    async::task<void>                        attack(DURATION duration = DURATION::ATTACK) override final;
+    async::task<void>                        attack(DURATION duration = DURATION::ATTACK, std::shared_ptr<life> victim = nullptr) override final;
     uint64_t                                 normal_attack_damage(MOB_SIZE size) const override final;
     void                                     action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                       name() const override final;
