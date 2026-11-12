@@ -270,7 +270,7 @@ private:
     }
 
 private:
-    async::task<void> erase(fb::socket<T>& socket)
+    async::task<void> disconnect(fb::socket<T>& socket)
     {
         // Counted before the mark so exit() never sees a skipped socket with a zero count.
         this->_disconnecting++;
@@ -293,6 +293,11 @@ private:
 
         if (socket.is_open())
             socket.close();
+    }
+
+    async::task<void> erase(fb::socket<T>& socket)
+    {
+        co_await this->disconnect(socket);
 
         auto fd = socket.fd();
         {
@@ -788,19 +793,7 @@ private:
             co_await thread->switching();
             for (auto& socket : sockets)
             {
-                if (socket->mark_disconnected())
-                {
-                    try
-                    {
-                        std::ignore = co_await this->on_disconnected(*socket);
-                    }
-                    catch (std::exception& e)
-                    {
-                        fb::logger::fatal(e.what());
-                        std::cerr << boost::stacktrace::stacktrace() << std::endl;
-                    }
-                }
-                socket->close();
+                co_await this->disconnect(*socket);
             }
         }
     }
