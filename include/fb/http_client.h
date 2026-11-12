@@ -236,12 +236,39 @@ private:
         deadline.release();
         close_http_socket(socket);
 
+        require_success(res.result_int(), std::string_view(request.target().data(), request.target().size()));
         co_return response_body_bytes(res);
+    }
+
+    static void require_success(unsigned status, std::string_view path)
+    {
+        if (status < 200 || status >= 300)
+            throw std::runtime_error(std::format("status {}: {}", status, path));
     }
 
     static http_error wrap_http_error(std::string_view operation, const std::exception& e)
     {
         return http_error(std::format("HTTP {} request failed: {}", operation, e.what()));
+    }
+
+    template <typename Response> static Response read_response(const std::vector<uint8_t>& bytes)
+    {
+        try
+        {
+            auto reader        = fb::stream_reader<little_endian>(bytes);
+            auto protocol_type = reader.read<uint32_t>();
+            auto protocol_size = reader.read<uint32_t>();
+            if (protocol_type != static_cast<uint32_t>(Response::FlatBufferProtocolType) ||
+                protocol_size > bytes.size() - sizeof(uint32_t) * 2)
+                throw std::runtime_error(
+                    std::format("unexpected response {} ({} bytes)", protocol_type, protocol_size));
+
+            return Response::Deserialize(bytes.data() + sizeof(uint32_t) * 2);
+        }
+        catch (const std::exception& e)
+        {
+            throw wrap_http_error("response", e);
+        }
     }
 
     static std::pair<std::string, std::string> split_absolute_url(std::string_view full_url)
@@ -261,8 +288,7 @@ private:
     boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
                                                                      std::string                         path,
                                                                      std::map<std::string, std::string>  headers,
-                                                                     std::chrono::steady_clock::duration timeout,
-                                                                     bool require_success = false)
+                                                                     std::chrono::steady_clock::duration timeout)
     {
         try
         {
@@ -299,15 +325,7 @@ private:
             deadline.release();
             close_http_socket(socket);
 
-            if (require_success)
-            {
-                auto status = res.result_int();
-                if (status < 200 || status >= 300)
-                {
-                    throw std::runtime_error(std::format("HTTP GET failed with status {}: {}", status, path));
-                }
-            }
-
+            require_success(res.result_int(), path);
             co_return response_body_bytes(res);
         }
         catch (const std::exception& e)
@@ -538,13 +556,9 @@ private:
                                       }
                                       try
                                       {
-                                          auto reader        = fb::stream_reader<big_endian>(bytes);
-                                          auto protocol_type = reader.read<uint32_t>();
-                                          auto protocol_size = reader.read<uint32_t>();
-                                          auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                                          promise->set_value(Response::Deserialize(offset));
+                                          promise->set_value(read_response<Response>(bytes));
                                       }
-                                      catch (std::exception& e)
+                                      catch (...)
                                       {
                                           promise->set_exception(std::current_exception());
                                       }
@@ -681,7 +695,7 @@ public:
         pending_task task = [this, promise, host = std::move(host), path = std::move(path), headers]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
             boost::asio::co_spawn(boost::asio::make_strand(ctx),
-                                  this->boost_get_raw_async(host, path, headers, std::chrono::seconds{30}, true),
+                                  this->boost_get_raw_async(host, path, headers, std::chrono::seconds{30}),
                                   [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                       if (ep)
                                       {
@@ -742,11 +756,7 @@ private:
                     }
                     try
                     {
-                        auto reader        = fb::stream_reader<big_endian>(bytes);
-                        auto protocol_type = reader.read<uint32_t>();
-                        auto protocol_len  = reader.read<uint32_t>();
-                        auto offset        = bytes.data() + sizeof(uint32_t) * 2;
-                        promise->set_value(response_of<Request>::type::Deserialize(offset));
+                        promise->set_value(read_response<typename response_of<Request>::type>(bytes));
                     }
                     catch (...)
                     {
