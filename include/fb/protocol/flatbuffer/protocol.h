@@ -128,7 +128,6 @@ namespace fb::protocol::internal::request
     class ReloadScripts;
     class SetDropRateMultiplier;
     class SetDateTime;
-    class SetCastleOwner;
     class StartCastleSiege;
     class EndCastleSiege;
     class FinishCastleSiege;
@@ -441,7 +440,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::ReloadTable
 template <> struct FlatBufferOffset<fb::protocol::internal::request::ReloadScripts> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadScripts> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetDropRateMultiplier> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetDateTime> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::SetCastleOwner> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetCastleOwner> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::StartCastleSiege> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::StartCastleSiege> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::EndCastleSiege> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::EndCastleSiege> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::FinishCastleSiege> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::FinishCastleSiege> type; };
@@ -737,8 +735,6 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> build<fb::protocol::internal::request::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDropRateMultiplier& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> build<fb::protocol::internal::request::SetDateTime>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDateTime& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::SetCastleOwner> build<fb::protocol::internal::request::SetCastleOwner>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetCastleOwner& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::StartCastleSiege> build<fb::protocol::internal::request::StartCastleSiege>(FlatBufferBuilder& builder, const fb::protocol::internal::request::StartCastleSiege& value);
 template <>
@@ -2511,7 +2507,6 @@ enum class FlatBufferProtocolType
     ReloadScripts,
     SetDropRateMultiplier,
     SetDateTime,
-    SetCastleOwner,
     StartCastleSiege,
     EndCastleSiege,
     FinishCastleSiege,
@@ -4806,48 +4801,6 @@ public:
     {
         auto raw = flatbuffers::GetRoot<fb::protocol::internal::request::raw::SetDateTime>(bytes);
         return SetDateTime(*raw);
-    }
-};
-class SetCastleOwner
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetCastleOwner;
-
-public:
-    uint32_t world = 0;
-    uint32_t host = 0;
-    uint8_t divine_beast = 0;
-    std::optional<uint32_t> owner_clan_id = std::nullopt;
-
-public:
-    SetCastleOwner() = default;
-
-    SetCastleOwner(const SetCastleOwner& x)
-        : world(x.world), host(x.host), divine_beast(x.divine_beast), owner_clan_id(x.owner_clan_id)
-    { }
-
-    SetCastleOwner(uint32_t world, uint32_t host, uint8_t divine_beast, const std::optional<uint32_t>& owner_clan_id)
-        : world(world), host(host), divine_beast(divine_beast), owner_clan_id(owner_clan_id)
-    { }
-
-    SetCastleOwner(const fb::protocol::internal::request::raw::SetCastleOwner& raw)
-        : world(raw.world()), host(raw.host()), divine_beast(raw.divine_beast()), owner_clan_id(raw.owner_clan_id() != nullptr ? raw.owner_clan_id()->value() : std::optional<uint32_t>())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::SetCastleOwner>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static SetCastleOwner Deserialize(const uint8_t* bytes)
-    {
-        auto raw = flatbuffers::GetRoot<fb::protocol::internal::request::raw::SetCastleOwner>(bytes);
-        return SetCastleOwner(*raw);
     }
 };
 class StartCastleSiege
@@ -10507,15 +10460,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> build<fb:
             flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.datetime),
             flatbuffers::build<bool>(builder, value.reset));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::SetCastleOwner> build<fb::protocol::internal::request::SetCastleOwner>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetCastleOwner& value)
-{
-    return fb::protocol::internal::request::raw::CreateSetCastleOwner(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
-            flatbuffers::build<uint32_t>(builder, value.host),
-            flatbuffers::build<uint8_t>(builder, value.divine_beast),
-            flatbuffers::build<std::optional<uint32_t>>(builder, value.owner_clan_id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::StartCastleSiege> build<fb::protocol::internal::request::StartCastleSiege>(FlatBufferBuilder& builder, const fb::protocol::internal::request::StartCastleSiege& value)

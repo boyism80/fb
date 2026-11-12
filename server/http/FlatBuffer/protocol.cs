@@ -1179,17 +1179,6 @@ namespace Google.FlatBuffers
                 builder.Build(value.Datetime),
                 builder.Build(value.Reset));
         }
-        public static Offset<fb.protocol.@internal.request.raw.SetCastleOwner> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.SetCastleOwner value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.@internal.request.raw.SetCastleOwner.CreateSetCastleOwner(builder,
-                builder.Build(value.World),
-                builder.Build(value.Host),
-                builder.Build(value.DivineBeast),
-                builder.Build(value.OwnerClanId));
-        }
         public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.StartCastleSiege value)
         {
             if (value == null)
@@ -4156,7 +4145,6 @@ namespace fb.protocol.@internal.request
         ReloadScripts,
         SetDropRateMultiplier,
         SetDateTime,
-        SetCastleOwner,
         StartCastleSiege,
         EndCastleSiege,
         FinishCastleSiege,
@@ -6470,48 +6458,6 @@ namespace fb.protocol.@internal.request
             return new SetDateTime(bytes);
         }
     }
-    public class SetCastleOwner : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.SetCastleOwner;
-        public uint World { get; set; } = 0;
-        public uint Host { get; set; } = 0;
-        public byte DivineBeast { get; set; } = 0;
-        public uint? OwnerClanId { get; set; } = null;
-
-        public SetCastleOwner()
-        { }
-
-        public SetCastleOwner(fb.protocol.@internal.request.raw.SetCastleOwner raw)
-        {
-            World = raw.World;
-            Host = raw.Host;
-            DivineBeast = raw.DivineBeast;
-            OwnerClanId = raw.OwnerClanId != null ? (uint?)raw.OwnerClanId.Value.Value : null;
-        }
-
-        public SetCastleOwner(byte[] bytes) : this(fb.protocol.@internal.request.raw.SetCastleOwner.GetRootAsSetCastleOwner(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static SetCastleOwner Deserialize(byte[] bytes)
-        {
-            return new SetCastleOwner(bytes);
-        }
-    }
     public class StartCastleSiege : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.StartCastleSiege;
@@ -6991,7 +6937,6 @@ namespace fb.protocol.@internal.request
                 FlatBufferProtocolType.ReloadScripts => typeof(fb.protocol.@internal.request.ReloadScripts),
                 FlatBufferProtocolType.SetDropRateMultiplier => typeof(fb.protocol.@internal.request.SetDropRateMultiplier),
                 FlatBufferProtocolType.SetDateTime => typeof(fb.protocol.@internal.request.SetDateTime),
-                FlatBufferProtocolType.SetCastleOwner => typeof(fb.protocol.@internal.request.SetCastleOwner),
                 FlatBufferProtocolType.StartCastleSiege => typeof(fb.protocol.@internal.request.StartCastleSiege),
                 FlatBufferProtocolType.EndCastleSiege => typeof(fb.protocol.@internal.request.EndCastleSiege),
                 FlatBufferProtocolType.FinishCastleSiege => typeof(fb.protocol.@internal.request.FinishCastleSiege),

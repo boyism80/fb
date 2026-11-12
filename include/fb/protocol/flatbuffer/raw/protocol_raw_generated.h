@@ -294,9 +294,6 @@ struct SetDropRateMultiplierBuilder;
 struct SetDateTime;
 struct SetDateTimeBuilder;
 
-struct SetCastleOwner;
-struct SetCastleOwnerBuilder;
-
 struct StartCastleSiege;
 struct StartCastleSiegeBuilder;
 
@@ -9608,78 +9605,6 @@ inline ::flatbuffers::Offset<SetDateTime> CreateSetDateTimeDirect(
       world,
       datetime__,
       reset);
-}
-
-struct SetCastleOwner FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef SetCastleOwnerBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4,
-    VT_HOST = 6,
-    VT_DIVINE_BEAST = 8,
-    VT_OWNER_CLAN_ID = 10
-  };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
-  }
-  uint8_t divine_beast() const {
-    return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
-  }
-  const nullable::nullable_uint *owner_clan_id() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_OWNER_CLAN_ID);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
-           VerifyOffset(verifier, VT_OWNER_CLAN_ID) &&
-           verifier.VerifyTable(owner_clan_id()) &&
-           verifier.EndTable();
-  }
-};
-
-struct SetCastleOwnerBuilder {
-  typedef SetCastleOwner Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(SetCastleOwner::VT_WORLD, world, 0);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(SetCastleOwner::VT_HOST, host, 0);
-  }
-  void add_divine_beast(uint8_t divine_beast) {
-    fbb_.AddElement<uint8_t>(SetCastleOwner::VT_DIVINE_BEAST, divine_beast, 0);
-  }
-  void add_owner_clan_id(::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id) {
-    fbb_.AddOffset(SetCastleOwner::VT_OWNER_CLAN_ID, owner_clan_id);
-  }
-  explicit SetCastleOwnerBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<SetCastleOwner> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<SetCastleOwner>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<SetCastleOwner> CreateSetCastleOwner(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t host = 0,
-    uint8_t divine_beast = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id = 0) {
-  SetCastleOwnerBuilder builder_(_fbb);
-  builder_.add_owner_clan_id(owner_clan_id);
-  builder_.add_host(host);
-  builder_.add_world(world);
-  builder_.add_divine_beast(divine_beast);
-  return builder_.Finish();
 }
 
 struct StartCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -412,13 +412,6 @@ table SetDateTime {
   reset: bool = false;
 }
 
-table SetCastleOwner {
-  world: uint;
-  host: uint;
-  divine_beast: ubyte;
-  owner_clan_id: uint?;
-}
-
 table StartCastleSiege {
   world: uint;
   host: uint;

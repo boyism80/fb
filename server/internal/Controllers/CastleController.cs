@@ -68,52 +68,6 @@ namespace Internal.Controllers
             }
         }
 
-        [HttpPost("owner")]
-        public async Task<Response.UpdatedCastle> SetOwner(Request.SetCastleOwner request)
-        {
-            try
-            {
-                var world = request.World;
-
-                await using var clanLock = request.OwnerClanId.HasValue ? await _distributedLock.Lock(world, Clan.DistributedLockKey(request.OwnerClanId.Value)) : null;
-                if (request.OwnerClanId.HasValue)
-                {
-                    if (await _dbContext.Clan.Get(world, request.OwnerClanId.Value) == null)
-                    {
-                        throw new LogicException(ErrorCode.NotFoundClan);
-                    }
-                }
-
-                await using var sync = await _distributedLock.Lock(world, Castle.DistributedLockKey(request.DivineBeast));
-
-                var castle = await Load(world, request.DivineBeast);
-                castle.OwnerClan = request.OwnerClanId;
-                _dbContext.Castle.Save(world, castle);
-
-                await _dbContext.SaveChangesAsync();
-
-                var response = castle.ToUpdated(request.Host);
-                await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
-                return response;
-            }
-            catch (LogicException e)
-            {
-                return new Response.UpdatedCastle
-                {
-                    Host = request.Host,
-                    Error = (uint)e.Error
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.UpdatedCastle
-                {
-                    Host = request.Host,
-                    Error = (uint)ErrorCode.Unhandled
-                };
-            }
-        }
-
         [HttpPost("siege/start")]
         public async Task<Response.UpdatedCastle> StartSiege(Request.StartCastleSiege request)
         {
