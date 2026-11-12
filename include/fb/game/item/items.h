@@ -118,6 +118,7 @@ public:
     [[nodiscard]] async::task<item_ptr>             active(uint8_t index);
     [[nodiscard]] async::task<uint8_t>              inactive(EQUIPMENT_PARTS parts);
     equipment_ptr                                   equipment_off(EQUIPMENT_PARTS parts);
+    bool                                            wear_down(EQUIPMENT_PARTS parts, uint32_t value);
     uint8_t                                         index(const fb::model::item& item) const;
     uint8_t                                         index(const item_ptr& item) const;
     std::vector<uint8_t>                            index_all(const item_ptr& item) const;
@@ -157,6 +158,7 @@ public:
     uint16_t                                        free_space(const fb::model::item& model) const;
     bool                                            has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const;
     [[nodiscard]] async::task<item_ptr>             drop(uint8_t index, uint16_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
+    [[nodiscard]] async::task<void>                 drop_on_death();
     [[nodiscard]] async::task<void>                 loot(bool boost);
     [[nodiscard]] async::task<bool>                 throws(uint8_t index, bool all);
     equipment_map_t                                 equipments() const;

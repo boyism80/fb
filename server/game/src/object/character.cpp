@@ -577,11 +577,8 @@ void character::on_swing(uint32_t attack_count)
     }
 
     // Handle weapon durability
-    if (attack_count > 0 && weapon->durability_down(attack_count))
-    {
-        this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
-        std::ignore = this->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
-    }
+    if (attack_count > 0)
+        this->items.wear_down(EQUIPMENT_PARTS::WEAPON, attack_count);
 }
 
 void character::action(ACTION action, DURATION duration, uint8_t sound)
@@ -2657,65 +2654,7 @@ async::task<void> character::death_loss()
         std::ignore = co_await cash->map(this->map(), this->position());
     }
 
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        auto item = this->items[i];
-        if (item == nullptr)
-            continue;
-
-        auto& model = item->model();
-        if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
-        {
-            auto  equipment       = std::static_pointer_cast<fb::game::equipment>(item);
-            auto& equipment_model = equipment->model();
-            auto  penalty         = static_cast<uint32_t>(
-                std::ceil(equipment_model.durability * fb::model::const_value::death_penalty::durability));
-            if (equipment->durability_down(penalty))
-            {
-                this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
-                continue;
-            }
-        }
-
-        auto droppable = ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
-        if (droppable)
-        {
-            auto dropped = co_await this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
-            if (dropped != nullptr)
-                dropped->death_uid(this->id);
-        }
-    }
-
-    for (auto& [parts, equipment] : this->items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model = equipment->model();
-        auto  penalty =
-            static_cast<uint32_t>(std::ceil(model.durability * fb::model::const_value::death_penalty::durability));
-        if (equipment->durability_down(penalty))
-        {
-            this->items.equipment_off(parts);
-            this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
-            equipment.reset();
-            continue;
-        }
-
-        auto droppable = ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
-        if (droppable)
-        {
-            this->items.equipment_off(parts);
-            equipment->container(nullptr);
-            equipment->death_uid(this->id);
-            std::ignore = co_await equipment->map(this->map(), this->position());
-        }
-        else if (this->items.free())
-        {
-            this->items.equipment_off(parts);
-            std::ignore = co_await this->items.add(equipment);
-        }
-    }
+    co_await this->items.drop_on_death();
 
     auto cls   = this->cls();
     auto level = this->level();

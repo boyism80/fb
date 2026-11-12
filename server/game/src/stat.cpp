@@ -860,20 +860,7 @@ uint64_t character_stat::damage(uint64_t                          value,
 
     for (auto& [parts, equipment] : this->owner.items.equipments())
     {
-        if (equipment == nullptr)
-            continue;
-
-        auto durability = equipment->durability();
-        if (durability.has_value() == false)
-            continue;
-
-        auto& model = equipment->model();
-        if (equipment->durability_down(1))
-        {
-            auto equipment = this->owner.items.equipment_off(parts);
-            this->owner.message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
-            equipment.reset();
-        }
+        this->owner.items.wear_down(parts, 1);
     }
     return result;
 }

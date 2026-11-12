@@ -9,6 +9,7 @@
 #include <json/json.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -122,6 +123,21 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 
     owner->show();
     return equipment;
+}
+
+bool items::wear_down(EQUIPMENT_PARTS parts, uint32_t value)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    auto equipment = this->equipment(parts);
+    if (equipment == nullptr || equipment->durability_down(value) == false)
+        return false;
+
+    this->equipment_off(parts);
+    owner->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
+    return true;
 }
 
 bool items::warm(const fb::game::item& item) const
@@ -1250,6 +1266,64 @@ async::task<items::item_ptr> items::drop(uint8_t index, uint16_t count, bool act
         owner->message(e.what());
     }
     co_return nullptr;
+}
+
+async::task<void> items::drop_on_death()
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        co_return;
+
+    auto wear = [](const fb::model::equipment& model) {
+        return static_cast<uint32_t>(std::ceil(model.durability * fb::model::const_value::death_penalty::durability));
+    };
+    auto droppable = [](const fb::model::item& model) {
+        return ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
+    };
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = this->at(i);
+        if (item == nullptr)
+            continue;
+
+        if (item->model().attr(ITEM_ATTRIBUTE::EQUIPMENT))
+        {
+            auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
+            if (equipment->durability_down(wear(equipment->model())))
+            {
+                this->remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
+                owner->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
+                continue;
+            }
+        }
+
+        if (droppable(item->model()))
+        {
+            auto dropped = co_await this->drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            if (dropped != nullptr)
+                dropped->death_uid(owner->id);
+        }
+    }
+
+    for (auto& [parts, equipment] : this->equipments())
+    {
+        if (equipment == nullptr || this->wear_down(parts, wear(equipment->model())))
+            continue;
+
+        if (droppable(equipment->model()))
+        {
+            this->equipment_off(parts);
+            equipment->container(nullptr);
+            equipment->death_uid(owner->id);
+            std::ignore = co_await equipment->map(owner->map(), owner->position());
+        }
+        else if (this->free())
+        {
+            this->equipment_off(parts);
+            std::ignore = co_await this->add(equipment);
+        }
+    }
 }
 
 async::task<void> items::loot(bool boost)
