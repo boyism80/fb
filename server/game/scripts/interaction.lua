@@ -767,7 +767,7 @@ return {
         })
     end,
 
-    on_matchmaking_dissolved = function(me, match_id, match_type, reason, outcome, queued)
+    on_matchmaking_dissolved = function(me, match_id, match_type, reason, outcome)
         if outcome == 1 then
             me:timer(1200, TIMER_TYPE.INCREASE)
             if reason == 0 then
@@ -783,12 +783,10 @@ return {
             end
         else
             matchmaking_clear_timer(me)
-            if queued then
-                if reason == 0 then
-                    me:message(string.format('응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-                else
-                    me:message(string.format('매치가 취소되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-                end
+            if reason == 0 then
+                me:message(string.format('응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+            else
+                me:message(string.format('매치가 취소되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
             end
         end
     end

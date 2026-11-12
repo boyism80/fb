@@ -29,9 +29,11 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
             auto weak    = ch->weak_from_this_as<character>();
             auto builder = this->server.threads.new_builder(weak);
             builder.func =
-                [ch, match_id, match_type, reason, outcome_value = outcome.outcome](auto&) -> async::task<void> {
+                [ch, match_id, match_type, reason, ticket_id = outcome.ticket_id, outcome_value = outcome.outcome](
+                    auto&) -> async::task<void> {
                 // A member who already declined or dequeued has no ticket left and was told by that hook.
-                auto queued = ch->matchmaker.on_dissolved(match_id, outcome_value == 0);
+                if (ch->matchmaker.on_dissolved(match_id, ticket_id, outcome_value == 0) == false)
+                    co_return;
 
                 auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dissolved");
                 if (lua)
@@ -41,8 +43,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
                     lua->pushinteger(match_type);
                     lua->pushinteger(reason);
                     lua->pushinteger(outcome_value);
-                    lua->pushboolean(queued);
-                    std::ignore = co_await lua->call(6);
+                    std::ignore = co_await lua->call(5);
                 }
                 co_return;
             };
