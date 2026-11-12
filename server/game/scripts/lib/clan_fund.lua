@@ -22,7 +22,7 @@ function M.withdraw(me, npc_obj, clan)
         me:dialog(npc_obj, '그렇게 많이 찾을 수는 없다네.', { prev = false, next = false })
         return
     end
-    local applied = me:transfer_clan_money(clan, -amount, amount)
+    local applied = me:withdraw_clan_money(amount)
     if applied == nil then
         me:dialog(npc_obj, '문파자금 출금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
     elseif applied == false then

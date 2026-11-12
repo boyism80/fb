@@ -4,15 +4,6 @@ local M = {}
 
 local ASSIGNABLE_ROLES = { CLAN_ROLE.MATE, CLAN_ROLE.OFFICER, CLAN_ROLE.DEPUTY }
 
-local function is_clan_master(me, clan)
-    for _, member in pairs(clan:members()) do
-        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
-            return true
-        end
-    end
-    return false
-end
-
 local function find_nearby_character(me, name)
     for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
         if ch:name() == name then
@@ -241,7 +232,7 @@ local function clan_operation(me, npc, clan)
             me:dialog(npc, error)
         end
     elseif selected == 6 then
-        if is_clan_master(me, clan) == false then
+        if clan:role(me:name()) ~= CLAN_ROLE.MASTER then
             me:dialog(npc, '문주가 아니라면 찾을 수 없네.', { prev = false, next = false })
             return
         end

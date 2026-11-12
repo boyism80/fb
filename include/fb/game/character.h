@@ -142,12 +142,18 @@ public:
         void                                           reset();
         async::task<void>                              leave(std::string message);
         async::task<void>                              on_changed();
-        [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
+        [[nodiscard]] async::task<std::optional<bool>> deposit(uint64_t amount);
+        [[nodiscard]] async::task<std::optional<bool>> withdraw(uint64_t amount);
         async::task<void>                              settle_money(uint64_t request_id);
         void                                           complete_money(uint64_t request_id, bool applied);
         [[nodiscard]] async::task<bool>                map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position, map_options options, uint32_t clan_id, uint64_t money, uint64_t clan_money);
         async::task<void>                              settle_fee(uint64_t request_id);
         // clang-format on
+
+    private:
+        [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id,
+                                                                      int64_t  clan_delta,
+                                                                      int64_t  money_delta);
     };
 
     class friends

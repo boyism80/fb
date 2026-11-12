@@ -34,17 +34,11 @@ local NAME_TO_DIVINE_BEAST = {
 
 local function clan_as_master(ch)
     local clan = ch:clan()
-    if clan == nil then
+    if clan == nil or clan:role(ch:name()) ~= CLAN_ROLE.MASTER then
         return nil
     end
 
-    for _, member in pairs(clan:members()) do
-        if member.role == CLAN_ROLE.MASTER and member.name == ch:name() then
-            return clan
-        end
-    end
-
-    return nil
+    return clan
 end
 
 local function active_heart_map(info)

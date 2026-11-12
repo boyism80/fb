@@ -55,6 +55,39 @@ async::task<void> character::clan::on_changed()
     }
 }
 
+async::task<std::optional<bool>> character::clan::deposit(uint64_t amount)
+{
+    this->_owner.assert_thread();
+
+    if (this->_id.has_value() == false)
+        co_return false;
+
+    auto delta = static_cast<int64_t>(amount);
+    co_return co_await this->transfer_money(this->_id.value(), delta, -delta);
+}
+
+async::task<std::optional<bool>> character::clan::withdraw(uint64_t amount)
+{
+    this->_owner.assert_thread();
+
+    if (this->_id.has_value() == false)
+        co_return false;
+
+    auto clan_id = this->_id.value();
+    {
+        auto guard = this->_owner.server.clans.try_enter_read(clan_id);
+        if (guard.has_value() == false || guard->value() == nullptr)
+            co_return false;
+
+        auto member = guard->value()->member(this->_owner.name());
+        if (member == nullptr || member->role != CLAN_ROLE::MASTER)
+            co_return false;
+    }
+
+    auto delta = static_cast<int64_t>(amount);
+    co_return co_await this->transfer_money(clan_id, -delta, delta);
+}
+
 async::task<std::optional<bool>> character::clan::transfer_money(uint32_t clan_id,
                                                                  int64_t  clan_delta,
                                                                  int64_t  money_delta)

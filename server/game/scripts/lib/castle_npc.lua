@@ -63,19 +63,6 @@ local function map_divine_beast(me)
     return select(2, castle_lib.totem_of_map(map))
 end
 
-local function is_clan_master(me)
-    local clan = me:clan()
-    if clan == nil then
-        return false, nil
-    end
-    for _, member in pairs(clan:members()) do
-        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
-            return true, clan
-        end
-    end
-    return false, clan
-end
-
 local function owns_this_castle(me)
     local clan = me:clan()
     local divine = map_divine_beast(me)
@@ -90,12 +77,12 @@ local function owns_this_castle(me)
 end
 
 local function buy_clan_sword(me, npc_obj)
-    local is_master, clan = is_clan_master(me)
+    local clan = me:clan()
     if clan == nil then
         me:dialog(npc_obj, '가입된 문파가 없습니다.', { prev = false, next = false })
         return
     end
-    if not is_master then
+    if clan:role(me:name()) ~= CLAN_ROLE.MASTER then
         me:dialog(npc_obj, '너는 문파장이 아니구나!', { prev = false, next = false })
         return
     end
@@ -154,9 +141,8 @@ local function buy_clan_sword(me, npc_obj)
         return
     end
 
-    local still_master = is_clan_master(me)
-    local still_owns, _, still_divine_beast = owns_this_castle(me)
-    if not still_master or not still_owns or still_divine_beast ~= divine_beast or castle_lib.has_item_named(me, weapon_name) then
+    local still_owns, still_clan, still_divine_beast = owns_this_castle(me)
+    if not still_owns or still_clan:role(me:name()) ~= CLAN_ROLE.MASTER or still_divine_beast ~= divine_beast or castle_lib.has_item_named(me, weapon_name) then
         me:dialog(npc_obj, '성의 상황이 바뀌었습니다. 다시 말을 걸어 주세요.', { prev = false, next = false })
         return
     end
@@ -228,12 +214,13 @@ local function revive_ghost(me, npc_obj)
 end
 
 local function clan_vault(me, npc_obj)
-    local is_master, clan = is_clan_master(me)
+    local clan = me:clan()
     if clan == nil then
         me:dialog(npc_obj, '가입된 문파가 없습니다.', { prev = false, next = false })
         return
     end
 
+    local is_master = clan:role(me:name()) == CLAN_ROLE.MASTER
     local menu = { '문파자금 조회', '문파자금 입금' }
     if is_master then
         table.insert(menu, '문파자금 출금')
@@ -263,7 +250,7 @@ local function clan_vault(me, npc_obj)
             me:dialog(npc_obj, '보유 금전이 부족합니다.', { prev = false, next = false })
             return
         end
-        local applied = me:transfer_clan_money(clan, amount, -amount)
+        local applied = me:deposit_clan_money(amount)
         if applied == nil then
             me:dialog(npc_obj, '문파자금 입금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
         elseif applied == false then

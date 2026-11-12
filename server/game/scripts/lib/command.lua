@@ -3,21 +3,6 @@ local siege = require('schedule.siege')
 
 local M = {}
 
-local function is_clan_master(me)
-    local clan = me:clan()
-    if clan == nil then
-        return false
-    end
-
-    for _, member in pairs(clan:members()) do
-        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
-            return true
-        end
-    end
-
-    return false
-end
-
 M.functions = {
     ['명령어'] = {
         ['privilege'] = ROLE.USER,
@@ -563,8 +548,8 @@ M.functions = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 공성 참가용 문파장 문파 준비',
         ['command'] = function(me, args)
-            if is_clan_master(me) == false then
-                local clan = me:clan()
+            local clan = me:clan()
+            if clan == nil or clan:role(me:name()) ~= CLAN_ROLE.MASTER then
                 if clan ~= nil then
                     local err = clan:leave(me)
                     if err ~= nil then
@@ -580,7 +565,7 @@ M.functions = {
                 end
             end
 
-            local clan = me:clan()
+            clan = me:clan()
             me:message(string.format("공성준비 완료: 문파 [%s] 문파장", clan and clan:name() or '?'), MESSAGE_TYPE.BROWN)
             return true
         end,

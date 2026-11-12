@@ -166,7 +166,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"start_quest",                  builtin::character::builtin_start_quest},
 {"remove_quest",                 builtin::character::builtin_remove_quest},
 {"reward",                       builtin::character::builtin_reward},
-{"transfer_clan_money",          builtin::character::builtin_transfer_clan_money},
+{"deposit_clan_money",           builtin::character::builtin_deposit_clan_money},
+{"withdraw_clan_money",          builtin::character::builtin_withdraw_clan_money},
 {"send_system_mail",             builtin::character::builtin_send_system_mail},
 {"send_storage_box",             builtin::character::builtin_send_storage_box},
 {"check_storage_box",            builtin::character::builtin_check_storage_box},
@@ -6859,32 +6860,64 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_transfer_clan_money(lua_State* L)
+int builtin::character::builtin_deposit_clan_money(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
-    auto ch   = lua->touserdata<fb::game::character>(1);
-    auto clan = lua->touserdata<fb::game::clan>(2);
-    if (ch == nullptr || clan == nullptr)
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
-    if (lua_isinteger(L, 3) == false || lua_isinteger(L, 4) == false)
+    auto amount = lua->tointeger<uint64_t>(2, 1, std::numeric_limits<int64_t>::max());
+    if (amount.has_value() == false)
     {
         lua->pushboolean(false);
         return 1;
     }
 
-    auto clan_id     = clan->id();
-    auto clan_delta  = static_cast<int64_t>(lua_tointeger(L, 3));
-    auto money_delta = static_cast<int64_t>(lua_tointeger(L, 4));
-    auto weak        = ch->weak_from_this_as<fb::game::character>();
-    auto result      = std::make_shared<std::optional<bool>>();
-    auto builder     = lua->new_co_builder();
-    builder.weak     = weak;
-    builder.yield    = [=]() -> async::task<void> {
-        *result = co_await ch->clan.transfer_money(clan_id, clan_delta, money_delta);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<std::optional<bool>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = co_await ch->clan.deposit(amount.value());
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (result->has_value())
+            lua->pushboolean(result->value());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_withdraw_clan_money(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto amount = lua->tointeger<uint64_t>(2, 1, std::numeric_limits<int64_t>::max());
+    if (amount.has_value() == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<std::optional<bool>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = co_await ch->clan.withdraw(amount.value());
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

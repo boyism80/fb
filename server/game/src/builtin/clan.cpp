@@ -21,6 +21,7 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"id",                  builtin::clan::builtin_id},
 {"name",                builtin::clan::builtin_name},
 {"members",             builtin::clan::builtin_members},
+{"role",                builtin::clan::builtin_role},
 {"nears",               builtin::clan::builtin_nears},
 {"title",               builtin::clan::builtin_title},
 {"join",                builtin::clan::builtin_join},
@@ -99,6 +100,33 @@ int builtin::clan::builtin_members(lua_State* L)
         }
     }
 
+    return 1;
+}
+
+int builtin::clan::builtin_role(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto name  = lua->tostring(2);
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() == false || guard->value() == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto member = guard->value()->member(name);
+    if (member == nullptr)
+        lua->pushnil();
+    else
+        lua->pushinteger(member->role);
     return 1;
 }
 
