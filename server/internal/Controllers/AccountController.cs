@@ -395,6 +395,11 @@ namespace Internal.Controllers
                 }
 
                 var birthday = await _passwordAttempts.CheckBirthday(world, request.Uid, ch.Birth, request.Birthday);
+                if (birthday == PasswordCheck.NotRegistered)
+                {
+                    throw new LogicException(ErrorCode.BirthdayNotRegistered);
+                }
+
                 if (birthday == PasswordCheck.Locked)
                 {
                     throw new LogicException(ErrorCode.BirthdayLocked);

@@ -6,6 +6,7 @@ namespace Http.Service
     {
         Locked,
         NotMatched,
+        NotRegistered,
         Matched,
     }
 
@@ -111,6 +112,11 @@ return 1";
 
         public async Task<PasswordCheck> CheckBirthday(uint world, uint uid, uint? storedBirth, uint birth)
         {
+            if (storedBirth == null)
+            {
+                return PasswordCheck.NotRegistered;
+            }
+
             if (await BirthdayLocked(world, uid))
             {
                 return PasswordCheck.Locked;

@@ -81,6 +81,9 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
 
+        case ERROR_CODE::BIRTHDAY_NOT_REGISTERED:
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_BIRTHDAY_NOT_REGISTERED));
+
         case ERROR_CODE::ACCOUNT_LOCKED:
             session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
