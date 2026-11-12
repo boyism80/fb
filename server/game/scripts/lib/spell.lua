@@ -333,13 +333,12 @@ function M.assert_map_debuff(me, you)
     end
 
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not castle.map_pk_enabled(me) then
-            me:message('걸리지 않습니다.')
-            return false
-        end
-
-        if M.attacker_blocks_pvp(me) then
-            me:message('PK보호!')
+        if not M.harmable_character(me, you) then
+            if castle.map_pk_enabled(me) and M.attacker_blocks_pvp(me) then
+                me:message('PK보호!')
+            else
+                me:message('걸리지 않습니다.')
+            end
             return false
         end
 
@@ -364,13 +363,12 @@ function M.assert_map_damage(me, you)
     end
 
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not castle.map_pk_enabled(me) then
-            me:message('대상이 올바르지 않습니다.')
-            return false
-        end
-
-        if M.attacker_blocks_pvp(me) then
-            me:message('PK보호!')
+        if not M.harmable_character(me, you) then
+            if castle.map_pk_enabled(me) and M.attacker_blocks_pvp(me) then
+                me:message('PK보호!')
+            else
+                me:message('대상이 올바르지 않습니다.')
+            end
             return false
         end
 
