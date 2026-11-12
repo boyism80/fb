@@ -29,19 +29,7 @@ async::task<bool> run_away_ai::execute(mob& mob_obj, const datetime& now)
     }
     else
     {
-        // If target is in range, attack
-        DIRECTION attack_dir;
-        if (mob_obj.near_target(target, attack_dir))
-        {
-            mob_obj.direction(attack_dir);
-            co_await mob_obj.attack(DURATION::ATTACK, target);
-        }
-        else
-        {
-            // Move towards target
-            if (co_await mob_obj.move_step(target->position()) == false)
-                co_await mob_obj.move(DIRECTION(random(0, 3)));
-        }
+        co_await super::chase(mob_obj, target, now);
     }
 
     co_return true;

@@ -19,6 +19,7 @@ public:
 
 protected:
     std::shared_ptr<life> find_target(mob& mob_obj, const datetime& now) override;
+    std::shared_ptr<life> find_adjacent_target(mob& mob_obj, const datetime& now) override;
 };
 
 } // namespace fb::game

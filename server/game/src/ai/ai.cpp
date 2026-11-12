@@ -63,17 +63,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
     auto target = mob_obj.target();
     if (target != nullptr)
     {
-        DIRECTION direction;
-        if (mob_obj.near_target(target, direction))
-        {
-            mob_obj.direction(direction);
-            co_await mob_obj.attack(DURATION::ATTACK, target);
-        }
-        else
-        {
-            if (co_await mob_obj.move_step(target->position()) == false)
-                co_await mob_obj.move(DIRECTION(random(0, 3))); // Random move if can't step towards owner
-        }
+        co_await this->chase(mob_obj, target, now);
     }
     else
     {
@@ -94,31 +84,38 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
 
 void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount, const datetime& now)
 {
-    if (attacker == nullptr || this->should_ignore_attacker(mob_obj, attacker))
+    if (attacker == nullptr || amount == 0 || this->should_ignore_attacker(mob_obj, attacker))
         return;
 
-    this->record_damage(attacker, amount, now);
+    this->_threats[attacker] += amount;
+    this->forget_untargetable(mob_obj);
     if (this->should_maintain_target(mob_obj, now))
         return;
 
-    auto strongest = this->strongest_attacker(mob_obj, false);
-    if (strongest != nullptr)
-        mob_obj.target(strongest);
+    mob_obj.target(this->retarget(mob_obj));
 }
 
 void ai::provoke(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
 {
     mob_obj.target(target);
-    this->_recent_damage.clear();
     this->_provoked = provocation{target, now};
+}
+
+uint64_t ai::threat(const std::shared_ptr<life>& attacker) const
+{
+    auto found = this->_threats.find(attacker);
+    if (found == this->_threats.end())
+        return 0;
+
+    return found->second;
 }
 
 std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
 {
     auto                  current     = mob_obj.target();
     std::shared_ptr<life> best_target = nullptr;
-    uint64_t              best_damage = 0;
-    for (const auto& [weak, record] : this->_recent_damage)
+    uint64_t              best_threat = 0;
+    for (const auto& [weak, amount] : this->_threats)
     {
         auto attacker = weak.lock();
         if (attacker == nullptr || mob_obj.targetable(*attacker) == false)
@@ -128,10 +125,9 @@ std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
         if (adjacent && !mob_obj.near_target(attacker, attack_dir))
             continue; // Skip if not in attack range
 
-        // Select the attacker that dealt the most damage recently
-        if (record.first > best_damage || (record.first == best_damage && attacker == current))
+        if (best_target == nullptr || amount > best_threat || (amount == best_threat && attacker == current))
         {
-            best_damage = record.first;
+            best_threat = amount;
             best_target = attacker;
         }
     }
@@ -139,20 +135,71 @@ std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
     return best_target;
 }
 
-std::shared_ptr<life> ai::find_target(mob& mob_obj, const datetime& now)
+std::shared_ptr<life> ai::retarget(mob& mob_obj) const
 {
-    return this->strongest_attacker(mob_obj, false);
+    auto current = mob_obj.target();
+    auto leader  = this->strongest_attacker(mob_obj, false);
+    if (leader == nullptr)
+        return current;
+
+    if (current == nullptr || current == leader)
+        return leader;
+
+    DIRECTION direction;
+    auto      percent = mob_obj.near_target(leader, direction) ? MELEE_SWITCH_PERCENT : RANGED_SWITCH_PERCENT;
+    if (this->threat(leader) * 100 > this->threat(current) * percent)
+        return leader;
+
+    return current;
+}
+
+std::shared_ptr<life> ai::find_target(mob&, const datetime&)
+{
+    return nullptr;
+}
+
+std::shared_ptr<life> ai::find_adjacent_target(mob& mob_obj, const datetime& now)
+{
+    return this->strongest_attacker(mob_obj, true);
 }
 
 std::shared_ptr<life> ai::select_target(mob& mob_obj, const datetime& now)
 {
-    this->cleanup_expired_damage(now);
+    this->forget_untargetable(mob_obj);
     if (this->should_maintain_target(mob_obj, now))
         return mob_obj.target();
 
-    auto target = this->find_target(mob_obj, now);
+    auto target = this->retarget(mob_obj);
+    if (target == nullptr)
+        target = this->find_target(mob_obj, now);
+
     mob_obj.target(target);
     return target;
+}
+
+async::task<bool> ai::attack_adjacent(mob& mob_obj, std::shared_ptr<life> target)
+{
+    DIRECTION direction;
+    if (target == nullptr || mob_obj.near_target(target, direction) == false)
+        co_return false;
+
+    mob_obj.direction(direction);
+    co_await mob_obj.attack(DURATION::ATTACK, target);
+    co_return true;
+}
+
+async::task<void> ai::chase(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
+{
+    if (co_await this->attack_adjacent(mob_obj, target))
+        co_return;
+
+    if (co_await mob_obj.move_step(target->position()))
+        co_return;
+
+    if (co_await this->attack_adjacent(mob_obj, this->find_adjacent_target(mob_obj, now)))
+        co_return;
+
+    co_await mob_obj.move(DIRECTION(random(0, 3)));
 }
 
 std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
@@ -164,10 +211,10 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
     if (mob_obj.type() == mob::spawn_type::SUMMONED)
         return nullptr;
 
-    // First check recent attackers that are in sight
+    // First check attackers that are in sight
     auto best_target = this->strongest_attacker(mob_obj, false);
 
-    // If we found a recent attacker in sight, use them
+    // If we found an attacker in sight, use them
     if (best_target != nullptr)
         return best_target;
 
@@ -200,15 +247,15 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     if (map == nullptr)
         return nullptr;
 
-    if (mob_obj.type() == mob::spawn_type::SUMMONED)
-        return nullptr;
-
-    // First check recent attackers that are in range
+    // First check attackers that are in range
     auto best_target = this->strongest_attacker(mob_obj, true);
 
-    // If we found a recent attacker in range, use them
+    // If we found an attacker in range, use them
     if (best_target != nullptr)
         return best_target;
+
+    if (mob_obj.type() == mob::spawn_type::SUMMONED)
+        return nullptr;
 
     // Otherwise check for any target in range
     for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
@@ -229,15 +276,12 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     return best_target;
 }
 
-void ai::cleanup_expired_damage(const datetime& now)
+void ai::forget_untargetable(mob& mob_obj)
 {
-    for (auto it = this->_recent_damage.begin(); it != this->_recent_damage.end();)
-    {
-        if (it->first.expired() || (now - it->second.second) > DAMAGE_MEMORY_DURATION)
-            it = this->_recent_damage.erase(it);
-        else
-            ++it;
-    }
+    std::erase_if(this->_threats, [&mob_obj](const auto& entry) {
+        auto attacker = entry.first.lock();
+        return attacker == nullptr || mob_obj.targetable(*attacker) == false;
+    });
 }
 
 bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const
@@ -286,20 +330,6 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
         return false;
 
     return (now - this->_provoked->second) <= TARGET_LOCK_DURATION;
-}
-
-void ai::record_damage(std::shared_ptr<life> attacker, uint64_t amount, const datetime& now)
-{
-    auto key   = std::weak_ptr<life>(attacker);
-    auto found = this->_recent_damage.find(key);
-    if (found == this->_recent_damage.end())
-    {
-        this->_recent_damage.emplace(std::move(key), damage_record{amount, now});
-        return;
-    }
-
-    found->second.first  += amount;
-    found->second.second  = now;
 }
 
 async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)

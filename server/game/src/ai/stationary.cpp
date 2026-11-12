@@ -10,17 +10,18 @@ async::task<bool> stationary_ai::execute(mob& mob_obj, const datetime& now)
     if (target == nullptr)
         co_return true;
 
-    DIRECTION attack_dir;
-    if (mob_obj.near_target(target, attack_dir))
-    {
-        mob_obj.direction(attack_dir);
-        co_await mob_obj.attack(DURATION::ATTACK, target);
-    }
+    if (co_await super::attack_adjacent(mob_obj, target) == false)
+        co_await super::attack_adjacent(mob_obj, this->find_adjacent_target(mob_obj, now));
 
     co_return true;
 }
 
 std::shared_ptr<life> stationary_ai::find_target(mob& mob_obj, const datetime& now)
+{
+    return super::find_target_in_range(mob_obj, now);
+}
+
+std::shared_ptr<life> stationary_ai::find_adjacent_target(mob& mob_obj, const datetime& now)
 {
     return super::find_target_in_range(mob_obj, now);
 }
