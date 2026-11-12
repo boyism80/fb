@@ -177,14 +177,13 @@ public:
         const std::string&                                    spouse_name() const;
         uint32_t                                              divorce_count() const;
         bool                                                  remarryable() const;
-        std::optional<std::string>                            refusal() const;
-        std::optional<std::string>                            refusal(const character& target) const;
         [[nodiscard]] async::task<std::optional<std::string>> marry(std::shared_ptr<character> target);
         [[nodiscard]] async::task<std::optional<std::string>> divorce();
         void                                                  restore(const fb::protocol::internal::Marriage& row);
         // clang-format on
 
     private:
+        std::optional<std::string>                                          refusal(const character& target) const;
         async::task<std::array<std::shared_ptr<fb::async_shared_mutex>, 2>> lock(character& spouse);
     };
 

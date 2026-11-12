@@ -8,9 +8,17 @@ local function marriage_npc(me, npc)
     end
 
     if selected == 1 then
-        local err = me:marriage_refusal()
-        if err ~= nil then
-            me:dialog(npc, err)
+        local min_level = CONST.MARRIAGE.MIN_LEVEL
+        if m.married then
+            me:dialog(npc, '이미 결혼을 하셨습니다.')
+            return
+        end
+        if not m.remarryable then
+            me:dialog(npc, '재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.')
+            return
+        end
+        if me:level() < min_level then
+            me:dialog(npc, string.format('레벨 %d 이상만 결혼할 수 있습니다.', min_level))
             return
         end
 
@@ -37,16 +45,34 @@ local function marriage_npc(me, npc)
             return
         end
 
-        err = me:marriage_refusal(found)
-        if err ~= nil then
-            me:dialog(npc, err)
+        if found:world() ~= me:world() then
+            me:dialog(npc, '다른 서버 출신과는 결혼할 수 없습니다.')
+            return
+        end
+
+        if found:gender() == me:gender() then
+            me:dialog(npc, '같은 성별끼리는 결혼할 수 없습니다.')
+            return
+        end
+
+        local target_m = found:marriage()
+        if target_m.married then
+            me:dialog(npc, '이미 결혼한 상대와는 결혼을 할 수 없습니다.')
+            return
+        end
+        if not target_m.remarryable then
+            me:dialog(npc, '상대방은 아직 재혼할 수 없습니다.')
+            return
+        end
+        if found:level() < min_level then
+            me:dialog(npc, string.format('결혼할 상대의 레벨이 %d 이상이어야 합니다.', min_level))
             return
         end
 
         me:dialog(npc, string.format('%s님에게 의사를 묻고 있습니다.', found:name()), { immediate = true })
         local yes_or_no = found:menu(npc, string.format('정말 %s님과 결혼하시겠습니까?', me:name()), { '예', '아뇨' })
         if yes_or_no == 1 then
-            err = me:marry(found)
+            local err = me:marry(found)
             if err ~= nil then
                 me:dialog(npc, err, { immediate = true })
                 found:dialog(npc, err, { immediate = true })

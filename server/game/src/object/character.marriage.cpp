@@ -44,29 +44,18 @@ bool character::marriage::remarryable() const
     return this->_spouse_id.has_value() == false && this->_owner.server.now() >= this->_remarriage_after;
 }
 
-std::optional<std::string> character::marriage::refusal() const
+std::optional<std::string> character::marriage::refusal(const character& target) const
 {
     this->_owner.assert_thread();
 
     auto min_level = static_cast<uint32_t>(fb::model::const_value::marriage::MIN_LEVEL);
+    auto map       = this->_owner.map();
     if (this->_spouse_id.has_value())
         return "이미 결혼을 하셨습니다.";
     if (this->remarryable() == false)
         return "재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.";
     if (this->_owner.level() < min_level)
         return std::format("레벨 {} 이상만 결혼할 수 있습니다.", min_level);
-    return std::nullopt;
-}
-
-std::optional<std::string> character::marriage::refusal(const character& target) const
-{
-    this->_owner.assert_thread();
-
-    if (auto refused = this->refusal(); refused.has_value())
-        return refused;
-
-    auto min_level = static_cast<uint32_t>(fb::model::const_value::marriage::MIN_LEVEL);
-    auto map       = this->_owner.map();
     if (&target == &this->_owner)
         return "자신과는 결혼할 수 없습니다.";
     if (this->_owner.thread() != target.thread() || map == nullptr || map != target.map())

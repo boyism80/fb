@@ -179,7 +179,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marketplace_search",           builtin::character::builtin_marketplace_search},
 {"marketplace_get_listings",     builtin::character::builtin_marketplace_get_listings},
 {"marriage",                     builtin::character::builtin_marriage},
-{"marriage_refusal",             builtin::character::builtin_marriage_refusal},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"collection",                   builtin::character::builtin_collection},
@@ -6272,7 +6271,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
         ch->listener.on_dialog_pursuit(*ch, speaker->look(*ch), message, options, speaker->oid(), pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
+            ch->dialog.open(lua, fb::game::dialog::reply::ITEM, options);
         co_return;
     };
     if (immediate)
@@ -7912,54 +7911,6 @@ int builtin::character::builtin_marriage(lua_State* L)
         lua_pushstring(*lua, "remarryable");
         lua->pushboolean(snapshot->remarryable);
         lua_settable(*lua, -3);
-        co_return 1;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_marriage_refusal(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto me = lua->touserdata<fb::game::character>(1);
-    if (me == nullptr)
-        return 0;
-
-    auto with_target = lua->argc() >= 2;
-    auto target      = with_target ? lua->touserdata<fb::game::character>(2) : nullptr;
-    if (with_target && target == nullptr)
-    {
-        lua->pushstring("대상을 찾을 수 없습니다.");
-        return 1;
-    }
-
-    auto weak = me->weak_from_this_as<fb::game::character>();
-    auto target_weak =
-        target != nullptr ? target->weak_from_this_as<fb::game::character>() : std::weak_ptr<fb::game::character>{};
-    auto refused  = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        if (with_target == false)
-        {
-            *refused = me->marriage.refusal();
-            co_return;
-        }
-
-        auto locked = target_weak.lock();
-        if (locked == nullptr)
-            *refused = "대상을 찾을 수 없습니다.";
-        else
-            *refused = me->marriage.refusal(*locked);
-        co_return;
-    };
-    builder.resume = [=]() -> async::task<int> {
-        if (refused->has_value())
-            lua->pushstring(refused->value());
-        else
-            lua->pushnil();
         co_return 1;
     };
     return builder.run();
