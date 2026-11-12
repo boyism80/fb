@@ -1717,6 +1717,7 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
 }
 
 async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
+                                             const std::unordered_map<uint8_t, uint16_t>&  cost_slots,
                                              uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
                                              uint64_t                                      reward_money,
@@ -1729,54 +1730,44 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     if (owner->money() < cost_money)
         co_return exchange_result::lack_cost;
 
-    auto effective_free_slots       = this->free_size();
-    auto simulated_bundle_remaining = std::unordered_map<uint32_t, uint16_t>{};
-    auto slots_by_id                = std::unordered_map<uint32_t, std::vector<uint8_t>>{};
-
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    auto plan = std::map<uint8_t, uint16_t>{};
+    for (auto& [index, cost_count] : cost_slots)
     {
-        auto slot = this->at(static_cast<uint8_t>(i));
-        if (slot == nullptr)
-            continue;
+        auto slot = this->at(index);
+        if (slot == nullptr || slot->count() < cost_count)
+            co_return exchange_result::lack_cost;
 
-        auto& model = slot->model();
-        slots_by_id[model.id].push_back(static_cast<uint8_t>(i));
+        plan[index] = cost_count;
     }
 
     for (auto& [id, cost_count] : cost_items)
     {
-        auto  item_table2 = table::item;
-        auto& model       = item_table2[id];
-        auto  it          = slots_by_id.find(id);
-        if (it == slots_by_id.end() || it->second.empty())
-            co_return exchange_result::lack_cost;
-
-        if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+        auto remaining = cost_count;
+        for (int i = 0; i < CONTAINER_CAPACITY && remaining > 0; i++)
         {
-            auto index = it->second[0];
+            auto index = static_cast<uint8_t>(i);
             auto slot  = this->at(index);
-            if (slot == nullptr)
-                co_return exchange_result::lack_cost;
+            if (slot == nullptr || slot->model().id != id)
+                continue;
 
-            auto current = slot->count();
-            if (current < cost_count)
-                co_return exchange_result::lack_cost;
+            auto planned = plan.contains(index) ? plan.at(index) : uint16_t{0};
+            auto taken   = static_cast<uint16_t>(std::min<int>(remaining, slot->count() - planned));
+            if (taken == 0)
+                continue;
 
-            auto left = static_cast<uint16_t>(this->stacked(index) - cost_count);
-            if (left == 0)
-                effective_free_slots++;
-            else
-                simulated_bundle_remaining[id] = left;
+            plan[index]  = planned + taken;
+            remaining   -= taken;
         }
-        else
-        {
-            auto slot_count = static_cast<uint32_t>(it->second.size());
-            if (slot_count < cost_count)
-                co_return exchange_result::lack_cost;
 
-            effective_free_slots =
-                static_cast<uint8_t>(std::min(0xFF, static_cast<int>(effective_free_slots) + cost_count));
-        }
+        if (remaining > 0)
+            co_return exchange_result::lack_cost;
+    }
+
+    auto effective_free_slots = static_cast<int>(this->free_size());
+    for (auto& [index, count] : plan)
+    {
+        if (this->stacked(index) == count)
+            effective_free_slots++;
     }
 
     if (owner->money_free_space() + cost_money < reward_money)
@@ -1801,17 +1792,13 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
                 continue;
 
             auto existing = std::optional<uint32_t>{};
-            if (cost_items.contains(id))
+            auto slot     = this->stack(model);
+            if (slot != 0xFF)
             {
-                auto it = simulated_bundle_remaining.find(id);
-                if (it != simulated_bundle_remaining.end())
-                    existing = it->second;
-            }
-            else
-            {
-                auto slot = this->stack(model);
-                if (slot != 0xFF)
-                    existing = static_cast<uint32_t>(this->stacked(slot));
+                auto planned = plan.contains(slot) ? plan.at(slot) : uint16_t{0};
+                auto left    = static_cast<uint32_t>(this->stacked(slot) - planned);
+                if (left > 0)
+                    existing = left;
             }
 
             // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
@@ -1837,38 +1824,17 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
 
     owner->money_reduce(cost_money);
 
-    for (auto& [id, cost_count] : cost_items)
+    auto removed = std::vector<item_ptr>{};
+    for (auto& [index, count] : plan)
     {
-        auto&    slots     = slots_by_id[id];
-        size_t   slot_it   = 0;
-        uint16_t remaining = cost_count;
-        while (remaining > 0 && slot_it < slots.size())
-        {
-            auto index = slots[slot_it];
-            auto slot  = this->at(index);
-            if (slot == nullptr || slot->model().id != id)
-            {
-                ++slot_it;
-                continue;
-            }
+        auto dropped = this->remove(index, count, delete_type, true);
+        if (dropped != nullptr)
+            removed.push_back(dropped);
+    }
 
-            auto in_slot = slot->count();
-            if (in_slot == 0)
-            {
-                ++slot_it;
-                continue;
-            }
-
-            uint16_t to_remove = std::min(in_slot, remaining);
-            auto     removed   = this->remove(index, to_remove, delete_type, true);
-            if (removed != nullptr)
-                co_await removed->destroy();
-
-            remaining -= to_remove;
-
-            if (slot->count() == 0)
-                ++slot_it;
-        }
+    for (auto& dropped : removed)
+    {
+        co_await dropped->destroy();
     }
 
     owner->money_add(reward_money);

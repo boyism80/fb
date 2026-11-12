@@ -400,7 +400,7 @@ function M.sell(me, npc, model, count, pursuit)
     return true, string.format('%s %d전에 팔았습니다.', name_with(name), price)
 end
 
-function M.buy(me, npc, model, count)
+function M.buy(me, npc, model, count, item)
     local name = model:name()
     local price = npc:model():buy_price(name)
     if price == nil then
@@ -408,7 +408,7 @@ function M.buy(me, npc, model, count)
     end
 
     price = price * count
-    local code = me:exchange({ item = { [name] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
+    local code = me:exchange({ item = { [item or name] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
     if code == enum.exchange_result.LACK_CAPACITY then
         return false, '돈이 너무 많습니다.'
     elseif code ~= enum.exchange_result.OK then
@@ -667,7 +667,7 @@ function M.show_buy_menu(me, npc)
         message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
     if me:menu(npc, message, { '네', '아니오' }) == 1 then
-        local ok, refusal = M.buy(me, npc, model, count)
+        local ok, refusal = M.buy(me, npc, model, count, item)
         if not ok then
             return me:dialog(npc, refusal, { prev = false, next = true })
         end

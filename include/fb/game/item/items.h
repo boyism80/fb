@@ -170,7 +170,7 @@ public:
     static std::optional<uint32_t>                  required_slots(const std::unordered_map<uint32_t, uint16_t>& items);
     bool                                            is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money = 0) const;
     bool                                            is_rewardable(const std::vector<fb::model::dsl>& items) const;
-    [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::GIVE);
+    [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, const std::unordered_map<uint8_t, uint16_t>& cost_slots, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::GIVE);
     [[nodiscard]] async::task<bool>                 combine(const std::vector<uint8_t>& indices);
     bool                                            reserved(uint8_t index) const override;
     const escrow_type&                              escrow() const;

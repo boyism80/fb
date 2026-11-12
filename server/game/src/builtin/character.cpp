@@ -1422,7 +1422,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
             {
                 if (to_remove.empty() == false)
                 {
-                    *success = co_await ch->items.exchange(to_remove, 0, {}, 0, delete_attr) == exchange_result::ok;
+                    *success = co_await ch->items.exchange(to_remove, {}, 0, {}, 0, delete_attr) == exchange_result::ok;
                 }
                 else
                 {
@@ -1684,6 +1684,8 @@ int builtin::character::exchange(lua_State* L,
         return 1;
     }
 
+    using item_counts = std::vector<std::pair<std::shared_ptr<fb::game::item>, uint16_t>>;
+
     auto cost_items     = std::unordered_map<uint32_t, uint16_t>();
     auto cost_money     = uint64_t{0};
     auto cost_exp       = uint64_t{0};
@@ -1691,10 +1693,15 @@ int builtin::character::exchange(lua_State* L,
     auto reward_money   = uint64_t{0};
     auto reward_exp     = uint64_t{0};
     auto reward_spells  = std::vector<const fb::model::spell*>();
+    auto cost_instances = item_counts();
     auto invalid_cost   = false;
     auto invalid_reward = false;
 
-    auto read_items = [&](int index, const char* kind, std::unordered_map<uint32_t, uint16_t>& items, bool& invalid) {
+    auto read_items = [&](int                                     index,
+                          const char*                             kind,
+                          std::unordered_map<uint32_t, uint16_t>& items,
+                          item_counts*                            instances,
+                          bool&                                   invalid) {
         lua->pushstring("item");
         lua->rawget(index);
         if (lua->is_table(-1))
@@ -1702,7 +1709,16 @@ int builtin::character::exchange(lua_State* L,
             lua->pushnil();
             while (lua->next(-2))
             {
-                if (lua->is_string(-2) && lua->is_number(-1))
+                if (lua->is_userdata<fb::game::item>(-2) && lua->is_number(-1))
+                {
+                    auto item  = lua->touserdata<fb::game::item>(-2);
+                    auto count = lua->tointeger<uint16_t>(-1);
+                    if (instances == nullptr || item == nullptr || count.has_value() == false)
+                        invalid = true;
+                    else if (count.value() > 0)
+                        instances->push_back({item, count.value()});
+                }
+                else if (lua->is_string(-2) && lua->is_number(-1))
                 {
                     auto name  = lua->tostring(-2);
                     auto count = lua->tointeger<uint16_t>(-1);
@@ -1731,7 +1747,7 @@ int builtin::character::exchange(lua_State* L,
 
     if (cost_index != 0 && lua->is_table(cost_index))
     {
-        read_items(cost_index, "cost", cost_items, invalid_cost);
+        read_items(cost_index, "cost", cost_items, &cost_instances, invalid_cost);
 
         lua->pushstring("money");
         lua->rawget(cost_index);
@@ -1750,7 +1766,7 @@ int builtin::character::exchange(lua_State* L,
 
     if (reward_index != 0 && lua->is_table(reward_index))
     {
-        read_items(reward_index, "reward", reward_items, invalid_reward);
+        read_items(reward_index, "reward", reward_items, nullptr, invalid_reward);
 
         lua->pushstring("money");
         lua->rawget(reward_index);
@@ -1798,7 +1814,13 @@ int builtin::character::exchange(lua_State* L,
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        if (invalid_cost || (cost_exp > 0 && ch->exp() < cost_exp))
+        auto cost_slots = std::unordered_map<uint8_t, uint16_t>();
+        for (auto& [item, count] : cost_instances)
+        {
+            cost_slots[ch->items.index(item)] += count;
+        }
+
+        if (invalid_cost || cost_slots.contains(0xFF) || (cost_exp > 0 && ch->exp() < cost_exp))
         {
             *result = exchange_result::lack_cost;
         }
@@ -1818,7 +1840,8 @@ int builtin::character::exchange(lua_State* L,
                 spell_slots.push_back(ch->spells.add(*model));
             }
 
-            *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money, delete_type);
+            *result = co_await ch->items
+                          .exchange(cost_items, cost_slots, cost_money, reward_items, reward_money, delete_type);
             if (*result == exchange_result::ok)
             {
                 if (cost_exp > 0)

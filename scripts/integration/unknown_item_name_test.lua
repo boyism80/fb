@@ -2,6 +2,7 @@ local lib = require("integration.lib")
 local qd  = require("integration.lib.quest_dialog")
 
 local ACORN   = "도토리"
+local SWORD   = "목검"
 local UNKNOWN = "integration_unknown_item"
 
 local check = qd.check
@@ -41,6 +42,18 @@ test_suite {
             if check(bot, "exchange_items", "unknown_reward", ACORN .. "=1", UNKNOWN .. "=1", "LACK_CAPACITY") == false
                 or check(bot, "verify_items", "unknown_reward_items", ACORN .. "=5") == false then
                 return fail("an exchange with an unknown reward item took the cost")
+            end
+            return true
+        end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            bot:clear_inventory()
+            bot:create_item(SWORD, 1)
+            bot:create_item(SWORD, 1)
+
+            if check(bot, "exchange_last_held", "instance_cost", SWORD) == false then
+                return fail("an item instance cost removed another slot of the same name")
             end
             return true
         end,

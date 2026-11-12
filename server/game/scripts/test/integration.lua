@@ -1734,6 +1734,28 @@ return {
         end
     end,
 
+    exchange_last_held = function(me, step, name)
+        local first = nil
+        local last = nil
+        for slot, _ in pairs(me:items(name) or {}) do
+            if first == nil or slot < first then
+                first = slot
+            end
+            if last == nil or slot > last then
+                last = slot
+            end
+        end
+        if first == nil or first == last then
+            return report(me, false, step, 'need two held ' .. tostring(name))
+        end
+
+        local code = me:exchange({ item = { [me:items(name)[last]] = 1 } }, { money = 1 })
+        local left = me:items(name) or {}
+        local ok = code == require('lib.enum').exchange_result.OK and left[first] ~= nil and left[last] == nil
+        report(me, ok, step, string.format('code=%s first=%s last=%s', tostring(code), tostring(left[first] ~= nil),
+            tostring(left[last] ~= nil)))
+    end,
+
     store_item = function(me, step, name, count)
         local _, item = next(me:items(name) or {})
         if item == nil then
