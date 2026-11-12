@@ -1422,7 +1422,10 @@ int builtin::character::builtin_rmitem(lua_State* L)
             {
                 if (to_remove.empty() == false)
                 {
-                    *success = co_await ch->items.exchange(to_remove, {}, 0, {}, 0, delete_attr) == exchange_result::ok;
+                    auto costs = ch->items.locate(to_remove);
+                    if (costs.has_value())
+                        *success =
+                            co_await ch->items.exchange(costs.value(), 0, {}, 0, delete_attr) == exchange_result::ok;
                 }
                 else
                 {
@@ -1814,13 +1817,17 @@ int builtin::character::exchange(lua_State* L,
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto cost_slots = std::unordered_map<uint8_t, uint16_t>();
-        for (auto& [item, count] : cost_instances)
+        auto costs = ch->items.locate(cost_items);
+        if (costs.has_value())
         {
-            cost_slots[ch->items.index(item)] += count;
+            for (auto& [item, count] : cost_instances)
+            {
+                costs.value()[ch->items.index(item)] += count;
+            }
         }
 
-        if (invalid_cost || cost_slots.contains(0xFF) || (cost_exp > 0 && ch->exp() < cost_exp))
+        if (invalid_cost || costs.has_value() == false || costs->contains(0xFF) ||
+            (cost_exp > 0 && ch->exp() < cost_exp))
         {
             *result = exchange_result::lack_cost;
         }
@@ -1840,8 +1847,7 @@ int builtin::character::exchange(lua_State* L,
                 spell_slots.push_back(ch->spells.add(*model));
             }
 
-            *result = co_await ch->items
-                          .exchange(cost_items, cost_slots, cost_money, reward_items, reward_money, delete_type);
+            *result = co_await ch->items.exchange(costs.value(), cost_money, reward_items, reward_money, delete_type);
             if (*result == exchange_result::ok)
             {
                 if (cost_exp > 0)

@@ -715,6 +715,31 @@ std::vector<uint8_t> items::index_all(const std::shared_ptr<item>& item) const
     return result;
 }
 
+std::optional<std::map<uint8_t, uint16_t>> items::locate(const std::unordered_map<uint32_t, uint16_t>& models) const
+{
+    auto slots = std::map<uint8_t, uint16_t>{};
+    for (auto& [id, count] : models)
+    {
+        auto remaining = count;
+        for (int i = 0; i < CONTAINER_CAPACITY && remaining > 0; i++)
+        {
+            auto index = static_cast<uint8_t>(i);
+            auto slot  = this->at(index);
+            if (slot == nullptr || slot->model().id != id)
+                continue;
+
+            auto taken    = std::min(remaining, slot->count());
+            slots[index]  = taken;
+            remaining    -= taken;
+        }
+
+        if (remaining > 0)
+            return std::nullopt;
+    }
+
+    return slots;
+}
+
 bool items::update(uint8_t index) const
 {
     auto owner = this->_owner.lock();
@@ -1716,8 +1741,7 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
     return this->is_rewardable(buffer, money);
 }
 
-async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
-                                             const std::unordered_map<uint8_t, uint16_t>&  cost_slots,
+async::task<exchange_result> items::exchange(const std::map<uint8_t, uint16_t>&            costs,
                                              uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
                                              uint64_t                                      reward_money,
@@ -1730,41 +1754,15 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     if (owner->money() < cost_money)
         co_return exchange_result::lack_cost;
 
-    auto plan = std::map<uint8_t, uint16_t>{};
-    for (auto& [index, cost_count] : cost_slots)
+    for (auto& [index, count] : costs)
     {
         auto slot = this->at(index);
-        if (slot == nullptr || slot->count() < cost_count)
-            co_return exchange_result::lack_cost;
-
-        plan[index] = cost_count;
-    }
-
-    for (auto& [id, cost_count] : cost_items)
-    {
-        auto remaining = cost_count;
-        for (int i = 0; i < CONTAINER_CAPACITY && remaining > 0; i++)
-        {
-            auto index = static_cast<uint8_t>(i);
-            auto slot  = this->at(index);
-            if (slot == nullptr || slot->model().id != id)
-                continue;
-
-            auto planned = plan.contains(index) ? plan.at(index) : uint16_t{0};
-            auto taken   = static_cast<uint16_t>(std::min<int>(remaining, slot->count() - planned));
-            if (taken == 0)
-                continue;
-
-            plan[index]  = planned + taken;
-            remaining   -= taken;
-        }
-
-        if (remaining > 0)
+        if (slot == nullptr || slot->count() < count)
             co_return exchange_result::lack_cost;
     }
 
     auto effective_free_slots = static_cast<int>(this->free_size());
-    for (auto& [index, count] : plan)
+    for (auto& [index, count] : costs)
     {
         if (this->stacked(index) == count)
             effective_free_slots++;
@@ -1795,7 +1793,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             auto slot     = this->stack(model);
             if (slot != 0xFF)
             {
-                auto planned = plan.contains(slot) ? plan.at(slot) : uint16_t{0};
+                auto planned = costs.contains(slot) ? costs.at(slot) : uint16_t{0};
                 auto left    = static_cast<uint32_t>(this->stacked(slot) - planned);
                 if (left > 0)
                     existing = left;
@@ -1825,7 +1823,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     owner->money_reduce(cost_money);
 
     auto removed = std::vector<item_ptr>{};
-    for (auto& [index, count] : plan)
+    for (auto& [index, count] : costs)
     {
         auto dropped = this->remove(index, count, delete_type, true);
         if (dropped != nullptr)
