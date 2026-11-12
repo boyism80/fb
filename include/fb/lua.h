@@ -343,7 +343,6 @@ protected:
 public:
     fb::async_executor& executor;
     context*            owner = nullptr;
-    int                 ref   = LUA_NOREF;
 
 protected:
     context(fb::async_executor& executor, lua_State* ctx, fb::thread& initial_thread);

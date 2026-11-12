@@ -798,15 +798,22 @@ int builtin::character::builtin_item(lua_State* L)
         lua_pop(L, 1);
     }
 
-    if (immediate == false && lua->is_table(4))
+    auto choices = std::vector<std::string>{};
+    for (int i = 1; i <= static_cast<int>(lua->rawlen(4)); i++)
     {
-        if (lua->ref != LUA_NOREF)
+        lua->rawgeti(4, i);
+        auto label = std::string{};
+        if (lua->is_table(-1))
         {
-            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
-            lua->ref = LUA_NOREF;
+            lua->rawgeti(-1, 1);
+            if (lua->is_string(-1))
+                label = lua->tostring(-1);
+            else if (lua->is_userdata<fb::model::item>(-1))
+                label = lua->touserdata<fb::model::item>(-1)->name;
+            lua_pop(L, 1);
         }
-        lua_pushvalue(L, 4);
-        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        lua_pop(L, 1);
+        choices.push_back(std::move(label));
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -819,7 +826,7 @@ int builtin::character::builtin_item(lua_State* L)
         ch->listener.on_dialog(*ch, speaker->look(*ch), message, items, speaker->oid(), pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
+            ch->dialog.open(lua, fb::game::dialog::reply::ITEM, choices);
         co_return;
     };
     if (immediate)
@@ -6255,17 +6262,6 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
         lua_pop(L, 1);
     }
 
-    if (immediate == false)
-    {
-        if (lua->ref != LUA_NOREF)
-        {
-            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
-            lua->ref = LUA_NOREF;
-        }
-        lua_pushvalue(L, 4);
-        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
-
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -6313,12 +6309,14 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         return 0;
 
     auto entries = fb::game::dialog::buy_entries();
+    auto choices = std::vector<std::string>{};
     auto size    = lua->rawlen(4);
     for (int i = 0; i < size; i++)
     {
         lua->rawgeti(4, i + 1);
         if (lua->is_table(-1) == false)
         {
+            choices.emplace_back();
             lua_pop(L, 1);
             continue;
         }
@@ -6369,6 +6367,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
 
         lua_pop(L, 1); // row table
 
+        choices.push_back(item_model != nullptr ? item_model->name : std::string{});
         if (item_model == nullptr)
             continue;
 
@@ -6390,17 +6389,6 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         lua_pop(L, 1);
     }
 
-    if (immediate == false)
-    {
-        if (lua->ref != LUA_NOREF)
-        {
-            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
-            lua->ref = LUA_NOREF;
-        }
-        lua_pushvalue(L, 4);
-        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
-
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -6411,7 +6399,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         ch->listener.on_dialog_buy(*ch, speaker->look(*ch), message, entries, speaker->oid(), pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua, fb::game::dialog::reply::BUY);
+            ch->dialog.open(lua, fb::game::dialog::reply::BUY, choices);
         co_return;
     };
     if (immediate)

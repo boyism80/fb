@@ -4,6 +4,7 @@
 #include <fb/game/server.h>
 
 #include <string>
+#include <vector>
 
 namespace fb::game::handler::protocol {
 
@@ -13,107 +14,24 @@ dialog<V>::dialog(fb::game::server& server) :
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
-lua_Integer dialog<V>::selected(fb::lua::context* lua, const game_reqs::dialog<V>& request)
+lua_Integer dialog<V>::selected(const std::vector<std::string>& choices, const game_reqs::dialog<V>& request)
 {
-    if (lua->ref == LUA_NOREF)
-        return 0;
-
-    lua_rawgeti(*lua, LUA_REGISTRYINDEX, lua->ref);
-    auto found = lua_Integer{0};
-    if (lua_istable(*lua, -1))
+    auto count = static_cast<lua_Integer>(choices.size());
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
-        auto n = static_cast<int>(lua_rawlen(*lua, -1));
-        if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+        if (request.type == fb::game::dialog::type::BUY)
         {
-            if (request.type == fb::game::dialog::type::BUY)
-            {
-                found = static_cast<lua_Integer>(request.id);
-                if (found < 1 || found > n)
-                    found = 0;
-                lua->pop(1);
-                return found;
-            }
-        }
-
-        for (int i = 1; i <= n; i++)
-        {
-            lua_rawgeti(*lua, -1, i);
-            auto label = std::string{};
-            if (lua->is_string(-1))
-            {
-                label = lua->tostring(-1);
-            }
-            else if (lua->is_userdata<fb::model::item>(-1))
-            {
-                auto model = lua->touserdata<fb::model::item>(-1);
-                if (model != nullptr)
-                    label = model->name;
-            }
-            else if (lua->is_userdata<fb::game::item>(-1))
-            {
-                auto item = lua->touserdata<fb::game::item>(-1);
-                if (item != nullptr)
-                    label = item->name();
-            }
-            else if (lua->is_table(-1))
-            {
-                lua_rawgeti(*lua, -1, 1);
-                if (lua->is_string(-1))
-                {
-                    label = lua->tostring(-1);
-                }
-                else if (lua->is_userdata<fb::model::item>(-1))
-                {
-                    auto model = lua->touserdata<fb::model::item>(-1);
-                    if (model != nullptr)
-                        label = model->name;
-                }
-                else if (lua->is_userdata<fb::game::item>(-1))
-                {
-                    auto item = lua->touserdata<fb::game::item>(-1);
-                    if (item != nullptr)
-                        label = item->name();
-                }
-                lua->pop(1);
-
-                if (label.empty())
-                {
-                    lua->pushstring("model");
-                    if (lua_rawget(*lua, -2) != LUA_TNIL)
-                    {
-                        if (lua->is_userdata<fb::model::item>(-1))
-                        {
-                            auto model = lua->touserdata<fb::model::item>(-1);
-                            if (model != nullptr)
-                                label = model->name;
-                        }
-                        else if (lua->is_userdata<fb::game::item>(-1))
-                        {
-                            auto item = lua->touserdata<fb::game::item>(-1);
-                            if (item != nullptr)
-                                label = item->name();
-                        }
-                        else if (lua->is_string(-1))
-                        {
-                            label = lua->tostring(-1);
-                        }
-                    }
-                    lua->pop(1);
-                }
-            }
-            lua->pop(1);
-            if (label.empty())
-                continue;
-
-            if (label == request.name)
-            {
-                found = i;
-                break;
-            }
+            auto found = static_cast<lua_Integer>(request.id);
+            return found < 1 || found > count ? 0 : found;
         }
     }
-    lua->pop(1);
-    return found;
+
+    for (lua_Integer i = 0; i < count; i++)
+    {
+        if (choices[i].empty() == false && choices[i] == request.name)
+            return i + 1;
+    }
+    return 0;
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -149,7 +67,8 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
         break;
     }
 
-    auto lua = ch->dialog.take(expected).context;
+    auto taken = ch->dialog.take(expected);
+    auto lua   = taken.context;
     if (lua == nullptr)
         co_return true;
 
@@ -179,7 +98,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     case fb::game::dialog::type::ITEM:
     case fb::game::dialog::type::PURSUIT:
     {
-        auto found = this->selected(lua, reply);
+        auto found = this->selected(taken.choices, reply);
         if (found != 0)
             lua->pushinteger(found);
         else
@@ -191,7 +110,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     case fb::game::dialog::type::BUY:
     {
         // Yields: selected (1-based index or nil), count (v651 NEW quantity; else nil)
-        auto found = this->selected(lua, reply);
+        auto found = this->selected(taken.choices, reply);
         if (found != 0)
         {
             lua->pushinteger(found);

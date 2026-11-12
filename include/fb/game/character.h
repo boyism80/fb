@@ -319,18 +319,21 @@ public:
     public:
         struct pending
         {
-            fb::lua::context* context = nullptr;
-            uint16_t          limit   = 0;
+            fb::lua::context*        context = nullptr;
+            uint16_t                 limit   = 0;
+            std::vector<std::string> choices;
         };
 
     private:
-        fb::lua::context*       _context = nullptr;
-        fb::game::dialog::reply _reply   = fb::game::dialog::reply::TEXT;
-        uint16_t                _limit   = 0xFF;
+        fb::lua::context*        _context = nullptr;
+        fb::game::dialog::reply  _reply   = fb::game::dialog::reply::TEXT;
+        uint16_t                 _limit   = 0xFF;
+        std::vector<std::string> _choices;
 
     public:
         // clang-format off
         void    open(fb::lua::context* context, fb::game::dialog::reply reply, uint16_t limit = 0xFF);
+        void    open(fb::lua::context* context, fb::game::dialog::reply reply, std::vector<std::string> choices);
         pending take(fb::game::dialog::reply reply);
         void    cancel(std::string_view reason);
         bool    opened() const;

@@ -22,7 +22,7 @@ public:
     async::task<bool> handle(fb::socket<character>& session, game_reqs::dialog<V>& request) override;
 
 private:
-    lua_Integer selected(fb::lua::context* lua, const game_reqs::dialog<V>& request);
+    lua_Integer selected(const std::vector<std::string>& choices, const game_reqs::dialog<V>& request);
 };
 
 } // namespace fb::game::handler::protocol

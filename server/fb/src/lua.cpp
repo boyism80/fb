@@ -1279,12 +1279,6 @@ void root::release(context& ctx)
             return;
         }
 
-        if (ctx.ref != LUA_NOREF)
-        {
-            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
-            ctx.ref = LUA_NOREF;
-        }
-
         lua_settop(ctx, 0);
         ctx.renew();
         ctx.clear_on_error();
@@ -1316,12 +1310,6 @@ void root::revoke(context& ctx)
         auto it = this->busy.find(ctx);
         if (it == this->busy.end())
             return;
-
-        if (ctx.ref != LUA_NOREF)
-        {
-            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
-            ctx.ref = LUA_NOREF;
-        }
 
         ctx.clear_on_error();
         this->busy.erase(it);
