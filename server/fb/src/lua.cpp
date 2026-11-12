@@ -12,8 +12,11 @@
 #include <cstdio>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <format>
+#include <fstream>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <optional>
@@ -1092,10 +1095,31 @@ bool root::load_module(lua_State* L, std::string_view path)
 #endif
 }
 
-bool root::validate(std::string_view path)
+bool root::validate(std::string_view path, const std::vector<uint8_t>& bytes)
 {
+    auto chunk = std::format("@{}", path);
+    if (luaL_loadbuffer(*this, reinterpret_cast<const char*>(bytes.data()), bytes.size(), chunk.c_str()) != LUA_OK)
+    {
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("invalid script {}: {}", path, error != nullptr ? error : "");
+        lua_pop(*this, 1);
+        return false;
+    }
+
     auto before = this->loaded_packages();
-    auto valid  = this->execute_module(path);
+    auto valid  = lua_pcall(*this, 0, 1, 0) == LUA_OK;
+    if (valid == false)
+    {
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("invalid script {}: {}", path, error != nullptr ? error : "");
+    }
+    else if (lua_istable(*this, -1) == false)
+    {
+        fb::logger::warn("invalid script {}: module must return a table", path);
+        valid = false;
+    }
+    lua_pop(*this, 1);
+
     for (const auto& name : this->loaded_packages())
     {
         if (before.contains(name) == false)
@@ -1131,33 +1155,6 @@ std::unordered_set<std::string> root::loaded_packages()
     }
     lua_pop(*this, 2);
     return names;
-}
-
-bool root::execute_module(std::string_view path)
-{
-    auto path_str = std::string(path);
-    if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
-    {
-        const char* error = lua_tostring(*this, -1);
-        fb::logger::warn("invalid script {}: {}", path_str, error != nullptr ? error : "");
-        lua_pop(*this, 1);
-        return false;
-    }
-
-    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
-    {
-        const char* error = lua_tostring(*this, -1);
-        fb::logger::warn("invalid script {}: {}", path_str, error != nullptr ? error : "");
-        lua_pop(*this, 1);
-        return false;
-    }
-
-    auto valid = lua_istable(*this, -1);
-    lua_pop(*this, 1);
-    if (valid == false)
-        fb::logger::warn("invalid script {}: module must return a table", path_str);
-
-    return valid;
 }
 
 void root::invalidate_all()
@@ -1572,33 +1569,87 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
     }
 }
 
-async::task<void> fb::lua::context_pool::validate_scripts(const std::vector<std::string>& relative_paths)
+async::task<void> fb::lua::context_pool::patch_scripts(const std::vector<script_file>& files)
 {
-    if (this->_roots.empty())
-        co_return;
-
-    auto& root = this->_roots.begin()->second;
-    co_await root->switching();
-
-    auto failures = std::vector<std::string>{};
-    for (const auto& relative : relative_paths)
+    if (this->_roots.empty() == false)
     {
-        auto disk = script_disk_path(relative);
-        if (root->validate(disk) == false)
-            failures.push_back(disk);
-    }
+        auto& root = this->_roots.begin()->second;
+        co_await root->switching();
 
-    if (failures.empty() == false)
-    {
-        auto joined = std::string{};
-        for (const auto& failure : failures)
+        auto failures = std::string{};
+        for (const auto& file : files)
         {
-            if (joined.empty() == false)
-                joined += ", ";
-            joined += failure;
+            auto disk = script_disk_path(file.relative);
+            if (root->validate(disk, file.bytes))
+                continue;
+
+            if (failures.empty() == false)
+                failures += ", ";
+            failures += disk;
         }
-        throw std::runtime_error(std::format("invalid scripts: {}", joined));
+
+        if (failures.empty() == false)
+            throw std::runtime_error(std::format("invalid scripts: {}", failures));
     }
+
+    auto backups = std::vector<std::pair<std::filesystem::path, std::optional<std::string>>>{};
+    try
+    {
+        for (const auto& file : files)
+        {
+            auto path = std::filesystem::path(script_disk_path(file.relative));
+            {
+                auto in = std::ifstream(path, std::ios::binary);
+                if (in.is_open())
+                    backups.emplace_back(path, std::string(std::istreambuf_iterator<char>(in), {}));
+                else
+                    backups.emplace_back(path, std::nullopt);
+            }
+
+            std::filesystem::create_directories(path.parent_path());
+            auto temp  = path;
+            temp      += ".tmp";
+            {
+                auto out = std::ofstream(temp, std::ios::binary | std::ios::trunc);
+                out.write(reinterpret_cast<const char*>(file.bytes.data()),
+                          static_cast<std::streamsize>(file.bytes.size()));
+                if (!out)
+                    throw std::runtime_error(std::format("cannot write script: {}", temp.string()));
+            }
+            std::filesystem::rename(temp, path);
+        }
+    }
+    catch (...)
+    {
+        for (const auto& [path, bytes] : backups)
+        {
+            auto temp  = path;
+            temp      += ".tmp";
+            std::error_code ec;
+            std::filesystem::remove(temp, ec);
+
+            if (bytes.has_value())
+            {
+                auto out = std::ofstream(path, std::ios::binary | std::ios::trunc);
+                out.write(bytes->data(), static_cast<std::streamsize>(bytes->size()));
+                if (!out)
+                    fb::logger::fatal("Script restore failed: {}", path.string());
+            }
+            else
+            {
+                std::filesystem::remove(path, ec);
+            }
+        }
+        throw;
+    }
+
+    auto relative_paths = std::vector<std::string>{};
+    relative_paths.reserve(files.size());
+    for (const auto& file : files)
+    {
+        relative_paths.push_back(file.relative);
+    }
+    co_await this->reload_scripts(relative_paths);
 }
 
 context_pool::base_type::iterator fb::lua::context_pool::begin()

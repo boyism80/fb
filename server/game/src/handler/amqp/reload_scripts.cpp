@@ -1,14 +1,16 @@
 #include <fb/game/handler/amqp/reload_scripts.h>
 
+#include <fb/config.h>
 #include <fb/game/server.h>
 #include <fb/logger.h>
 #include <fb/model/script_download.h>
 
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iterator>
-#include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,48 +30,45 @@ async::task<void> reload_scripts::handle(const internal_resp::ReloadScripts& mes
     {
         if (message.script_paths.empty() == false)
         {
-            auto backups = std::vector<std::pair<std::filesystem::path, std::optional<std::string>>>{};
-            try
+            auto files = std::vector<fb::lua::context_pool::script_file>{};
+            files.reserve(message.script_paths.size());
+            if (message.url.empty() == false)
             {
-                if (message.url.empty() == false)
+                auto requested = message.url;
+                auto allowed   = fb::config<std::string>("download:script", std::string());
+                while (!requested.empty() && requested.back() == '/')
+                    requested.pop_back();
+                while (!allowed.empty() && allowed.back() == '/')
+                    allowed.pop_back();
+                if (allowed.empty() || requested != allowed)
+                    throw std::runtime_error(std::format("script download url is not allowed: {}", message.url));
+
+                for (const auto& name : message.script_paths)
                 {
-                    for (const auto& relative : message.script_paths)
-                    {
-                        auto path = std::filesystem::path("scripts") /
-                                    std::filesystem::path(fb::model::normalize_script_relative_path(relative));
-                        auto in = std::ifstream(path, std::ios::binary);
-                        if (in.is_open())
-                            backups.emplace_back(path, std::string(std::istreambuf_iterator<char>(in), {}));
-                        else
-                            backups.emplace_back(path, std::nullopt);
-                    }
+                    auto relative = fb::model::normalize_script_relative_path(name);
+                    auto url      = fb::model::join_script_download_url(message.url, relative);
+                    auto bytes    = co_await this->server.http.get_bytes(url);
+                    if (bytes.empty())
+                        throw std::runtime_error(std::format("downloaded empty body: {}", url));
 
-                    co_await fb::model::download_scripts(this->server.http, message.url, message.script_paths);
+                    files.push_back({std::move(relative), std::move(bytes)});
                 }
-
-                co_await this->server.lua.validate_scripts(message.script_paths);
             }
-            catch (std::exception&)
+            else
             {
-                for (const auto& [path, bytes] : backups)
+                for (const auto& name : message.script_paths)
                 {
-                    if (bytes.has_value())
-                    {
-                        auto out = std::ofstream(path, std::ios::binary | std::ios::trunc);
-                        out.write(bytes->data(), static_cast<std::streamsize>(bytes->size()));
-                        if (!out)
-                            fb::logger::fatal("Script restore failed: {}", path.string());
-                    }
-                    else
-                    {
-                        std::error_code ec;
-                        std::filesystem::remove(path, ec);
-                    }
+                    auto relative = fb::model::normalize_script_relative_path(name);
+                    auto in       = std::ifstream(std::filesystem::path("scripts") / relative, std::ios::binary);
+                    if (in.is_open() == false)
+                        throw std::runtime_error(std::format("script not found: {}", relative));
+
+                    auto bytes = std::vector<uint8_t>(std::istreambuf_iterator<char>(in), {});
+                    files.push_back({std::move(relative), std::move(bytes)});
                 }
-                throw;
             }
 
-            co_await this->server.lua.reload_scripts(message.script_paths);
+            co_await this->server.lua.patch_scripts(files);
         }
 
         fb::logger::info("Scripts reloaded ({})", message.script_paths.size());

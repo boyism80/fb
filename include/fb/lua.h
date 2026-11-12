@@ -577,7 +577,6 @@ private:
 
     std::unordered_set<std::string> loaded_packages();
     void                            unload_script_packages();
-    bool                            execute_module(std::string_view path);
     static int                      call_builtin(lua_State* ctx);
     void                            push_builtin(lua_CFunction fn);
     void                            set_builtins(const luaL_Reg* funcs);
@@ -597,7 +596,7 @@ public:
 public:
     bool        dump(std::string_view path);
     bool        load_module(lua_State* L, std::string_view path);
-    bool        validate(std::string_view path);
+    bool        validate(std::string_view path, const std::vector<uint8_t>& bytes);
     void        invalidate(std::string_view path);
     void        invalidate_all();
     void        unload_package(std::string_view module_name);
@@ -674,6 +673,12 @@ class context_pool
 public:
     using base_type = std::unordered_map<std::thread::id, std::unique_ptr<root>>;
 
+    struct script_file
+    {
+        std::string          relative;
+        std::vector<uint8_t> bytes;
+    };
+
 private:
     base_type           _roots;
     fb::async_executor& _executor;
@@ -694,8 +699,8 @@ public:
     context::guard      open();
     context::guard      open(std::string_view path, std::string_view func);
     async::task<void>   dump(std::string_view path);
-    async::task<void>   validate_scripts(const std::vector<std::string>& relative_paths);
     async::task<void>   reload_scripts(const std::vector<std::string>& relative_paths);
+    async::task<void>   patch_scripts(const std::vector<script_file>& files);
     base_type::iterator begin();
     base_type::iterator end();
     // clang-format on
