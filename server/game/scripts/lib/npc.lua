@@ -370,40 +370,70 @@ function M.retrieve_item(me, npc, name, count)
     return true
 end
 
-function M.sell_item(me, npc, name, count)
-    local model = name2item(name)
-    if model == nil then
-        return true
-    end
-
-    local is_bundle = model:attr(ITEM_ATTRIBUTE.BUNDLE)
-    if not is_bundle then
+function M.sell(me, npc, model, count, pursuit)
+    if not model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         count = 1
     end
 
-    local price = npc:model():sell_price(name)
+    local name = model:name()
+    local price = nil
+    if pursuit ~= nil then
+        price = pursuit_sell_price(pursuit, name)
+    else
+        price = npc:model():sell_price(name)
+    end
     if price == nil then
-        npc:chat('그런 물건은 안 팝니다.')
-        return false
+        return false, '그런 물건은 안 팝니다.'
     end
 
     price = price * count
     local code = me:exchange({ money = price }, { item = { [name] = count } })
     if code == enum.exchange_result.LACK_COST then
-        npc:chat('돈이 모자랍니다.')
-        return false
+        return false, '돈이 모자랍니다.'
     elseif code ~= enum.exchange_result.OK then
-        npc:chat('더 이상 가질 수 없습니다.')
-        return false
+        return false, '더 이상 가질 수 없습니다.'
     end
 
-    local message = nil
     if count > 1 then
-        npc:chat(string.format('%s %d개를 %d전에 팔았습니다.', name, count, price))
-    else
-        npc:chat(string.format('%s %d전에 팔았습니다.', name_with(name), price))
+        return true, string.format('%s %d개를 %d전에 팔았습니다.', name, count, price)
     end
-    return true
+    return true, string.format('%s %d전에 팔았습니다.', name_with(name), price)
+end
+
+function M.buy(me, npc, model, count)
+    local name = model:name()
+    local price = npc:model():buy_price(name)
+    if price == nil then
+        return false, '그런 물건은 안 삽니다.'
+    end
+
+    price = price * count
+    local code = me:exchange({ item = { [name] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
+    if code == enum.exchange_result.LACK_CAPACITY then
+        return false, '돈이 너무 많습니다.'
+    elseif code ~= enum.exchange_result.OK then
+        return false, '그만큼 가지고 있지 않습니다.'
+    end
+
+    if count > 1 then
+        return true, string.format('%s %d개를 %d전에 샀습니다.', name, count, price)
+    end
+    return true, string.format('%s %d전에 샀습니다.', name_with(name), price)
+end
+
+function M.sell_item(me, npc, name, count)
+    if count == 0 then
+        return true
+    end
+
+    local model = name2item(name)
+    if model == nil then
+        return true
+    end
+
+    local ok, message = M.sell(me, npc, model, count)
+    npc:chat(message)
+    return ok
 end
 
 function M.buy_item(me, npc, name, count)
@@ -416,46 +446,17 @@ function M.buy_item(me, npc, name, count)
         return true
     end
 
-    local price = npc:model():buy_price(name)
-    if price == nil then
-        npc:chat('그런 물건은 안 삽니다.')
-        return false
-    end
-
-
-    local owned = M.count_item_by_name(me, name)
-    if owned == 0 then
-        npc:chat('가지고 있지 않습니다.')
-        return false
-    end
-
     if count == nil then
-        count = owned
+        count = M.count_item_by_name(me, name)
+        if count == 0 then
+            npc:chat('가지고 있지 않습니다.')
+            return false
+        end
     end
 
-    if count > owned then
-        npc:chat('그만큼 가지고 있지 않습니다.')
-        return false
-    end
-
-    price = price * count
-    if price > me:money_free_space() then
-        npc:chat('돈이 너무 많습니다.')
-        return false
-    end
-
-    local code = me:exchange({ item = { [name] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
-    if code ~= enum.exchange_result.OK then
-        npc:chat('그만큼 가지고 있지 않습니다.')
-        return false
-    end
-
-    if count > 1 then
-        npc:chat(string.format('%s %d개를 %d전에 샀습니다.', name, count, price))
-    else
-        npc:chat(string.format('%s %d전에 샀습니다.', name_with(name), price))
-    end
-    return true
+    local ok, message = M.buy(me, npc, model, count)
+    npc:chat(message)
+    return ok
 end
 
 function M.sell_item_list(me, npc)
@@ -656,10 +657,6 @@ function M.show_buy_menu(me, npc)
         if count == nil or count <= 0 then
             return me:dialog(npc, '갯수가 올바르지 않습니다.', { prev = false, next = true })
         end
-
-        if count > item:count() then
-            return me:dialog(npc, '그만큼 가지고 있지 않습니다.', { prev = false, next = true })
-        end
     end
     price = price * count
 
@@ -670,11 +667,9 @@ function M.show_buy_menu(me, npc)
         message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
     if me:menu(npc, message, { '네', '아니오' }) == 1 then
-        local code = me:exchange({ item = { [model:name()] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
-        if code == enum.exchange_result.LACK_COST then
-            return me:dialog(npc, '그만큼 가지고 있지 않습니다.', { prev = false, next = true })
-        elseif code == enum.exchange_result.LACK_CAPACITY then
-            return me:dialog(npc, '돈이 너무 많습니다.', { prev = false, next = true })
+        local ok, refusal = M.buy(me, npc, model, count)
+        if not ok then
+            return me:dialog(npc, refusal, { prev = false, next = true })
         end
     end
     return DIALOG_RESULT.NEXT
@@ -714,10 +709,8 @@ local function show_sell_catalog(me, npc, sell_id)
     if item == nil then
         return
     end
-    local selected_name = item:name()
 
-    local is_bundle = item:attr(ITEM_ATTRIBUTE.BUNDLE)
-    if is_bundle then
+    if item:attr(ITEM_ATTRIBUTE.BUNDLE) then
         count = me:input(npc, '몇개나 사시겠어요?')
         if count == nil then
             goto NPC_SELL_DIALOG_000
@@ -729,26 +722,7 @@ local function show_sell_catalog(me, npc, sell_id)
         end
     end
 
-    local price = pursuit_sell_price(pursuit, selected_name)
-    if price == nil then
-        return me:dialog(npc, '알 수 없는 에러')
-    else
-        price = price * count
-    end
-
-    local code = me:exchange({ money = price }, { item = { [selected_name] = count } })
-    if code == enum.exchange_result.LACK_COST then
-        return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
-    elseif code ~= enum.exchange_result.OK then
-        return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
-    end
-
-    local message = nil
-    if count > 1 then
-        message = string.format('%s %d개를 %d전에 팔았습니다.', selected_name, count, price)
-    else
-        message = string.format('%s %d전에 팔았습니다.', name_with(selected_name), price)
-    end
+    local _, message = M.sell(me, npc, item, count, pursuit)
     return me:dialog(npc, message, { prev = false, next = true })
 end
 
