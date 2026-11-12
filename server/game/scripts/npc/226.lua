@@ -12,5 +12,9 @@ return {
         end
 
         castle_lib.enter_castle(me, npc, TOTEM, DIVINE_BEAST_ID)
+    end,
+
+    on_join = function(me, npc)
+        return castle_lib.enter_castle(me, npc, TOTEM, DIVINE_BEAST_ID)
     end
 }

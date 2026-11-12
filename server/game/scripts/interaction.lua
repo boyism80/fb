@@ -5,14 +5,6 @@ local npc = require('lib.npc')
 local command = require('lib.command')
 local castle_lib = require('lib.castle')
 
--- Gatekeeper NPC name -> { totem name, DIVINE_BEAST } for "~참가" chat.
-local gatekeeper_by_name = {
-    ["주작성문지기"] = { "주작", DIVINE_BEAST.VERMILION_BIRD },
-    ["청룡성문지기"] = { "청룡", DIVINE_BEAST.AZURE_DRAGON },
-    ["현무성문지기"] = { "현무", DIVINE_BEAST.BLACK_TORTOISE },
-    ["백호성문지기"] = { "백호", DIVINE_BEAST.WHITE_TIGER },
-}
-
 local npc_chat_handlers = {
     {
         priority = 10,
@@ -266,37 +258,24 @@ local npc_chat_handlers = {
         priority = 180,
         anchors = { '참가' },
         literal = true,
-        condition = function(npc_obj)
-            return gatekeeper_by_name[npc_obj:model():name()] ~= nil
-        end,
         func = function(me, npc_obj, params)
-            local name = npc_obj:model():name()
-            local info = gatekeeper_by_name[name]
-            return castle_lib.enter_castle(me, npc_obj, info[1], info[2])
+            return me:script(string.format('scripts/npc/%d.lua', npc_obj:model():id()), 'on_join', npc_obj) == true
         end,
     },
     {
         priority = 190,
         anchors = { '검정깃발' },
         literal = true,
-        condition = function(npc_obj)
-            return npc_obj:model():name() == '장안성대장간'
-        end,
         func = function(me, npc_obj, params)
-            me:script('scripts/npc/218.lua', 'on_black_flag', npc_obj)
-            return true
+            return me:script(string.format('scripts/npc/%d.lua', npc_obj:model():id()), 'on_black_flag', npc_obj) == true
         end,
     },
     {
         priority = 200,
         anchors = { '안녕' },
         literal = true,
-        condition = function(npc_obj)
-            return npc_obj:model():name() == '용노인'
-        end,
         func = function(me, npc_obj, params)
-            me:script('scripts/npc/98.lua', 'on_hello', npc_obj)
-            return true
+            return me:script(string.format('scripts/npc/%d.lua', npc_obj:model():id()), 'on_hello', npc_obj) == true
         end,
     },
 }

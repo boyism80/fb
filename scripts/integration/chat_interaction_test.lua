@@ -1,6 +1,7 @@
-local lib      = require("integration.lib")
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
+local lib          = require("integration.lib")
+local resp         = require("integration.response")
+local protocol     = require("integration.protocol")
+local quest_dialog = require("integration.lib.quest_dialog")
 
 local CANNOT_PICKUP_TEXT = "더 이상 가질 수 없습니다."
 
@@ -316,6 +317,34 @@ local function test_scenario_4(ctx, index)
     return ok
 end
 
+local function test_scenario_5(ctx, index)
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 5 started"))
+    local bot = ctx:bot(index)
+
+    setup_npc(ctx, bot, index, "용노인")
+
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 5: saying 안녕 (expect the NPC script's dialog)"))
+    local packet = bot:request_dialog(
+        protocol.chat(false, "안녕"),
+        function(p)
+            return p.type == "pursuit" and p.message ~= nil and p.message:find("안녕하신가?", 1, true) ~= nil
+        end)
+    if packet == nil then
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 5 FAILED: 용노인 did not answer 안녕"))
+        return false
+    end
+    quest_dialog.close(bot)
+
+    local npc = g_npcs[index]
+    g_npcs[index] = nil
+    bot:request(resp.hide, protocol.chat(false, "/엔피씨제거"), function(p)
+        return p.oid == npc.oid
+    end, 5000)
+
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 5 completed successfully"))
+    return true
+end
+
 test_suite {
     name      = "Chat Interaction Test",
     bot_count = 5,
@@ -348,5 +377,6 @@ test_suite {
                 [3] = { function(ctx) return test_scenario_4(ctx, 3) end },
             },
         },
+        function(ctx) return test_scenario_5(ctx, 0) end,
     },
 }
