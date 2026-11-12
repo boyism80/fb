@@ -152,6 +152,8 @@ public:
     item_ptr                                        find(const fb::model::item& model) const;
     item_ptr                                        find(uint64_t uid) const;
     bool                                            has(const fb::model::item& model, uint16_t count) const;
+    uint8_t                                         stack(const fb::model::item& model) const;
+    uint16_t                                        stacked(uint8_t index) const;
     uint16_t                                        free_space(const fb::model::item& model) const;
     bool                                            has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const;
     [[nodiscard]] async::task<item_ptr>             drop(uint8_t index, uint16_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
@@ -170,7 +172,6 @@ public:
     [[nodiscard]] async::task<bool>                 combine(const std::vector<uint8_t>& indices);
     bool                                            reserved(uint8_t index) const override;
     const escrow_type&                              escrow() const;
-    uint16_t                                        locked_count(const fb::game::item& item) const;
     bool                                            hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_part>& parts);
     void                                            release(uint64_t escrow_id);
     void                                            take(uint64_t escrow_id);

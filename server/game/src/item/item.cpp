@@ -130,9 +130,9 @@ uint16_t item::fill(uint16_t count)
 
 uint16_t item::free_space() const
 {
-    auto& model  = this->model();
-    auto  locked = this->_container != nullptr ? this->_container->locked_count(*this) : 0;
-    return model.capacity - this->_count - locked;
+    if (this->_container != nullptr)
+        return this->_container->free_space(this->model());
+    return this->model().capacity - this->_count;
 }
 
 uint16_t item::count() const

@@ -203,13 +203,13 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
         }
         else
         {
-            auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
+            auto index  = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->stack(model) : uint8_t{0xFF};
+            auto exists = this->at(index);
             if (exists != nullptr)
             {
                 auto before = exists->count();
                 exists->merge(item);
 
-                auto index = this->index(exists);
                 updates.insert({index, exists});
                 indices.push_back(index);
                 if (exists->count() > before)
@@ -223,22 +223,9 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             else
             {
                 // A bundle whose whole stack is held by an escrow keeps its slot, so the new count joins that slot.
-                auto index = uint8_t{0xFF};
-                if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
-                {
-                    for (auto i : this->_escrow.indices())
-                    {
-                        if (this->_escrow.at(i)->model() == model)
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
-                }
-
                 if (index != 0xFF)
                 {
-                    auto free_space = static_cast<uint16_t>(model.capacity - this->_escrow.at(index)->count());
+                    auto free_space = this->free_space(model);
                     if (free_space == 0)
                     {
                         owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
@@ -470,11 +457,11 @@ async::task<items::item_ptr> items::retrieve(size_t index, uint16_t count, bool 
         if (to_inventory)
         {
             // A bundle whose whole stack is listed joins the listed slot instead of taking a new one.
-            auto space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->free_space(model) : model.capacity;
-            if (space == model.capacity && this->free() == false)
+            auto slot = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->stack(model) : uint8_t{0xFF};
+            if (slot == 0xFF && this->free() == false)
                 co_return nullptr;
 
-            if (count > space)
+            if (count > model.capacity - this->stacked(slot))
                 co_return nullptr;
         }
 
@@ -1140,20 +1127,31 @@ std::shared_ptr<item> items::find(uint64_t uid) const
     return nullptr;
 }
 
-uint16_t items::free_space(const fb::model::item& model) const
+uint8_t items::stack(const fb::model::item& model) const
 {
     auto item = this->find(model);
     if (item != nullptr)
-        return item->free_space();
+        return this->index(item);
 
     for (auto i : this->_escrow.indices())
     {
-        auto held = this->_escrow.at(i);
-        if (held->model() == model)
-            return model.capacity - held->count();
+        if (this->_escrow.at(i)->model() == model)
+            return i;
     }
 
-    return model.capacity;
+    return 0xFF;
+}
+
+uint16_t items::stacked(uint8_t index) const
+{
+    auto item = this->at(index);
+    auto held = this->_escrow.at(index);
+    return (item != nullptr ? item->count() : 0) + (held != nullptr ? held->count() : 0);
+}
+
+uint16_t items::free_space(const fb::model::item& model) const
+{
+    return model.capacity - this->stacked(this->stack(model));
 }
 
 bool items::has(const fb::model::item& model, uint16_t count) const
@@ -1555,23 +1553,18 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         return false;
 
     auto free_size = this->free_size();
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    for (auto& [id, count] : items)
     {
-        auto item  = this->at(i);
-        auto held  = this->_escrow.at(i);
-        auto shown = item != nullptr ? item : held;
-        if (shown == nullptr)
-            continue;
-
-        auto& model = shown->model();
+        auto  item_table = table::item;
+        auto& model      = item_table[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
-        if (items.contains(model.id) == false)
+        auto slot = this->stack(model);
+        if (slot == 0xFF)
             continue;
 
-        auto count = (item != nullptr ? item->count() : 0) + (held != nullptr ? held->count() : 0);
-        if (model.capacity < count + items.at(model.id))
+        if (model.capacity < this->stacked(slot) + count)
             return false;
 
         free_size++;
@@ -1656,12 +1649,11 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             if (current < cost_count)
                 co_return exchange_result::lack_cost;
 
-            auto remain = static_cast<uint16_t>(current - cost_count);
-            auto locked = this->locked_count(*slot);
-            if (remain == 0 && locked == 0)
+            auto left = static_cast<uint16_t>(this->stacked(index) - cost_count);
+            if (left == 0)
                 effective_free_slots++;
             else
-                simulated_bundle_remaining[id] = remain + locked;
+                simulated_bundle_remaining[id] = left;
         }
         else
         {
@@ -1704,9 +1696,9 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             }
             else
             {
-                auto space = this->free_space(model);
-                if (space < model.capacity)
-                    existing = static_cast<uint32_t>(model.capacity - space);
+                auto slot = this->stack(model);
+                if (slot != 0xFF)
+                    existing = static_cast<uint32_t>(this->stacked(slot));
             }
 
             // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
@@ -1891,19 +1883,8 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
                 continue;
             }
 
-            auto existing = this->find(model);
-            auto left     = uint32_t{0};
-            if (existing != nullptr)
-            {
-                auto index = this->index(existing);
-                left =
-                    existing->count() - (consume.contains(index) ? consume[index] : 0) + this->locked_count(*existing);
-            }
-            else
-            {
-                left = model.capacity - this->free_space(model);
-            }
-
+            auto slot = this->stack(model);
+            auto left = static_cast<uint32_t>(this->stacked(slot)) - (consume.contains(slot) ? consume[slot] : 0);
             if (left + total > model.capacity)
                 return false;
 
@@ -2022,16 +2003,6 @@ bool items::reserved(uint8_t index) const
 const items::escrow_type& items::escrow() const
 {
     return this->_escrow;
-}
-
-uint16_t items::locked_count(const fb::game::item& item) const
-{
-    for (auto i : this->_escrow.indices())
-    {
-        if (this->at(i).get() == &item)
-            return this->_escrow.at(i)->count();
-    }
-    return 0;
 }
 
 void items::load(const fb::protocol::internal::Escrow& row)
