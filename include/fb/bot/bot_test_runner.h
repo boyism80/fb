@@ -88,14 +88,17 @@ int run_bot_test(std::string_view config_path, const std::vector<std::string>& o
             {
                 maps.emplace(static_cast<uint16_t>(std::stoul(map)), message["maps"][map].asDouble());
             }
+
             fb::bot::brain::occupied_elsewhere(message["from"].asUInt(), std::move(maps));
         });
+
         container->link.on("stop", [container, &io_context](const Json::Value&) {
             boost::asio::post(io_context, [container]() {
                 container->exit();
             });
         });
     }
+
     container->initialize();
 
     fb::console::set_mode(fb::console::mode::plain);
@@ -120,6 +123,7 @@ int run_bot_test(std::string_view config_path, const std::vector<std::string>& o
                     {
                         message["occupied"][std::to_string(map)] = rate;
                     }
+
                     container->link.send(message);
                 }
             },

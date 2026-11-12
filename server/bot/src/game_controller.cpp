@@ -55,17 +55,21 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
         return this->on_map_config(bot, response);
     });
+
     this->bind<game_resp::update_internal>([this](game_bot& bot, auto& response) {
         return this->on_state(bot, response);
     });
+
     this->bind<game_resp::option>([this](game_bot& bot, auto& response) {
         return this->on_option(bot, response);
     });
+
     this->bind(&game_bot_controller::on_message);
     this->bind(&game_bot_controller::on_sequence);
     this->bind<game_resp::spell_update>([this](game_bot& bot, auto& response) {
         return this->on_spell_update(bot, response);
     });
+
     this->bind(&game_bot_controller::on_spell_remove);
     this->bind(&game_bot_controller::on_chat);
     this->bind(&game_bot_controller::on_action);
@@ -75,6 +79,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<game_resp::effect>([this](game_bot& bot, auto& response) {
         return this->on_effect(bot, response);
     });
+
     this->bind(&game_bot_controller::on_hide);
     this->bind(&game_bot_controller::on_die);
     this->bind(&game_bot_controller::on_buff);
@@ -82,26 +87,33 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<game_resp::update>([this](game_bot& bot, auto& response) {
         return this->on_update(bot, response);
     });
+
     this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
         return this->on_map(bot, response);
     });
+
     this->bind(&game_bot_controller::on_transfer);
     this->bind<game_resp::show>([this](game_bot& bot, auto& response) {
         return this->on_show(bot, response);
     });
+
     this->bind<game_resp::update_external>([this](game_bot& bot, auto& response) {
         return this->on_update_external(bot, response);
     });
+
     this->bind<game_resp::item_update>([this](game_bot& bot, auto& response) {
         return this->on_item_update(bot, response);
     });
+
     this->bind<game_resp::item_unequip>([this](game_bot& bot, auto& response) {
         return this->on_item_unequip(bot, response);
     });
+
     this->bind(&game_bot_controller::on_item_remove);
     this->bind<game_resp::internal_info>([this](game_bot& bot, auto& response) {
         return this->on_internal_info(bot, response);
     });
+
     this->bind(&game_bot_controller::on_ping);
     this->bind<game_resp::update_hp>([](game_bot& bot, game_resp::update_hp& response) -> async::task<void> {
         auto found  = bot.sight.entries().find(response.oid);
@@ -110,8 +122,10 @@ game_bot_controller::game_bot_controller(bot_container& container) :
         bot.events.push({game_bot::events::TYPE::HIT, response.oid, {}, response.damage, response.percent});
         if (response.percent < before)
             bot.notice("hurt", response.oid);
+
         co_return;
     });
+
     this->bind<game_resp::user_list>([](game_bot& bot, game_resp::user_list& response) -> async::task<void> {
         bot.record_users(response.users);
         co_return;
@@ -127,11 +141,13 @@ game_bot_controller::game_bot_controller(bot_container& container) :
         bot.record_dialog(dialog);
         co_return;
     });
+
     this->bind<integration::dialog_ext_bot>(
         [](game_bot& bot, integration::dialog_ext_bot& dialog) -> async::task<void> {
             bot.record_dialog(dialog);
             co_return;
         });
+
     this->bind_default<integration::trade_bot>();
     integration::protocol_registry::bind_default(*this);
 }
@@ -309,8 +325,10 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
             position.y++;
             break;
         }
+
         bot.sight.move(response.id, position);
     }
+
     co_return;
 }
 
@@ -324,6 +342,7 @@ async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::ma
     else
     {
     }
+
     co_return;
 }
 
@@ -351,6 +370,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     created->set_name(bot.name());
     if (auto attached = bot.attached(); attached != nullptr)
         attached->transfer(bot, *created);
+
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,
@@ -386,6 +406,7 @@ async::task<void> game_bot_controller::on_die(game_bot& bot, const game_resp::di
     {
         bot.sight.die(response.oid);
     }
+
     co_return;
 }
 
@@ -396,6 +417,7 @@ async::task<void> game_bot_controller::on_buff(game_bot& bot, const game_resp::s
         bot.remove_buff(response.name);
     else
         bot.add_buff(response.name);
+
     co_return;
 }
 
@@ -417,6 +439,7 @@ async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp:
         if (object.look < game_bot::sight::ITEM_LOOK)
             bot.notice("sight", object.oid);
     }
+
     co_return;
 }
 
@@ -451,6 +474,7 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
     {
         accessories.emplace_back(equipment.look, equipment.color);
     }
+
     bot.set_accessories(std::move(accessories));
     bot.mark_info();
     co_return;
@@ -564,6 +588,7 @@ async::task<std::shared_ptr<game_bot>> game_bot::wait_reconnect(const fb::model:
                 fb::timer::repeat_type::once);
             co_return;
         };
+
         builder.enqueue();
     }
 
@@ -601,6 +626,7 @@ async::task<std::shared_ptr<game_bot>> game_bot::follow(std::function<async::tas
         controller.remove_transfer_context(this->id);
         if (error != nullptr)
             std::rethrow_exception(error);
+
         co_return self;
     }
 
@@ -617,6 +643,7 @@ async::task<std::shared_ptr<game_bot>> game_bot::follow(std::function<async::tas
                 fb::timer::repeat_type::once);
             co_return;
         };
+
         builder.enqueue();
     }
 
@@ -650,5 +677,6 @@ async::task<bool> game_bot::logout(const fb::model::timespan& timeout)
 
         co_await thread->sleep(50ms);
     }
+
     co_return true;
 }

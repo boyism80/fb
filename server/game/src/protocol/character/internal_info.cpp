@@ -45,6 +45,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
         writer.template write<std::string>("");
         writer.template write<std::string>("");
     }
+
     writer.template write<std::string>(this->ch.title());
 
     auto& marriage = this->ch.marriage;
@@ -76,12 +77,14 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
                     if (member != master_name)
                         sstream << "    " << member << std::endl;
                 }
+
                 shown = true;
             }
         }
 
         if (shown == false)
             sstream << _TEXT(MESSAGE_GROUP_NONE);
+
         writer.template write<std::string>(sstream.str());
     }
 
@@ -95,6 +98,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
     {
         remained = table::ability->stacked_exp(cls, level) - this->ch.exp();
     }
+
     writer.template write<uint32_t>(fb::game::encode_client_amount(remained));
     writer.template write<std::string>(table::promotion[this->ch.cls()][this->ch.promotion()].name);
 }
@@ -158,6 +162,7 @@ void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
         writer.template write<uint8_t>(achievement->color);
         writer.template write<std::string>(achievement->text);
     }
+
     writer.template write<uint8_t>(0x00);
 }
 
@@ -236,6 +241,7 @@ void internal_info<V>::deserialize(fb::stream_reader<big_endian>& reader)
         achievement.text  = reader.read<std::string, uint8_t>();
         this->achievements.push_back(achievement);
     }
+
     reader.read<uint8_t>();
 }
 

@@ -84,6 +84,7 @@ int builtin::life::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -103,9 +104,11 @@ int builtin::life::builtin_message(lua_State* L)
         ch->message(message, type);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -114,6 +117,7 @@ int builtin::life::builtin_hp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -129,10 +133,12 @@ int builtin::life::builtin_hp(lua_State* L)
             *hp_value = obj->stat.hp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*hp_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -146,9 +152,11 @@ int builtin::life::builtin_hp(lua_State* L)
             obj->stat.hp(value, notify);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -158,6 +166,7 @@ int builtin::life::builtin_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -173,10 +182,12 @@ int builtin::life::builtin_mp(lua_State* L)
             *mp_value = obj->stat.mp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*mp_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -190,9 +201,11 @@ int builtin::life::builtin_mp(lua_State* L)
             obj->stat.mp(value, notify);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -202,6 +215,7 @@ int builtin::life::builtin_heal(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -216,9 +230,11 @@ int builtin::life::builtin_heal(lua_State* L)
         std::ignore = obj->stat.heal(value, nullptr, notify);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -244,6 +260,7 @@ int builtin::life::builtin_damage_to(lua_State* L)
         auto you = lua->touserdata<fb::game::life>(2);
         if (you == nullptr)
             return 0;
+
         auto value = lua->touint64(3);
         targets->emplace_back(you, value);
         opts_idx = 4;
@@ -274,6 +291,7 @@ int builtin::life::builtin_damage_to(lua_State* L)
 
             targets->emplace_back(you, value);
         }
+
         opts_idx = 3;
     }
     else
@@ -287,30 +305,35 @@ int builtin::life::builtin_damage_to(lua_State* L)
         lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
             opts.critical = lua_toboolean(L, -1) != 0;
+
         lua_pop(L, 1);
 
         lua_pushstring(L, "rate");
         lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
             opts.rate = static_cast<float>(lua_tonumber(L, -1));
+
         lua_pop(L, 1);
 
         lua_pushstring(L, "physical");
         lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
             opts.physical = lua_toboolean(L, -1) != 0;
+
         lua_pop(L, 1);
 
         lua_pushstring(L, "fixed");
         lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
             opts.fixed = lua_toboolean(L, -1) != 0;
+
         lua_pop(L, 1);
 
         lua_pushstring(L, "notify");
         lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
             opts.notify = lua_toboolean(L, -1) != 0;
+
         lua_pop(L, 1);
     }
 
@@ -324,11 +347,14 @@ int builtin::life::builtin_damage_to(lua_State* L)
         auto attacker = std::static_pointer_cast<fb::game::life>(weak.lock());
         if (attacker == nullptr)
             co_return;
+
         co_await attacker->damage_to(*targets, opts);
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -351,11 +377,14 @@ int builtin::life::builtin_damage(lua_State* L)
         auto target = std::static_pointer_cast<fb::game::life>(weak.lock());
         if (target == nullptr)
             co_return;
+
         co_await target->damage(value, fb::game::life::damage_opts{});
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -364,6 +393,7 @@ int builtin::life::builtin_mp_up(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -378,9 +408,11 @@ int builtin::life::builtin_mp_up(lua_State* L)
         std::ignore = obj->stat.mp_up(value, nullptr, notify);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -389,6 +421,7 @@ int builtin::life::builtin_mp_down(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -403,9 +436,11 @@ int builtin::life::builtin_mp_down(lua_State* L)
         std::ignore = obj->stat.mp_down(value, nullptr, notify);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -414,6 +449,7 @@ int builtin::life::builtin_action(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -429,9 +465,11 @@ int builtin::life::builtin_action(lua_State* L)
         obj->action(ACTION(action), DURATION(duration), sound);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -440,6 +478,7 @@ int builtin::life::builtin_spell(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -456,6 +495,7 @@ int builtin::life::builtin_spell(lua_State* L)
             *spell = obj->spells[index];
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*spell == nullptr)
                 lua->pushnil();
@@ -464,6 +504,7 @@ int builtin::life::builtin_spell(lua_State* L)
 
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_string(2))
@@ -477,6 +518,7 @@ int builtin::life::builtin_spell(lua_State* L)
             *spell = obj->spells.find(name);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*spell == nullptr)
                 lua->pushnil();
@@ -485,6 +527,7 @@ int builtin::life::builtin_spell(lua_State* L)
 
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_userdata<fb::model::spell>(2))
@@ -498,6 +541,7 @@ int builtin::life::builtin_spell(lua_State* L)
             *spell = obj->spells.find(*model);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*spell == nullptr)
                 lua->pushnil();
@@ -506,6 +550,7 @@ int builtin::life::builtin_spell(lua_State* L)
 
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -519,6 +564,7 @@ int builtin::life::builtin_spells(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -535,8 +581,10 @@ int builtin::life::builtin_spells(lua_State* L)
             if (spell != nullptr)
                 buffer->push_back(spell);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (int i = 0; i < buffer->size(); i++)
@@ -547,6 +595,7 @@ int builtin::life::builtin_spells(lua_State* L)
 
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -555,6 +604,7 @@ int builtin::life::builtin_cast(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc   = lua->argc();
     auto offset = 1;
     auto obj    = lua->touserdata<fb::game::life>(offset++);
@@ -609,9 +659,11 @@ int builtin::life::builtin_cast(lua_State* L)
         x->pushobject(spell);
         std::ignore = co_await x->call(count);
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -620,6 +672,7 @@ int builtin::life::builtin_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -635,10 +688,12 @@ int builtin::life::builtin_cc(lua_State* L)
             *cc_value = static_cast<uint32_t>(obj->cc);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*cc_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -651,9 +706,11 @@ int builtin::life::builtin_cc(lua_State* L)
             obj->cc.set(cc);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -663,6 +720,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -678,10 +736,12 @@ int builtin::life::builtin_add_cc(lua_State* L)
             *cc_value = static_cast<uint32_t>(obj->cc);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*cc_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -694,9 +754,11 @@ int builtin::life::builtin_add_cc(lua_State* L)
             std::ignore = obj->cc.add(cc);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -706,6 +768,7 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -719,9 +782,11 @@ int builtin::life::builtin_remove_cc(lua_State* L)
         std::ignore = obj->cc.remove(cc);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -730,6 +795,7 @@ int builtin::life::builtin_attack(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -743,9 +809,11 @@ int builtin::life::builtin_attack(lua_State* L)
         co_await obj->attack(duration);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -754,6 +822,7 @@ int builtin::life::builtin_damage_rate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -769,10 +838,12 @@ int builtin::life::builtin_damage_rate(lua_State* L)
             *damage_rate_value = obj->damage_rate();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*damage_rate_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -785,9 +856,11 @@ int builtin::life::builtin_damage_rate(lua_State* L)
             obj->damage_rate(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -797,6 +870,7 @@ int builtin::life::builtin_damage_derate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -812,10 +886,12 @@ int builtin::life::builtin_damage_derate(lua_State* L)
             *damage_derate_value = obj->damage_derate();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*damage_derate_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -828,9 +904,11 @@ int builtin::life::builtin_damage_derate(lua_State* L)
             obj->damage_derate(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -840,6 +918,7 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -855,10 +934,12 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
             *skill_damage_rate_value = obj->skill_damage_rate();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*skill_damage_rate_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -871,9 +952,11 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
             obj->skill_damage_rate(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -883,6 +966,7 @@ int builtin::life::builtin_paralysis(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -898,10 +982,12 @@ int builtin::life::builtin_paralysis(lua_State* L)
             *paralysis_value = obj->paralysis();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*paralysis_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -914,9 +1000,11 @@ int builtin::life::builtin_paralysis(lua_State* L)
             obj->paralysis(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -926,6 +1014,7 @@ int builtin::life::builtin_invincible(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -941,10 +1030,12 @@ int builtin::life::builtin_invincible(lua_State* L)
             *invincible_value = obj->invincible();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*invincible_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -957,9 +1048,11 @@ int builtin::life::builtin_invincible(lua_State* L)
             obj->invincible(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -969,6 +1062,7 @@ int builtin::life::builtin_cover(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -984,10 +1078,12 @@ int builtin::life::builtin_cover(lua_State* L)
             *cover_value = obj->cover();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*cover_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1000,9 +1096,11 @@ int builtin::life::builtin_cover(lua_State* L)
             obj->cover(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1012,6 +1110,7 @@ int builtin::life::builtin_delirious(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1027,10 +1126,12 @@ int builtin::life::builtin_delirious(lua_State* L)
             *delirious_value = obj->delirious();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*delirious_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1043,9 +1144,11 @@ int builtin::life::builtin_delirious(lua_State* L)
             obj->delirious(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1069,10 +1172,12 @@ int builtin::life::builtin_base_hp(lua_State* L)
         *value = obj->stat.base_hp();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1081,6 +1186,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1096,10 +1202,12 @@ int builtin::life::builtin_buff_hp(lua_State* L)
             *buff_hp_value = obj->stat.buff_hp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_hp_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1112,9 +1220,11 @@ int builtin::life::builtin_buff_hp(lua_State* L)
             obj->stat.buff_hp(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1124,6 +1234,7 @@ int builtin::life::builtin_buff_hp_percent(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1139,10 +1250,12 @@ int builtin::life::builtin_buff_hp_percent(lua_State* L)
             *value = obj->stat.buff_hp_percent();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushnumber(*value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1155,9 +1268,11 @@ int builtin::life::builtin_buff_hp_percent(lua_State* L)
             obj->stat.buff_hp_percent(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1167,6 +1282,7 @@ int builtin::life::builtin_maxhp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1179,10 +1295,12 @@ int builtin::life::builtin_maxhp(lua_State* L)
         *maxhp_value = obj->stat.maxhp();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*maxhp_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1191,6 +1309,7 @@ int builtin::life::builtin_base_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1203,10 +1322,12 @@ int builtin::life::builtin_base_mp(lua_State* L)
         *base_mp_value = obj->stat.base_mp();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_mp_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1215,6 +1336,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1230,10 +1352,12 @@ int builtin::life::builtin_buff_mp(lua_State* L)
             *buff_mp_value = obj->stat.buff_mp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_mp_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1246,9 +1370,11 @@ int builtin::life::builtin_buff_mp(lua_State* L)
             obj->stat.buff_mp(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1258,6 +1384,7 @@ int builtin::life::builtin_buff_mp_percent(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1273,10 +1400,12 @@ int builtin::life::builtin_buff_mp_percent(lua_State* L)
             *value = obj->stat.buff_mp_percent();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushnumber(*value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1289,9 +1418,11 @@ int builtin::life::builtin_buff_mp_percent(lua_State* L)
             obj->stat.buff_mp_percent(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1301,6 +1432,7 @@ int builtin::life::builtin_maxmp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1313,10 +1445,12 @@ int builtin::life::builtin_maxmp(lua_State* L)
         *maxmp_value = obj->stat.maxmp();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*maxmp_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1325,6 +1459,7 @@ int builtin::life::builtin_base_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1337,10 +1472,12 @@ int builtin::life::builtin_base_str(lua_State* L)
         *base_str_value = obj->stat.base_str();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_str_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1349,6 +1486,7 @@ int builtin::life::builtin_buff_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1364,10 +1502,12 @@ int builtin::life::builtin_buff_str(lua_State* L)
             *buff_str_value = obj->stat.buff_str();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_str_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1380,9 +1520,11 @@ int builtin::life::builtin_buff_str(lua_State* L)
             obj->stat.buff_str(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1392,6 +1534,7 @@ int builtin::life::builtin_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1404,10 +1547,12 @@ int builtin::life::builtin_str(lua_State* L)
         *str_value = obj->stat.str();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*str_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1416,6 +1561,7 @@ int builtin::life::builtin_base_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1428,10 +1574,12 @@ int builtin::life::builtin_base_dex(lua_State* L)
         *base_dex_value = obj->stat.base_dex();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_dex_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1440,6 +1588,7 @@ int builtin::life::builtin_buff_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1455,10 +1604,12 @@ int builtin::life::builtin_buff_dex(lua_State* L)
             *buff_dex_value = obj->stat.buff_dex();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_dex_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1471,9 +1622,11 @@ int builtin::life::builtin_buff_dex(lua_State* L)
             obj->stat.buff_dex(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1483,6 +1636,7 @@ int builtin::life::builtin_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1495,10 +1649,12 @@ int builtin::life::builtin_dex(lua_State* L)
         *dex_value = obj->stat.dex();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*dex_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1507,6 +1663,7 @@ int builtin::life::builtin_base_int(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1519,10 +1676,12 @@ int builtin::life::builtin_base_int(lua_State* L)
         *base_int_value = obj->stat.base_int();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_int_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1531,6 +1690,7 @@ int builtin::life::builtin_buff_int(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1546,10 +1706,12 @@ int builtin::life::builtin_buff_int(lua_State* L)
             *buff_int_value = obj->stat.buff_int();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_int_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1562,9 +1724,11 @@ int builtin::life::builtin_buff_int(lua_State* L)
             obj->stat.buff_int(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1574,6 +1738,7 @@ int builtin::life::builtin_intelligence(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1586,10 +1751,12 @@ int builtin::life::builtin_intelligence(lua_State* L)
         *intelligence_value = obj->stat.intelligence();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*intelligence_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1598,6 +1765,7 @@ int builtin::life::builtin_base_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1610,10 +1778,12 @@ int builtin::life::builtin_base_phydef(lua_State* L)
         *base_phydef_value = obj->stat.base_phydef();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_phydef_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1622,6 +1792,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1637,10 +1808,12 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
             *buff_phydef_value = obj->stat.buff_phydef();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_phydef_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1653,9 +1826,11 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
             obj->stat.buff_phydef(static_cast<int32_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1665,6 +1840,7 @@ int builtin::life::builtin_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1677,10 +1853,12 @@ int builtin::life::builtin_phydef(lua_State* L)
         *phydef_value = obj->stat.phydef();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*phydef_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1689,6 +1867,7 @@ int builtin::life::builtin_base_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1701,10 +1880,12 @@ int builtin::life::builtin_base_magdef(lua_State* L)
         *base_magdef_value = obj->stat.base_magdef();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_magdef_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1713,6 +1894,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1728,10 +1910,12 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
             *buff_magdef_value = obj->stat.buff_magdef();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_magdef_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1744,9 +1928,11 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
             obj->stat.buff_magdef(static_cast<int32_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1756,6 +1942,7 @@ int builtin::life::builtin_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1768,10 +1955,12 @@ int builtin::life::builtin_magdef(lua_State* L)
         *magdef_value = obj->stat.magdef();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*magdef_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1780,6 +1969,7 @@ int builtin::life::builtin_base_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1792,10 +1982,12 @@ int builtin::life::builtin_base_dam(lua_State* L)
         *base_dam_value = obj->stat.base_dam();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_dam_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1804,6 +1996,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1819,10 +2012,12 @@ int builtin::life::builtin_buff_dam(lua_State* L)
             *buff_dam_value = obj->stat.buff_dam();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_dam_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1835,9 +2030,11 @@ int builtin::life::builtin_buff_dam(lua_State* L)
             obj->stat.buff_dam(static_cast<int32_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1847,6 +2044,7 @@ int builtin::life::builtin_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1859,10 +2057,12 @@ int builtin::life::builtin_dam(lua_State* L)
         *dam_value = obj->stat.dam();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*dam_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1871,6 +2071,7 @@ int builtin::life::builtin_base_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1883,10 +2084,12 @@ int builtin::life::builtin_base_hit(lua_State* L)
         *base_hit_value = obj->stat.base_hit();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_hit_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1895,6 +2098,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -1910,10 +2114,12 @@ int builtin::life::builtin_buff_hit(lua_State* L)
             *buff_hit_value = obj->stat.buff_hit();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_hit_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1926,9 +2132,11 @@ int builtin::life::builtin_buff_hit(lua_State* L)
             obj->stat.buff_hit(static_cast<int32_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1938,6 +2146,7 @@ int builtin::life::builtin_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1950,10 +2159,12 @@ int builtin::life::builtin_hit(lua_State* L)
         *hit_value = obj->stat.hit();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*hit_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1962,6 +2173,7 @@ int builtin::life::builtin_base_speed(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -1974,10 +2186,12 @@ int builtin::life::builtin_base_speed(lua_State* L)
         *base_speed_value = obj->stat.base_speed();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*base_speed_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1986,6 +2200,7 @@ int builtin::life::builtin_buff_speed(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -2001,10 +2216,12 @@ int builtin::life::builtin_buff_speed(lua_State* L)
             *buff_speed_value = obj->stat.buff_speed();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*buff_speed_value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2017,9 +2234,11 @@ int builtin::life::builtin_buff_speed(lua_State* L)
             obj->stat.buff_speed(static_cast<int32_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -2029,6 +2248,7 @@ int builtin::life::builtin_speed(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -2041,10 +2261,12 @@ int builtin::life::builtin_speed(lua_State* L)
         *speed_value = obj->stat.speed();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*speed_value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2053,6 +2275,7 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -2068,10 +2291,12 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
         *damage = obj->normal_attack_damage(size);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*damage);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2080,6 +2305,7 @@ int builtin::life::builtin_update(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -2094,9 +2320,11 @@ int builtin::life::builtin_update(lua_State* L)
         obj->update(level);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -2105,6 +2333,7 @@ int builtin::life::builtin_base_resist(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -2118,10 +2347,12 @@ int builtin::life::builtin_base_resist(lua_State* L)
         *value = obj->stat.base_resist(type);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushnumber(*value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2130,6 +2361,7 @@ int builtin::life::builtin_buff_resist(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
@@ -2146,10 +2378,12 @@ int builtin::life::builtin_buff_resist(lua_State* L)
             *value = obj->stat.buff_resist(type);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushnumber(*value);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2162,9 +2396,11 @@ int builtin::life::builtin_buff_resist(lua_State* L)
             obj->stat.buff_resist(type, value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -2174,6 +2410,7 @@ int builtin::life::builtin_resist(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
@@ -2187,9 +2424,11 @@ int builtin::life::builtin_resist(lua_State* L)
         *value = obj->stat.resist(type);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushnumber(*value);
         co_return 1;
     };
+
     return builder.run();
 }

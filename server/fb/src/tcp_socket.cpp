@@ -19,6 +19,7 @@ void tcp_socket::write(const std::shared_ptr<tcp_socket>& socket, fb::stream wir
     {
         if (handler != nullptr)
             handler(boost::system::error_code(), 0);
+
         return;
     }
 
@@ -89,6 +90,7 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                          {
                                              dropped.push_back(std::move(pending.handler));
                                          }
+
                                          socket->_writes.clear();
                                          socket->_write_bytes = 0;
                                          socket->_writing     = false;

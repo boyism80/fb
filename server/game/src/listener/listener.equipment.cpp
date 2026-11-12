@@ -88,6 +88,7 @@ void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::g
     fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
         me.send(game_resp::item_unequip<V>(parts));
     });
+
     me.sound(SOUND::EQUIPMENT_OFF);
 
     me.update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);

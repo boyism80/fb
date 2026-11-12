@@ -148,6 +148,7 @@ void external_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     {
         appearance = fb::game::character_appearance<CLIENT_VERSION::v651>::from(this->ch);
     }
+
     appearance.speed = this->ch.stat.speed();
     appearance.state = this->ch.state_to(this->to, appearance.state.value_or(this->ch.state()));
     appearance.face  = this->ch.face();

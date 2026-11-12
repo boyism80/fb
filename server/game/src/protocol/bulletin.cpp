@@ -58,6 +58,7 @@ void bulletin<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& 
         this->offset  = reader.read<uint16_t>();
         if (reader.readable_size() > 0)
             reader.read<uint8_t>();
+
         break;
 
     case BULLETIN_ACTION::ARTICLE:
@@ -65,6 +66,7 @@ void bulletin<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& 
         this->article = reader.read<uint16_t>();
         if (reader.readable_size() > 0)
             reader.read<uint8_t>();
+
         break;
 
     case BULLETIN_ACTION::WRITE:

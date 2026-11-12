@@ -273,6 +273,7 @@ std::vector<std::shared_ptr<fb::game::object>> sector::container::objects(const 
                 result.push_back(obj);
         }
     }
+
     return result;
 }
 

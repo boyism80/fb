@@ -17,5 +17,6 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
         this->server.reset_now_offset();
     else
         this->server.now(fb::model::datetime(message.datetime));
+
     co_return;
 }

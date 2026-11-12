@@ -109,7 +109,9 @@ async::task<void> service::mail::on_received(const mail_box::received& entry)
             this->server.log.write("mail_receive", log_data);
             co_return;
         };
+
         builder.enqueue();
     }
+
     co_return;
 }

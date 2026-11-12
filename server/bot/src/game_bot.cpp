@@ -119,8 +119,10 @@ bool game_bot::accepts(const fb::protocol::header& packet) const
             auto chat = dynamic_cast<const game_reqs::chat<V>*>(&packet);
             return chat != nullptr && chat->message.starts_with('/');
         });
+
     if (command)
         fb::logger::warn("bot={} command blocked while a brain is attached", this->name());
+
     return command == false;
 }
 
@@ -375,12 +377,14 @@ void game_bot::set_hp(uint32_t value)
         {
             record.items[item.name] += item.count;
         }
+
         this->_dying = std::move(record);
     }
     else if (value > 0)
     {
         this->_dying.reset();
     }
+
     auto hit  = value < this->_hp;
     this->_hp = value;
     if (hit)
@@ -491,6 +495,7 @@ void game_bot::set_state(STATE value)
         auto attached = this->attached();
         if (attached != nullptr)
             attached->die(*this);
+
         this->notice("dead");
     }
 }
@@ -695,6 +700,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
 
         this->set_position(after);
     }
+
     co_await this->thread()->sleep(delay);
 }
 
@@ -985,6 +991,7 @@ std::optional<game_bot::simple_item> game_bot::get_item(uint8_t slot) const
     {
         return it->second;
     }
+
     return std::nullopt;
 }
 
@@ -995,6 +1002,7 @@ std::optional<game_bot::simple_spell> game_bot::get_spell(uint8_t slot) const
     {
         return it->second;
     }
+
     return std::nullopt;
 }
 
@@ -1016,6 +1024,7 @@ bool game_bot::has_item_by_name(std::string_view name) const
         if (item.name.find(name_str) != std::string::npos)
             return true;
     }
+
     return false;
 }
 
@@ -1035,6 +1044,7 @@ uint16_t game_bot::get_item_count_by_name(std::string_view name) const
         else
             count += item.count;
     }
+
     return static_cast<uint16_t>(std::min<uint32_t>(count, 0xFFFF));
 }
 
@@ -1044,6 +1054,7 @@ uint8_t game_bot::get_item_slot_by_name(std::string_view name) const
     auto it       = std::find_if(this->_items.begin(), this->_items.end(), [&name_str](const auto& item) {
         return item.second.name.find(name_str) != std::string::npos;
     });
+
     return it != this->_items.end() ? it->first : 0xFF;
 }
 
@@ -1053,6 +1064,7 @@ uint8_t game_bot::get_spell_slot_by_name(std::string_view name) const
     auto it       = std::find_if(this->_spells.begin(), this->_spells.end(), [&name_str](const auto& spell) {
         return spell.second.name.find(name_str) != std::string::npos;
     });
+
     return it != this->_spells.end() ? it->first : 0xFF;
 }
 
@@ -1069,6 +1081,7 @@ void game_bot::record_dialog(const integration::dialog_bot& dialog)
         this->_last_dialog = dialog;
         this->_last_dialog_ext.reset();
     }
+
     this->notice("dialog");
 }
 
@@ -1080,6 +1093,7 @@ void game_bot::record_dialog(const integration::dialog_ext_bot& dialog)
         this->_last_dialog.reset();
         this->_last_dialog_ext = dialog;
     }
+
     this->notice("dialog");
 }
 
@@ -1167,6 +1181,7 @@ async::task<game_bot::simple_npc> game_bot::create_npc(std::string_view npc_name
     auto oid = this->visit<game_resp::update>(*response, [](const auto& resp) {
         return resp.objects_data.front().oid;
     });
+
     co_return simple_npc(oid, npc_name);
 }
 
@@ -1321,6 +1336,7 @@ async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monste
                 if (mob.look != expected_look || mob.color != expected_color)
                     return false;
             }
+
             return true;
         },
         timeout);
@@ -1349,6 +1365,7 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
             [expected_look, expected_color, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
+
                 auto& mob = resp.objects_data.front();
                 if (mob.look != expected_look || mob.color != expected_color)
                     return false;
@@ -1397,6 +1414,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
         [expected_look, expected_color, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
+
             auto& mob = resp.objects_data.front();
             if (mob.look != expected_look || mob.color != expected_color)
                 return false;
@@ -1656,6 +1674,7 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
             else
                 co_await this->change_gender(GENDER::MALE, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::level:
@@ -1663,6 +1682,7 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
             auto params = dsl::level(condition.params);
             co_await this->change_level(1, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::strength:
@@ -1672,6 +1692,7 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
             auto params = dsl::strength(condition.params);
             co_await this->change_stats(0, 0, 0, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::class_t:
@@ -1679,12 +1700,14 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
         {
             co_await this->change_class("평민", timeout);
         }
+
         break;
 
         default:
         {
             fb::logger::warn("Unknown condition: {}", enum_tostring<fb::model::enum_value::DSL>(condition.header));
         }
+
         break;
         }
     }
@@ -1712,6 +1735,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params = dsl::gender(condition.params);
             co_await this->change_gender(params.value, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::level:
@@ -1719,6 +1743,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params = dsl::level(condition.params);
             co_await this->change_level(params.min.value(), timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::strength:
@@ -1726,6 +1751,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params = dsl::strength(condition.params);
             co_await this->change_str(params.value, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::intelligence:
@@ -1733,6 +1759,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params = dsl::intelligence(condition.params);
             co_await this->change_int(params.value, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::dexterity:
@@ -1740,6 +1767,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params = dsl::dexterity(condition.params);
             co_await this->change_dex(params.value, timeout);
         }
+
         break;
 
         case fb::model::enum_value::DSL::class_t:
@@ -1747,6 +1775,7 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params    = dsl::class_t(condition.params);
             required_class = params.value;
         }
+
         break;
 
         case fb::model::enum_value::DSL::promotion:
@@ -1754,12 +1783,14 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
             auto params        = dsl::promotion(condition.params);
             required_promotion = params.value;
         }
+
         break;
 
         default:
         {
             fb::logger::warn("Unknown condition: {}", enum_tostring<fb::model::enum_value::DSL>(condition.header));
         }
+
         break;
         }
     }

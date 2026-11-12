@@ -64,8 +64,10 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                         ch.reset();
                         std::ignore = co_await lua->call(4);
                     }
+
                     co_return;
                 };
+
                 builder.enqueue();
             }
         }

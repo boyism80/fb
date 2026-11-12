@@ -22,6 +22,7 @@ async::task<bool> collection<V>::handle(fb::socket<character>& session, game_req
         else if (request.action == 1 && this->server.meta.group(request.slot) != nullptr)
             ch->listener.on_collection_dialog(*ch, request.slot);
     }
+
     co_return true;
 }
 

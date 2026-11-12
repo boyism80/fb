@@ -56,6 +56,7 @@ bool fb::model::___promotion::name2class(std::string_view              name,
                     auto lock       = std::lock_guard(cache_mutex);
                     cache[name_str] = std::make_pair(k1, v2.step);
                 }
+
                 return true;
             }
         }
@@ -98,6 +99,7 @@ fb::model::mob* fb::model::___mob::name2mob(std::string_view name) const
             return &v;
         }
     }
+
     return nullptr;
 }
 
@@ -152,6 +154,7 @@ std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_v
             {
                 result.push_back(item);
             }
+
             return result;
         }
 
@@ -250,5 +253,6 @@ fb::model::spell* fb::model::___spell::name2spell(std::string_view name) const
             return &v;
         }
     }
+
     return nullptr;
 }

@@ -52,6 +52,7 @@ void gateway_bot_controller::scale(uint32_t target)
             bots.push_back(bot);
         }
     };
+
     this->read_bots(collect);
     this->container.login->read_bots(collect);
     this->container.game->read_bots(collect);
@@ -63,6 +64,7 @@ void gateway_bot_controller::scale(uint32_t target)
     {
         bots.at(i)->close();
     }
+
     this->_spawned = target;
 }
 
@@ -91,6 +93,7 @@ void gateway_bot_controller::relogin(const fb::bot::base_bot& source, const fb::
     this->container.game->read_bots([&online](const auto& entries) {
         online = entries.size();
     });
+
     if (online > this->_target)
         return;
 

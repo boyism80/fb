@@ -88,6 +88,7 @@ void fb::game::server::send(object&                     object,
             x->send(stream, options.encrypt);
         }
     }
+
     break;
 
     case fb::game::scope::GROUP:
@@ -115,6 +116,7 @@ void fb::game::server::send(object&                     object,
             }
         }
     }
+
     break;
 
     case fb::game::scope::MAP:
@@ -138,12 +140,14 @@ void fb::game::server::send(object&                     object,
             obj->send(stream, options.encrypt);
         }
     }
+
     break;
 
     case fb::game::scope::WORLD:
     {
         this->characters.send(stream, options.encrypt);
     }
+
     break;
     }
 }
@@ -179,8 +183,10 @@ uint8_t fb::game::server::brightness_from_time(uint8_t hours, uint8_t minutes)
     auto value = static_cast<int>(std::lround((v - 0.35) / 0.65 * 20.0));
     if (value < 0)
         value = 0;
+
     if (value > 20)
         value = 20;
+
     return static_cast<uint8_t>(value);
 }
 
@@ -227,6 +233,7 @@ async::task<bool> fb::game::server::save(character& ch, bool release)
         save_lock->unlock();
         throw;
     }
+
     save_lock->unlock();
 
     co_await this->threads.switching(weak);
@@ -367,6 +374,7 @@ async::task<void> fb::game::server::save(fb::thread& thread)
                 saving.push_back({characters[i], shared->save_lock});
                 batch.push_back(this->save_payload(*shared));
             }
+
             if (batch.empty())
                 continue;
 
@@ -415,11 +423,14 @@ async::task<void> fb::game::server::save(fb::thread& thread)
                         auto moved = weak.lock();
                         if (moved != nullptr)
                             moved->save_ack();
+
                         co_return;
                     };
+
                     builder.on_error = [](std::exception& e) {
                         fb::logger::fatal("save_ack error: {}", e.what());
                     };
+
                     builder.enqueue();
                 }
             }
@@ -437,17 +448,21 @@ async::task<void> fb::game::server::save()
         builder.func = [this](auto& thread) -> async::task<void> {
             co_await this->save(thread);
         };
+
         tasks.push_back(builder.dispatch());
     }
+
     for (auto& t : tasks)
     {
         co_await t;
     }
 }
+
 const fb::model::datetime& fb::game::server::time() const
 {
     return this->_time;
 }
+
 async::task<void> fb::game::server::update_status()
 {
     try

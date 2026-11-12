@@ -68,6 +68,7 @@ void fb::logger::enqueue(std::string line)
         this->_queue.push_back(std::move(line));
         this->_enqueued++;
     }
+
     this->_queue_cv.notify_one();
 }
 
@@ -94,6 +95,7 @@ void fb::logger::writer_run()
             this->_queue_cv.wait(lock, [this] {
                 return this->_stop.load(std::memory_order_relaxed) || this->_queue.empty() == false;
             });
+
             batch.swap(this->_queue);
             if (this->_stop.load(std::memory_order_relaxed) && batch.empty())
                 break;
@@ -120,6 +122,7 @@ void fb::logger::writer_run()
                     static constexpr unsigned char bom[] = {0xEF, 0xBB, 0xBF};
                     std::fwrite(bom, 1, sizeof(bom), next);
                 }
+
                 fp      = next;
                 current = std::move(path);
                 fb::crash::rotate();
@@ -133,12 +136,15 @@ void fb::logger::writer_run()
                 std::fwrite(line.data(), 1, line.size(), fp);
                 std::fputc('\n', fp);
             }
+
             std::fflush(fp);
         }
+
         {
             auto lock       = std::unique_lock(this->_queue_mutex);
             this->_written += batch.size();
         }
+
         this->_written_cv.notify_all();
     }
 
@@ -183,5 +189,6 @@ fb::logger& fb::logger::get()
         ist = std::unique_ptr<fb::logger>(
             new fb::logger(static_cast<fb::logger::level>(level), std::move(service), std::move(name)));
     });
+
     return *ist;
 }

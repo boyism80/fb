@@ -63,6 +63,7 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
         {
             fb::logger::fatal("ping_timer error for character {}: {}", ch->id, e.what());
         }
+
         co_return;
     });
 

@@ -161,6 +161,7 @@ std::vector<fb::protocol::internal::Quest> quests::to_protocol(uint32_t user) co
                                                        quest->param(),
                                                        quest->completed()});
     }
+
     return result;
 }
 

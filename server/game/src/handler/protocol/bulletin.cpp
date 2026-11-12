@@ -154,6 +154,7 @@ async::task<void> bulletin<V>::handle_article(character*               ch,
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
+
             auto flag = MAIL_BUTTON_ENABLE::UP;
             if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
@@ -270,6 +271,7 @@ async::task<void> bulletin<V>::handle_delete(character*               ch,
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
+
             ptr->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
@@ -285,6 +287,7 @@ async::task<void> bulletin<V>::handle_delete(character*               ch,
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
+
             ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
@@ -376,6 +379,7 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;
+
         ptr->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data             = Json::Value();

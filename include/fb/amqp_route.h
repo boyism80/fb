@@ -18,6 +18,7 @@ inline std::string amqp_scope()
     auto world = fb::config<std::optional<uint32_t>>("world");
     if (!world)
         return "cross";
+
     return std::format("w{}", *world);
 }
 
@@ -53,6 +54,7 @@ inline std::string amqp_key(std::string_view topic, std::string_view scope, uint
 {
     if (topic == "game")
         return std::format("fb.game.{}.{}", scope, host);
+
     return std::format("fb.{}.{}", topic, scope);
 }
 

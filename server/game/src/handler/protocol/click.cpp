@@ -134,6 +134,7 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
         lua->pushobject(static_cast<npc&>(*you));
         fb::lua::run_async(std::move(lua), 2);
     }
+
     break;
     }
 }

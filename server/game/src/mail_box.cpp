@@ -25,6 +25,7 @@ void mail_box::show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE fl
     this->owner.assert_thread();
     this->owner.listener.on_show_mail_box(this->owner, summaries, flag);
 }
+
 void mail_box::show(const mail& mail, MAIL_BUTTON_ENABLE flag)
 {
     this->owner.assert_thread();

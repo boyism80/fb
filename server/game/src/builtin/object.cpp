@@ -70,10 +70,12 @@ int builtin::object::builtin_model(lua_State* L)
         *model_ptr = &obj->model();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(**model_ptr);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -95,10 +97,12 @@ int builtin::object::builtin_oid(lua_State* L)
         *oid = obj->oid();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*oid);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -124,10 +128,12 @@ int builtin::object::builtin_eq(lua_State* L)
         *result = me->oid() == you->oid();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -149,10 +155,12 @@ int builtin::object::builtin_tostring(lua_State* L)
         *name = me->name();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushstring(*name);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -173,9 +181,11 @@ int builtin::object::builtin_destroy(lua_State* L)
         co_await obj->destroy();
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -197,10 +207,12 @@ int builtin::object::builtin_name(lua_State* L)
         *name = obj->name();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushstring(*name);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -218,6 +230,7 @@ int builtin::object::builtin_sound(lua_State* L)
     auto volume = static_cast<uint8_t>(100);
     if (lua->argc() >= 3)
         volume = static_cast<uint8_t>(lua->tointeger(3));
+
     auto weak     = obj->weak_from_this_as<fb::game::object>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -225,9 +238,11 @@ int builtin::object::builtin_sound(lua_State* L)
         obj->sound(sound, volume);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -252,11 +267,13 @@ int builtin::object::builtin_position(lua_State* L)
             *position = obj->position();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(position->x);
             lua->pushinteger(position->y);
             co_return 2;
         };
+
         return builder.run();
     }
     else
@@ -285,9 +302,11 @@ int builtin::object::builtin_position(lua_State* L)
             std::ignore = obj->position(x, y, true);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -312,11 +331,13 @@ int builtin::object::builtin_front_position(lua_State* L)
         *position = obj->front_position(step);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(position->x);
         lua->pushinteger(position->y);
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -341,10 +362,12 @@ int builtin::object::builtin_direction(lua_State* L)
             *direction = obj->direction();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(static_cast<uint8_t>(*direction));
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -357,9 +380,11 @@ int builtin::object::builtin_direction(lua_State* L)
             std::ignore = obj->direction(direction);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -389,10 +414,12 @@ int builtin::object::builtin_move(lua_State* L)
         *success = co_await obj->move(direction);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -417,11 +444,14 @@ int builtin::object::builtin_chat(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -463,15 +493,19 @@ int builtin::object::builtin_buff(lua_State* L)
         auto buff = co_await obj->buffs.push_back(*model, seconds, caster);
         if (buff != nullptr)
             *buff_holder = buff;
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*buff_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*buff_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -510,6 +544,7 @@ int builtin::object::builtin_unbuff(lua_State* L)
         auto buff = lua->touserdata<fb::game::buff>(2);
         if (buff == nullptr)
             return 0;
+
         mode     = unbuff_mode::BY_BUFF;
         spell_id = buff->model().id;
     }
@@ -518,6 +553,7 @@ int builtin::object::builtin_unbuff(lua_State* L)
         auto model = lua->touserdata<fb::model::spell>(2);
         if (model == nullptr)
             return 0;
+
         mode     = unbuff_mode::BY_SPELL;
         spell_id = model->id;
     }
@@ -536,12 +572,15 @@ int builtin::object::builtin_unbuff(lua_State* L)
         {
             *result = co_await obj->buffs.remove(spell_id);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -580,6 +619,7 @@ int builtin::object::builtin_isbuff(lua_State* L)
             auto buff = lua->touserdata<fb::game::buff>(i + 1);
             if (buff == nullptr)
                 continue;
+
             checks.push_back({buff_check::type_t::BUFF, "", buff->model().id});
         }
         else if (lua->is_userdata<fb::model::spell>(i + 1))
@@ -587,6 +627,7 @@ int builtin::object::builtin_isbuff(lua_State* L)
             auto model = lua->touserdata<fb::model::spell>(i + 1);
             if (model == nullptr)
                 continue;
+
             checks.push_back({buff_check::type_t::SPELL, "", model->id});
         }
     }
@@ -613,12 +654,15 @@ int builtin::object::builtin_isbuff(lua_State* L)
                 break;
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*found);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -640,9 +684,11 @@ int builtin::object::builtin_effect(lua_State* L)
         obj->effect(effect);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -668,13 +714,16 @@ int builtin::object::builtin_map(lua_State* L)
             *map_holder = obj->map();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*map_holder == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*map_holder);
+
             co_return 1;
         };
+
         return builder.run();
     }
 
@@ -740,6 +789,7 @@ int builtin::object::builtin_map(lua_State* L)
                 ::lua_pop(*lua_ctx, 1);
             }
         }
+
         ::lua_pop(*lua_ctx, 2);
 
         if (script.empty() || func.empty())
@@ -777,11 +827,13 @@ int builtin::object::builtin_map(lua_State* L)
             ::lua_getfield(*lua_ctx, index, "notify");
             if (lua_ctx->is_nil(-1) == false)
                 opts.notify = lua_ctx->toboolean(-1);
+
             ::lua_pop(*lua_ctx, 1);
 
             ::lua_getfield(*lua_ctx, index, "skip_instance_rule");
             if (lua_ctx->is_nil(-1) == false)
                 opts.skip_instance_rule = lua_ctx->toboolean(-1);
+
             ::lua_pop(*lua_ctx, 1);
         };
 
@@ -869,6 +921,7 @@ int builtin::object::builtin_map(lua_State* L)
                 return 1;
             }
         }
+
         ::lua_pop(*lua, 1);
     }
 
@@ -894,10 +947,12 @@ int builtin::object::builtin_map(lua_State* L)
                 co_await ch->clan.map(map, position, options, fee_clan.value(), fee_money, fee_clan_money);
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success_holder);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -930,10 +985,12 @@ int builtin::object::builtin_mkitem(lua_State* L)
         *item_holder = item;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(*item_holder);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -957,8 +1014,10 @@ int builtin::object::builtin_sight_in(lua_State* L)
         {
             objects->push_back(entry);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < objects->size(); i++)
@@ -966,8 +1025,10 @@ int builtin::object::builtin_sight_in(lua_State* L)
             lua->pushobject((*objects)[i]);
             lua->rawseti(-2, static_cast<int64_t>(i + 1));
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1013,6 +1074,7 @@ int builtin::object::builtin_nears(lua_State* L)
 
             lua->remove(-1);
         }
+
         params.all = lua->toboolean(4, true);
     }
     else
@@ -1046,6 +1108,7 @@ int builtin::object::builtin_nears(lua_State* L)
                         break;
                     }
                 }
+
                 if (!matched)
                     continue;
             }
@@ -1053,6 +1116,7 @@ int builtin::object::builtin_nears(lua_State* L)
             {
                 if (nears[i]->x() < obj->x() - params.width || nears[i]->x() > obj->x() + params.width)
                     continue;
+
                 if (nears[i]->y() < obj->y() - params.height || nears[i]->y() > obj->y() + params.height)
                     continue;
             }
@@ -1062,13 +1126,16 @@ int builtin::object::builtin_nears(lua_State* L)
                 auto index = map->index(nears[i]->position());
                 if (visit.contains(index))
                     continue;
+
                 visit.insert(index);
             }
 
             objects->push_back(nears[i]);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < objects->size(); i++)
@@ -1076,8 +1143,10 @@ int builtin::object::builtin_nears(lua_State* L)
             lua->pushobject((*objects)[i]);
             lua->rawseti(-2, static_cast<int64_t>(i + 1));
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1101,13 +1170,16 @@ int builtin::object::builtin_front(lua_State* L)
         *front = obj->forward(filter, range);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*front == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*front);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1131,10 +1203,12 @@ int builtin::object::builtin_is(lua_State* L)
         *matched = obj->is(type);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*matched);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1156,13 +1230,16 @@ int builtin::object::builtin_thread(lua_State* L)
         *thread_holder = obj->thread();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*thread_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*thread_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1195,12 +1272,15 @@ int builtin::object::builtin_near(lua_State* L)
                 break;
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*found);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1223,8 +1303,10 @@ int builtin::object::builtin_buffs(lua_State* L)
         {
             buffs->push_back(buff);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < buffs->size(); i++)
@@ -1233,8 +1315,10 @@ int builtin::object::builtin_buffs(lua_State* L)
             lua->pushobject((*buffs)[i]);
             lua_settable(L, -3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1260,10 +1344,12 @@ int builtin::object::builtin_hidden(lua_State* L)
         *result = me->hidden(*you);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1289,6 +1375,7 @@ int builtin::object::builtin_script(lua_State* L)
     {
         args->push_back(fb::lua::value::copy(*lua, i));
     }
+
     auto results = std::make_shared<std::vector<fb::lua::value>>();
 
     auto builder  = lua->new_co_builder();
@@ -1302,13 +1389,16 @@ int builtin::object::builtin_script(lua_State* L)
         if (values.has_value())
             *results = std::move(*values);
     };
+
     builder.resume = [=]() -> async::task<int> {
         for (const auto& result : *results)
         {
             result.push(*lua);
         }
+
         co_return static_cast<int>(results->size());
     };
+
     return builder.run();
 }
 
@@ -1330,9 +1420,11 @@ int builtin::object::builtin_appearance(lua_State* L)
         *appearance_holder = obj->appearance();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         (*appearance_holder)->to_lua(lua);
         co_return 1;
     };
+
     return builder.run();
 }

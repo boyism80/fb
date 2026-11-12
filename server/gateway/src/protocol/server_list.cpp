@@ -124,8 +124,10 @@ void server_list::deserialize(fb::stream_reader<big_endian>& reader)
             auto value = entries.read<uint8_t>();
             if (value == 0)
                 break;
+
             text.push_back(static_cast<char>(value));
         }
+
         auto split = text.find(';');
         auto name  = split == std::string::npos ? text : text.substr(0, split);
         auto desc  = split == std::string::npos ? std::string() : text.substr(split + 1);

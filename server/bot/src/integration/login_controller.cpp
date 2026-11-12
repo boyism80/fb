@@ -146,6 +146,7 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
     created->credential(bot.credential());
     if (bot.reconnect_from() != 0)
         created->set_transfer_from_bot_id(bot.reconnect_from());
+
     if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(this->container.game.get()))
         game->move_owner(bot.id, created->id);
 

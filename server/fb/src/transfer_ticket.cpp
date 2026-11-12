@@ -77,6 +77,7 @@ bool transfer_ticket::nonce_cache::insert(uint64_t nonce)
         std::erase_if(this->_nonces, [now](const auto& pair) {
             return now - pair.second > RETENTION;
         });
+
         this->_purged_at = now;
     }
 

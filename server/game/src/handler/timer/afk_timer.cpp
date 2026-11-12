@@ -54,6 +54,7 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
         {
             fb::logger::fatal("afk_timer error for character {}: {}", ch->id, e.what());
         }
+
         co_return;
     });
 

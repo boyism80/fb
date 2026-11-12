@@ -136,12 +136,14 @@ void storage_box::add(const std::vector<entry>& entries)
         log_data["entry_id"]       = static_cast<Json::Int64>(e.id);
         if (e.system_storage_box_id.has_value())
             log_data["system_storage_box_id"] = static_cast<Json::Int64>(e.system_storage_box_id.value());
+
         log_data["title"]      = UTF8(e.title, PLATFORM::WINDOWS);
         auto attachments_array = Json::Value(Json::arrayValue);
         for (const auto& attachment : e.attachments)
         {
             attachments_array.append(attachment.to_json());
         }
+
         log_data["attachments"] = attachments_array;
         log_data["expire_date"] = e.expire_date.has_value()
                                       ? Json::Value(UTF8(e.expire_date.value().to_string(), PLATFORM::WINDOWS))
@@ -226,6 +228,7 @@ async::task<storage_box::receive_result> storage_box::receive_reward(uint32_t en
     {
         if (it != this->_entries.end())
             it->second.received = false;
+
         co_return receive_result::INVENTORY_FULL;
     }
 
@@ -242,6 +245,7 @@ async::task<storage_box::receive_result> storage_box::receive_reward(uint32_t en
     {
         attachments_array.append(attachment.to_json());
     }
+
     log_data["attachments"] = attachments_array;
     this->_owner.server.log.write("storage_box_attachment_receive", log_data);
     co_return receive_result::RECEIVED;

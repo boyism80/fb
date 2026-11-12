@@ -27,6 +27,7 @@ bot_container::bot_container(boost::asio::io_context& context, uint32_t thread_c
             thread.data(std::make_unique<bot_thread_params>());
             co_return;
         };
+
         builder.enqueue();
     }
 }
@@ -52,8 +53,10 @@ void bot_container::initialize()
     // Timer setup moved to individual bot_controllers
     if (this->gateway)
         this->gateway->initialize();
+
     if (this->login)
         this->login->initialize();
+
     if (this->game)
         this->game->initialize();
 }

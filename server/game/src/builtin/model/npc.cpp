@@ -21,6 +21,7 @@ int builtin::model::npc::builtin_sell(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto npc = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
@@ -32,6 +33,7 @@ int builtin::model::npc::builtin_sell(lua_State* L)
         lua->pushinteger(npc->sell[i]);
         lua_settable(L, -3);
     }
+
     return 1;
 }
 
@@ -40,6 +42,7 @@ int builtin::model::npc::builtin_sell_price(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto npc = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
@@ -70,6 +73,7 @@ int builtin::model::npc::builtin_buy_price(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto npc = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
@@ -100,6 +104,7 @@ int builtin::model::npc::builtin_buy(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto npc = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;

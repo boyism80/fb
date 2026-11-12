@@ -145,6 +145,7 @@ protected:
         auto it          = this->_decrypt.find(opcode);
         if (it == this->_decrypt.end())
             return true;
+
         return it->second;
     }
 
@@ -353,6 +354,7 @@ public:
 
                         co_await handler(*shared, *protocol.get());
                     };
+
                     builder.enqueue();
                 }
 
@@ -377,6 +379,7 @@ public:
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 }
+
                 stream.clear();
                 break;
             }
@@ -449,6 +452,7 @@ public:
                      protocol->deserialize(reader, version);
                  else
                      protocol->deserialize(reader);
+
                  return protocol;
              }});
 
@@ -626,6 +630,7 @@ bot<BotType>::first_of(const std::vector<uint8_t>&                              
                 fb::timer::repeat_type::once);
             co_return;
         };
+
         builder.enqueue();
     }
 
@@ -684,6 +689,7 @@ bot<BotType>::first_of(const std::vector<uint8_t>&                              
             stats.time(name, elapsed, false);
         else
             stats.add(name, elapsed, false);
+
         co_return std::pair{*chosen, response};
     }
     catch (...)
@@ -696,6 +702,7 @@ bot<BotType>::first_of(const std::vector<uint8_t>&                              
         stats.time(name, elapsed, true);
     else
         stats.add(name, elapsed, true);
+
     std::rethrow_exception(error);
 }
 
@@ -732,6 +739,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                 fb::timer::repeat_type::once);
             co_return;
         };
+
         builder.enqueue();
     }
 
@@ -755,6 +763,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                             {
                                 response = bot_controller<BotType>::clone_response(response_opcode, opcode, version);
                             }
+
                             context->complete_success(std::move(response));
                         },
                     .aborted =
@@ -794,6 +803,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
             stats.time(name, elapsed, false);
         else
             stats.add(name, elapsed, false);
+
         co_return response;
     }
     catch (...)
@@ -806,6 +816,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
         stats.time(name, elapsed, true);
     else
         stats.add(name, elapsed, true);
+
     std::rethrow_exception(error);
 }
 

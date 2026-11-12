@@ -23,6 +23,7 @@ int builtin::item::builtin_model(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
@@ -35,10 +36,12 @@ int builtin::item::builtin_model(lua_State* L)
         *model_ptr = &item->model();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(**model_ptr);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -47,6 +50,7 @@ int builtin::item::builtin_count(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
@@ -59,10 +63,12 @@ int builtin::item::builtin_count(lua_State* L)
         *count = item->count();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*count);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -71,6 +77,7 @@ int builtin::item::builtin_uid(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
@@ -83,13 +90,16 @@ int builtin::item::builtin_uid(lua_State* L)
         *uid = item->uid();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*uid == 0)
             lua->pushnil();
         else
             lua->pushinteger(*uid);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -98,6 +108,7 @@ int builtin::item::builtin_durability(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
@@ -114,9 +125,11 @@ int builtin::item::builtin_durability(lua_State* L)
             item->durability(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else
@@ -127,13 +140,16 @@ int builtin::item::builtin_durability(lua_State* L)
             *durability = item->durability();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (durability->has_value())
                 lua->pushinteger(durability->value());
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
 }

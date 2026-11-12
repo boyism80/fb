@@ -31,16 +31,19 @@ void game_bot_controller::initialize()
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::npc*>(clone);
     };
+
     table::mob->hook.build = [](const Json::Value& json) -> fb::model::mob* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::mob*>(clone);
     };
+
     table::item->hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + game_bot::sight::ITEM_LOOK;
         return game_bot_controller::build_item(clone);
     };
+
     async::awaitable_get(fb::model::loader(this->container).run());
     fb::bot::atlas::get();
 
@@ -71,6 +74,7 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
             fb::logger::info("load bot: bot={} behavior not implemented", typed_bot->name());
         }
     }
+
     co_return;
 }
 
@@ -111,9 +115,11 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
     if (bot.inited())
         this->_online--;
+
     if (bot.credential().has_value())
         std::static_pointer_cast<gateway_bot_controller>(this->container.gateway)
             ->relogin(bot, bot.credential().value());
+
     co_await super::on_bot_disconnected(bot);
     // Bot is automatically removed from bot_controller's thread-safe collection
     co_return;

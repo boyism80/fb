@@ -38,6 +38,7 @@ async::task<group::container::entity_ptr> group::container::fetch(uint64_t id)
         {
             members.push_back(member.name);
         }
+
         co_return this->_server.make<fb::game::group>(id, resp.group.master, members, resp.group.revision);
     }
 
@@ -71,6 +72,7 @@ async::task<void> group::container::reload(uint64_t id)
     {
         if (failed == false)
             co_await this->on_destroyed(std::string{}, id, std::numeric_limits<uint64_t>::max());
+
         co_return;
     }
 
@@ -80,6 +82,7 @@ async::task<void> group::container::reload(uint64_t id)
         auto guard = co_await this->enter_write(id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         if (guard.value()->revision() >= fresh->revision())
             co_return;
 

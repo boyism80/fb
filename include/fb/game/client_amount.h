@@ -19,8 +19,10 @@ inline uint32_t encode_client_amount(uint64_t value)
     auto scaled = (value + CLIENT_AMOUNT_UNIT - 1) / CLIENT_AMOUNT_UNIT;
     if (scaled == 0)
         return 0;
+
     if (scaled > max32)
         return std::numeric_limits<uint32_t>::max();
+
     return static_cast<uint32_t>(scaled);
 }
 
@@ -45,10 +47,13 @@ inline std::pair<uint32_t, uint32_t> encode_client_pool(uint64_t current, uint64
     auto encoded_cur = encode_client_amount(current);
     if (encoded_max == 0)
         encoded_max = 1;
+
     if (encoded_cur == 0)
         encoded_cur = 1;
+
     if (encoded_cur > encoded_max)
         encoded_cur = encoded_max;
+
     return {encoded_cur, encoded_max};
 }
 

@@ -113,6 +113,7 @@ private:
                 auto func = handle_func_type<T>([fn_holder](fb::thread& thread) {
                     return (*fn_holder)(thread);
                 });
+
                 if constexpr (std::is_same_v<T, void>)
                 {
                     co_await this->dispatch(std::move(func), context);
@@ -181,6 +182,7 @@ public:
         auto deleter = [](void* ptr) {
             delete static_cast<T*>(ptr);
         };
+
         auto* raw   = value.release();
         this->_data = std::unique_ptr<void, std::function<void(void*)>>(raw, deleter);
     }
@@ -190,6 +192,7 @@ public:
         this->assert_exec();
         if (this->_data == nullptr)
             return nullptr;
+
         return static_cast<ReturnType*>(this->_data.get());
     }
 

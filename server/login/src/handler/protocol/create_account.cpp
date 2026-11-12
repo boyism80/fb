@@ -59,6 +59,7 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
             {
                 fb::logger::warn("failed to release name reservation {} ({})", previous_uid.value(), e.what());
             }
+
             co_await this->server.threads.switching(weak);
         }
 

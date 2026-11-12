@@ -35,6 +35,7 @@ void thread_params::load_rezens(const std::shared_ptr<map>& map, const rezen::ta
     {
         loaded.push_back(std::make_shared<rezen>(this->_server, table, map->model().id, i, map));
     }
+
     this->rezens[map->id] = std::move(loaded);
 }
 
@@ -45,5 +46,6 @@ void thread_params::rebuild_map_view()
     {
         view->push_back(map);
     }
+
     this->map_view = view;
 }

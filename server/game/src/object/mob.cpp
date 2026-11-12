@@ -72,6 +72,7 @@ void rezen::decrease()
 
     if (!this->_respawn_time.has_value())
         this->_respawn_time = now + this->interval();
+
     this->_count = std::max(0, this->_count - 1);
 }
 
@@ -198,6 +199,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     {
         oids.push_back(mob->oid());
     }
+
     map->bulk_update(oids);
 
     this->_respawn_time.reset();
@@ -293,8 +295,10 @@ void mob::detach_owner()
         auto mob   = weak_mob.lock();
         if (owner != nullptr && mob != nullptr)
             owner->detach_spawned_mob(*mob);
+
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -483,10 +487,13 @@ async::task<bool> mob::move_step(const fb::model::point16_t& position)
     {
         if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
             co_return true;
+
         if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
             co_return true;
+
         if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
             co_return true;
+
         if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
             co_return true;
     }
@@ -494,10 +501,13 @@ async::task<bool> mob::move_step(const fb::model::point16_t& position)
     {
         if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
             co_return true;
+
         if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
             co_return true;
+
         if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
             co_return true;
+
         if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
             co_return true;
     }
@@ -617,6 +627,7 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
                 }
             }
         }
+
         break;
         }
     }
@@ -631,6 +642,7 @@ async::task<void> mob::drop_held_items(std::vector<uint32_t>& oids)
             fb::logger::warn("mob {} lost {} held items: no map to drop them on",
                              this->model().id,
                              this->_items.size());
+
         this->_items.clear();
         co_return;
     }
@@ -641,6 +653,7 @@ async::task<void> mob::drop_held_items(std::vector<uint32_t>& oids)
         std::ignore = co_await item->map(map, position, {.notify = false});
         oids.push_back(item->oid());
     }
+
     this->_items.clear();
 }
 
@@ -898,6 +911,7 @@ mob::parts_vector_t mob::parts() const
         if (part != nullptr)
             result.push_back(part);
     }
+
     return result;
 }
 
@@ -992,6 +1006,7 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
             settle.dead_mobs.push_back(body);
         }
     }
+
     // Assembly body ignores direct damage; only parts forward damage.
     else if (this->has_parts() == false)
     {

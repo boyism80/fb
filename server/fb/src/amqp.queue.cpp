@@ -131,9 +131,11 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
         builder.func    = [message, fn](auto& thread) -> async::task<void> {
             co_await fn(message.data() + sizeof(uint32_t) * 2);
         };
+
         builder.on_error = [](std::exception& e) {
             fb::logger::fatal("AMQP message processing error: {}", e.what());
         };
+
         builder.enqueue();
     }
 }

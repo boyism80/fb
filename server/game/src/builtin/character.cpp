@@ -219,10 +219,12 @@ int builtin::character::builtin_uid(lua_State* L)
         *uid = ch->id;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*uid);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -247,10 +249,12 @@ int builtin::character::builtin_hair(lua_State* L)
             *hair = ch->hair();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*hair);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -269,10 +273,12 @@ int builtin::character::builtin_hair(lua_State* L)
             ch->hair(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -298,10 +304,12 @@ int builtin::character::builtin_face(lua_State* L)
             *face = ch->face();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*face);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -320,10 +328,12 @@ int builtin::character::builtin_face(lua_State* L)
             ch->face(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -349,10 +359,12 @@ int builtin::character::builtin_ridable_id(lua_State* L)
             *ridable_id = ch->ridable_id();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*ridable_id);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -371,10 +383,12 @@ int builtin::character::builtin_ridable_id(lua_State* L)
             ch->ridable_id(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -397,10 +411,12 @@ int builtin::character::builtin_client_version(lua_State* L)
         *version = static_cast<uint16_t>(ch->client_version);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*version);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -422,10 +438,12 @@ int builtin::character::builtin_ui_mode(lua_State* L)
         *ui_mode = static_cast<uint8_t>(ch->ui_mode);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*ui_mode);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -450,10 +468,12 @@ int builtin::character::builtin_color(lua_State* L)
             *color = ch->color();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*color);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -472,10 +492,12 @@ int builtin::character::builtin_color(lua_State* L)
             ch->color(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -501,10 +523,12 @@ int builtin::character::builtin_gender(lua_State* L)
             *gender = ch->gender();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*gender);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -517,9 +541,11 @@ int builtin::character::builtin_gender(lua_State* L)
             ch->gender(gender);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -545,10 +571,12 @@ int builtin::character::builtin_money(lua_State* L)
             *money = ch->money();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*money);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -567,10 +595,12 @@ int builtin::character::builtin_money(lua_State* L)
             ch->money(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -593,10 +623,12 @@ int builtin::character::builtin_money_free_space(lua_State* L)
         *free_space = ch->money_free_space();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*free_space);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -636,10 +668,12 @@ int builtin::character::builtin_exp(lua_State* L)
             *exp = ch->exp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*exp);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -658,10 +692,12 @@ int builtin::character::builtin_exp(lua_State* L)
             ch->exp(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -683,11 +719,14 @@ int builtin::character::builtin_add_exp(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         if (value > 0)
             ch->add_exp(value, false, true);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -717,15 +756,19 @@ int builtin::character::builtin_item(lua_State* L)
                 *found = ch->items.find(*model);
             else
                 *found = ch->items.find(name);
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*found == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*found);
+
             co_return 1;
         };
+
         return builder.run();
     }
 
@@ -759,6 +802,7 @@ int builtin::character::builtin_item(lua_State* L)
                 else
                 {
                 }
+
                 lua->pop(1);
             }
 
@@ -773,6 +817,7 @@ int builtin::character::builtin_item(lua_State* L)
                 {
                 }
             }
+
             lua->pop(1);
 
             if (item != nullptr)
@@ -789,11 +834,13 @@ int builtin::character::builtin_item(lua_State* L)
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("pursuit");
         if (lua_rawget(L, 5) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
     }
 
@@ -809,8 +856,10 @@ int builtin::character::builtin_item(lua_State* L)
                 label = lua->tostring(-1);
             else if (lua->is_userdata<fb::model::item>(-1))
                 label = lua->touserdata<fb::model::item>(-1)->name;
+
             lua_pop(L, 1);
         }
+
         lua_pop(L, 1);
         choices.push_back(std::move(label));
     }
@@ -826,14 +875,17 @@ int builtin::character::builtin_item(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::ITEM, choices);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -852,6 +904,7 @@ int builtin::character::builtin_item_by_uid(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(item);
+
     return 1;
 }
 
@@ -884,8 +937,10 @@ int builtin::character::builtin_items(lua_State* L)
 
             buffer->push_back({i, ch->items[i]->shared_from_this_as<fb::game::item>()});
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (auto& [index, item] : *buffer)
@@ -894,8 +949,10 @@ int builtin::character::builtin_items(lua_State* L)
             lua->pushobject(item);
             lua_settable(L, -3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -926,6 +983,7 @@ int builtin::character::builtin_has_items(lua_State* L)
             lua->pushboolean(false);
             return 1;
         }
+
         if (!name.empty())
             required.push_back({name, count.value()});
     }
@@ -944,8 +1002,10 @@ int builtin::character::builtin_has_items(lua_State* L)
                 else if (!name.empty() && count.value() > 0)
                     required.push_back({name, count.value()});
             }
+
             lua->pop(1);
         }
+
         if (invalid)
         {
             lua->pushboolean(false);
@@ -968,8 +1028,10 @@ int builtin::character::builtin_has_items(lua_State* L)
             lua->pushboolean(false);
             return 1;
         }
+
         required_models.push_back({model, min_count});
     }
+
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto result   = std::make_shared<bool>();
     auto builder  = lua->new_co_builder();
@@ -978,10 +1040,12 @@ int builtin::character::builtin_has_items(lua_State* L)
         *result = ch->items.has(required_models);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1007,8 +1071,10 @@ int builtin::character::builtin_equipments(lua_State* L)
 
             buffer->push_back({parts, equipment});
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (auto& [parts, equipment] : *buffer)
@@ -1017,8 +1083,10 @@ int builtin::character::builtin_equipments(lua_State* L)
             lua->pushobject(equipment);
             lua_settable(L, -3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1050,15 +1118,19 @@ int builtin::character::builtin_equipment_off(lua_State* L)
         {
             *item = ch->items.equipment_off(parts);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*item != nullptr)
             lua->pushobject(*item);
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1084,16 +1156,20 @@ int builtin::character::builtin_item_drop(lua_State* L)
         auto count = uint16_t{1};
         if (drop_all && item != nullptr)
             count = item->count();
+
         *dropped = co_await ch->items.drop(index - 1, count);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*dropped != nullptr)
             lua->pushobject(*dropped);
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1142,8 +1218,10 @@ int builtin::character::builtin_mkitem(lua_State* L)
                     id_to_count[model->id] += count.value();
                 }
             }
+
             lua->pop(1);
         }
+
         if (invalid)
         {
             lua->pushnil();
@@ -1159,18 +1237,21 @@ int builtin::character::builtin_mkitem(lua_State* L)
             lua->pushnil();
             return 1;
         }
+
         auto count = requested.value();
         if (name.empty())
         {
             lua->pushnil();
             return 1;
         }
+
         auto model = table::item->name2item(name);
         if (model == nullptr)
         {
             lua->pushnil();
             return 1;
         }
+
         id_to_count[model->id] = count;
     }
 
@@ -1205,19 +1286,23 @@ int builtin::character::builtin_mkitem(lua_State* L)
             if (item != nullptr)
                 items.push_back(std::move(item));
         }
+
         auto slots = co_await ch->items.add(items, true);
         for (auto slot : slots)
         {
             result_items->push_back(ch->items[slot]);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*failed)
         {
             lua->pushnil();
             co_return 1;
         }
+
         if (single_item)
         {
             if (result_items->empty())
@@ -1234,8 +1319,10 @@ int builtin::character::builtin_mkitem(lua_State* L)
                 lua->rawseti(-2, static_cast<int>(i + 1));
             }
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1286,6 +1373,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
                     to_remove[model->id] += count.value();
                 }
             }
+
             lua->pop(1);
         }
     }
@@ -1355,10 +1443,12 @@ int builtin::character::builtin_rmitem(lua_State* L)
             { }
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -1429,8 +1519,10 @@ int builtin::character::builtin_rename_weapon(lua_State* L)
             ch->money_reduce(price.value());
             std::static_pointer_cast<fb::game::weapon>(weapon)->custom_name(name);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*owned == false)
         {
@@ -1448,6 +1540,7 @@ int builtin::character::builtin_rename_weapon(lua_State* L)
             co_return 1;
         }
     };
+
     return builder.run();
 }
 
@@ -1467,9 +1560,11 @@ int builtin::character::builtin_drop_escrow_items(lua_State* L)
         ch->items.drop_escrow_items();
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -1504,6 +1599,7 @@ int builtin::character::builtin_hold_lock(lua_State* L)
                             locked->set_value(false);
                             return;
                         }
+
                         group->add_member("__lock__");
                         locked->set_value(true);
                         std::this_thread::sleep_for(ms);
@@ -1529,6 +1625,7 @@ int builtin::character::builtin_hold_lock(lua_State* L)
                             locked->set_value(false);
                             return;
                         }
+
                         auto money = clan->money();
                         clan->join(fb::game::clan_member("__lock__", CLAN_ROLE::MATE));
                         clan->money(777);
@@ -1545,12 +1642,15 @@ int builtin::character::builtin_hold_lock(lua_State* L)
             }).detach();
             *held = ready.get();
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*held);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1577,6 +1677,7 @@ int builtin::character::exchange(lua_State* L,
         lua->pushboolean(false);
         return 1;
     }
+
     if (reward_index != 0 && lua->is_nil(reward_index) == false && lua->is_table(reward_index) == false)
     {
         lua->pushboolean(false);
@@ -1620,9 +1721,11 @@ int builtin::character::exchange(lua_State* L,
                         items[model->id] += count.value();
                     }
                 }
+
                 lua->pop(1);
             }
         }
+
         lua->pop(1);
     };
 
@@ -1634,12 +1737,14 @@ int builtin::character::exchange(lua_State* L,
         lua->rawget(cost_index);
         if (lua->is_number(-1))
             cost_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
+
         lua->pop(1);
 
         lua->pushstring("exp");
         lua->rawget(cost_index);
         if (lua->is_number(-1))
             cost_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
+
         lua->pop(1);
     }
 
@@ -1651,12 +1756,14 @@ int builtin::character::exchange(lua_State* L,
         lua->rawget(reward_index);
         if (lua->is_number(-1))
             reward_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
+
         lua->pop(1);
 
         lua->pushstring("exp");
         lua->rawget(reward_index);
         if (lua->is_number(-1))
             reward_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
+
         lua->pop(1);
 
         lua->pushstring("spell");
@@ -1676,9 +1783,11 @@ int builtin::character::exchange(lua_State* L,
                 {
                     reward_spells.push_back(model);
                 }
+
                 lua->pop(1);
             }
         }
+
         lua->pop(1);
     }
 
@@ -1697,6 +1806,7 @@ int builtin::character::exchange(lua_State* L,
                  std::ranges::any_of(reward_spells, [&](auto model) {
                      return ch->spells.find(*model) != nullptr;
                  }))
+
         {
             *result = exchange_result::lack_capacity;
         }
@@ -1713,6 +1823,7 @@ int builtin::character::exchange(lua_State* L,
             {
                 if (cost_exp > 0)
                     ch->reduce_exp(cost_exp);
+
                 if (reward_exp > 0)
                     ch->add_exp(reward_exp, false, true);
             }
@@ -1724,15 +1835,19 @@ int builtin::character::exchange(lua_State* L,
                 }
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (boolean_result)
             lua->pushboolean(*result == exchange_result::ok);
         else
             lua->pushinteger(static_cast<int>(*result));
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1757,10 +1872,12 @@ int builtin::character::builtin_state(lua_State* L)
             *state = ch->state();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*state);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -1773,9 +1890,11 @@ int builtin::character::builtin_state(lua_State* L)
             ch->state(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1801,12 +1920,14 @@ int builtin::character::builtin_mimic(lua_State* L)
             *appearance = ch->mimicry();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (!appearance->has_value())
             {
                 lua->pushnil();
                 co_return 1;
             }
+
             auto const& p = appearance->value();
             lua->new_table();
             if (p.disguise.has_value())
@@ -1815,6 +1936,7 @@ int builtin::character::builtin_mimic(lua_State* L)
                 lua->pushinteger(static_cast<lua_Integer>(p.disguise.value()));
                 lua->settable(-3);
             }
+
             lua->pushstring("hair");
             lua->pushinteger(static_cast<lua_Integer>(p.hair));
             lua->settable(-3);
@@ -1824,6 +1946,7 @@ int builtin::character::builtin_mimic(lua_State* L)
                 lua->pushinteger(static_cast<lua_Integer>(p.hair_color.value()));
                 lua->settable(-3);
             }
+
             lua->pushstring("gender");
             lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.gender)));
             lua->settable(-3);
@@ -1833,44 +1956,52 @@ int builtin::character::builtin_mimic(lua_State* L)
                 lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(p.state.value())));
                 lua->settable(-3);
             }
+
             if (p.weapon.has_value())
             {
                 lua->pushstring("weapon");
                 lua->pushinteger(static_cast<lua_Integer>(p.weapon.value()));
                 lua->settable(-3);
             }
+
             if (p.weapon_color.has_value())
             {
                 lua->pushstring("weapon_color");
                 lua->pushinteger(static_cast<lua_Integer>(p.weapon_color.value()));
                 lua->settable(-3);
             }
+
             if (p.armor.has_value())
             {
                 lua->pushstring("armor");
                 lua->pushinteger(static_cast<lua_Integer>(p.armor.value()));
                 lua->settable(-3);
             }
+
             if (p.armor_color.has_value())
             {
                 lua->pushstring("armor_color");
                 lua->pushinteger(static_cast<lua_Integer>(p.armor_color.value()));
                 lua->settable(-3);
             }
+
             if (p.shield.has_value())
             {
                 lua->pushstring("shield");
                 lua->pushinteger(static_cast<lua_Integer>(p.shield.value()));
                 lua->settable(-3);
             }
+
             if (p.shield_color.has_value())
             {
                 lua->pushstring("shield_color");
                 lua->pushinteger(static_cast<lua_Integer>(p.shield_color.value()));
                 lua->settable(-3);
             }
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (argc >= 2)
@@ -1884,11 +2015,14 @@ int builtin::character::builtin_mimic(lua_State* L)
                 ch->mimicry(std::nullopt);
                 co_return;
             };
+
             builder.resume = []() -> async::task<int> {
                 co_return 0;
             };
+
             return builder.run();
         }
+
         if (!lua->is_table(2))
             return 0;
 
@@ -1897,24 +2031,28 @@ int builtin::character::builtin_mimic(lua_State* L)
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.disguise = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("hair");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.hair = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("hair_color");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.hair_color = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("gender");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.gender = static_cast<GENDER>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("state");
@@ -1923,42 +2061,49 @@ int builtin::character::builtin_mimic(lua_State* L)
             appearance.state = static_cast<STATE>(lua->tointeger(-1));
         else
             appearance.state = std::nullopt;
+
         lua->pop(1);
 
         lua->pushstring("weapon");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.weapon = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("weapon_color");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.weapon_color = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("armor");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.armor = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("armor_color");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.armor_color = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("shield");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.shield = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         lua->pushstring("shield_color");
         lua->rawget(2);
         if (lua->is_number(-1))
             appearance.shield_color = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
 
         auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -1968,11 +2113,14 @@ int builtin::character::builtin_mimic(lua_State* L)
             ch->mimicry(std::move(appearance));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
+
     return 0;
 }
 
@@ -1997,10 +2145,12 @@ int builtin::character::builtin_class(lua_State* L)
             *cls = ch->cls();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*cls);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2013,9 +2163,11 @@ int builtin::character::builtin_class(lua_State* L)
             ch->cls(static_cast<CLASS>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -2041,10 +2193,12 @@ int builtin::character::builtin_promotion(lua_State* L)
             *promotion = ch->promotion();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*promotion);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2057,9 +2211,11 @@ int builtin::character::builtin_promotion(lua_State* L)
             ch->promotion(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -2085,10 +2241,12 @@ int builtin::character::builtin_level(lua_State* L)
             *level = ch->level();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*level);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2107,10 +2265,12 @@ int builtin::character::builtin_level(lua_State* L)
             ch->level(level.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -2138,6 +2298,7 @@ int builtin::character::builtin_assert(lua_State* L)
             lua->rawgeti(2, i + 1);
             if (lua->is_number(-1))
                 values.push_back((STATE)lua->tointeger(-1));
+
             lua->pop(1);
         }
     }
@@ -2163,16 +2324,20 @@ int builtin::character::builtin_assert(lua_State* L)
         {
             *error = e.what();
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
             lua->pushstring(error->value().c_str());
             co_return 1;
         }
+
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -2197,10 +2362,12 @@ int builtin::character::builtin_role(lua_State* L)
             *role = ch->role();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*role);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2214,6 +2381,7 @@ int builtin::character::builtin_role(lua_State* L)
             else
                 actor = lua->tostring(3);
         }
+
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -2229,6 +2397,7 @@ int builtin::character::builtin_role(lua_State* L)
                     fb::protocol::internal::request::SetOption{ch->world(),
                                                                ch->id,
                                                                {{static_cast<uint8_t>(OPTION::SUPER_HIDE), false}}});
+
             if (actor.empty() || old == value)
                 co_return;
 
@@ -2243,9 +2412,11 @@ int builtin::character::builtin_role(lua_State* L)
                                                                                       detail});
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -2275,12 +2446,15 @@ int builtin::character::builtin_log_command(lua_State* L)
         auto map                   = ch->map();
         if (map != nullptr)
             log_data["map"] = map->model().id;
+
         server.log.write(allowed ? "command_execute" : "command_denied", log_data);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -2306,16 +2480,19 @@ int builtin::character::builtin_shout(lua_State* L)
         lua->pushstring("respect_roar");
         if (lua_rawget(L, 6) == LUA_TBOOLEAN)
             respect_roar = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("filter");
         if (lua_rawget(L, 6) == LUA_TBOOLEAN)
             filter = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("log");
         if (lua_rawget(L, 6) == LUA_TSTRING)
             chat_type = lua_tostring(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -2333,11 +2510,14 @@ int builtin::character::builtin_shout(lua_State* L)
             server.characters.broadcast(broadcast, type, respect_roar);
         else
             co_await server.characters.broadcast(broadcast, type, broad_type, respect_roar);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -2359,10 +2539,13 @@ builtin::character::repair_entries builtin::character::read_repair_entries(lua_S
             auto item = lua->touserdata<fb::game::item>(-2);
             if (item != nullptr && lua_isnumber(L, -1))
                 entries.emplace_back(item->weak_from_this_as<fb::game::item>(), lua_tonumber(L, -1));
+
             lua_pop(L, 2);
         }
+
         lua_pop(L, 1);
     }
+
     return entries;
 }
 
@@ -2382,6 +2565,7 @@ std::optional<uint64_t> builtin::character::repair_cost(fb::game::character&    
         auto worn = std::ranges::any_of(equipments, [&](const auto& pair) {
             return pair.second == equipment;
         });
+
         if (worn == false && ch.items.index(equipment) == 0xFF)
             continue;
 
@@ -2396,6 +2580,7 @@ std::optional<uint64_t> builtin::character::repair_cost(fb::game::character&    
 
     if (targets.empty())
         return std::nullopt;
+
     return std::max(static_cast<uint64_t>(std::floor(cost)), minimum);
 }
 
@@ -2420,13 +2605,16 @@ int builtin::character::builtin_repair_cost(lua_State* L)
         *cost        = repair_cost(*ch, entries, targets, minimum);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (cost->has_value())
             lua->pushinteger(static_cast<lua_Integer>(cost->value()));
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2470,15 +2658,19 @@ int builtin::character::builtin_repair(lua_State* L)
             {
                 equipment->durability(equipment->model().durability);
             }
+
             *result = {"done", price};
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushstring(result->first);
         lua->pushinteger(static_cast<lua_Integer>(result->second));
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -2500,10 +2692,12 @@ int builtin::character::builtin_revive(lua_State* L)
         *revived = ch->revive();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*revived);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2525,10 +2719,12 @@ int builtin::character::builtin_deposited_money(lua_State* L)
         *deposited = ch->items.deposited();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*deposited);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2551,6 +2747,7 @@ int builtin::character::transfer_money(lua_State* L, bool deposit)
         *result = deposit ? ch->items.deposit(value) : ch->items.withdraw(value);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         switch (*result)
         {
@@ -2570,8 +2767,10 @@ int builtin::character::transfer_money(lua_State* L, bool deposit)
             lua->pushstring("money_full");
             break;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2610,8 +2809,10 @@ int builtin::character::builtin_stored_item(lua_State* L)
             {
                 buffer->push_back(stored_item);
             }
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->new_table();
             for (int i = 0; i < buffer->size(); i++)
@@ -2620,8 +2821,10 @@ int builtin::character::builtin_stored_item(lua_State* L)
                 lua->pushobject(buffer->at(i));
                 lua_settable(L, -3);
             }
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_number(2))
@@ -2637,15 +2840,19 @@ int builtin::character::builtin_stored_item(lua_State* L)
             const auto& stored_items = ch->items.stored();
             if (index <= stored_items.size() - 1)
                 *stored_item = stored_items.at(index);
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*stored_item == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*stored_item);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_string(2))
@@ -2664,17 +2871,22 @@ int builtin::character::builtin_stored_item(lua_State* L)
                                       [&name](const std::shared_ptr<fb::game::item>& item) {
                                           return item->model().name == name;
                                       });
+
             if (found != stored_items.cend())
                 *stored_item = *found;
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*stored_item == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*stored_item);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_userdata<fb::game::item>(2))
@@ -2694,17 +2906,22 @@ int builtin::character::builtin_stored_item(lua_State* L)
                                       [&item_model](const std::shared_ptr<fb::game::item>& stored) {
                                           return stored->model() == item_model;
                                       });
+
             if (found != stored_items.cend())
                 *stored_item = *found;
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*stored_item == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*stored_item);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_userdata<fb::model::item>(2))
@@ -2723,17 +2940,22 @@ int builtin::character::builtin_stored_item(lua_State* L)
                                       [model](const std::shared_ptr<fb::game::item>& stored) {
                                           return stored->model() == *model;
                                       });
+
             if (found != stored_items.cend())
                 *stored_item = *found;
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*stored_item == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*stored_item);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -2772,8 +2994,10 @@ int builtin::character::builtin_store_item(lua_State* L)
         auto index = ch->items.index(item);
         if (index != 0xFF)
             *result = co_await ch->items.store(index, count);
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         switch (*result)
         {
@@ -2790,8 +3014,10 @@ int builtin::character::builtin_store_item(lua_State* L)
             lua->pushstring("not_storable");
             break;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2831,15 +3057,19 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
                 break;
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*returned == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*returned);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -2874,13 +3104,16 @@ int builtin::character::builtin_group(lua_State* L)
                     *group_holder = guard->value();
             }
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*group_holder == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*group_holder);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_function(2))
@@ -2906,8 +3139,10 @@ int builtin::character::builtin_group(lua_State* L)
                 if (guard.has_value())
                     *group_holder = guard->value();
             }
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             static auto static_func = [](fb::lua::context* ctx) {
                 lua_call(*ctx, 2, LUA_MULTRET);
@@ -2927,8 +3162,10 @@ int builtin::character::builtin_group(lua_State* L)
                 lua->pushnil();
             else
                 lua->pushobject(*group_holder);
+
             co_return static_func(lua);
         };
+
         return builder.run();
     }
     else
@@ -2974,13 +3211,16 @@ int builtin::character::builtin_create_group(lua_State* L)
             shared->message(e.what(), MESSAGE_TYPE::STATE);
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*dead)
             lua->pushnil();
         else
             lua->pushboolean(*success);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3015,13 +3255,16 @@ int builtin::character::builtin_clan(lua_State* L)
                     *clan_holder = guard->value();
             }
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*clan_holder == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*clan_holder);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else if (lua->is_function(2))
@@ -3046,6 +3289,7 @@ int builtin::character::builtin_clan(lua_State* L)
                     *clan_holder = guard->value();
             }
         };
+
         builder.resume = [=]() -> async::task<int> {
             static auto static_func = [](fb::lua::context* ctx) {
                 lua_call(*ctx, 2, LUA_MULTRET);
@@ -3065,8 +3309,10 @@ int builtin::character::builtin_clan(lua_State* L)
                 lua->pushnil();
             else
                 lua->pushobject(*clan_holder);
+
             co_return static_func(lua);
         };
+
         return builder.run();
     }
     else
@@ -3110,6 +3356,7 @@ int builtin::character::builtin_create_clan(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*dead)
             lua->pushnil();
@@ -3117,8 +3364,10 @@ int builtin::character::builtin_create_clan(lua_State* L)
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3156,6 +3405,7 @@ int builtin::character::builtin_destroy_clan(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*dead)
             lua->pushnil();
@@ -3163,8 +3413,10 @@ int builtin::character::builtin_destroy_clan(lua_State* L)
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3187,8 +3439,10 @@ int builtin::character::builtin_achievements(lua_State* L)
         {
             buffer->push_back(achievement);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         auto i = 0;
@@ -3199,8 +3453,10 @@ int builtin::character::builtin_achievements(lua_State* L)
             lua_settable(L, -3);
             i++;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3222,12 +3478,15 @@ int builtin::character::builtin_achievement(lua_State* L)
     builder.yield    = [=]() -> async::task<void> {
         if (ch->achievements.contains(i))
             *achievement = ch->achievements.at(i);
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(*achievement);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3268,13 +3527,16 @@ int builtin::character::builtin_push_achievement(lua_State* L)
         ch->achievements[id] = *achievement;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*achievement == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*achievement);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3299,12 +3561,15 @@ int builtin::character::builtin_erase_achievement(lua_State* L)
             ch->achievements.erase(i);
             *success = true;
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3343,6 +3608,7 @@ int builtin::character::builtin_whisper(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*dead)
             lua->pushnil();
@@ -3350,8 +3616,10 @@ int builtin::character::builtin_whisper(lua_State* L)
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3376,10 +3644,12 @@ int builtin::character::builtin_nation(lua_State* L)
             *nation = ch->nation();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(static_cast<uint8_t>(*nation));
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3393,10 +3663,12 @@ int builtin::character::builtin_nation(lua_State* L)
             *success = ch->nation(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -3425,12 +3697,15 @@ int builtin::character::builtin_option(lua_State* L)
             *changed = co_await ch->options.change({
                 {key, value}
             });
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*changed);
             co_return 1;
         };
+
         return builder.run();
     }
 
@@ -3441,10 +3716,12 @@ int builtin::character::builtin_option(lua_State* L)
         *value = ch->options.enabled(key);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*value);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3469,13 +3746,16 @@ int builtin::character::builtin_weapon(lua_State* L)
             *weapon = ch->items.weapon();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*weapon == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*weapon);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3488,9 +3768,11 @@ int builtin::character::builtin_weapon(lua_State* L)
             ch->items.weapon(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -3516,10 +3798,12 @@ int builtin::character::builtin_title(lua_State* L)
             *title = ch->title();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushstring(title->c_str());
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3533,10 +3817,12 @@ int builtin::character::builtin_title(lua_State* L)
             *success = ch->title(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -3566,9 +3852,11 @@ int builtin::character::builtin_gain(lua_State* L)
         std::ignore = co_await ch->items.add(items, true);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -3593,10 +3881,12 @@ int builtin::character::builtin_weapon_damage(lua_State* L)
             *weapon_damage = ch->weapon_damage();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*weapon_damage);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3609,9 +3899,11 @@ int builtin::character::builtin_weapon_damage(lua_State* L)
             ch->weapon_damage(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -3637,10 +3929,12 @@ int builtin::character::builtin_detect(lua_State* L)
             *detect = ch->detect();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*detect);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3653,9 +3947,11 @@ int builtin::character::builtin_detect(lua_State* L)
             ch->detect(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -3737,6 +4033,7 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
             return 1;
         }
     }
+
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto coords   = std::make_shared<std::pair<uint16_t, uint16_t>>(x, y);
     auto mob_ptr  = std::make_shared<std::shared_ptr<fb::game::mob>>();
@@ -3748,17 +4045,21 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
             coords->first  = ch->x();
             coords->second = ch->y();
         }
+
         *mob_ptr =
             co_await ch->spawn_mob(*model, fb::model::point16_t(coords->first, coords->second), owned, notify, type);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*mob_ptr == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*mob_ptr);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3783,8 +4084,10 @@ int builtin::character::builtin_spawned_mobs(lua_State* L)
         {
             buffer->push_back(mob);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (int i = 0; i < buffer->size(); i++)
@@ -3793,8 +4096,10 @@ int builtin::character::builtin_spawned_mobs(lua_State* L)
             lua->pushobject(buffer->at(i));
             lua_settable(L, -3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -3819,10 +4124,12 @@ int builtin::character::builtin_base_hp(lua_State* L)
             *base_hp = ch->stat.base_hp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_hp);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3835,9 +4142,11 @@ int builtin::character::builtin_base_hp(lua_State* L)
             ch->stat.base_hp(value, true);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -3863,10 +4172,12 @@ int builtin::character::builtin_base_mp(lua_State* L)
             *base_mp = ch->stat.base_mp();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_mp);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3879,9 +4190,11 @@ int builtin::character::builtin_base_mp(lua_State* L)
             ch->stat.base_mp(value, true);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -3907,10 +4220,12 @@ int builtin::character::builtin_base_str(lua_State* L)
             *base_str = ch->stat.base_str();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_str);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3930,10 +4245,12 @@ int builtin::character::builtin_base_str(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -3959,10 +4276,12 @@ int builtin::character::builtin_base_dex(lua_State* L)
             *base_dex = ch->stat.base_dex();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_dex);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -3982,10 +4301,12 @@ int builtin::character::builtin_base_dex(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -4011,10 +4332,12 @@ int builtin::character::builtin_base_int(lua_State* L)
             *base_int = ch->stat.base_int();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_int);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4034,10 +4357,12 @@ int builtin::character::builtin_base_int(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -4063,10 +4388,12 @@ int builtin::character::builtin_base_dam(lua_State* L)
             *base_dam = ch->stat.base_dam();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_dam);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4079,9 +4406,11 @@ int builtin::character::builtin_base_dam(lua_State* L)
             ch->stat.base_dam(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -4107,10 +4436,12 @@ int builtin::character::builtin_base_hit(lua_State* L)
             *base_hit = ch->stat.base_hit();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_hit);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4123,9 +4454,11 @@ int builtin::character::builtin_base_hit(lua_State* L)
             ch->stat.base_hit(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -4151,10 +4484,12 @@ int builtin::character::builtin_base_speed(lua_State* L)
             *base_speed = ch->stat.base_speed();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*base_speed);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4170,9 +4505,11 @@ int builtin::character::builtin_base_speed(lua_State* L)
             ch->stat.base_speed(static_cast<uint8_t>(value));
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -4198,13 +4535,16 @@ int builtin::character::builtin_armor_color(lua_State* L)
             *result = ch->armor_color();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (result->has_value())
                 lua->pushinteger(result->value());
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4227,10 +4567,12 @@ int builtin::character::builtin_armor_color(lua_State* L)
             ch->armor_color(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -4256,13 +4598,16 @@ int builtin::character::builtin_weapon_color(lua_State* L)
             *result = ch->weapon_color();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (result->has_value())
                 lua->pushinteger(static_cast<lua_Integer>(result->value()));
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4285,10 +4630,12 @@ int builtin::character::builtin_weapon_color(lua_State* L)
             ch->weapon_color(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -4314,13 +4661,16 @@ int builtin::character::builtin_shield_color(lua_State* L)
             *result = ch->shield_color();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (result->has_value())
                 lua->pushinteger(static_cast<lua_Integer>(result->value()));
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -4343,10 +4693,12 @@ int builtin::character::builtin_shield_color(lua_State* L)
             ch->shield_color(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -4375,12 +4727,15 @@ int builtin::character::builtin_mkspell(lua_State* L)
         *slot = ch->spells.add(*model);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*slot == 0xFF)
             co_return 0;
+
         lua->pushinteger(*slot);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -4409,11 +4764,14 @@ int builtin::character::builtin_rmspell(lua_State* L)
 
                 ch->spells.remove(i);
             }
+
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else if (lua->is_number(2))
@@ -4426,9 +4784,11 @@ int builtin::character::builtin_rmspell(lua_State* L)
             ch->spells.remove(slot);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else if (lua->is_string(2))
@@ -4454,11 +4814,14 @@ int builtin::character::builtin_rmspell(lua_State* L)
 
             if (slot != 0xFF)
                 ch->spells.remove(slot);
+
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else
@@ -4472,6 +4835,7 @@ int builtin::character::builtin_world(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -4485,6 +4849,7 @@ int builtin::character::builtin_world_map(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -4504,10 +4869,12 @@ int builtin::character::builtin_world_map(lua_State* L)
                     ch->show_world_map(id, index);
                     co_return;
                 };
+
                 builder.resume = [=]() -> async::task<int> {
                     lua->pushboolean(true);
                     co_return 1;
                 };
+
                 return builder.run();
             }
         }
@@ -4522,6 +4889,7 @@ int builtin::character::builtin_save(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -4533,9 +4901,11 @@ int builtin::character::builtin_save(lua_State* L)
         co_await ch->server.save(*ch);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4544,6 +4914,7 @@ int builtin::character::builtin_return_point(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -4570,6 +4941,7 @@ int builtin::character::builtin_transfer_home(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -4582,10 +4954,12 @@ int builtin::character::builtin_transfer_home(lua_State* L)
         *ok = co_await ch->home.recall();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*ok);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -4603,6 +4977,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     auto port = static_cast<uint16_t>(lua->tointeger(3));
     if (ip.empty() || port == 0)
         return 0;
+
     if (lua->is_table(5) == false)
         throw std::runtime_error("transfer_to requires a destination table");
 
@@ -4643,6 +5018,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         position.y = params.y;
         if (params.right > params.x)
             position.x = random<uint16_t>(params.x, params.right);
+
         if (params.bottom > params.y)
             position.y = random<uint16_t>(params.y, params.bottom);
 
@@ -4656,6 +5032,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
 
             option.match->team = static_cast<uint32_t>(lua->tointeger(-1));
         }
+
         lua->remove(-1);
 
         lua_getfield(*lua, 5, "match_expected");
@@ -4665,6 +5042,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
             option.match->expected   = static_cast<uint32_t>(std::max<lua_Integer>(0, lua->tointeger(-2)));
             option.match->team_count = static_cast<uint32_t>(std::max<lua_Integer>(0, lua->tointeger(-1)));
         }
+
         lua->remove(-1);
         lua->remove(-1);
     }
@@ -4717,10 +5095,12 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         *started = co_await ch->transfer(*map, position, ip_str, port, option) == fb::game::transfer_result::STARTED;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*started);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -4746,9 +5126,11 @@ int builtin::character::builtin_ad(lua_State* L)
         ch->ad(width, height, url, time);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4775,11 +5157,14 @@ int builtin::character::builtin_timer(lua_State* L)
         auto ptr = weak.lock();
         if (ptr != nullptr)
             ptr->timer(value, type);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4804,9 +5189,11 @@ int builtin::character::builtin_web(lua_State* L)
         ch->web(type, url, message);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4838,9 +5225,11 @@ int builtin::character::builtin_collection(lua_State* L)
         co_await ch->collections.set(group_id, slot, onoff);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4862,10 +5251,12 @@ int builtin::character::builtin_collection_unlock_all(lua_State* L)
         *added = co_await ch->collections.unlock_all();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*added);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -4887,11 +5278,14 @@ int builtin::character::builtin_unknown_4f(lua_State* L)
             if constexpr (fb::protocol::game::response::unknown_4f<V>::supported)
                 std::ignore = ch->send(fb::protocol::game::response::unknown_4f<V>());
         });
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4916,11 +5310,14 @@ int builtin::character::builtin_notice(lua_State* L)
             if constexpr (fb::protocol::game::response::notice<V>::supported)
                 std::ignore = ch->send(fb::protocol::game::response::notice<V>(flag, text));
         });
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4947,11 +5344,14 @@ int builtin::character::builtin_browser(lua_State* L)
             if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
                 std::ignore = ch->send(fb::protocol::game::response::browser<V>(type, url, key, cookie));
         });
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -4972,9 +5372,11 @@ int builtin::character::builtin_group_portrait(lua_State* L)
         ch->listener.on_group_portrait(*ch, {});
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5013,11 +5415,14 @@ int builtin::character::builtin_web_map_markers(lua_State* L)
             if constexpr (fb::protocol::game::response::web_map<V>::supported)
                 std::ignore = ch->send(fb::protocol::game::response::web_map<V>(entries));
         });
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5043,8 +5448,10 @@ int builtin::character::builtin_web_map(lua_State* L)
                 auto& other = static_cast<fb::game::character&>(obj);
                 if (&other == ch.get())
                     return true;
+
                 if (other.super_hide())
                     return true;
+
                 if (entries.size() >= 255)
                     return false;
 
@@ -5062,11 +5469,14 @@ int builtin::character::builtin_web_map(lua_State* L)
             if constexpr (fb::protocol::game::response::web_map<V>::supported)
                 std::ignore = ch->send(fb::protocol::game::response::web_map<V>(entries));
         });
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5101,9 +5511,11 @@ int builtin::character::builtin_move_confirm_noscroll(lua_State* L)
                                                                 walk_queue_slot));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5127,9 +5539,11 @@ int builtin::character::builtin_ui(lua_State* L)
         ch->ui(static_cast<uint8_t>(screen));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5152,9 +5566,11 @@ int builtin::character::builtin_item_throw_confirm(lua_State* L)
         ch->item_throw_confirm(slot);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5177,9 +5593,11 @@ int builtin::character::builtin_freeze(lua_State* L)
         ch->freeze(freeze);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5202,9 +5620,11 @@ int builtin::character::builtin_friends_sync(lua_State* L)
         ch->friends.sync(enabled);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5239,9 +5659,11 @@ int builtin::character::builtin_c2s_relay(lua_State* L)
         std::ignore = ch->send(fb::protocol::game::response::c2s_relay(payload));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5281,9 +5703,11 @@ int builtin::character::builtin_user_info(lua_State* L)
         std::ignore = ch->send(fb::protocol::game::response::user_info(type, strings));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5306,10 +5730,12 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
         lua->rawgeti(4, 1);
         if (lua->is_number(-1))
             x = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
         lua->rawgeti(4, 2);
         if (lua->is_number(-1))
             y = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua->pop(1);
     }
 
@@ -5321,9 +5747,11 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
         ch->holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5351,9 +5779,11 @@ int builtin::character::builtin_popup_message(lua_State* L)
         std::ignore = ch->send(fb::protocol::game::response::popup_message(param0, param1, param2, param3, text));
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5383,6 +5813,7 @@ int builtin::character::builtin_popup_input(lua_State* L)
         lua->pushstring("immediate");
         if (lua_rawget(L, 7) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -5396,14 +5827,17 @@ int builtin::character::builtin_popup_input(lua_State* L)
         std::ignore = ch->send(fb::protocol::game::response::popup_input(param0, param1, param2, param3, text));
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::POPUP);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -5445,11 +5879,14 @@ int builtin::character::builtin_delay(lua_State* L)
         auto spell = ch->spells.find(*model);
         if (spell != nullptr)
             spell->delay(value);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5474,13 +5911,16 @@ int builtin::character::builtin_birthday(lua_State* L)
             *result = ch->birthday();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (result->has_value())
                 lua->pushinteger(result->value());
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5493,9 +5933,11 @@ int builtin::character::builtin_birthday(lua_State* L)
             ch->birthday(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -5521,11 +5963,14 @@ int builtin::character::builtin_active(lua_State* L)
         auto slot = ch->items.index(item);
         if (slot != 0xFF)
             std::ignore = co_await ch->items.active(slot);
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -5547,10 +5992,12 @@ int builtin::character::builtin_trading(lua_State* L)
         *result = ch->trade != nullptr;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -5575,10 +6022,12 @@ int builtin::character::builtin_super_hide(lua_State* L)
             *result = ch->super_hide();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*result);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5606,9 +6055,11 @@ int builtin::character::builtin_super_hide(lua_State* L)
             else
                 locked->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -5634,10 +6085,12 @@ int builtin::character::builtin_natural_recovery(lua_State* L)
             *result = ch->stat.natural_recovery();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*result);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5650,9 +6103,11 @@ int builtin::character::builtin_natural_recovery(lua_State* L)
             ch->stat.natural_recovery(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -5692,10 +6147,12 @@ int builtin::character::builtin_send_mail(lua_State* L)
             fb::logger::warn("send_mail from script failed: {}", e.what());
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -5720,10 +6177,12 @@ int builtin::character::builtin_divine_beast(lua_State* L)
             *divine_beast = ch->divine_beast();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(static_cast<uint8_t>(*divine_beast));
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5737,10 +6196,12 @@ int builtin::character::builtin_divine_beast(lua_State* L)
             *success = ch->divine_beast(value);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -5766,10 +6227,12 @@ int builtin::character::builtin_reputation(lua_State* L)
             *reputation = ch->reputation();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*reputation);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5788,10 +6251,12 @@ int builtin::character::builtin_reputation(lua_State* L)
             ch->reputation(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -5817,10 +6282,12 @@ int builtin::character::builtin_evaluation(lua_State* L)
             *evaluation = ch->evaluation.score();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*evaluation);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -5839,10 +6306,12 @@ int builtin::character::builtin_evaluation(lua_State* L)
             ch->evaluation.score(value.value());
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(true);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -5866,6 +6335,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     auto speaker = std::optional<fb::game::dialog::speaker>{fb::game::dialog::speaker{}};
     if (lua->is_nil(2) == false)
         speaker = read_speaker(L, 2);
+
     if (speaker.has_value() == false)
         return 0;
 
@@ -5881,16 +6351,19 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         lua->pushstring("prev");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             button_prev = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("next");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             button_next = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -5905,14 +6378,17 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::TEXT);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -5933,6 +6409,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto message = std::optional<std::string>{std::nullopt};
     if (lua->is_nil(3) == false)
         message = lua->tostring(3);
+
     auto size  = lua->rawlen(4);
     auto menus = std::vector<std::string>();
     for (int i = 0; i < size; i++)
@@ -5948,11 +6425,13 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         lua->pushstring("prev");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             button_prev = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -5967,14 +6446,17 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::LIST, static_cast<uint16_t>(menus.size()));
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6019,6 +6501,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
             has_top = true;
             top     = lua->tostring(-1);
         }
+
         lua_pop(L, 1);
 
         lua->pushstring("bottom");
@@ -6027,36 +6510,43 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
             has_bottom = true;
             bottom     = lua->tostring(-1);
         }
+
         lua_pop(L, 1);
 
         lua->pushstring("maxlen");
         if (lua_rawget(L, 4) == LUA_TNUMBER)
             maxlen = static_cast<uint8_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("prev");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             prev = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("password");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             password = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("pursuit");
         if (lua_rawget(L, 4) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("ext");
         if (lua_rawget(L, 4) == LUA_TSTRING)
             ext = lua->tostring(-1);
+
         lua_pop(L, 1);
     }
 
@@ -6088,14 +6578,17 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
                             use_list_input ? fb::game::dialog::reply::INPUT : fb::game::dialog::reply::INPUT_EXT,
                             maxlen);
         }
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6131,11 +6624,13 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
 
         lua->pushstring("ext");
         if (lua_rawget(L, 5) == LUA_TSTRING)
             ext = lua->tostring(-1);
+
         lua_pop(L, 1);
     }
 
@@ -6150,14 +6645,17 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::MENU);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6192,6 +6690,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -6206,14 +6705,17 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6253,11 +6755,13 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
         lua->pushstring("pursuit");
         if (lua_rawget(L, 5) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -6272,14 +6776,17 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::ITEM, options);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6333,11 +6840,13 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
             else if (lua->is_string(-1))
                 item_model = table::item->name2item(lua->tostring(-1));
         }
+
         lua_pop(L, 1);
 
         lua->pushstring("price");
         if (lua_rawget(L, -2) == LUA_TNUMBER)
             price = static_cast<uint32_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("count");
@@ -6346,10 +6855,13 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
             auto n = lua->tointeger(-1);
             if (n < 0)
                 n = 0;
+
             if (n > 0xFF)
                 n = 0xFF;
+
             count = static_cast<uint8_t>(n);
         }
+
         lua_pop(L, 1);
 
         lua->pushstring("percent");
@@ -6358,10 +6870,13 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
             auto n = lua->tointeger(-1);
             if (n < 0)
                 n = 0;
+
             if (n > 0xFF)
                 n = 0xFF;
+
             percent = static_cast<uint8_t>(n);
         }
+
         lua_pop(L, 1);
 
         lua_pop(L, 1); // row table
@@ -6380,11 +6895,13 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         lua->pushstring("pursuit");
         if (lua_rawget(L, 5) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -6399,14 +6916,17 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::BUY, choices);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6437,11 +6957,13 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
         lua->pushstring("pursuit");
         if (lua_rawget(L, 4) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("immediate");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -6456,14 +6978,17 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6490,6 +7015,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
         lua->pushstring("immediate");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -6504,14 +7030,17 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
 
         if (immediate == false)
             ch->dialog.open(lua, fb::game::dialog::reply::INPUT);
+
         co_return;
     };
+
     if (immediate)
     {
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }
 
@@ -6538,9 +7067,11 @@ int fb::game::builtin::character::builtin_dialog_0x30_10(lua_State* L)
         ch->listener.on_dialog_0x30_10(*ch, speaker->look(*ch), message, speaker->oid());
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -6571,11 +7102,14 @@ int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
             if (map != nullptr)
                 map->rezen_force();
         }
+
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -6624,15 +7158,19 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         if (ch->quests.contains(id))
             *result = ch->quests[id];
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*result == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*result);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6685,11 +7223,14 @@ int fb::game::builtin::character::builtin_var(lua_State* L)
                 ch->vars.erase(key);
             else
                 ch->vars[key] = value;
+
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else
@@ -6701,8 +7242,10 @@ int fb::game::builtin::character::builtin_var(lua_State* L)
             auto found = ch->vars.find(key);
             if (found != ch->vars.end())
                 *value = found->second;
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (value->isString())
                 lua->pushstring(value->asString());
@@ -6712,8 +7255,10 @@ int fb::game::builtin::character::builtin_var(lua_State* L)
                 lua->pushboolean(value->asBool());
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -6743,15 +7288,19 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         if (ch->quests.start(id) && ch->quests.contains(id))
             *result = ch->quests[id];
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*result == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*result);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6798,10 +7347,12 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
         *result = ch->quests.remove(id);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6840,10 +7391,12 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
         *result = co_await ch->reward(reward_dsl);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6872,13 +7425,16 @@ int builtin::character::builtin_deposit_clan_money(lua_State* L)
         *result = co_await ch->clan.deposit(amount.value());
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (result->has_value())
             lua->pushboolean(result->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6907,13 +7463,16 @@ int builtin::character::builtin_withdraw_clan_money(lua_State* L)
         *result = co_await ch->clan.withdraw(amount.value());
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (result->has_value())
             lua->pushboolean(result->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6969,13 +7528,16 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         *success     = co_await server.system_mail.create(world, sender, title, contents, expire_date);
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (success->has_value())
             lua->pushboolean(success->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -6997,57 +7559,68 @@ std::optional<fb::game::dialog::speaker> builtin::character::read_speaker(lua_St
         lua->pushstring("gender");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->gender = static_cast<GENDER>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("state");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->state = static_cast<STATE>(lua->tointeger(-1));
+
         lua_pop(L, 1);
 
         lua->pushstring("hair");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->hair = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("hair_color");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->hair_color = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("weapon");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->weapon = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("weapon_color");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->weapon_color = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("armor");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->armor = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("armor_color");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->armor_color = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("shield");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->shield = lua->tointeger(-1);
+
         lua_pop(L, 1);
 
         lua->pushstring("shield_color");
         if (lua_rawget(L, index) == LUA_TNUMBER)
             speaker.custom->shield_color = lua->tointeger(-1);
+
         lua_pop(L, 1);
     }
     else
     {
         return std::nullopt;
     }
+
     return speaker;
 }
 
@@ -7108,9 +7681,11 @@ builtin::character::read_storage_box(lua_State* L, int index, std::vector<fb::mo
                         attachments.push_back(item_dsl.to_dsl());
                     }
                 }
+
                 lua->pop(1);
             }
         }
+
         lua->pop(1);
 
         auto slots = fb::game::items::required_slots(counts);
@@ -7139,12 +7714,14 @@ builtin::character::read_storage_box(lua_State* L, int index, std::vector<fb::mo
                 else
                     attachments.push_back(fb::model::dsl::exp(static_cast<uint64_t>(value)).to_dsl());
             }
+
             lua->pop(1);
         }
     }
 
     if (rejection.has_value() == false && attachments.empty())
         rejection = storage_rejection{"empty", 0};
+
     return rejection;
 }
 
@@ -7209,6 +7786,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
         auto builder = lua->new_co_builder();
         if (user_name.has_value())
             builder.weak = weak;
+
         builder.yield = [=, &server]() -> async::task<void> {
             if (user_name.has_value() == false)
             {
@@ -7228,8 +7806,10 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                         .message     = message,
                         .attachments = attachments,
                     };
+
                     if (expire_date.has_value())
                         box.expire_date = fb::model::datetime(expire_date.value());
+
                     ptr->storage_box.add({box});
                     *result = service::system_storage::create_result::created;
                 }
@@ -7245,6 +7825,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                 }
             }
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*result == service::system_storage::create_result::created);
             lua->pushstring(external_ref);
@@ -7252,8 +7833,10 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                 lua->pushstring("not_found");
             else
                 lua->pushnil();
+
             co_return 3;
         };
+
         return builder.run();
     }
 }
@@ -7312,18 +7895,23 @@ int builtin::character::builtin_storage_entries(lua_State* L)
         {
             if (entry.attachments.empty())
                 continue;
+
             if (entry.received)
                 continue;
+
             if (entry.expire_date.has_value() && entry.expire_date.value() < now)
                 continue;
+
             buffer->push_back(entry);
         }
 
         std::sort(buffer->begin(), buffer->end(), [](const auto& lhs, const auto& rhs) {
             return lhs.id > rhs.id;
         });
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         auto i = 0;
@@ -7353,6 +7941,7 @@ int builtin::character::builtin_storage_entries(lua_State* L)
                 lua->pushstring(entry.expire_date.value().to_local().to_string());
             else
                 lua->pushnil();
+
             lua_settable(L, -3);
 
             lua->pushstring("attachments");
@@ -7366,13 +7955,16 @@ int builtin::character::builtin_storage_entries(lua_State* L)
                 lua_settable(L, -3);
                 j++;
             }
+
             lua_settable(L, -3);
 
             lua_settable(L, -3);
             i++;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -7413,13 +8005,16 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
                              e.what());
             *result = receive_result::FAILED;
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result == receive_result::RECEIVED);
         lua->pushstring(fb::game::storage_box::result_name(*result));
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7466,6 +8061,7 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7477,8 +8073,10 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
             lua->pushnil();
             listing_holder->value().to_lua(lua);
         }
+
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7525,6 +8123,7 @@ int builtin::character::builtin_marketplace_cancel(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7536,8 +8135,10 @@ int builtin::character::builtin_marketplace_cancel(lua_State* L)
             lua->pushnil();
             lua->pushboolean(success->value_or(false));
         }
+
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7577,6 +8178,7 @@ int builtin::character::builtin_marketplace_clear(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7588,8 +8190,10 @@ int builtin::character::builtin_marketplace_clear(lua_State* L)
             lua->pushnil();
             lua->pushinteger(*count);
         }
+
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7644,6 +8248,7 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7655,8 +8260,10 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
             lua->pushnil();
             listing_holder->value().to_lua(lua);
         }
+
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7686,6 +8293,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.item_name = lua->tostring(-1);
     }
+
     lua->pop(1);
 
     lua_pushstring(*lua, "min_price");
@@ -7694,6 +8302,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.min_price = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
     }
+
     lua->pop(1);
 
     lua_pushstring(*lua, "max_price");
@@ -7702,6 +8311,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.max_price = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
     }
+
     lua->pop(1);
 
     lua_pushstring(*lua, "seller_id");
@@ -7710,6 +8320,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.seller_id = static_cast<uint32_t>(lua->tointeger(-1));
     }
+
     lua->pop(1);
 
     lua_pushstring(*lua, "sort_by");
@@ -7718,6 +8329,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.sort_by = lua->tostring(-1);
     }
+
     lua->pop(1);
 
     lua_pushstring(*lua, "page");
@@ -7726,6 +8338,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     {
         option.page = static_cast<uint32_t>(lua->tointeger(-1));
     }
+
     lua->pop(1);
 
     auto weak          = ch->weak_from_this_as<fb::game::character>();
@@ -7747,6 +8360,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7768,6 +8382,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
             result.listings[i].to_lua(lua);
             lua_settable(*lua, -3);
         }
+
         lua_settable(*lua, -3);
 
         lua_pushstring(*lua, "total_count");
@@ -7780,6 +8395,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
 
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7810,6 +8426,7 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
         {
             listing_ids.push_back(lua->touint64(-1));
         }
+
         lua->pop(1);
     }
 
@@ -7838,6 +8455,7 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -7854,8 +8472,10 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
             (*listings_holder)[i].to_lua(lua);
             lua_settable(*lua, -3);
         }
+
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -7891,6 +8511,7 @@ int builtin::character::builtin_marriage(lua_State* L)
         snapshot->divorce_count = marriage.divorce_count();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         lua_pushstring(*lua, "married");
@@ -7901,6 +8522,7 @@ int builtin::character::builtin_marriage(lua_State* L)
             lua->pushinteger(static_cast<int64_t>(snapshot->spouse_id.value()));
         else
             lua->pushnil();
+
         lua_settable(*lua, -3);
         lua_pushstring(*lua, "spouse_name");
         lua->pushstring(snapshot->spouse_name);
@@ -7913,6 +8535,7 @@ int builtin::character::builtin_marriage(lua_State* L)
         lua_settable(*lua, -3);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -7941,15 +8564,19 @@ int builtin::character::builtin_marry(lua_State* L)
             *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
         else
             *error = co_await me->marriage.marry(target);
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -7974,12 +8601,15 @@ int builtin::character::builtin_divorce(lua_State* L)
         *error = co_await me->marriage.divorce();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }

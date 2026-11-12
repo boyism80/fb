@@ -50,6 +50,7 @@ public:
             {
                 this->_stream.push_back(0);
             }
+
             EndianType::template put<ValueType>(value, this->_stream.data() + seek);
             return *this;
         }

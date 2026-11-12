@@ -70,8 +70,10 @@ fb::model::map* fb::model::___map::name2map(std::string_view name) const
                     cache.clear();
                     cache_owner = published;
                 }
+
                 cache[name_str] = &v;
             }
+
             return &v;
         }
     }

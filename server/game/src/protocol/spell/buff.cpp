@@ -27,6 +27,7 @@ void spell_buff::serialize(fb::stream_writer<big_endian>& writer) const
     auto duration_ms = this->duration.total_milliseconds();
     if (duration_ms < 0)
         duration_ms = 0;
+
     writer.write<uint32_t>(static_cast<uint32_t>(duration_ms / 1000));
 }
 #else

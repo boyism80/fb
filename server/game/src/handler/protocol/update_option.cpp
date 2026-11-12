@@ -39,6 +39,7 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         {
             ch->update_option();
         }
+
         break;
 
     case OPTION::SUPER_HIDE:
@@ -49,8 +50,10 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         std::ignore = co_await ch->options.change({
             {option, !ch->options.enabled(option)}
         });
+
         break;
     }
+
     co_return true;
 }
 
@@ -93,6 +96,7 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
 
         std::ignore = co_await ch->options.change(std::move(changes));
     }
+
     co_return true;
 }
 

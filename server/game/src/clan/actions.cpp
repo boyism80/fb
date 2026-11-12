@@ -284,6 +284,7 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
         auto title_length = std::ranges::count_if(title_utf8, [](char c) {
             return (static_cast<unsigned char>(c) & 0xC0) != 0x80;
         });
+
         if (title_str.empty() == false && title_length < 2)
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
 

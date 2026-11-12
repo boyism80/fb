@@ -129,6 +129,7 @@ uint8_t server::id() const
                 return static_cast<uint8_t>(ordinal);
         }
     }
+
     return fb::acceptor<fb::gateway::session>::id();
 }
 
@@ -137,6 +138,7 @@ std::string server::name() const
     auto pod = std::getenv("FB_POD_NAME");
     if (pod != nullptr && pod[0] != '\0')
         return pod;
+
     return fb::acceptor<fb::gateway::session>::name();
 }
 

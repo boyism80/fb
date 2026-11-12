@@ -58,6 +58,7 @@ async::task<bool> character::home::recall()
     {
         if (dest == nullptr)
             co_return false;
+
         co_return co_await this->_owner.map(dest, this->_spot->position);
     }
 
@@ -67,6 +68,7 @@ async::task<bool> character::home::recall()
 
     if (result != transfer_result::STARTED && this->_owner.transferring() == false)
         this->disconnect();
+
     co_return result == transfer_result::STARTED;
 }
 
@@ -104,6 +106,7 @@ void character::home::to_protocol(fb::protocol::internal::Character& dto) const
         auto spawn         = fb::model::point16_t{0, 0};
         if (table::map->contains(return_map_id))
             spawn = table::map[return_map_id].spawn_position().value_or(fb::model::point16_t{0, 0});
+
         dto.position = fb::protocol::internal::Position{spawn.x, spawn.y};
     }
     else if (map != nullptr)

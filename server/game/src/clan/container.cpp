@@ -36,6 +36,7 @@ async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
                 clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
             });
         }
+
         auto enemy_clan_ids =
             std::unordered_set<uint32_t>(resp.clan.enemy_clan_ids.begin(), resp.clan.enemy_clan_ids.end());
         co_return this->_server.make<fb::game::clan>(id,

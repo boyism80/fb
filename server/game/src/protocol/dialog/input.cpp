@@ -63,6 +63,7 @@ void dialog_input<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string, uint16_t>(this->message);
     if (this->ext.has_value())
         writer.write<std::string, uint8_t>(*this->ext);
+
     writer.write<uint16_t>(this->pursuit);
 }
 
@@ -82,6 +83,7 @@ void dialog_input<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>
     writer.write<std::string, uint16_t>(this->message);
     if (this->ext.has_value())
         writer.write<std::string, uint8_t>(*this->ext);
+
     writer.write<uint16_t>(this->pursuit);
 }
 

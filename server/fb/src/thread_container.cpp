@@ -100,6 +100,7 @@ bool thread_container::valid(uint8_t index) const
     auto current_thread = this->current();
     if (current_thread == nullptr)
         return false;
+
     return current_thread->index() == index;
 }
 
@@ -108,6 +109,7 @@ bool thread_container::valid(const fb::thread& thread) const
     auto current_thread = this->current();
     if (current_thread == nullptr)
         return false;
+
     return current_thread->id() == thread.id();
 }
 
@@ -139,6 +141,7 @@ void thread_container::settimer(fb::timer::handle_callback_type&& fn, const fb::
                 thread.settimer(std::move(fn), duration);
                 co_return;
             };
+
             builder.enqueue();
         }
     }

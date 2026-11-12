@@ -204,6 +204,7 @@ async::task<bool> clan::container::attach(character& ch)
 
     if (attached == false)
         ch.clan.reset();
+
     co_return attached;
 }
 
@@ -298,6 +299,7 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false)
             co_return;
+
         if (guard.value() == nullptr)
         {
             drop = true;
@@ -324,6 +326,7 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
 
             if (other.value()->allied_clan_id() == clan_id)
                 other.value()->allied_clan_id(std::nullopt);
+
             other.value()->remove_enemy_clan(clan_id);
         }
     }
@@ -344,6 +347,7 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         if (guard.value() != nullptr && guard.value()->owner_clan_id() == clan_id)
             guard.value()->owner_clan_id(std::nullopt);
     }
+
     co_return;
 }
 
@@ -352,6 +356,7 @@ async::task<void> clan::container::on_broadcast(uint32_t clan_id, std::string me
     auto guard = co_await this->enter_write(clan_id);
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
+
     auto members = guard.value()->online_characters();
     this->_server.characters.foreach_enqueue(
         [message, type](auto& member) -> async::task<void> {
@@ -372,6 +377,7 @@ async::task<void> clan::container::on_set_title(uint32_t                   clan_
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto& clan = guard.value();
 
         old_title   = clan->title();
@@ -379,6 +385,7 @@ async::task<void> clan::container::on_set_title(uint32_t                   clan_
         auto result = clan->apply(revision, [&] {
             clan->title(new_title);
         });
+
         if (result == apply_result::STALE)
             co_return;
 
@@ -414,10 +421,12 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto& clan   = guard.value();
         auto  result = clan->apply(revision, [&] {
             clan->join(clan_member{joined_member_name, role});
         });
+
         if (result == apply_result::STALE)
             co_return;
 
@@ -492,10 +501,12 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto& clan   = guard.value();
         auto  result = clan->apply(revision, [&] {
             clan->leave(deleted_member_name);
         });
+
         if (result == apply_result::STALE)
             co_return;
 
@@ -508,6 +519,7 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
             ch_id = ch->id;
             clan->detach(weak);
         }
+
         clan_name = clan->name();
         members   = clan->online_characters();
     }
@@ -561,10 +573,12 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto& clan   = guard.value();
         auto  result = clan->apply(revision, [&] {
             clan->leave(deleted_member_name);
         });
+
         if (result == apply_result::STALE)
             co_return;
 
@@ -577,6 +591,7 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
             ch_id = ch->id;
             clan->detach(weak);
         }
+
         clan_name = clan->name();
         members   = clan->online_characters();
     }
@@ -634,7 +649,8 @@ async::task<void> clan::container::on_ally(uint32_t                clan_id,
             auto result = guard.value()->apply(revision, [&] {
                 guard.value()->allied_clan_id(other_id);
             });
-            reload      = result == apply_result::RELOAD;
+
+            reload = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
                 members = guard.value()->online_characters();
         }
@@ -644,9 +660,10 @@ async::task<void> clan::container::on_ally(uint32_t                clan_id,
         auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            auto result  = other_guard.value()->apply(related_revision, [&] {
+            auto result = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->allied_clan_id(clan_id);
             });
+
             reload_other = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
             {
@@ -658,6 +675,7 @@ async::task<void> clan::container::on_ally(uint32_t                clan_id,
 
     if (reload)
         co_await this->reload(clan_id);
+
     if (reload_other)
         co_await this->reload(other_id);
 
@@ -684,7 +702,8 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
             auto result = guard.value()->apply(revision, [&] {
                 guard.value()->allied_clan_id(std::nullopt);
             });
-            reload      = result == apply_result::RELOAD;
+
+            reload = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
                 members = guard.value()->online_characters();
         }
@@ -696,9 +715,10 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
         auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            auto result  = other_guard.value()->apply(related_revision, [&] {
+            auto result = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->allied_clan_id(std::nullopt);
             });
+
             reload_other = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
             {
@@ -710,6 +730,7 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
 
     if (reload)
         co_await this->reload(clan_id);
+
     if (reload_other)
         co_await this->reload(related_clan_id.value());
 
@@ -741,7 +762,8 @@ async::task<void> clan::container::on_enemy(uint32_t                clan_id,
             auto result = guard.value()->apply(revision, [&] {
                 guard.value()->add_enemy_clan(other_id);
             });
-            reload      = result == apply_result::RELOAD;
+
+            reload = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
                 members = guard.value()->online_characters();
         }
@@ -751,9 +773,10 @@ async::task<void> clan::container::on_enemy(uint32_t                clan_id,
         auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            auto result  = other_guard.value()->apply(related_revision, [&] {
+            auto result = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->add_enemy_clan(clan_id);
             });
+
             reload_other = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
             {
@@ -765,6 +788,7 @@ async::task<void> clan::container::on_enemy(uint32_t                clan_id,
 
     if (reload)
         co_await this->reload(clan_id);
+
     if (reload_other)
         co_await this->reload(other_id);
 
@@ -796,7 +820,8 @@ async::task<void> clan::container::on_unenemy(uint32_t                clan_id,
             auto result = guard.value()->apply(revision, [&] {
                 guard.value()->remove_enemy_clan(other_id);
             });
-            reload      = result == apply_result::RELOAD;
+
+            reload = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
                 members = guard.value()->online_characters();
         }
@@ -806,9 +831,10 @@ async::task<void> clan::container::on_unenemy(uint32_t                clan_id,
         auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr)
         {
-            auto result  = other_guard.value()->apply(related_revision, [&] {
+            auto result = other_guard.value()->apply(related_revision, [&] {
                 other_guard.value()->remove_enemy_clan(clan_id);
             });
+
             reload_other = result == apply_result::RELOAD;
             if (result != apply_result::STALE)
             {
@@ -820,6 +846,7 @@ async::task<void> clan::container::on_unenemy(uint32_t                clan_id,
 
     if (reload)
         co_await this->reload(clan_id);
+
     if (reload_other)
         co_await this->reload(other_id);
 
@@ -847,12 +874,14 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto& clan   = guard.value();
         auto  result = clan->apply(revision, [&] {
             auto member = clan->member(target_name.value());
             if (member != nullptr && new_role.has_value())
                 member->role = static_cast<CLAN_ROLE>(new_role.value());
         });
+
         if (result == apply_result::STALE)
             co_return;
 
@@ -866,6 +895,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
             auto shared = weak.lock();
             if (shared == nullptr)
                 continue;
+
             members.push_back(shared);
         }
     }
@@ -928,10 +958,12 @@ async::task<void> clan::container::on_set_money(uint32_t clan_id, uint64_t money
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
+
         auto result = guard.value()->apply(revision, [&] {
             guard.value()->money(money);
         });
-        reload      = result == apply_result::RELOAD;
+
+        reload = result == apply_result::RELOAD;
     }
 
     if (reload)

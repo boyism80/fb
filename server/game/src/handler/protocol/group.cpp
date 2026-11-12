@@ -35,6 +35,7 @@ async::task<bool> group<V>::handle(fb::socket<character>& session, game_reqs::gr
 
     if (error.has_value() && weak.expired() == false)
         me->message(error.value(), MESSAGE_TYPE::STATE);
+
     co_return true;
 }
 

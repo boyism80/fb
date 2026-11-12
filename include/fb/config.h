@@ -51,6 +51,7 @@ inline static typename config_value_type<T>::type json_value(const Json::Value& 
     {
         if (value.isNull())
             return std::nullopt;
+
         return T{json_value<typename T::value_type>(value)};
     }
     else
@@ -243,6 +244,7 @@ inline static T config(std::string_view k, T default_value)
     const Json::Value& node = config_node(k);
     if (node.isNull())
         return default_value;
+
     return json_value<T>(node);
 }
 

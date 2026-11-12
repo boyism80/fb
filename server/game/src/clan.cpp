@@ -166,6 +166,7 @@ std::vector<std::shared_ptr<fb::game::character>> clan::online_characters() cons
         if (shared != nullptr)
             result.push_back(shared);
     }
+
     return result;
 }
 

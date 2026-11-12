@@ -21,6 +21,7 @@ int builtin::model::object::builtin_id(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto object = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
@@ -34,6 +35,7 @@ int builtin::model::object::builtin_name(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto object = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
@@ -47,6 +49,7 @@ int builtin::model::object::builtin_look(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto object = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
@@ -60,6 +63,7 @@ int builtin::model::object::builtin_color(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto object = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;

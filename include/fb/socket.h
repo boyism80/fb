@@ -343,6 +343,7 @@ public:
         std::call_once(this->_fd_once, [this]() {
             this->_fd = (uint32_t)const_cast<fb::socket<T>*>(this)->native_handle();
         });
+
         return this->_fd;
     }
 

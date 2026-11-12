@@ -111,6 +111,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     auto parts = std::vector<fb::game::items::escrow_part>{
         {slot, count}
     };
+
     auto added = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_LIST, 0, listing_fee, parts);
     if (added.has_value() == false)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "lock"));
@@ -126,6 +127,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     log_data_before["listing_fee"]  = static_cast<Json::Int64>(listing_fee);
     if (uid.has_value())
         log_data_before["item_uid"] = static_cast<Json::UInt64>(uid.value());
+
     this->_owner.server.log.write("marketplace_list", log_data_before);
 
     auto error_what = std::string{};
@@ -149,6 +151,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
                 price,
                 deadline
         });
+
         error_code = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
         switch (error_code)
         {
@@ -368,6 +371,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
                 .created_date = std::nullopt,
                 .purchase     = std::nullopt
             };
+
             refund = resp.refund_amount;
             break;
 
@@ -714,6 +718,7 @@ void marketplace::listing::to_lua(fb::lua::context* lua) const
     {
         lua->pushnil();
     }
+
     lua_settable(*lua, -3);
     lua->pushstring("custom_name");
     if (this->item_data.custom_name.has_value())
@@ -724,6 +729,7 @@ void marketplace::listing::to_lua(fb::lua::context* lua) const
     {
         lua->pushnil();
     }
+
     lua_settable(*lua, -3);
     lua_settable(*lua, -3);
 
@@ -748,6 +754,7 @@ void marketplace::listing::to_lua(fb::lua::context* lua) const
     {
         lua->pushnil();
     }
+
     lua_settable(*lua, -3);
 
     lua->pushstring("created_date");
@@ -759,5 +766,6 @@ void marketplace::listing::to_lua(fb::lua::context* lua) const
     {
         lua->pushnil();
     }
+
     lua_settable(*lua, -3);
 }

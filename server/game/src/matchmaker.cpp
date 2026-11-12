@@ -168,6 +168,7 @@ bool matchmaker::on_dissolved(uint64_t match_id, uint64_t ticket_id, bool ticket
 
     if (ticket_closed)
         this->clear_ticket();
+
     return true;
 }
 
@@ -222,6 +223,7 @@ void matchmaker::set_ticket(uint32_t match_type, uint64_t ticket_id)
            .match_type = match_type,
            .ticket_id  = ticket_id,
     };
+
     this->touch();
 }
 
@@ -339,6 +341,7 @@ async::task<void> matchmaker::reconcile()
                              character_id);
             this->clear_pending_match_id();
         }
+
         co_return;
     }
 
@@ -460,6 +463,7 @@ async::task<void> matchmaker::notify_dequeued(ticket_state ticket, std::string r
             lua->pushnil();
         else
             lua->pushstring(reason);
+
         std::ignore = co_await fb::lua::call(std::move(lua), weak, 4);
     }
 }
@@ -536,6 +540,7 @@ async::task<bool> matchmaker::on_proposed(uint64_t match_id, uint64_t ticket_id)
         {
             fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, e.what());
         }
+
         co_return false;
     }
     else if (current.has_value() && current.value() != ticket_id)
@@ -591,8 +596,10 @@ async::task<void> matchmaker::decline(uint64_t match_id)
         // The user may retry, so the ticket comes back unless another one arrived meanwhile.
         if (ticket.has_value() && this->_ticket.has_value() == false)
             this->set_ticket(ticket->match_type, ticket->ticket_id);
+
         if (pending && this->_pending_match_id.has_value() == false)
             this->set_pending_match_id(match_id);
+
         throw std::runtime_error(error.value());
     }
 
@@ -620,6 +627,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
     auto cross_maintenance = this->owner.server.maintenance.read([](const maintenance_state& x) {
         return x.cross;
     });
+
     if (cross_maintenance.has_value() && cross_maintenance->admits(this->owner.role(), false) == false)
         throw std::runtime_error("교차 서버 점검 중에는 매치메이킹을 등록할 수 없습니다.");
 
@@ -683,6 +691,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
             auto sigma = skill.has_value() ? skill->sigma : matchmaker::DEFAULT_SIGMA;
             co_return mp::TicketMember{world, ptr->id, mu, sigma};
         };
+
         members.push_back(co_await builder.dispatch());
     }
 
@@ -699,9 +708,11 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
             auto ptr = member_weak.lock();
             if (ptr == nullptr)
                 co_return;
+
             ptr->matchmaker.begin_enqueue();
             co_return;
         };
+
         co_await builder.dispatch();
     }
 
@@ -714,12 +725,16 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
                 auto ptr = member_weak.lock();
                 if (ptr == nullptr)
                     co_return;
+
                 if (ptr->matchmaker.ticket_id().has_value() == false)
                     ptr->matchmaker.clear_ticket();
+
                 co_return;
             };
+
             co_await builder.dispatch();
         }
+
         co_return;
     };
 
@@ -772,6 +787,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
             ptr->matchmaker.set_ticket(match_type, ticket_id);
             co_return true;
         };
+
         if (co_await builder.dispatch())
             claimed.push_back(ch);
     }
@@ -797,10 +813,13 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
                 auto ptr = member_weak.lock();
                 if (ptr == nullptr)
                     co_return;
+
                 if (ptr->matchmaker.ticket_id() == ticket_id)
                     ptr->matchmaker.clear_ticket();
+
                 co_return;
             };
+
             co_await builder.dispatch();
         }
 
@@ -826,8 +845,10 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
                     lua->pushinteger(static_cast<lua_Integer>(ticket_id));
                     std::ignore = co_await lua->call(3);
                 }
+
                 co_return;
             };
+
             builder.enqueue();
         }
     }

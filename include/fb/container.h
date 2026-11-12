@@ -82,6 +82,7 @@ public:
             {
                 sstream << k;
             }
+
             sstream << " does not exists";
             throw std::runtime_error(sstream.str());
         }

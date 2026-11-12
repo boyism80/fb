@@ -265,13 +265,14 @@ public:
         if (this->func == nullptr)
             throw std::runtime_error("thread container builder: func is not set");
 
-        auto* target      = this->_container.thread_for<PivotT>(this->_pivot);
-        auto  fn_holder   = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
-        auto  when_fn     = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
+        auto* target    = this->_container.thread_for<PivotT>(this->_pivot);
+        auto  fn_holder = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
+        auto  when_fn   = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
             return true;
         });
-        auto  on_error    = thread::on_error(std::move(this->on_error));
-        auto  on_complete = std::move(this->on_complete);
+
+        auto on_error    = thread::on_error(std::move(this->on_error));
+        auto on_complete = std::move(this->on_complete);
         // Reflects the latest attempt: true when func ran here, false when it hopped to the pivot's new thread.
         auto ran = std::make_shared<bool>(false);
 
@@ -322,6 +323,7 @@ public:
                     std::ignore = co_await (*fn_holder)(thread);
             }
         };
+
         inner.retry_count = this->retry_count;
         inner.context     = this->context;
         inner.on_error    = on_error;
@@ -329,6 +331,7 @@ public:
             if (*ran && on_complete)
                 on_complete();
         };
+
         inner.enqueue();
     }
 
@@ -420,6 +423,7 @@ public:
                 }
             }
         };
+
         inner.retry_count = this->retry_count;
         inner.context     = this->context;
         co_return co_await inner.dispatch();

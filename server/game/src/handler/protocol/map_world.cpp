@@ -54,6 +54,7 @@ async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs
     {
         std::ignore = co_await ch->map(this->server.maps[after->map], after->position);
     }
+
     co_return true;
 }
 

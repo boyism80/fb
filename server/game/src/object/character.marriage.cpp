@@ -52,24 +52,34 @@ std::optional<std::string> character::marriage::refusal(const character& target)
     auto map       = this->_owner.map();
     if (this->_spouse_id.has_value())
         return "이미 결혼을 하셨습니다.";
+
     if (this->remarryable() == false)
         return "재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.";
+
     if (this->_owner.level() < min_level)
         return std::format("레벨 {} 이상만 결혼할 수 있습니다.", min_level);
+
     if (&target == &this->_owner)
         return "자신과는 결혼할 수 없습니다.";
+
     if (this->_owner.thread() != target.thread() || map == nullptr || map != target.map())
         return "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
+
     if (this->_owner.world() != target.world())
         return "다른 서버 출신과는 결혼할 수 없습니다.";
+
     if (this->_owner.gender() == target.gender())
         return "같은 성별끼리는 결혼할 수 없습니다.";
+
     if (target.marriage._spouse_id.has_value())
         return "이미 결혼한 상대와는 결혼을 할 수 없습니다.";
+
     if (target.marriage.remarryable() == false)
         return "상대방은 아직 재혼할 수 없습니다.";
+
     if (target.level() < min_level)
         return std::format("결혼할 상대의 레벨이 {} 이상이어야 합니다.", min_level);
+
     return std::nullopt;
 }
 
@@ -143,6 +153,7 @@ async::task<std::optional<std::string>> character::marriage::marry(std::shared_p
         {
             x->unlock();
         }
+
         throw;
     }
 
@@ -150,6 +161,7 @@ async::task<std::optional<std::string>> character::marriage::marry(std::shared_p
     {
         x->unlock();
     }
+
     co_return error;
 }
 
@@ -242,6 +254,7 @@ async::task<std::optional<std::string>> character::marriage::divorce()
         {
             x->unlock();
         }
+
         throw;
     }
 
@@ -249,6 +262,7 @@ async::task<std::optional<std::string>> character::marriage::divorce()
     {
         x->unlock();
     }
+
     co_return error;
 }
 
@@ -272,5 +286,6 @@ async::task<std::array<std::shared_ptr<fb::async_shared_mutex>, 2>> character::m
     {
         co_await x->lock();
     }
+
     co_return locks;
 }

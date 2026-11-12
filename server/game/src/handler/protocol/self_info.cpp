@@ -35,6 +35,7 @@ async::task<bool> self_info<V>::handle(fb::socket<character>& session, game_reqs
         ch->update_internal();
         ch->update_buff();
     }
+
     co_return true;
 }
 

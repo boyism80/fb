@@ -61,8 +61,10 @@ int builtin::buff::builtin_time(lua_State* L)
         if (owner != nullptr && owner->buffs.find(locked->model().id) == locked)
             owner->buffs.renew(locked->model().id,
                                static_cast<uint32_t>(std::clamp<lua_Integer>(seconds, 0, UINT32_MAX)));
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (argc == 1)
         {
@@ -74,5 +76,6 @@ int builtin::buff::builtin_time(lua_State* L)
             co_return 0;
         }
     };
+
     return builder.run();
 }

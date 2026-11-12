@@ -116,6 +116,7 @@ async::task<std::optional<bool>> character::clan::transfer_money(uint32_t clan_i
         this->complete_money(request_id, applied.value());
     else
         this->_owner.unsettled.leave(request_id);
+
     co_return applied;
 }
 
@@ -198,6 +199,7 @@ async::task<bool> character::clan::map(std::shared_ptr<fb::game::map>      map,
         else
             ch->unsettled.leave(request_id);
     }
+
     co_return success;
 }
 
@@ -233,6 +235,7 @@ async::task<void> character::clan::settle_fee(uint64_t request_id)
         {
             if (sent.value() == false)
                 fb::logger::warn("{} clan fee {} dropped: clan {} is gone", this->_owner.name(), request_id, clan_id);
+
             this->_owner.unsettled.confirm(request_id);
         }
         else

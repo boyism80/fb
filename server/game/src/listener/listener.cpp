@@ -25,6 +25,7 @@ bool listener_impl::client_version_is(object& o, fb::protocol::CLIENT_VERSION ve
 {
     if (o.is(OBJECT_TYPE::CHARACTER) == false)
         return false;
+
     return static_cast<character&>(o).client_version == ver;
 }
 
@@ -36,8 +37,10 @@ bool listener_impl::client_match(object& o, fb::protocol::CLIENT_VERSION ver, fb
     auto& ch = static_cast<character&>(o);
     if (ch.client_version != ver)
         return false;
+
     if (ver != fb::protocol::CLIENT_VERSION::v651)
         return true;
+
     return ch.ui_mode == ui_mode;
 }
 
@@ -188,6 +191,7 @@ void listener_impl::send_non_character_external(object& me)
             this->send_object_update_pivot(me);
         }
     }
+
     break;
 
     case OBJECT_TYPE::MOB:
@@ -205,12 +209,14 @@ void listener_impl::send_non_character_external(object& me)
             this->send_object_update_pivot(me);
         }
     }
+
     break;
 
     default:
     {
         this->send_object_update_pivot(me);
     }
+
     break;
     }
 }
@@ -236,6 +242,7 @@ void listener_impl::send_non_character_external(object& me, character& you)
             });
         }
     }
+
     break;
 
     case OBJECT_TYPE::MOB:
@@ -255,6 +262,7 @@ void listener_impl::send_non_character_external(object& me, character& you)
             });
         }
     }
+
     break;
 
     default:
@@ -263,6 +271,7 @@ void listener_impl::send_non_character_external(object& me, character& you)
             you.send(game_resp::update<Ver>(me));
         });
     }
+
     break;
     }
 }
@@ -425,12 +434,14 @@ void listener_impl::on_sound(object& me, SOUND sound, uint8_t volume)
 {
     this->server.send(me, game_resp::sound(me, sound, volume), scope::PIVOT);
 }
+
 void listener_impl::on_effect(object& me, uint8_t value)
 {
     using cv     = fb::protocol::CLIENT_VERSION;
     auto matches = [](object& o, cv ver) -> bool {
         if (o.is(OBJECT_TYPE::CHARACTER) == false)
             return false;
+
         return static_cast<character&>(o).client_version == ver;
     };
 

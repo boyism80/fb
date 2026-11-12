@@ -25,6 +25,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
             this->bulletins.push_back(fb::bot::bulletin(id, title));
         }
     }
+
     break;
 
     case bulletin_type::articles:
@@ -48,6 +49,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
             this->articles.push_back(article);
         }
     }
+
     break;
 
     case bulletin_type::article:
@@ -62,6 +64,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
         this->article_contents = reader.read<std::string, uint16_t>();
         reader.read<uint8_t>(); // 0x00
     }
+
     break;
 
     case bulletin_type::mails:
@@ -87,6 +90,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
         reader.read<uint8_t>(); // 0x00
     }
+
     break;
 
     case bulletin_type::mail:
@@ -101,6 +105,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
         this->mail_contents    = reader.read<std::string, uint16_t>();
         reader.read<uint8_t>(); // 0x00
     }
+
     break;
 
     case bulletin_type::message:
@@ -111,6 +116,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
         this->message_text    = reader.read<std::string, uint8_t>();
         reader.read<uint8_t>(); // 0x00
     }
+
     break;
 
     default:

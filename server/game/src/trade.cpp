@@ -88,6 +88,7 @@ bool trade::begin(character& me, character& you)
     {
         me.message(e.what(), MESSAGE_TYPE::STATE);
     }
+
     return false;
 }
 
@@ -108,6 +109,7 @@ void trade::restore()
             item->trade_count(0);
             owner->items.update(index);
         }
+
         side.items.clear();
 
         // The offered money never left the owner's balance, so there is nothing to refund.
@@ -171,6 +173,7 @@ bool trade::up_item(character& ch, uint8_t index)
     {
         ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
+
     return false;
 }
 
@@ -196,6 +199,7 @@ bool trade::up_money(character& ch, uint64_t money)
     {
         ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
+
     return false;
 }
 
@@ -248,6 +252,7 @@ bool trade::count(character& ch, uint16_t count)
     {
         ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
+
     return false;
 }
 
@@ -258,6 +263,7 @@ bool trade::cancel(character& ch)
     this->restore();
     if (you != nullptr)
         ch.listener.on_trade_cancel(ch, *you);
+
     this->end();
     return true;
 }
@@ -419,8 +425,10 @@ async::task<void> trade::exchange()
         item_data["count"]     = static_cast<Json::Int64>(item->count());
         if (item->uid() != 0)
             item_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
+
         log_data["items1"].append(item_data);
     }
+
     log_data["items2"] = Json::Value(Json::arrayValue);
     for (auto& item : buffer2)
     {
@@ -430,6 +438,7 @@ async::task<void> trade::exchange()
         item_data["count"]     = static_cast<Json::Int64>(item->count());
         if (item->uid() != 0)
             item_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
+
         log_data["items2"].append(item_data);
     }
 

@@ -37,6 +37,7 @@ std::vector<uint8_t> inflate_bytes(const uint8_t* in, size_t in_size)
         {
             if (stream.total_out >= out.size())
                 out.resize(out.size() * 2);
+
             stream.next_out  = out.data() + stream.total_out;
             stream.avail_out = static_cast<uInt>(out.size() - stream.total_out);
             ret              = inflate(&stream, Z_NO_FLUSH);
@@ -45,6 +46,7 @@ std::vector<uint8_t> inflate_bytes(const uint8_t* in, size_t in_size)
         inflateEnd(&stream);
         if (ret != Z_STREAM_END)
             throw std::runtime_error("zlib inflate failed");
+
         out.resize(stream.total_out);
         return out;
     };
@@ -82,8 +84,10 @@ std::vector<tree_node> parse_tree(const std::vector<uint8_t>& data)
         {
             children.push_back(reader.read<std::string, uint16_t>());
         }
+
         nodes.push_back({std::move(name), std::move(children)});
     }
+
     return nodes;
 }
 
@@ -174,6 +178,7 @@ void meta_dat_file::load(std::string_view path, META_DAT_PARSE parse)
     {
         if (this->_entries[i].name != "GroupNames")
             continue;
+
         for (const auto& node : parse_tree(plains[i]))
         {
             auto group = meta_dat_collection_group{};
@@ -187,10 +192,12 @@ void meta_dat_file::load(std::string_view path, META_DAT_PARSE parse)
     {
         if (this->_entries[i].name != "Collections")
             continue;
+
         for (const auto& node : parse_tree(plains[i]))
         {
             if (node.children.size() < 4)
                 continue;
+
             auto item        = meta_dat_collection_item{};
             item.name        = trim_copy(node.name);
             item.group_id    = to_u8(node.children[0]);
@@ -201,8 +208,10 @@ void meta_dat_file::load(std::string_view path, META_DAT_PARSE parse)
             {
                 if (group.id != item.group_id)
                     continue;
+
                 if (group.items.size() <= item.slot)
                     group.items.resize(item.slot + 1);
+
                 group.items[item.slot] = std::move(item);
                 break;
             }
@@ -222,6 +231,7 @@ const meta_dat_entry* meta_dat_file::find(std::string_view name) const
         if (entry.name == name)
             return &entry;
     }
+
     return nullptr;
 }
 
@@ -233,6 +243,7 @@ std::vector<std::pair<std::string, uint32_t>> meta_dat_file::crc_list() const
     {
         list.emplace_back(entry.name, entry.crc);
     }
+
     return list;
 }
 
@@ -248,6 +259,7 @@ const meta_dat_collection_group* meta_dat_file::group(uint8_t id) const
         if (group.id == id)
             return &group;
     }
+
     return nullptr;
 }
 
@@ -259,10 +271,12 @@ const meta_dat_collection_item* meta_dat_file::find_item(std::string_view name) 
         {
             if (item.name.empty())
                 continue;
+
             if (item.name == name)
                 return &item;
         }
     }
+
     return nullptr;
 }
 

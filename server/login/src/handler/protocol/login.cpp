@@ -74,6 +74,7 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
             session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
         }
+
         session.data()->password_failures = 0;
 
         auto map = resp2.map;
@@ -145,6 +146,7 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         writer.write<uint8_t>(flags);
         if (flags == 0x04)
             writer.write<uint8_t>(static_cast<uint8_t>(sess->ui_mode));
+
         co_await this->server
             .transfer(session, resp3.ip, resp3.port, internal::Service::Login, world, table::map[map].host, parameter);
         co_return true;
@@ -185,6 +187,7 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
                 session.close();
             }
         }
+
         co_return false;
     }
 
@@ -220,11 +223,13 @@ std::string login<V>::build_maintenance_message(const std::optional<std::string>
     {
         maintenance_message += "\n" + message.value();
     }
+
     if (end_time.has_value() && !end_time.value().empty())
     {
         maintenance_message += "\n" + std::format(_TEXT(MESSAGE_MAINTENANCE_END_TIME),
                                                   fb::model::datetime(end_time.value()).to_local().to_string());
     }
+
     return maintenance_message;
 }
 

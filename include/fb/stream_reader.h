@@ -83,6 +83,7 @@ public:
 
         if (buffer != nullptr)
             memcpy(buffer, this->_stream.data() + this->_seek, size);
+
         this->_seek += size;
     }
 

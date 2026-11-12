@@ -70,6 +70,7 @@ std::string fb::cp949(std::string_view utf8)
         *dst++    = '?';
         dst_size--;
     }
+
     iconv_close(cd);
 
     return std::string(dst_vec.data());
@@ -115,6 +116,7 @@ std::string fb::utf8(std::string_view cp949)
         *dst++ = '?';
         dst_size--;
     }
+
     iconv_close(cd);
 
     return std::string(dst_vec.data());
@@ -248,9 +250,11 @@ bool utf8_first_codepoint(std::string_view u8, char32_t& out)
     {
         if (u8.size() < 2)
             return false;
+
         auto b1 = static_cast<uint8_t>(u8[1]);
         if ((b1 & 0xC0) != 0x80)
             return false;
+
         out = (static_cast<char32_t>(b0 & 0x1F) << 6) | (b1 & 0x3F);
         return true;
     }
@@ -258,10 +262,12 @@ bool utf8_first_codepoint(std::string_view u8, char32_t& out)
     {
         if (u8.size() < 3)
             return false;
+
         auto b1 = static_cast<uint8_t>(u8[1]);
         auto b2 = static_cast<uint8_t>(u8[2]);
         if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80)
             return false;
+
         out = (static_cast<char32_t>(b0 & 0x0F) << 12) | (static_cast<char32_t>(b1 & 0x3F) << 6) | (b2 & 0x3F);
         return true;
     }
@@ -269,11 +275,13 @@ bool utf8_first_codepoint(std::string_view u8, char32_t& out)
     {
         if (u8.size() < 4)
             return false;
+
         auto b1 = static_cast<uint8_t>(u8[1]);
         auto b2 = static_cast<uint8_t>(u8[2]);
         auto b3 = static_cast<uint8_t>(u8[3]);
         if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80)
             return false;
+
         out = (static_cast<char32_t>(b0 & 0x07) << 18) | (static_cast<char32_t>(b1 & 0x3F) << 12) |
               (static_cast<char32_t>(b2 & 0x3F) << 6) | (b3 & 0x3F);
         return true;
@@ -309,6 +317,7 @@ bool is_hangul_syllable_bytes(uint8_t lead, uint8_t trail)
     char32_t cp = 0;
     if (!cp949_pair_to_codepoint(lead, trail, cp))
         return false;
+
     return codepoint_is_hangul_syllable(cp);
 }
 
@@ -331,6 +340,7 @@ size_t fb::text_length(std::string_view text)
 #endif
     return length;
 }
+
 bool fb::assert_korean(std::string_view cp949, bool completed)
 {
     if (cp949.empty())
@@ -341,6 +351,7 @@ bool fb::assert_korean(std::string_view cp949, bool completed)
         auto lead = static_cast<uint8_t>(cp949[i]);
         if (lead < 0x80)
             return false;
+
         if (i + 1 >= cp949.size())
             return false;
 
@@ -358,6 +369,7 @@ bool fb::assert_korean(std::string_view cp949, bool completed)
             char32_t cp = 0;
             if (!cp949_pair_to_codepoint(lead, trail, cp))
                 return false;
+
             if (!codepoint_is_hangul_syllable(cp) && !codepoint_is_hangul_jamo(cp))
                 return false;
         }

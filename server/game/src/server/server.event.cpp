@@ -76,6 +76,7 @@ async::task<void> fb::game::server::unload(character& ch)
     auto self = ch.shared_from_this_as<character>();
     if (this->characters.find(ch.id) == self)
         this->characters.remove(self);
+
     co_await ch.destroy();
 }
 
@@ -110,6 +111,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         {
             co_await this->save(*ch);
         }
+
         saved = true;
     }
     catch (std::exception& e)
@@ -149,6 +151,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             log_data["position_x"] = ptr->position().x;
             log_data["position_y"] = ptr->position().y;
         }
+
         this->log.write("logout", log_data);
 
         co_await this->unload(*ptr);
@@ -206,6 +209,7 @@ void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
     {
         if (std::string_view(t.name) == "castle" && scope == "cross")
             continue;
+
         this->handler.amqp.declare_queue("amq.direct", fb::amqp_key(t.name, scope, id));
     }
 }

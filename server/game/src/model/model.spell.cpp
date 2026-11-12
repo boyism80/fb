@@ -37,10 +37,13 @@ fb::model::spell* fb::model::___spell::name2spell(std::string_view name) const
                     cache.clear();
                     cache_owner = published;
                 }
+
                 cache[name_str] = &v;
             }
+
             return &v;
         }
     }
+
     return nullptr;
 }

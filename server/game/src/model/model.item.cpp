@@ -20,6 +20,7 @@ ITEM_ATTRIBUTE fb::model::item::attr() const
     auto attr = ITEM_ATTRIBUTE::NONE;
     if (this->capacity > 1)
         attr = ITEM_ATTRIBUTE((uint32_t)attr | (uint32_t)ITEM_ATTRIBUTE::BUNDLE);
+
     return attr;
 }
 
@@ -66,8 +67,10 @@ fb::model::item* fb::model::___item::name2item(std::string_view name) const
                     cache.clear();
                     cache_owner = published;
                 }
+
                 cache[name_str] = &v;
             }
+
             return &v;
         }
     }
@@ -97,6 +100,7 @@ std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_v
         {
             (*built)[v.name] = &v;
         }
+
         sorted_items = built;
 
         auto published = fb::model::table::item.get();
@@ -117,6 +121,7 @@ std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_v
         {
             result.push_back(item);
         }
+
         return result;
     }
 

@@ -46,6 +46,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             wcs.insert(wcs.begin(), this->_syllables.at(index % base));
             index /= base;
         }
+
         return fb::M(wcs);
     };
 

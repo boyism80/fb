@@ -117,6 +117,7 @@ void push_dialog_ext(fb::lua::context* lua, const dialog_ext_bot& resp)
         lua->pushstring(resp.list_lists[i]);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 
     lua->pushstring("input_ext_top");
@@ -193,6 +194,7 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
         lua->settable(-3);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 
     lua->pushstring("menu_menus");
@@ -203,6 +205,7 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
         lua->pushstring(resp.menu_menus[i]);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 
     lua->pushstring("slot_slots");
@@ -213,6 +216,7 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
         lua->pushinteger(resp.slot_slots[i]);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 
     lua->pushstring("buy_entries");
@@ -229,6 +233,7 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
         lua->settable(-3);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 
     lua->pushstring("subtype");
@@ -288,6 +293,7 @@ int bot_request_dialog_impl(lua_State* L)
                 lua_pop(L_state, 2);
                 return false;
             }
+
             auto accepted = lua_toboolean(L_state, -1) != 0;
             lua_pop(L_state, 2);
             return accepted;
@@ -307,15 +313,18 @@ int bot_request_dialog_impl(lua_State* L)
 
         cleanup();
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         if (result->has_value() == false)
         {
             lua->pushnil();
             co_return 1;
         }
+
         PushFn(lua, result->value());
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -365,6 +374,7 @@ int builtin::game_bot::builtin_last_dialog(lua_State* L)
     {
         lua->pushnil();
     }
+
     return 2;
 }
 
@@ -387,5 +397,6 @@ int builtin::game_bot::builtin_take_messages(lua_State* L)
         lua->pushstring(messages[i]);
         lua->settable(-3);
     }
+
     return 1;
 }

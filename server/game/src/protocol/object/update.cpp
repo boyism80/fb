@@ -38,6 +38,7 @@ void update<V>::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(object->color());
         writer.write<uint8_t>(static_cast<uint8_t>(object->direction()));
     }
+
     writer.write<uint8_t>(0);
 }
 
@@ -68,11 +69,13 @@ void update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
             writer.write<uint8_t>(static_cast<uint8_t>(fb::game::OBJECT_CURSOR::INSPECT));
             break;
         }
+
         writer.write<uint32_t>(object->oid());
         writer.write<uint16_t>(object->look());
         writer.write<uint8_t>(object->color());
         writer.write<uint8_t>(static_cast<uint8_t>(object->direction()));
     }
+
     writer.write<uint8_t>(0);
 }
 #else
@@ -105,8 +108,10 @@ void update<V>::deserialize(fb::stream_reader<big_endian>& reader)
             obj.direction = reader.read<uint8_t>();
             obj.facing    = obj.direction;
         }
+
         this->objects_data.push_back(obj);
     }
+
     reader.read<uint8_t>();
 }
 #endif

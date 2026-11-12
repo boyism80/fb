@@ -19,6 +19,7 @@ void sha256::transform(const uint8_t* block)
         w[i] = (uint32_t(block[i * 4]) << 24) | (uint32_t(block[i * 4 + 1]) << 16) | (uint32_t(block[i * 4 + 2]) << 8) |
                uint32_t(block[i * 4 + 3]);
     }
+
     for (int i = 16; i < 64; i++)
     {
         auto s0 = std::rotr(w[i - 15], 7) ^ std::rotr(w[i - 15], 18) ^ (w[i - 15] >> 3);
@@ -101,6 +102,7 @@ sha256::digest_type sha256::final()
     {
         length_bytes[i] = static_cast<uint8_t>(bit_length >> (56 - i * 8));
     }
+
     this->update(length_bytes, sizeof(length_bytes));
 
     auto digest = digest_type{};
@@ -111,6 +113,7 @@ sha256::digest_type sha256::final()
         digest[i * 4 + 2] = static_cast<uint8_t>(this->_state[i] >> 8);
         digest[i * 4 + 3] = static_cast<uint8_t>(this->_state[i]);
     }
+
     return digest;
 }
 
@@ -157,5 +160,6 @@ bool fb::constant_time_equal(const void* lhs, const void* rhs, size_t size)
     {
         diff |= l[i] ^ r[i];
     }
+
     return diff == 0;
 }

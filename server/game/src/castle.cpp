@@ -105,6 +105,7 @@ bool castle::load(const castle_dto& row)
         this->_phase        = siege_phase::RUNNING;
         this->_siege_winner = std::nullopt;
     }
+
     return true;
 }
 

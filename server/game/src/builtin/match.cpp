@@ -87,6 +87,7 @@ int builtin::match::builtin_state(lua_State* L)
         lua->pushstring("waiting");
         break;
     }
+
     return 1;
 }
 
@@ -119,6 +120,7 @@ int builtin::match::builtin_duration(lua_State* L)
     auto grace   = uint32_t{0};
     if (lua->argc() >= 3)
         grace = static_cast<uint32_t>(lua->tointeger(3));
+
     session->duration(seconds, grace);
     return 0;
 }
@@ -150,6 +152,7 @@ int builtin::match::builtin_finish(lua_State* L)
     auto grace = uint32_t{0};
     if (lua->argc() >= 2)
         grace = static_cast<uint32_t>(lua->tointeger(2));
+
     session->finish(grace);
     return 0;
 }
@@ -174,6 +177,7 @@ int builtin::match::builtin_members(lua_State* L)
         lua->pushobject(*members[i]);
         lua->rawseti(-2, i + 1);
     }
+
     return 1;
 }
 
@@ -221,6 +225,7 @@ int builtin::match::builtin_map(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(*map);
+
     return 1;
 }
 
@@ -243,6 +248,7 @@ int builtin::match::builtin_team(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(*team);
+
     return 1;
 }
 
@@ -266,6 +272,7 @@ int builtin::match::builtin_teams(lua_State* L)
         lua->pushobject(*teams[i]);
         lua->rawseti(-2, i + 1);
     }
+
     return 1;
 }
 
@@ -298,6 +305,7 @@ int builtin::match_team::builtin_leader(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(*leader);
+
     return 1;
 }
 
@@ -321,5 +329,6 @@ int builtin::match_team::builtin_members(lua_State* L)
         lua->pushobject(*members[i]);
         lua->rawseti(-2, i + 1);
     }
+
     return 1;
 }

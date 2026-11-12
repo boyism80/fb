@@ -29,8 +29,10 @@ async::task<bool> web_map<V>::handle(fb::socket<character>& session, game_reqs::
                 auto& other = static_cast<character&>(obj);
                 if (&other == ch)
                     return true;
+
                 if (other.super_hide())
                     return true;
+
                 if (entries.size() >= 255)
                     return false;
 
@@ -46,6 +48,7 @@ async::task<bool> web_map<V>::handle(fb::socket<character>& session, game_reqs::
 
         std::ignore = ch->send(game_resp::web_map<V>(entries));
     }
+
     co_return true;
 }
 

@@ -68,6 +68,7 @@ async::task<std::shared_ptr<cash>> cash::replace(uint64_t value)
     {
         result = this->server.make<cash>(value);
     }
+
     co_await this->destroy();
     co_return result;
 }

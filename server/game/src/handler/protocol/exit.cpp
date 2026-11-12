@@ -46,6 +46,7 @@ async::task<bool> exit<V>::handle(fb::socket<character>& session, game_reqs::exi
             co_await this->server.transfer(session, ip, port, internal::Service::Game);
         }
     }
+
     co_return true;
 }
 

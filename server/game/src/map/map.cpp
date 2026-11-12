@@ -150,6 +150,7 @@ void map::update_door()
                 pivot.x++;
             }
         }
+
         pivot.y++;
     }
 }
@@ -493,8 +494,10 @@ void map::rezen_force() const
         {
             rezen->force_spawn(thread.id());
         }
+
         co_return;
     };
+
     builder.enqueue();
 }
 

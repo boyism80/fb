@@ -95,6 +95,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp2.error_code));
         }
+
         session.data()->password_failures = 0;
 
         session.send(response::message((_TEXT(MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD)), 0x00));
@@ -131,6 +132,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
                 session.close();
             }
         }
+
         co_return false;
     }
 

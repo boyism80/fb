@@ -56,6 +56,7 @@ int builtin::castle::builtin_owner_clan(lua_State* L)
         lua->pushnil();
     else
         lua->pushinteger(guard->value()->owner_clan_id().value());
+
     return 1;
 }
 
@@ -75,6 +76,7 @@ int builtin::castle::builtin_siege_id(lua_State* L)
         lua->pushnil();
     else
         lua->pushinteger(static_cast<lua_Integer>(guard->value()->siege_id().value()));
+
     return 1;
 }
 
@@ -114,6 +116,7 @@ int builtin::castle::builtin_siege_end_time(lua_State* L)
         lua->pushinteger(remaining.value());
     else
         lua->pushnil();
+
     return 1;
 }
 
@@ -159,6 +162,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -172,6 +176,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
         lua->pushinteger(result->remaining);
         co_return 3;
     };
+
     return builder.run();
 }
 
@@ -200,6 +205,7 @@ int builtin::castle::builtin_finish_siege(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
         {
@@ -211,6 +217,7 @@ int builtin::castle::builtin_finish_siege(lua_State* L)
         lua->pushboolean(*pending);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -235,6 +242,7 @@ int builtin::castle::builtin_end_siege(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         *result      = co_await server.castles.end_siege(divine_beast, winner_clan_id);
     };
+
     builder.resume = [=]() -> async::task<int> {
         switch (*result)
         {
@@ -250,7 +258,9 @@ int builtin::castle::builtin_end_siege(lua_State* L)
             lua->pushstring("not_active");
             break;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }

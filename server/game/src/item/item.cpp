@@ -83,6 +83,7 @@ std::string item::tip_message() const
     const std::string& desc = model.desc;
     if (desc.empty() == false)
         sstream << std::endl << std::endl << desc;
+
     return sstream.str();
 }
 
@@ -132,6 +133,7 @@ uint16_t item::free_space() const
 {
     if (this->_container != nullptr)
         return this->_container->free_space(this->model());
+
     return this->model().capacity - this->_count;
 }
 
@@ -320,8 +322,10 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.custom_name = std::nullopt;
     if (this->expire_time.has_value())
         result.expire_time = this->expire_time.value().to_string();
+
     if (this->_uid != 0)
         result.uid = this->_uid;
+
     return result;
 }
 

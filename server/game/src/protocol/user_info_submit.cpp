@@ -39,6 +39,7 @@ void user_info_submit<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_end
     {
         size += static_cast<uint16_t>(this->strings[i].size());
     }
+
     writer.write<uint16_t>(size);
     for (size_t i = 0; i < this->strings.size(); ++i)
     {

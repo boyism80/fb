@@ -69,6 +69,7 @@ async::task<bool> whisper<V>::handle(fb::socket<character>& session, game_reqs::
         if (ptr != nullptr)
             ptr->message(error.value(), MESSAGE_TYPE::NOTIFY);
     }
+
     co_return true;
 }
 

@@ -56,6 +56,7 @@ int builtin::model::map::builtin_root(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
@@ -77,6 +78,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     if (argc != 2)
     {
@@ -131,6 +133,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
         lua->pushinteger(params.bottom);
         lua_settable(L, -3);
     }
+
     return 1;
 }
 
@@ -139,6 +142,7 @@ int builtin::model::map::builtin_revive(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
@@ -165,6 +169,7 @@ int builtin::model::map::builtin_option(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
@@ -178,6 +183,7 @@ int builtin::model::map::builtin_siege_castle(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
@@ -212,13 +218,16 @@ int builtin::model::map::builtin_clone(lua_State* L)
         *holder = server->maps.clone(source);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -249,18 +258,23 @@ int builtin::model::map::builtin_instance(lua_State* L)
         auto inst = server->maps.find(source, slot);
         if (inst == nullptr)
             inst = server->maps.create_instance(source, slot);
+
         *holder = inst;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
+
 int builtin::model::map::builtin_instance_rule(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -289,5 +303,6 @@ int builtin::model::map::builtin_instance_capacity(lua_State* L)
         lua->pushnil();
     else
         lua->pushinteger(model->instance_capacity.value());
+
     return 1;
 }

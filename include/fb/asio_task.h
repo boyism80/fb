@@ -94,6 +94,7 @@ auto async_await_task(async::task<T> task, CompletionToken&& token)
                                 std::move(handler)(ep, T{});
                             else
                                 std::move(handler)(nullptr, std::move(*value));
+
                             work.reset();
                         });
                 });

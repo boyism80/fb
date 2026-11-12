@@ -135,6 +135,7 @@ void listener_impl::on_level_up(character& me)
     auto matches = [](object& o, cv ver) -> bool {
         if (o.is(OBJECT_TYPE::CHARACTER) == false)
             return false;
+
         return static_cast<character&>(o).client_version == ver;
     };
 
@@ -167,6 +168,7 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
         fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
             me.send(game_resp::update_internal<V>(me, level));
         });
+
         if (ENUM_IN(level, UPDATE_STATE_LEVEL::HP_MP))
         {
             auto include_max = ENUM_IN(level, UPDATE_STATE_LEVEL::BASED);
@@ -192,6 +194,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     auto flags = game_reqs::TRANSFER_PARAM::MAP;
     if (option.match.has_value() && option.match->id != 0)
         flags |= game_reqs::TRANSFER_PARAM::MATCH;
+
     if (me.client_version == fb::protocol::CLIENT_VERSION::v651 && me.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
         flags |= game_reqs::TRANSFER_PARAM::UI_MODE;
 
@@ -203,6 +206,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
         writer.write<uint16_t>(position.x);
         writer.write<uint16_t>(position.y);
     }
+
     if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::MATCH))
     {
         writer.write<uint64_t>(option.match->id);
@@ -211,6 +215,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
         writer.write<uint32_t>(option.match->expected);
         writer.write<uint32_t>(option.match->team_count);
     }
+
     if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::UI_MODE))
         writer.write<uint8_t>(static_cast<uint8_t>(me.ui_mode));
 
@@ -305,6 +310,7 @@ void listener_impl::on_screen_refresh(character& ch)
 
         obj->show(ch);
     }
+
     ch.show(ch);
     ch.send(game_resp::direction(ch));
     ch.send(game_resp::screen_refresh_complete());
@@ -350,6 +356,7 @@ async::task<void> listener_impl::on_show_user_list(character& ch)
                                      other->stat.base_hp() + other->stat.base_mp() * 2,
                                      std::move(entry));
             }
+
             co_return;
         });
 
@@ -370,6 +377,7 @@ async::task<void> listener_impl::on_show_user_list(character& ch)
         {
             sorted.push_back(std::move(std::get<user_list_entry>(rank)));
         }
+
         co_return sorted;
     });
 
@@ -428,6 +436,7 @@ void listener_impl::on_show_mail_box(character&                            ch,
                                             summary.title,
                                             summary.created_date});
     }
+
     ch.send(game_resp::bulletin_mails(dto, flag));
 }
 
@@ -544,6 +553,7 @@ void listener_impl::on_group_portrait(character& ch, std::vector<game_resp::grou
 
     if (entries.size() > 255)
         entries.resize(255);
+
     auto n = static_cast<uint8_t>(entries.size());
     ch.send(game_resp::group_portrait<fb::protocol::CLIENT_VERSION::v651>(2, n, std::move(entries)));
 }

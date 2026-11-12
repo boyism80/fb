@@ -21,6 +21,7 @@ async::task<bool> item_info<V>::handle(fb::socket<character>& session, game_reqs
     auto item = ch->items[request.slot];
     if (item == nullptr)
         item = ch->items.escrow().at(request.slot);
+
     if (item == nullptr)
         co_return false;
 

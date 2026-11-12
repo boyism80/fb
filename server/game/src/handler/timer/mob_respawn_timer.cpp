@@ -32,5 +32,6 @@ async::task<void> mob_respawn_timer::handle(const fb::model::datetime& now, std:
             }
         }
     }
+
     co_return;
 }

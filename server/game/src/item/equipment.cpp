@@ -68,6 +68,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->level() < params.min)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_LEVEL_INSUFFICIENT));
         }
+
         break;
 
         case DSL::strength:
@@ -76,6 +77,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->stat.str() < params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_TOO_HEAVY));
         }
+
         break;
 
         case DSL::dexterity:
@@ -84,6 +86,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->stat.dex() < params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_DEXTERITY_INSUFFICIENT));
         }
+
         break;
 
         case DSL::intelligence:
@@ -92,6 +95,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->stat.intelligence() < params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INTELLIGENCE_INSUFFICIENT));
         }
+
         break;
 
         case DSL::class_t:
@@ -100,6 +104,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->cls() != params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
+
         break;
 
         case DSL::promotion:
@@ -108,6 +113,7 @@ async::task<bool> fb::game::equipment::active()
             if (owner->promotion() < params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
+
         break;
 
         case DSL::gender:
@@ -116,9 +122,11 @@ async::task<bool> fb::game::equipment::active()
             if (owner->gender() != params.value)
                 throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_CANNOT_EQUIP));
         }
+
         break;
         }
     }
+
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:

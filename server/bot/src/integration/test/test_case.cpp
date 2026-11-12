@@ -36,12 +36,15 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     this->controller.hook<game_resp::show>(this, [this](game_bot& bot, const auto& resp) {
         return this->on_hook_show(bot, resp);
     });
+
     this->controller.hook<game_resp::update_external>(this, [this](game_bot& bot, const auto& resp) {
         return this->on_hook_update_external(bot, resp);
     });
+
     this->controller.hook<game_resp::map_config>(this, [this](game_bot& bot, const auto& resp) {
         return this->on_hook_map_config(bot, resp);
     });
+
     this->controller.hook<game_resp::update_internal>(this, [this](game_bot& bot, const auto& resp) {
         return this->on_hook_update_internal(bot, resp);
     });
@@ -82,6 +85,7 @@ void bot_integration_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> b
         auto position = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&slot](const auto& joined) {
             return joined->slot().has_value() && joined->slot().value() > slot.value();
         });
+
         this->_test_bots.insert(position, bot);
     }
 
@@ -106,6 +110,7 @@ void bot_integration_test::notify_ready()
         auto completion_exception = std::exception_ptr{};
         if (promise->try_set_value(completion_exception) == false && completion_exception != nullptr)
             std::rethrow_exception(completion_exception);
+
         return;
     }
 
@@ -114,8 +119,10 @@ void bot_integration_test::notify_ready()
         auto completion_exception = std::exception_ptr{};
         if (promise->try_set_value(completion_exception) == false && completion_exception != nullptr)
             std::rethrow_exception(completion_exception);
+
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -149,6 +156,7 @@ async::task<void> bot_integration_test::wait_until_ready()
             auto completion_exception = std::exception_ptr{};
             if (promise->try_set_exception(error, completion_exception) == false && completion_exception != nullptr)
                 std::rethrow_exception(completion_exception);
+
             co_return;
         },
         READY_TIMEOUT,
@@ -286,6 +294,7 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
     auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
         return b.get() == &bot;
     });
+
     for (uint32_t i = 0; i < this->_test_bots.size(); i++)
     {
         auto& b = this->_test_bots[i];

@@ -45,6 +45,7 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
             builder.func = [this](auto& thread) -> async::task<void> {
                 co_await this->_bot_controller.on_bot_connected(*this);
             };
+
             builder.enqueue();
         });
     }
@@ -99,9 +100,11 @@ async::task<bool> base_bot::changed(std::chrono::milliseconds within)
             within,
             fb::timer::repeat_type::once);
     }
+
     auto result = co_await change->task();
     if (timer != nullptr)
         timer->cancel();
+
     co_return result;
 }
 
@@ -139,6 +142,7 @@ async::task<void> base_bot::yield()
         std::ignore  = turn->try_set_value(true, failure);
         co_return;
     };
+
     builder.enqueue();
     std::ignore = co_await turn->task();
 }
@@ -158,8 +162,10 @@ void base_bot::wake(bool value)
             auto failure = std::exception_ptr{};
             std::ignore  = change->try_set_value(value, failure);
         }
+
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -194,6 +200,7 @@ void base_bot::interrupt_hooks()
         auto split = std::stable_partition(entries.begin(), entries.end(), [](const auto& hook) {
             return hook.interruptible == false;
         });
+
         std::move(split, entries.end(), std::back_inserter(released));
         entries.erase(split, entries.end());
     }

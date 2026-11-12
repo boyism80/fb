@@ -15,6 +15,7 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
         if (tile->object != value)
             return false;
     }
+
     return true;
 }
 
@@ -24,6 +25,7 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
     {
         if (opened != nullptr)
             *opened = true;
+
         return true;
     }
 
@@ -31,6 +33,7 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
     {
         if (opened != nullptr)
             *opened = false;
+
         return true;
     }
 

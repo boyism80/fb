@@ -49,6 +49,7 @@ bool group::enter(std::weak_ptr<character> ch)
     auto found = this->_active_members.find(ptr->id);
     if (found == this->_active_members.end() || found->second.expired())
         this->_active_members.insert_or_assign(ptr->id, ch);
+
     return true;
 }
 
@@ -114,6 +115,7 @@ std::vector<std::shared_ptr<character>> group::characters() const
         if (ptr != nullptr)
             result.push_back(ptr);
     }
+
     return result;
 }
 
@@ -157,6 +159,7 @@ std::vector<group::character_ptr> group::reload(const group& fresh)
             ++i;
         }
     }
+
     return removed;
 }
 

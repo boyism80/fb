@@ -62,6 +62,7 @@ character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(const character& 
         app.helmet       = static_cast<uint8_t>(helmet->model().dress);
         app.helmet_color = helmet->color();
     }
+
     return app;
 }
 
@@ -173,6 +174,7 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::serialize(fb::str
     uint8_t slot7 = this->hair_style;
     if (slot7 == 0)
         slot7 = static_cast<uint8_t>(this->hair);
+
     writer.write<uint8_t>(slot7);
     writer.write<uint8_t>(this->face_hair_tint != 0 ? this->face_hair_tint : this->hair_color.value_or(0x00));
     writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->gender)));
@@ -199,6 +201,7 @@ void character_appearance<V>::to_lua(fb::lua::context* lua) const
         lua->pushinteger(static_cast<lua_Integer>(this->disguise.value()));
         lua->settable(-3);
     }
+
     lua->pushstring("hair");
     lua->pushinteger(static_cast<lua_Integer>(this->hair));
     lua->settable(-3);
@@ -208,6 +211,7 @@ void character_appearance<V>::to_lua(fb::lua::context* lua) const
         lua->pushinteger(static_cast<lua_Integer>(this->hair_color.value()));
         lua->settable(-3);
     }
+
     lua->pushstring("gender");
     lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->gender)));
     lua->settable(-3);
@@ -217,36 +221,42 @@ void character_appearance<V>::to_lua(fb::lua::context* lua) const
         lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->state.value())));
         lua->settable(-3);
     }
+
     if (this->weapon.has_value())
     {
         lua->pushstring("weapon");
         lua->pushinteger(static_cast<lua_Integer>(this->weapon.value()));
         lua->settable(-3);
     }
+
     if (this->weapon_color.has_value())
     {
         lua->pushstring("weapon_color");
         lua->pushinteger(static_cast<lua_Integer>(this->weapon_color.value()));
         lua->settable(-3);
     }
+
     if (this->armor.has_value())
     {
         lua->pushstring("armor");
         lua->pushinteger(static_cast<lua_Integer>(this->armor.value()));
         lua->settable(-3);
     }
+
     if (this->armor_color.has_value())
     {
         lua->pushstring("armor_color");
         lua->pushinteger(static_cast<lua_Integer>(this->armor_color.value()));
         lua->settable(-3);
     }
+
     if (this->shield.has_value())
     {
         lua->pushstring("shield");
         lua->pushinteger(static_cast<lua_Integer>(this->shield.value()));
         lua->settable(-3);
     }
+
     if (this->shield_color.has_value())
     {
         lua->pushstring("shield_color");
@@ -264,6 +274,7 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
         lua->pushinteger(static_cast<lua_Integer>(this->disguise.value()));
         lua->settable(-3);
     }
+
     lua->pushstring("hair");
     lua->pushinteger(static_cast<lua_Integer>(this->hair));
     lua->settable(-3);
@@ -279,6 +290,7 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
         lua->pushinteger(static_cast<lua_Integer>(this->hair_color.value()));
         lua->settable(-3);
     }
+
     lua->pushstring("gender");
     lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->gender)));
     lua->settable(-3);
@@ -288,48 +300,56 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
         lua->pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(this->state.value())));
         lua->settable(-3);
     }
+
     if (this->weapon.has_value())
     {
         lua->pushstring("weapon");
         lua->pushinteger(static_cast<lua_Integer>(this->weapon.value()));
         lua->settable(-3);
     }
+
     if (this->weapon_color.has_value())
     {
         lua->pushstring("weapon_color");
         lua->pushinteger(static_cast<lua_Integer>(this->weapon_color.value()));
         lua->settable(-3);
     }
+
     if (this->armor.has_value())
     {
         lua->pushstring("armor");
         lua->pushinteger(static_cast<lua_Integer>(this->armor.value()));
         lua->settable(-3);
     }
+
     if (this->armor_color.has_value())
     {
         lua->pushstring("armor_color");
         lua->pushinteger(static_cast<lua_Integer>(this->armor_color.value()));
         lua->settable(-3);
     }
+
     if (this->shield.has_value())
     {
         lua->pushstring("shield");
         lua->pushinteger(static_cast<lua_Integer>(this->shield.value()));
         lua->settable(-3);
     }
+
     if (this->shield_color.has_value())
     {
         lua->pushstring("shield_color");
         lua->pushinteger(static_cast<lua_Integer>(this->shield_color.value()));
         lua->settable(-3);
     }
+
     if (this->helmet.has_value())
     {
         lua->pushstring("helmet");
         lua->pushinteger(static_cast<lua_Integer>(this->helmet.value()));
         lua->settable(-3);
     }
+
     if (this->helmet_color.has_value())
     {
         lua->pushstring("helmet_color");

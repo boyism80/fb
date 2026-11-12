@@ -93,6 +93,7 @@ public:
             auto found = this->_entries.find(key);
             if (found == this->_entries.end())
                 co_return nullptr;
+
             co_return found->second.value;
         }
 
@@ -117,6 +118,7 @@ public:
                 found.value      = loaded;
                 found.expires_at = clock::now() + this->_ttl;
             }
+
             waiters = std::move(found.waiters);
         }
 

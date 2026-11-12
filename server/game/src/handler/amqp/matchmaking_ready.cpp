@@ -40,6 +40,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                     auto cross_maintenance = ch->server.maintenance.read([](const fb::game::maintenance_state& x) {
                         return x.cross;
                     });
+
                     if (cross_maintenance.has_value() && cross_maintenance->admits(ch->role(), false) == false)
                     {
                         ch->timer(0, fb::model::enum_value::TIMER_TYPE::OFF);
@@ -60,8 +61,10 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                             std::ignore = co_await lua->call(6);
                         }
                     }
+
                     co_return;
                 };
+
                 builder.enqueue();
             }
         }

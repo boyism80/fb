@@ -21,6 +21,7 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
         this->server.reset_now_offset();
     else
         this->server.now(fb::model::datetime(message.datetime));
+
     auto shift = this->server.now() - before;
 
     this->server.characters.foreach_enqueue([shift](auto& ch) -> async::task<void> {
@@ -30,6 +31,7 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
             if (spell != nullptr)
                 spell->delay(0);
         }
+
         ch->stat.shift_recovery(shift);
         ch->evaluation.shift(shift);
         ch->ping_state().last_ping_time += shift;
@@ -60,9 +62,12 @@ async::task<void> set_datetime::handle(const internal_resp::SetDateTime& message
                     mob->action_time(mob->action_time() + shift);
                 }
             }
+
             co_return;
         };
+
         builder.enqueue();
     }
+
     co_return;
 }

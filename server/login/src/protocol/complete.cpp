@@ -33,12 +33,15 @@ void complete<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& 
             this->divine_beast = reader.read<uint8_t>();
             if (reader.readable_size() > 0)
                 reader.read<std::string, uint8_t>();
+
             while (reader.readable_size() > 0)
             {
                 reader.read<uint8_t>();
             }
+
             return;
         }
+
         reader.seek(pos);
     }
 
@@ -49,6 +52,7 @@ void complete<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& 
     this->face         = 0;
     if (reader.readable_size() > 0)
         reader.read<std::string, uint8_t>();
+
     while (reader.readable_size() > 0)
     {
         reader.read<uint8_t>();

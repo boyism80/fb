@@ -33,6 +33,7 @@ void bulletin_mails::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(static_cast<uint8_t>(dt.day()));
         writer.write<std::string>(mail.title);
     }
+
     writer.write<uint8_t>(0x00);
 }
 #else

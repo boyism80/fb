@@ -226,6 +226,7 @@ public:
         {
             ptr->on_init();
         }
+
         return ptr;
     }
 
@@ -236,8 +237,10 @@ public:
             auto shared_ptr = obj.template shared_from_this_as<object>();
             std::ignore     = co_await shared_ptr->map(nullptr, std::nullopt, { .destroy_type = destroy_type });
         }
+
         co_return;
     }
+
     // clang-format on
 
 protected:

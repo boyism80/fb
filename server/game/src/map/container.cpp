@@ -95,6 +95,7 @@ void map::container::remove_snapshot(uint32_t id)
         if (map->id != id)
             next->push_back(map);
     }
+
     this->_snapshot.store(next);
 }
 
@@ -312,6 +313,7 @@ void map::container::invoke_init_script(const std::shared_ptr<fb::game::map>& ma
     builder.func = [this, map](auto&) -> async::task<void> {
         co_await this->run_init_script(map);
     };
+
     builder.enqueue();
 }
 
@@ -324,6 +326,7 @@ async::task<void> map::container::invoke_init_script_wait(const std::shared_ptr<
     builder.func = [this, map](auto&) -> async::task<void> {
         co_await this->run_init_script(map);
     };
+
     co_await builder.dispatch();
 }
 
@@ -370,6 +373,7 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
         std::ignore = co_await npc->map(map, position);
         npc->direction(direction);
     };
+
     builder.enqueue();
 }
 
@@ -411,8 +415,10 @@ async::task<void> map::container::cleanup()
                     co_await obj->destroy();
                 }
             }
+
             co_return;
         };
+
         tasks.push_back(builder.dispatch());
     }
 
@@ -420,6 +426,7 @@ async::task<void> map::container::cleanup()
     {
         co_await task;
     }
+
     co_return;
 }
 
@@ -479,6 +486,7 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
         params->add_map(map);
         co_return;
     };
+
     builder.enqueue();
 
     this->spawn_npcs(map);
@@ -570,8 +578,10 @@ std::shared_ptr<fb::game::map> map::container::choice_by_capacity(const std::sha
             if (it->second->character_count() < limit)
                 return it->second;
         }
+
         return nullptr;
     });
+
     if (existing != nullptr)
         return existing;
 
@@ -608,6 +618,7 @@ std::shared_ptr<fb::game::map> map::container::choice_by_group(character&       
             builder.func = [this, created](auto&) -> async::task<void> {
                 co_await this->destroy(created);
             };
+
             builder.enqueue();
             return winner;
         }
@@ -636,8 +647,10 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
         auto inst = this->find(dest, session->slot());
         if (inst == nullptr)
             inst = this->create_instance(dest, session->slot());
+
         if (inst != nullptr)
             return inst;
+
         if (cross_server)
             throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_UNAVAILABLE));
     }
@@ -645,6 +658,7 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     {
         if (user)
             throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_NEED_MATCH));
+
         return dest;
     }
 
@@ -659,6 +673,7 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     case fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP:
         if (ch.group.id().has_value() == false)
             throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_NEED_GROUP));
+
         routed = this->choice_by_group(ch, source);
         break;
 
@@ -668,6 +683,7 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
 
     if (routed == nullptr)
         throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_UNAVAILABLE));
+
     return routed;
 }
 
@@ -702,8 +718,10 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
                 else
                     co_await obj->destroy();
             }
+
             co_return;
         };
+
         co_await builder.dispatch();
     }
 
@@ -714,6 +732,7 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
         builder.func = [character, map](auto&) -> async::task<void> {
             std::ignore = co_await map->kick(*character);
         };
+
         co_await builder.dispatch();
     }
 
@@ -724,6 +743,7 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
             params->remove_map(map->id);
             co_return;
         };
+
         co_await builder.dispatch();
     }
 
@@ -745,8 +765,10 @@ void map::container::rezen_force()
                     rezen->force_spawn(thread.id());
                 }
             }
+
             co_return;
         };
+
         builder.enqueue();
     }
 }
@@ -804,8 +826,10 @@ async::task<void> map::container::rebuild_rezens()
 
             if (rebuilt > 0)
                 fb::logger::info("rezen rebuilt for {} map(s) after table reload", rebuilt);
+
             co_return;
         };
+
         tasks.push_back(builder.dispatch());
     }
 
@@ -813,6 +837,7 @@ async::task<void> map::container::rebuild_rezens()
     {
         co_await task;
     }
+
     co_return;
 }
 

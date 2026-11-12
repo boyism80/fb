@@ -18,12 +18,14 @@ void agreement<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->enc_key_size = reader.read<uint8_t>();
     if (this->enc_key_size > sizeof(this->enc_key))
         throw std::runtime_error("invalid encryption key size in agreement transfer");
+
     reader.read(this->enc_key, this->enc_key_size);
 
     this->from  = reader.read<uint8_t>();
     auto packed = reader.read<uint16_t>();
     if (is_supported(packed) == false)
         throw std::runtime_error("unsupported client version in agreement transfer");
+
     this->client_version = static_cast<CLIENT_VERSION>(packed);
 
     if (this->client_version == CLIENT_VERSION::v651)

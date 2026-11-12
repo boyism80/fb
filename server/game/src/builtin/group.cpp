@@ -37,6 +37,7 @@ int builtin::group::builtin_master(lua_State* L)
         lua->pushstring(guard->value()->master());
     else
         lua->pushnil();
+
     return 1;
 }
 
@@ -64,6 +65,7 @@ int builtin::group::builtin_members(lua_State* L)
         lua->pushstring(members[i]);
         lua_rawseti(L, -2, i + 1);
     }
+
     return 1;
 }
 
@@ -112,6 +114,7 @@ int builtin::group::builtin_nears(lua_State* L)
         lua_rawseti(L, -2, i + 1);
         i++;
     }
+
     return 1;
 }
 
@@ -120,6 +123,7 @@ int builtin::group::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
     auto  argc  = lua->argc();
     auto  group = lua->touserdata<fb::game::group>(1);
@@ -163,6 +167,7 @@ int builtin::group::builtin_message(lua_State* L)
     auto builder = lua->new_co_builder();
     if (master_ch != nullptr)
         builder.weak = master_ch->template weak_from_this_as<fb::game::character>();
+
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
@@ -177,13 +182,16 @@ int builtin::group::builtin_message(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -192,6 +200,7 @@ int builtin::group::builtin_toggle(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc  = lua->argc();
     auto group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
@@ -224,12 +233,15 @@ int builtin::group::builtin_toggle(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }

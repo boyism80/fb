@@ -37,6 +37,7 @@ async::task<bool> swap<V>::handle(fb::socket<character>& session, game_reqs::swa
     default:
         break;
     }
+
     co_return true;
 }
 

@@ -46,6 +46,7 @@ public:
     {
         return FB_BOT_INTEGRATION_PROTOCOL_ENTRY_COUNT;
     }
+
     static const protocol_entry* entries();
 
     static const protocol_entry* find(protocol_direction direction, const char* name);

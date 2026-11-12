@@ -25,6 +25,7 @@ async::task<bool> browser<V>::handle(fb::socket<character>& session, game_reqs::
         static constexpr auto kCookie = "uid=1&boardinfo=test";
         std::ignore                   = ch->send(game_resp::browser<V>(0, kUrl, kUrl, kCookie));
     }
+
     co_return true;
 }
 

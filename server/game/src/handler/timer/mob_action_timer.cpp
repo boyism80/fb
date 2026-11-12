@@ -63,5 +63,6 @@ async::task<void> mob_action_timer::handle(const fb::model::datetime& now, std::
             }
         }
     }
+
     co_return;
 }

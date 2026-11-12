@@ -40,6 +40,7 @@ void marshal_lua_game_resp__action(lua_State* L, const fb::protocol::header& hea
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("value_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.value));
@@ -53,6 +54,7 @@ void marshal_lua_game_resp__action(lua_State* L, const fb::protocol::header& hea
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("duration_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.duration));
@@ -291,6 +293,7 @@ void marshal_lua_game_resp__chat(lua_State* L, const fb::protocol::header& heade
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("type_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.type));
@@ -692,6 +695,7 @@ void marshal_lua_game_resp__direction(lua_State* L, const fb::protocol::header& 
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("value_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.value));
@@ -891,6 +895,7 @@ void marshal_lua_game_resp__holyday_screen(lua_State*                  L,
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("direction_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.direction));
@@ -1081,6 +1086,7 @@ void marshal_lua_game_resp__item_unequip(lua_State*                   L,
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("parts_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.parts));
@@ -1167,6 +1173,7 @@ void marshal_lua_game_resp__item_update_slot(lua_State*                   L,
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("parts_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.parts));
@@ -1320,6 +1327,7 @@ void marshal_lua_game_resp__message(lua_State* L, const fb::protocol::header& he
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("type_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.type));
@@ -1355,6 +1363,7 @@ void marshal_lua_game_resp__move(lua_State* L, const fb::protocol::header& heade
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("direction_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.direction));
@@ -1381,6 +1390,7 @@ void marshal_lua_game_resp__move_confirm(lua_State*                   L,
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("direction_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.direction));
@@ -1428,6 +1438,7 @@ void marshal_lua_game_resp__move_confirm_noscroll(lua_State*                  L,
     {
         lua->pushnil();
     }
+
     lua->settable(-3);
     lua->pushstring("direction_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.direction));
@@ -1655,6 +1666,7 @@ void marshal_lua_game_resp__show(lua_State* L, const fb::protocol::header& heade
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("state_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.state));
@@ -2004,6 +2016,7 @@ void marshal_lua_game_resp__update(lua_State*                   L,
             lua->settable(-3);
             lua->settable(-3);
         }
+
         lua->settable(-3);
     });
 }
@@ -2060,6 +2073,7 @@ void marshal_lua_game_resp__update_external(lua_State*                   L,
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("state_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.state));
@@ -2139,6 +2153,7 @@ void marshal_lua_game_resp__update_internal(lua_State*                   L,
         {
             lua->pushnil();
         }
+
         lua->settable(-3);
         lua->pushstring("level_id");
         lua->pushinteger(static_cast<lua_Integer>(resp.level));
@@ -2263,6 +2278,7 @@ void marshal_lua_game_resp__user_list(lua_State* L, const fb::protocol::header& 
         lua->settable(-3);
         lua->settable(-3);
     }
+
     lua->settable(-3);
 }
 
@@ -2399,6 +2415,7 @@ int lua_builder_game_reqs__collection(lua_State* L)
                         return std::make_shared<game_reqs::collection<V>>(slot);
                 });
         }));
+
     return 1;
 }
 
@@ -2624,6 +2641,7 @@ int lua_builder_game_reqs__move(lua_State* L)
         position.x = static_cast<uint16_t>(lua->tointeger(3));
         position.y = static_cast<uint16_t>(lua->tointeger(4));
     }
+
     lua_protocol::push_request<game_reqs::move>(L, direction, walk_queue_slot, position);
     return 1;
 }
@@ -2729,6 +2747,7 @@ int lua_builder_game_reqs__spell_cast(lua_State* L)
         position.x = static_cast<uint16_t>(lua->tointeger(5));
         position.y = static_cast<uint16_t>(lua->tointeger(6));
     }
+
     lua_protocol::push_request<game_reqs::spell_cast>(L, type, slot, message, oid, position);
     return 1;
 }

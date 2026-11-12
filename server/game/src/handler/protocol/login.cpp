@@ -104,7 +104,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     auto maintenance = this->server.maintenance.read([](const maintenance_state& x) {
         return x.home;
     });
-    auto in_match    = request.match.has_value() && request.match->id != 0;
+
+    auto in_match = request.match.has_value() && request.match->id != 0;
     if (maintenance.has_value() && maintenance->admits(static_cast<ROLE>(resp.character.role), in_match) == false)
     {
         fb::logger::info("Character {} login refused: maintenance", resp.character.name);
@@ -165,6 +166,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             co_return nullptr;
         }
     }
+
     for (auto& x : resp.spells)
     {
         if (table::spell->contains(x.model) == false)
@@ -173,6 +175,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             co_return nullptr;
         }
     }
+
     for (auto& x : resp.character.buffs)
     {
         if (table::spell->contains(x.model) == false)
@@ -194,6 +197,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         params.first_login_date = std::make_optional(fb::model::datetime(resp.character.first_login_date.value()));
     else
         params.first_login_date = std::nullopt;
+
     params.role         = static_cast<ROLE>(resp.character.role);
     params.class_type   = static_cast<CLASS>(resp.character.class_type);
     params.promotion    = resp.character.promotion;
@@ -231,6 +235,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         params.mimicry = std::nullopt;
     }
+
     params.nation       = static_cast<NATION>(resp.character.nation);
     params.divine_beast = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
     params.super_hide   = resp.option.super_hide;
@@ -239,11 +244,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         params.super_hide = false;
         if (params.state == STATE::CLOACK)
             params.state = STATE::NORMAL;
+
         std::ignore = this->server.http.post(
             "internal",
             "/in-game/option",
             internal_reqs::SetOption{params.world, params.id, {{static_cast<uint8_t>(OPTION::SUPER_HIDE), false}}});
     }
+
     params.reputation          = resp.character.reputation;
     params.evaluation          = resp.character.evaluation;
     params.evaluation_playtime = resp.character.evaluation_playtime;
@@ -251,6 +258,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         params.evaluated_targets.insert_or_assign(evaluated.target, fb::model::datetime(evaluated.evaluated_at));
     }
+
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
 
@@ -285,6 +293,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         ch->items.load(escrow);
     }
+
     this->init_items(resp.items, *ch);
 
     if (request.match.has_value() && request.match->id != 0)
@@ -372,6 +381,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         if (ch->unsettled.find(escrow_id) == nullptr)
             fb::logger::warn("{} escrow {} has no unsettled request (money {})", ch->name(), escrow_id, money);
     }
+
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes, resp.archived_storage_boxes);
     ch->options.load(resp.option);
     {
@@ -381,8 +391,10 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
         }
+
         ch->friends.load(std::move(entries), resp.friends_revision);
     }
+
     ch->marriage.restore(resp.marriage);
 
     ch->init();
@@ -461,6 +473,7 @@ async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
                 fb::logger::warn("Character {} is still logged in elsewhere after {} attempts", request.name, attempt);
                 co_return false;
             }
+
             co_await thread->switching();
             co_await thread->sleep(LOGIN_RETRY_INTERVAL);
             break;
@@ -495,6 +508,7 @@ std::string login<V>::elapsed_message(std::string_view dt)
     auto minutes = elapsed.minutes();
     if (minutes > 0)
         sstream << minutes << _TEXT(MESSAGE_LOGIN_ELAPSED_MINUTES);
+
     sstream << _TEXT(MESSAGE_LOGIN_ELAPSED_SUFFIX);
 
     return sstream.str();
@@ -574,9 +588,11 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
             });
         }
     };
+
     this->server.pending_logins.write([&request](std::unordered_multiset<std::string>& names) {
         names.insert(request.name);
     });
+
     auto pending = pending_login{this->server, request.name};
 
     if (co_await this->assert_login(request) == false)
@@ -620,6 +636,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         {
             fb::logger::fatal("Character {} logout after failed login failed: {}", request.name, e.what());
         }
+
         co_return false;
     }
 
@@ -633,6 +650,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         log_data["position_x"] = ch->position().x;
         log_data["position_y"] = ch->position().y;
     }
+
     this->server.log.write("login", log_data);
 
     auto weak     = ch->template weak_from_this_as<character>();
@@ -651,6 +669,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
             std::ignore = co_await ptr->home.recall();
         }
     };
+
     builder.enqueue();
 
     try

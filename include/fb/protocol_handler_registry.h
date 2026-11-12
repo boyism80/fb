@@ -159,6 +159,7 @@ public:
         auto it = this->_entries.find(opcode);
         if (it == this->_entries.end())
             return false;
+
         return it->second.contains(static_cast<uint16_t>(version));
     }
 
@@ -173,6 +174,7 @@ public:
         auto it = this->_policies.find(opcode);
         if (it == this->_policies.end())
             return true;
+
         return it->second.decrypt;
     }
 

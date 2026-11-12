@@ -68,9 +68,11 @@ int builtin::server::builtin_sleep(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         co_await server.sleep(std::chrono::milliseconds(ms));
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -126,6 +128,7 @@ int builtin::server::builtin_now(lua_State* L)
             auto  posted = value;
             if (reset == false)
                 posted = fb::model::datetime(value).local_to_utc().to_string();
+
             auto&& resp = co_await server.http.post("internal",
                                                     "/in-game/set-datetime",
                                                     internal_reqs::SetDateTime{world, posted, reset});
@@ -134,12 +137,15 @@ int builtin::server::builtin_now(lua_State* L)
             else
                 *error = std::format("Set datetime failed with error code: {}", resp.error);
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             if (*success == false)
                 lua->pushstring(*error);
+
             co_return *success ? 1 : 2;
         };
+
         return builder.run();
     }
 }
@@ -187,12 +193,15 @@ int builtin::server::builtin_time_forward(lua_State* L)
         else
             *error = std::format("Set datetime failed with error code: {}", resp.error);
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         if (*success == false)
             lua->pushstring(*error);
+
         co_return *success ? 1 : 2;
     };
+
     return builder.run();
 }
 
@@ -239,12 +248,15 @@ int builtin::server::builtin_time_backward(lua_State* L)
         else
             *error = std::format("Set datetime failed with error code: {}", resp.error);
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         if (*success == false)
             lua->pushstring(*error);
+
         co_return *success ? 1 : 2;
     };
+
     return builder.run();
 }
 
@@ -339,14 +351,17 @@ int builtin::server::builtin_to_lunar(lua_State* L)
         lua_getfield(L, 1, "hour");
         if (!lua_isnil(L, -1))
             hour = static_cast<uint16_t>(lua_tointeger(L, -1));
+
         lua_pop(L, 1);
         lua_getfield(L, 1, "minute");
         if (!lua_isnil(L, -1))
             minute = static_cast<uint16_t>(lua_tointeger(L, -1));
+
         lua_pop(L, 1);
         lua_getfield(L, 1, "second");
         if (!lua_isnil(L, -1))
             second = static_cast<uint16_t>(lua_tointeger(L, -1));
+
         lua_pop(L, 1);
 
         auto solar = fb::model::datetime(
@@ -450,6 +465,7 @@ int builtin::server::builtin_name2mob(lua_State* L)
     {
         lua->pushobject(mob);
     }
+
     return 1;
 }
 
@@ -470,6 +486,7 @@ int builtin::server::builtin_name2spell(lua_State* L)
     {
         lua->pushobject(spell);
     }
+
     return 1;
 }
 
@@ -490,6 +507,7 @@ int builtin::server::builtin_name2npc(lua_State* L)
     {
         lua->pushobject(npc);
     }
+
     return 1;
 }
 
@@ -513,6 +531,7 @@ int builtin::server::builtin_name2map(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(map);
+
     return 1;
 }
 
@@ -546,13 +565,16 @@ int builtin::server::builtin_name2ch(lua_State* L)
         *ch_holder = found;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*ch_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*ch_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -573,6 +595,7 @@ int builtin::server::builtin_name2item(lua_State* L)
     {
         lua->pushobject(item);
     }
+
     return 1;
 }
 
@@ -589,6 +612,7 @@ int builtin::server::builtin_id2mob(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(mob);
+
     return 1;
 }
 
@@ -605,6 +629,7 @@ int builtin::server::builtin_id2spell(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(spell);
+
     return 1;
 }
 
@@ -621,6 +646,7 @@ int builtin::server::builtin_id2npc(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(npc);
+
     return 1;
 }
 
@@ -638,6 +664,7 @@ int builtin::server::builtin_id2map(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(map);
+
     return 1;
 }
 
@@ -654,6 +681,7 @@ int builtin::server::builtin_id2item(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(item);
+
     return 1;
 }
 
@@ -714,15 +742,19 @@ int builtin::server::builtin_castle(lua_State* L)
         {
             fb::logger::warn("castle enter_write failed (id: {}): {}", divine_beast, e.what());
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -763,9 +795,11 @@ int builtin::server::builtin_refresh_castles(lua_State* L)
         auto& srv = static_cast<fb::game::server&>(lua->executor);
         co_await srv.castles.refresh();
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -799,13 +833,16 @@ int builtin::server::builtin_id2ch(lua_State* L)
         *ch_holder = found;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*ch_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*ch_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -814,6 +851,7 @@ int builtin::server::builtin_pursuit_sell(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     lua->new_table();
     if (lua->is_nil(1))
         return 1;
@@ -841,6 +879,7 @@ int builtin::server::builtin_pursuit_sell(lua_State* L)
                 lua->pushinteger(price);
                 lua_settable(L, -3);
             }
+
             lua_settable(L, -3);
         }
     }
@@ -904,6 +943,7 @@ int builtin::server::builtin_pursuit_buy(lua_State* L)
                 lua->pushinteger(price);
                 lua_settable(L, -3);
             }
+
             lua_settable(L, -3);
         }
     }
@@ -927,6 +967,7 @@ int builtin::server::builtin_timer(lua_State* L)
         ch->timer(value, type);
         co_return;
     });
+
     return 0;
 }
 
@@ -980,6 +1021,7 @@ int builtin::server::builtin_bright(lua_State* L)
         ch->bright(value);
         co_return;
     });
+
     return 0;
 }
 
@@ -1002,6 +1044,7 @@ int builtin::server::builtin_name_with(lua_State* L)
         auto second = lua->tostring(3);
         lua->pushstring(name_with(name, {first, second}));
     }
+
     return 1;
 }
 
@@ -1100,9 +1143,11 @@ int builtin::server::builtin_save(lua_State* L)
         co_await server.save();
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -1127,12 +1172,15 @@ int builtin::server::builtin_reload_table(lua_State* L)
         else
             *error = std::format("Reload tables failed with error code: {}", resp.error);
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         if (*success == false)
             lua->pushstring(*error);
+
         co_return *success ? 1 : 2;
     };
+
     return builder.run();
 }
 
@@ -1224,10 +1272,12 @@ int builtin::server::builtin_mknpc(lua_State* L)
         *npc_holder  = npc;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(*npc_holder);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1246,6 +1296,7 @@ int builtin::server::builtin_maps(lua_State* L)
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);
     }
+
     return 1;
 }
 
@@ -1259,6 +1310,7 @@ int builtin::server::builtin_shutdown(lua_State* L)
     auto  actor = std::string{};
     if (auto ch = lua->touserdata<fb::game::character>(1))
         actor = ch->name();
+
     std::ignore = srv.http.post("internal", "/system/shutdown", internal_reqs::Shutdown{actor});
     return 0;
 }
@@ -1286,6 +1338,7 @@ int builtin::server::builtin_broadcast(lua_State* L)
         lua->pushstring("respect_roar");
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             respect_roar = lua_toboolean(L, -1);
+
         lua_pop(L, 1);
     }
 
@@ -1302,9 +1355,11 @@ int builtin::server::builtin_broadcast(lua_State* L)
             co_await server.characters.broadcast(text, type, broad_type, respect_roar);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -1365,12 +1420,15 @@ int builtin::server::builtin_ban(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         if (*success == false)
             lua->pushstring(*error);
+
         co_return *success ? 1 : 2;
     };
+
     return builder.run();
 }
 
@@ -1413,12 +1471,15 @@ int builtin::server::builtin_unban(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         if (*success == false)
             lua->pushstring(*error);
+
         co_return *success ? 1 : 2;
     };
+
     return builder.run();
 }
 
@@ -1451,6 +1512,7 @@ int builtin::server::builtin_regex(lua_State* L)
         regex_cache[pattern] = boost::xpressive::sregex::compile(pattern);
         it                   = regex_cache.find(pattern);
     }
+
     auto& regex = it->second;
 
     auto what = boost::xpressive::smatch();
@@ -1477,6 +1539,7 @@ int builtin::server::builtin_regex(lua_State* L)
             lua->pushstring(sub.str().c_str());
             lua_settable(L, -3);
         }
+
         ++iter;
     }
 
@@ -1518,12 +1581,15 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
             else
                 *error = std::format("Set exp multiplier failed with error code: {}", resp.error);
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             if (*success == false)
                 lua->pushstring(*error);
+
             co_return *success ? 1 : 2;
         };
+
         return builder.run();
     }
 }
@@ -1563,12 +1629,15 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
             else
                 *error = std::format("Set drop rate multiplier failed with error code: {}", resp.error);
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*success);
             if (*success == false)
                 lua->pushstring(*error);
+
             co_return *success ? 1 : 2;
         };
+
         return builder.run();
     }
 }
@@ -1651,6 +1720,7 @@ int builtin::server::builtin_http_fault(lua_State* L)
         lua->pushstring("off");
         break;
     }
+
     return 1;
 }
 
@@ -1746,6 +1816,7 @@ int builtin::server::builtin_property(lua_State* L)
             lua->pushboolean(value.asBool());
         else
             lua->pushnil();
+
         return 1;
     }
 
@@ -1783,6 +1854,7 @@ int builtin::server::builtin_property(lua_State* L)
             guard.value().erase(key);
         }
     }
+
     return 0;
 }
 
@@ -1808,6 +1880,7 @@ int builtin::server::builtin_state_machine(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(machine);
+
     return 1;
 }
 
@@ -1823,6 +1896,7 @@ int builtin::server::builtin_match_transfer(lua_State* L)
         lua->pushnil();
         return 1;
     }
+
     auto ok       = std::make_shared<bool>(false);
     auto ip       = std::make_shared<std::string>();
     auto port     = std::make_shared<uint16_t>(0);
@@ -1839,8 +1913,10 @@ int builtin::server::builtin_match_transfer(lua_State* L)
             *port = resp.port;
             *id   = resp.id;
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*ok == false)
         {
@@ -1857,5 +1933,6 @@ int builtin::server::builtin_match_transfer(lua_State* L)
         lua_setfield(*lua, -2, "id");
         co_return 1;
     };
+
     return builder.run();
 }

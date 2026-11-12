@@ -251,6 +251,7 @@ public:
             this->_coro = rhs._coro;
             rhs._coro   = nullptr;
         }
+
         return *this;
     }
 
@@ -452,6 +453,7 @@ public:
             this->_coro = rhs._coro;
             rhs._coro   = nullptr;
         }
+
         return *this;
     }
 

@@ -25,6 +25,7 @@ void trade_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol:
         this->dialog_name = reader.read<std::string, uint8_t>();
         if (version == fb::protocol::CLIENT_VERSION::v651)
             this->dialog_reputation = reader.read<int16_t>();
+
         break;
     }
 

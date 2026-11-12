@@ -90,6 +90,7 @@ void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& so
     {
         keys.push_back(k);
     }
+
     std::sort(keys.begin(), keys.end());
 
     dest.clear();
@@ -132,6 +133,7 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
     {
         node = &node->add(*ptr);
     }
+
     node->_recipes.push_back(recipe);
 }
 
@@ -145,6 +147,7 @@ fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, in
         auto found   = std::find_if(source.begin() + i, source.end(), [id_node](const auto& item) {
             return item.id == id_node->data.id;
         });
+
         if (found == source.end())
             continue;
 

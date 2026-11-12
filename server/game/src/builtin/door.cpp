@@ -21,6 +21,7 @@ int builtin::door::builtin_toggle(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
@@ -33,6 +34,7 @@ int builtin::door::builtin_toggle(lua_State* L)
         lua->pushnil();
         return 1;
     }
+
     auto map_id   = map->id;
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
@@ -53,13 +55,16 @@ int builtin::door::builtin_toggle(lua_State* L)
         server.maps.update_map_cache(map_id, area);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*toggled)
             lua->pushboolean(*opened);
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -68,6 +73,7 @@ int builtin::door::builtin_locked(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
@@ -79,6 +85,7 @@ int builtin::door::builtin_locked(lua_State* L)
         lua->pushnil();
         return 1;
     }
+
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -86,10 +93,12 @@ int builtin::door::builtin_locked(lua_State* L)
         *locked = door->locked();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*locked);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -98,6 +107,7 @@ int builtin::door::builtin_lock(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
@@ -110,6 +120,7 @@ int builtin::door::builtin_lock(lua_State* L)
         lua->pushnil();
         return 1;
     }
+
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -118,10 +129,12 @@ int builtin::door::builtin_lock(lua_State* L)
         *locked = door->locked();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*locked);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -130,6 +143,7 @@ int builtin::door::builtin_opened(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
@@ -141,6 +155,7 @@ int builtin::door::builtin_opened(lua_State* L)
         lua->pushnil();
         return 1;
     }
+
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -148,9 +163,11 @@ int builtin::door::builtin_opened(lua_State* L)
         *opened = door->opened();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*opened);
         co_return 1;
     };
+
     return builder.run();
 }

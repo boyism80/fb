@@ -40,6 +40,7 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     {
         entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
     }
+
     ptr->friends.load(std::move(entries), resp.revision);
 
     co_return true;

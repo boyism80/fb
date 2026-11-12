@@ -284,6 +284,7 @@ bool socket::select(const timeval* timeout)
         amqp_destroy_message(&message);
         return false;
     }
+
     break;
 
     case AMQP_CHANNEL_CLOSE_METHOD:

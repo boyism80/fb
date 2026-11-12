@@ -104,6 +104,7 @@ static int lua_model_promotions(lua_State* L)
             lua.settable(-3);
         }
     }
+
     return 1;
 }
 
@@ -166,6 +167,7 @@ static int lua_model_equipment_items(lua_State* L)
         lua.settable(-3);
         lua.settable(-3);
     }
+
     return 1;
 }
 
@@ -195,6 +197,7 @@ static int lua_model_recipes(lua_State* L)
 
         lua.settable(-3);
     }
+
     return 1;
 }
 
@@ -223,6 +226,7 @@ static int luaopen_integration_response(lua_State* L)
         push_response_token(L, &entry);
         lua_setfield(L, -2, entry.name);
     }
+
     return 1;
 }
 
@@ -450,6 +454,7 @@ int lua_builder_dialog(lua_State* L)
                                                                                    name);
                              });
                      }));
+
         return 1;
     }
     else
@@ -499,16 +504,19 @@ int lua_builder_trade(lua_State* L)
             lua_getfield(L, 3, "index");
             if (lua.is_nil(-1) == false)
                 index = static_cast<uint8_t>(lua.tointeger(-1));
+
             lua.pop(1);
 
             lua_getfield(L, 3, "count");
             if (lua.is_nil(-1) == false)
                 count = static_cast<uint16_t>(lua.tointeger(-1));
+
             lua.pop(1);
 
             lua_getfield(L, 3, "money");
             if (lua.is_nil(-1) == false)
                 money = static_cast<uint32_t>(lua.tointeger(-1));
+
             lua.pop(1);
         }
 
@@ -525,6 +533,7 @@ int lua_builder_trade(lua_State* L)
                                                                      parameter);
                              });
                      }));
+
         return 1;
     }
     catch (const std::exception& e)
@@ -579,6 +588,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::emotion>(L, value);
         return 1;
     });
+
     lua_setfield(L, -2, "emotion");
 
     lua_pushcfunction(L, [](lua_State* L) -> int {
@@ -588,6 +598,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::chat>(L, shout, message);
         return 1;
     });
+
     lua_setfield(L, -2, "chat");
 
     lua_pushcfunction(L, [](lua_State* L) -> int {
@@ -602,6 +613,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::bulletin>(L, action, section, article, offset, title, contents, user);
         return 1;
     });
+
     lua_setfield(L, -2, "bulletin");
 
     lua_pushcfunction(L, lua_builder_dialog);
@@ -613,6 +625,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::loot>(L, boost);
         return 1;
     });
+
     lua_setfield(L, -2, "loot");
 
     lua_pushcfunction(L, lua_builder_trade);
@@ -629,6 +642,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::click>(L, oid, flag);
         return 1;
     });
+
     lua_setfield(L, -2, "click");
 
     lua_pushcfunction(L, [](lua_State* L) -> int {
@@ -654,6 +668,7 @@ void register_manual_builders(lua_State* L)
         push_request<game_reqs::item_combine>(L, indices);
         return 1;
     });
+
     lua_setfield(L, -2, "item_combine");
 }
 

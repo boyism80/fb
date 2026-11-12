@@ -52,6 +52,7 @@ private:
         bool        success;
         std::string message;
     };
+
     std::vector<test_result>                                                         _test_results;
     mutable std::mutex                                                               _results_mutex;
     std::unordered_map<bot_integration_test*, std::chrono::steady_clock::time_point> _started;
@@ -63,6 +64,7 @@ private:
         uint32_t      id;
         hook_function fn;
     };
+
     std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_entry>>> _test_hooks;
     std::shared_mutex                                                                               _hook_mutex;
     uint32_t                                                                                        _hook_sequence{0};

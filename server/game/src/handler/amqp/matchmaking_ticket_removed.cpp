@@ -38,8 +38,10 @@ async::task<void> matchmaking_ticket_removed::handle(const fb::protocol::matchma
                 lua->pushinteger(static_cast<lua_Integer>(ticket_id));
                 std::ignore = co_await lua->call(3);
             }
+
             co_return;
         };
+
         builder.enqueue();
     }
 

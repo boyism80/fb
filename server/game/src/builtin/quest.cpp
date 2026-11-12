@@ -25,6 +25,7 @@ int builtin::quest::builtin_step(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -52,10 +53,12 @@ int builtin::quest::builtin_step(lua_State* L)
             *stored = quest->step(new_step);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*stored);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -68,10 +71,12 @@ int builtin::quest::builtin_step(lua_State* L)
             *step_value = quest->step();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*step_value);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -81,6 +86,7 @@ int builtin::quest::builtin_progress(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -108,10 +114,12 @@ int builtin::quest::builtin_progress(lua_State* L)
             *stored = quest->progress(new_progress);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*stored);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -124,10 +132,12 @@ int builtin::quest::builtin_progress(lua_State* L)
             *progress_value = quest->progress();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*progress_value);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -137,6 +147,7 @@ int builtin::quest::builtin_param(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc  = lua->argc();
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
@@ -157,10 +168,12 @@ int builtin::quest::builtin_param(lua_State* L)
             *stored = quest->param(param);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*stored);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -173,10 +186,12 @@ int builtin::quest::builtin_param(lua_State* L)
             *param_value = quest->param();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushstring(param_value->c_str());
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -186,6 +201,7 @@ int builtin::quest::builtin_inc_progress(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -209,10 +225,12 @@ int builtin::quest::builtin_inc_progress(lua_State* L)
         *success = quest->inc_progress(value);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -221,6 +239,7 @@ int builtin::quest::builtin_inc_step(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -244,10 +263,12 @@ int builtin::quest::builtin_inc_step(lua_State* L)
         *success = quest->inc_step(value);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -256,6 +277,7 @@ int builtin::quest::builtin_complete(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -272,10 +294,12 @@ int builtin::quest::builtin_complete(lua_State* L)
         *success = quest->complete();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -284,6 +308,7 @@ int builtin::quest::builtin_completed(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -300,10 +325,12 @@ int builtin::quest::builtin_completed(lua_State* L)
         *success = quest->completed();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -312,6 +339,7 @@ int builtin::quest::builtin_resume(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto quest = lua->touserdata<fb::game::quest>(1);
     if (quest == nullptr)
         return 0;
@@ -328,9 +356,11 @@ int builtin::quest::builtin_resume(lua_State* L)
         *success = quest->resume();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }

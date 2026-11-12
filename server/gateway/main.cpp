@@ -50,6 +50,7 @@ int main(int argc, char** argv)
             std::cerr << "Failed to initialize config from: " << config_path << std::endl;
             return -1;
         }
+
         fb::crash::install("gateway");
     }
     catch (const std::exception& e)
@@ -75,6 +76,7 @@ int main(int argc, char** argv)
         signals.async_wait([&server](const boost::system::error_code& ec, int signal_number) {
             if (!ec)
                 fb::logger::warn("shutdown requested by signal {}", signal_number);
+
             server->exit();
         });
 

@@ -17,6 +17,7 @@ int builtin::model::weapon::builtin_damage_small(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->damage_small.min);
@@ -29,6 +30,7 @@ int builtin::model::weapon::builtin_damage_large(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->damage_large.min);
@@ -41,6 +43,7 @@ int builtin::model::weapon::builtin_sound(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->sound);
@@ -52,6 +55,7 @@ int builtin::model::weapon::builtin_type(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->weapon_type());

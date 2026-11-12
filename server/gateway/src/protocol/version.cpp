@@ -15,6 +15,7 @@ void version<V>::deserialize(fb::stream_reader<big_endian>& reader)
 
     if (is_supported(this->v) == false)
         throw std::runtime_error("unsupported client version");
+
     this->client_version = static_cast<CLIENT_VERSION>(this->v);
 
     if constexpr (V == CLIENT_VERSION::v550)

@@ -36,6 +36,7 @@ public:
         Json::Value    detail    = Json::Value{Json::objectValue};
         bool           in_flight = false;
     };
+
     using entry_map = std::map<uint64_t, entry>;
     using dto       = fb::protocol::internal::UnsettledRequest;
 

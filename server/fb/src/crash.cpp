@@ -38,12 +38,14 @@ void fb::crash::write_bytes(const void* data, size_t size)
     DWORD written = 0;
     if (_err != INVALID_HANDLE_VALUE)
         WriteFile(_err, data, static_cast<DWORD>(size), &written, nullptr);
+
     auto file = _file.load();
     if (file != INVALID_HANDLE_VALUE)
         WriteFile(file, data, static_cast<DWORD>(size), &written, nullptr);
 #else
     if (size == 0)
         return;
+
     ::write(STDERR_FILENO, data, size);
     auto fd = _file_fd.load();
     if (fd >= 0)
@@ -96,6 +98,7 @@ void fb::crash::write_dump(EXCEPTION_POINTERS* info)
                         SymGetModuleBase64,
                         nullptr) == FALSE)
             break;
+
         if (frame.AddrPC.Offset == 0)
             break;
 
@@ -148,6 +151,7 @@ void fb::crash::write_dump(EXCEPTION_POINTERS* info)
             auto size = static_cast<size_t>(n);
             if (size >= sizeof(line))
                 size = sizeof(line) - 1;
+
             write_bytes(line, size);
         }
     }
@@ -162,6 +166,7 @@ void fb::crash::dump(const char* kind, size_t kind_len, EXCEPTION_POINTERS* info
     auto file = _file.load();
     if (file != INVALID_HANDLE_VALUE)
         FlushFileBuffers(file);
+
     if (_err != INVALID_HANDLE_VALUE)
         FlushFileBuffers(_err);
 }
@@ -214,9 +219,11 @@ void fb::crash::write_dump()
             {
                 text[2 + j] = digits[len - 1 - j];
             }
+
             text[2 + len] = '\0';
             argv[argc++]  = text;
         }
+
         argv[argc] = nullptr;
 
         int pipe_fds[2];
@@ -246,6 +253,7 @@ void fb::crash::write_dump()
                         auto n = ::read(pipe_fds[0], buffer, sizeof(buffer));
                         if (n <= 0)
                             break;
+
                         write_bytes(buffer, static_cast<size_t>(n));
                     }
                     else if (ready == 0)
@@ -261,9 +269,11 @@ void fb::crash::write_dump()
 
                 if (timed_out)
                     ::kill(pid, SIGKILL);
+
                 while (::waitpid(pid, nullptr, 0) < 0 && errno == EINTR)
                 {
                 }
+
                 ::close(pipe_fds[0]);
             }
             else
@@ -290,6 +300,7 @@ void fb::crash::dump(const char* kind, size_t kind_len)
     auto fd = _file_fd.load();
     if (fd >= 0)
         ::fsync(fd);
+
     ::fsync(STDERR_FILENO);
 }
 #endif
@@ -309,6 +320,7 @@ void fb::crash::on_signal(int sig)
         dump("signal=SIGILL\n", sizeof("signal=SIGILL\n") - 1);
     else
         dump("signal=unknown\n", sizeof("signal=unknown\n") - 1);
+
     std::_Exit(128 + sig);
 }
 #else
@@ -324,6 +336,7 @@ LONG WINAPI fb::crash::on_unhandled(EXCEPTION_POINTERS* info)
         dump("unhandled_exception\n", sizeof("unhandled_exception\n") - 1, info);
     else
         dump(kind, static_cast<size_t>(n), info);
+
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -348,6 +361,7 @@ BOOL WINAPI fb::crash::on_console_ctrl(DWORD type)
         fb::logger::fatal("process terminating: {}", reason);
         fb::logger::flush(std::chrono::seconds(2));
     }
+
     return FALSE;
 }
 #endif
@@ -401,6 +415,7 @@ void fb::crash::open_daily()
     auto old = _file.exchange(file);
     if (_previous_file != INVALID_HANDLE_VALUE)
         CloseHandle(_previous_file);
+
     _previous_file = old;
 #else
     auto fd = ::open(path.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
@@ -410,6 +425,7 @@ void fb::crash::open_daily()
     auto old = _file_fd.exchange(fd);
     if (_previous_fd >= 0)
         ::close(_previous_fd);
+
     _previous_fd = old;
 #endif
     _path = std::move(path);
@@ -449,6 +465,7 @@ void fb::crash::install(const char* service)
             _kind     = kind;
             open_daily();
         }
+
         _header_len = static_cast<size_t>(std::snprintf(_header,
                                                         sizeof(_header),
                                                         "*** FB CRASH ***\nservice=%s name=%s pid=%lu\n",

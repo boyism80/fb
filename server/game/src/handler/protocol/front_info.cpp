@@ -32,6 +32,7 @@ async::task<bool> front_info<V>::handle(fb::socket<character>& session, game_req
                                                      : object->name();
         ch->message(message, MESSAGE_TYPE::STATE);
     }
+
     co_return true;
 }
 

@@ -65,6 +65,7 @@ bool character::friends::is_mutual(uint32_t uid) const
         if (entry.uid == uid)
             return entry.mutual;
     }
+
     return false;
 }
 
@@ -76,6 +77,7 @@ bool character::friends::is_mutual(std::string_view name) const
         if (entry.name == name)
             return entry.mutual;
     }
+
     return false;
 }
 
@@ -87,6 +89,7 @@ bool character::friends::has_mutual() const
         if (entry.mutual)
             return true;
     }
+
     return false;
 }
 
@@ -135,6 +138,7 @@ async::task<void> character::friends::broadcast(std::string_view message, MESSAG
                                                                                             std::move(to_uids),
                                                                                             process_world});
     }
+
     co_return;
 }
 

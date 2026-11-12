@@ -19,6 +19,7 @@ void connection_ack<V>::deserialize(fb::stream_reader<big_endian>& reader)
     {
         ++len;
     }
+
     this->client_name.assign(buf, len);
 }
 
@@ -30,13 +31,16 @@ void connection_ack<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_end
     size_t           n = reader.readable_size();
     if (n > max_name_len)
         n = max_name_len;
+
     if (n > 0)
         reader.read(buf, n);
+
     size_t len = 0;
     while (len < n && buf[len] != '\0')
     {
         ++len;
     }
+
     this->client_name.assign(buf, len);
     while (reader.readable_size() > 0)
     {

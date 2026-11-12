@@ -75,10 +75,12 @@ public:
                 {
                     if (max_displayed.load(std::memory_order_relaxed) == current)
                         this->on_worked(item, output, percent);
+
                     break;
                 }
             }
         };
+
         auto worker = [this, &queue, &report_progress, &outputs_buffer, &processed]() -> async::task<void> {
             while (true)
             {
@@ -118,6 +120,7 @@ public:
                         ++processed;
                 }
             }
+
             co_return;
         };
 
@@ -211,10 +214,12 @@ public:
                 {
                     if (max_displayed.load(std::memory_order_relaxed) == current)
                         this->on_worked(item, percent);
+
                     break;
                 }
             }
         };
+
         auto worker = [this, &queue, &report_progress]() -> async::task<void> {
             while (true)
             {
@@ -237,8 +242,10 @@ public:
                 {
                     this->on_error(*item, e);
                 }
+
                 report_progress(*item);
             }
+
             co_return;
         };
 

@@ -56,6 +56,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
             auto map    = this->server.maps[params.id];
             std::ignore = co_await ch->map(map, fb::model::point16_t(params.x, params.y));
         }
+
         break;
 
         case DSL::world:
@@ -65,6 +66,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
             auto& world       = world_table[params.id][params.index];
             ch->show_world_map(params.id, params.index);
         }
+
         break;
 
         case DSL::script:
@@ -82,6 +84,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
                 std::ignore = co_await fb::lua::call(std::move(lua), ch->weak_from_this_as<fb::game::character>(), 1);
             }
         }
+
         break;
 
         default:
@@ -92,6 +95,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
     {
         std::ignore = co_await ch->move(direction, position, walk_queue_slot);
     }
+
     co_return true;
 }
 

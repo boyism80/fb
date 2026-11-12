@@ -40,6 +40,7 @@ void dialog_ext_bot::read_appearance_v651(fb::stream_reader<big_endian>& reader)
         this->look  = reader.read<uint16_t>();
         this->color = reader.read<uint8_t>();
     }
+
     reader.read<uint32_t>();
 }
 
@@ -90,6 +91,7 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::prot
         if (this->type == dialog_ext_type::normal || this->type == dialog_ext_type::look)
             this->message = reader.read<std::string, uint16_t>();
     }
+
     break;
 
     case dialog_ext_type::list:
@@ -109,6 +111,7 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::prot
             this->list_lists.push_back(reader.read<std::string, uint8_t>());
         }
     }
+
     break;
 
     case dialog_ext_type::input_ext:
@@ -130,6 +133,7 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::prot
         this->input_ext_maxlen = reader.read<uint8_t>();
         this->input_ext_bottom = reader.read<std::string, uint8_t>();
     }
+
     break;
 
     case dialog_ext_type::email:
@@ -147,6 +151,7 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::prot
         this->input_ext_bottom      = this->email_str2;
         this->input_ext_button_prev = this->normal_button_prev;
     }
+
     break;
     }
 }

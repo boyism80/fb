@@ -127,8 +127,10 @@ async::task<void> fb::game::script_loader::on_work(const script_work& work)
                 fb::console::comment("    - {}", message);
             }
         }
+
         co_return;
     };
+
     co_await builder.dispatch();
 }
 

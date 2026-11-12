@@ -183,18 +183,21 @@ public:
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->put(align, color, text);
     }
+
     template <class... Args>
     static void put(align_type align, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         put(align, color::reset, fmt, std::forward<Args>(args)...);
     }
+
     template <class... Args>
     static void put(std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         put(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
+
     template <class... Args>
     static void puts(align_type align, color color, std::string_view fmt, Args&&... args)
     {
@@ -202,24 +205,28 @@ public:
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->puts(align, color, text);
     }
+
     template <class... Args>
     static void puts(color color, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color, fmt, std::forward<Args>(args)...);
     }
+
     template <class... Args>
     static void puts(align_type align, std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align, color::reset, fmt, std::forward<Args>(args)...);
     }
+
     template <class... Args>
     static void puts(std::string_view fmt, Args&&... args)
     {
         auto _ = std::lock_guard(_mutex);
         puts(align_type::left, color::reset, fmt, std::forward<Args>(args)...);
     }
+
     template <class... Args>
     static void comment(color color, std::string_view fmt, Args&&... args)
     {
@@ -227,6 +234,7 @@ public:
         auto text = std::vformat(fmt, std::make_format_args(args...));
         _current_policy->comment(color, text);
     }
+
     template <class... Args>
     static void comment(std::string_view fmt, Args&&... args)
     {

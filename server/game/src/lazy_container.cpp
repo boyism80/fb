@@ -35,6 +35,7 @@ lazy_container<Entity, NumBuckets, Key>::guard::value() noexcept
 {
     if (this->_write_guard.has_value())
         return this->_write_guard->value();
+
     return this->_empty;
 }
 
@@ -44,6 +45,7 @@ lazy_container<Entity, NumBuckets, Key>::guard::value() const noexcept
 {
     if (this->_write_guard.has_value())
         return this->_write_guard->value();
+
     return this->_empty;
 }
 
@@ -126,6 +128,7 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
         auto looked = co_await this->lookup_write_wait(id);
         if (looked.guard.has_value() && looked.guard->value() != nullptr)
             co_return guard(std::move(*looked.guard));
+
         co_return guard{};
     }
 
@@ -158,8 +161,10 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     auto held = co_await this->merge_write_wait(id, [loaded](const std::optional<entity_ptr>& current) -> entity_ptr {
         if (current.has_value() && current.value() != nullptr)
             return current.value();
+
         return loaded;
     });
+
     this->end_fetch(id);
     co_return guard(std::move(held));
 }

@@ -65,6 +65,7 @@ private:
             tcs = std::make_shared<async::task_completion_source<void>>();
             this->_waiters.push(tcs);
         }
+
         co_await tcs->task();
     }
 
@@ -137,6 +138,7 @@ public:
 
                 this->_waiters.push_back(waiter{tcs, thread_scheduler, std::nullopt});
             }
+
             co_await tcs->task();
         }
     }
@@ -150,6 +152,7 @@ public:
             if (this->_reader_count == 0)
                 waiters = this->ready_waiters();
         }
+
         wake(waiters);
     }
 
@@ -177,6 +180,7 @@ public:
 
                 this->_waiters.push_back(waiter{tcs, thread_scheduler, ticket});
             }
+
             co_await tcs->task();
         }
     }
@@ -189,6 +193,7 @@ public:
             this->_writer = false;
             waiters       = this->ready_waiters();
         }
+
         wake(waiters);
     }
 
@@ -200,6 +205,7 @@ public:
             this->_reader_count++;
             return true;
         }
+
         return false;
     }
 
@@ -211,6 +217,7 @@ public:
             this->_writer = true;
             return true;
         }
+
         return false;
     }
 
@@ -224,11 +231,13 @@ private:
             auto found = std::find_if(this->_waiters.begin(), this->_waiters.end(), [&](const waiter& entry) {
                 return entry.ticket.has_value() && entry.ticket.value() == this->_serve;
             });
+
             if (found != this->_waiters.end())
             {
                 ready.push_back(std::move(*found));
                 this->_waiters.erase(found);
             }
+
             return ready;
         }
         else
@@ -330,6 +339,7 @@ public:
                 this->_async_locked = other._async_locked;
                 other._async_locked = false;
             }
+
             return *this;
         }
 
@@ -400,6 +410,7 @@ public:
                 this->_async_locked = other._async_locked;
                 other._async_locked = false;
             }
+
             return *this;
         }
 

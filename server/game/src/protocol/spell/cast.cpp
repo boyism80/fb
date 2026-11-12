@@ -80,6 +80,7 @@ void spell_cast<V>::parse(SPELL_TYPE type)
         this->message = utf8((const char*)this->buffer.data());
 #endif
     }
+
     break;
 
     case SPELL_TYPE::TARGET:
@@ -88,6 +89,7 @@ void spell_cast<V>::parse(SPELL_TYPE type)
         this->position.x = reader.read<uint16_t>();
         this->position.y = reader.read<uint16_t>();
     }
+
     break;
     }
 }
@@ -114,6 +116,7 @@ void spell_cast<CLIENT_VERSION::v651>::parse(SPELL_TYPE type)
         this->message = utf8(std::string_view(reinterpret_cast<const char*>(this->buffer.data()), n));
 #endif
     }
+
     break;
 
     case SPELL_TYPE::TARGET:
@@ -122,6 +125,7 @@ void spell_cast<CLIENT_VERSION::v651>::parse(SPELL_TYPE type)
         this->position.x = reader.read<uint16_t>();
         this->position.y = reader.read<uint16_t>();
     }
+
     break;
     }
 }

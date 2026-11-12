@@ -63,6 +63,7 @@ private:
             params->bots.insert({id, bot});
             co_return;
         };
+
         builder.enqueue();
         return bot;
     }
@@ -77,6 +78,7 @@ private:
             params->bots.insert({id, bot});
             co_return;
         };
+
         builder.enqueue();
         return bot;
     }
@@ -92,6 +94,7 @@ private:
             params->bots.insert({id, bot});
             co_return;
         };
+
         builder.enqueue();
         return bot;
     }

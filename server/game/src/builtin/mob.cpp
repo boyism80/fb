@@ -30,6 +30,7 @@ int builtin::mob::builtin_target(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
@@ -45,13 +46,16 @@ int builtin::mob::builtin_target(lua_State* L)
             *target_holder = mob->target();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*target_holder == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*target_holder);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -65,11 +69,14 @@ int builtin::mob::builtin_target(lua_State* L)
                 mob->provoke(target);
             else
                 mob->target(nullptr);
+
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -79,6 +86,7 @@ int builtin::mob::builtin_oblivion(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
@@ -94,13 +102,16 @@ int builtin::mob::builtin_oblivion(lua_State* L)
             *oblivion_holder = mob->oblivion();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (*oblivion_holder == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(*oblivion_holder);
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -113,9 +124,11 @@ int builtin::mob::builtin_oblivion(lua_State* L)
             mob->oblivion(oblivion);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -125,6 +138,7 @@ int builtin::mob::builtin_owner(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
@@ -138,13 +152,16 @@ int builtin::mob::builtin_owner(lua_State* L)
         *owner_holder = mob->owner.lock();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*owner_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*owner_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -153,6 +170,7 @@ int builtin::mob::builtin_items(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
@@ -166,6 +184,7 @@ int builtin::mob::builtin_items(lua_State* L)
         *buffer = mob->items();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         auto i = 0;
@@ -175,8 +194,10 @@ int builtin::mob::builtin_items(lua_State* L)
             lua_rawseti(L, -2, i + 1);
             i++;
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -201,6 +222,7 @@ int builtin::mob::builtin_parts(lua_State* L)
             *buffer = mob->parts();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->new_table();
             for (size_t i = 0; i < buffer->size(); i++)
@@ -208,8 +230,10 @@ int builtin::mob::builtin_parts(lua_State* L)
                 lua->pushobject((*buffer)[i]);
                 lua_rawseti(L, -2, static_cast<int>(i + 1));
             }
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -223,10 +247,12 @@ int builtin::mob::builtin_parts(lua_State* L)
             *result = mob->add_part(part);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*result);
             co_return 1;
         };
+
         return builder.run();
     }
 }
@@ -249,13 +275,16 @@ int builtin::mob::builtin_body(lua_State* L)
         *body_holder = mob->body();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*body_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*body_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -280,10 +309,12 @@ int builtin::mob::builtin_parts_mode(lua_State* L)
             *mode = mob->parts_mode();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(static_cast<lua_Integer>(*mode));
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -296,9 +327,11 @@ int builtin::mob::builtin_parts_mode(lua_State* L)
             mob->parts_mode(mode);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }
@@ -324,10 +357,12 @@ int builtin::mob::builtin_hide(lua_State* L)
             *result = mob->hidden(*mob);
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushboolean(*result);
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -340,9 +375,11 @@ int builtin::mob::builtin_hide(lua_State* L)
             mob->hidden(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
 }

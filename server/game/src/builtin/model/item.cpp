@@ -26,6 +26,7 @@ int builtin::model::item::builtin_make(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto& srv    = static_cast<fb::game::server&>(lua->executor);
     auto  model  = lua->touserdata<fb::model::item>(1);
     auto  object = model->make(srv);
@@ -60,13 +61,16 @@ int builtin::model::item::builtin_make(lua_State* L)
         *object_holder = object;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*object_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*object_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -99,6 +103,7 @@ int builtin::model::item::builtin_price(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::item>(1);
     lua->pushinteger(model->price);
     return 1;
@@ -190,6 +195,7 @@ int builtin::model::item::builtin_storage_fee(lua_State* L)
     {
         lua->pushnil();
     }
+
     return 1;
 }
 

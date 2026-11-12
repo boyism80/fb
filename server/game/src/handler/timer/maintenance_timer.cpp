@@ -32,6 +32,7 @@ async::task<void> maintenance_timer::handle()
 
         if (resp.home.has_value())
             state.home = maintenance_window{resp.home->message, resp.home->finish_matches};
+
         if (resp.cross.has_value())
             state.cross = maintenance_window{resp.cross->message, resp.cross->finish_matches};
     }

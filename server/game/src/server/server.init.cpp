@@ -70,6 +70,7 @@ void fb::game::server::bind_script_error(fb::lua::context& ctx, int argc)
             locked->message(line, MESSAGE_TYPE::STATE);
             co_return;
         };
+
         builder.enqueue();
     });
 }
@@ -225,9 +226,11 @@ async::task<void> fb::game::server::init_thread_params()
             {
                 params->add_map(map);
             }
+
             thread.data(std::move(params));
             co_return;
         };
+
         async_tasks.push_back(builder.dispatch());
     }
 
@@ -235,6 +238,7 @@ async::task<void> fb::game::server::init_thread_params()
     {
         co_await async_task;
     }
+
     co_return;
 }
 
@@ -300,6 +304,7 @@ void fb::game::server::init_timers()
 
     if (fb::config<std::optional<uint32_t>>("world"))
         this->schedules.init();
+
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
     this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -356,6 +361,7 @@ void fb::game::server::init_amqp_handlers()
     {
         this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(fb::amqp_key("castle", scope));
     }
+
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(fb::amqp_key("global", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(fb::amqp_key("global", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(fb::amqp_key("global", scope));
@@ -380,6 +386,7 @@ async::task<void> fb::game::server::init_map_scripts()
     {
         co_await async_task;
     }
+
     co_return;
 }
 
@@ -414,8 +421,10 @@ async::task<void> fb::game::server::init_script()
         {
             fb::logger::warn("Server init script failed: {}: {}", path, e.what());
         }
+
         co_return;
     };
+
     co_await builder.dispatch();
 }
 
@@ -467,6 +476,7 @@ async::task<void> fb::game::server::on_start()
     fb::lua::luable::raw_pin_provider = [](const fb::lua::luable& value) -> std::shared_ptr<void> {
         if (value.metaname().starts_with("fb.model."))
             return table::pin();
+
         return nullptr;
     };
 
@@ -558,9 +568,12 @@ async::task<void> fb::game::server::on_start()
             {
                 fb::logger::warn("castles: load_all failed: {}", e.what());
             }
+
             co_return;
         };
+
         builder.enqueue();
     });
+
     co_await this->init_script();
 }

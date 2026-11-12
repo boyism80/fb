@@ -31,6 +31,7 @@ lua_Integer dialog<V>::selected(const std::vector<std::string>& choices, const g
         if (choices[i].empty() == false && choices[i] == request.name)
             return i + 1;
     }
+
     return 0;
 }
 
@@ -103,6 +104,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
             lua->pushinteger(found);
         else
             lua->pushnil();
+
         lua->resume(1);
         break;
     }
@@ -118,6 +120,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
                 lua->pushinteger(reply.count);
             else
                 lua->pushnil();
+
             lua->resume(2);
         }
         else
@@ -125,6 +128,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
             lua->pushnil();
             lua->resume(1);
         }
+
         break;
     }
 

@@ -56,6 +56,7 @@ storage_box::entry service::system_storage::from_storage_box_dto(const fb::proto
     box.id   = dto.id;
     if (dto.system_storage_box_id != 0)
         box.system_storage_box_id = dto.system_storage_box_id;
+
     box.title   = dto.title;
     box.message = dto.message;
 
@@ -209,6 +210,7 @@ service::system_storage::create(uint32_t                           world,
     {
         fb::logger::warn("WriteSystemStorageBox request failed for {} ({}): {}", user_name, external_ref, e.what());
     }
+
     co_return create_result::unknown;
 }
 
@@ -268,11 +270,13 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
                                                                  [&](const system_storage_box& existing) {
                                                                      return existing.id == box.id;
                                                                  });
+
                         if (!already_tracked)
                             new_box_seen = true;
 
                         fetched.push_back(std::move(box));
                     }
+
                     this->_pending_boxes = std::move(fetched);
                 }
             }
@@ -297,6 +301,7 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
                 if (ch != nullptr)
                     targets.push_back(ch);
             }
+
             co_await this->server.characters.foreach_async(
                 [this](auto& ch) -> async::task<void> {
                     co_await this->sync(*ch);

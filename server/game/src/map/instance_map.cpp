@@ -86,5 +86,6 @@ void instance_map::schedule_destroy()
     builder.func = [self](auto&) -> async::task<void> {
         co_await const_cast<fb::game::server&>(self->server).maps.destroy(self);
     };
+
     builder.enqueue();
 }

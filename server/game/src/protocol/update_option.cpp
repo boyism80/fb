@@ -37,6 +37,7 @@ void update_option<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     {
         writer.write<uint8_t>(static_cast<uint8_t>(option));
     }
+
     if (this->options.size() == 1 && this->options.front() == OPTION::EXTENSION)
         writer.write<bool>(this->ride);
 }

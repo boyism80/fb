@@ -39,5 +39,6 @@ async::task<void> kick_out::handle(const internal_resp::KickOut& message)
             fb::logger::fatal("Character {} logout after kick-out failed: {}", message.name, e.what());
         }
     }
+
     co_return;
 }

@@ -79,10 +79,12 @@ int builtin::map::builtin_model(lua_State* L)
         *model_ptr = &map->model();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(**model_ptr);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -132,10 +134,12 @@ int builtin::map::builtin_width(lua_State* L)
         *width = map->width();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*width);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -157,10 +161,12 @@ int builtin::map::builtin_height(lua_State* L)
         *height = map->height();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*height);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -184,11 +190,13 @@ int builtin::map::builtin_area(lua_State* L)
         *height = map->height();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*width);
         lua->pushinteger(*height);
         co_return 2;
     };
+
     return builder.run();
 }
 
@@ -213,8 +221,10 @@ int builtin::map::builtin_objects(lua_State* L)
             if (obj->is(type))
                 objects->push_back(obj);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < objects->size(); i++)
@@ -222,8 +232,10 @@ int builtin::map::builtin_objects(lua_State* L)
             lua->pushobject((*objects)[i]);
             lua_rawseti(L, -2, static_cast<int>(i + 1));
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -256,6 +268,7 @@ int builtin::map::builtin_nears(lua_State* L)
         *nears = map->nears(fb::model::point16_t{x, y}, type);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < nears->size(); i++)
@@ -263,8 +276,10 @@ int builtin::map::builtin_nears(lua_State* L)
             lua->pushobject((*nears)[i]);
             lua_rawseti(L, -2, static_cast<int>(i + 1));
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -342,6 +357,7 @@ int builtin::map::builtin_movable(lua_State* L)
         auto ignore_objects = [](const fb::game::object&) {
             return false;
         };
+
         for (auto& cell : path)
         {
             if (map_locked->movable(cell, ignore_objects) == false)
@@ -353,12 +369,15 @@ int builtin::map::builtin_movable(lua_State* L)
         *result = map_locked->movable(pos, [=](const auto& near_obj) -> bool {
             return near_obj.hidden(role) == false;
         });
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -384,13 +403,16 @@ int builtin::map::builtin_door(lua_State* L)
         *door_ptr = map->doors.find(*ch);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*door_ptr == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*door_ptr);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -415,8 +437,10 @@ int builtin::map::builtin_doors(lua_State* L)
             if (std::find(doors->begin(), doors->end(), it->second) == doors->end())
                 doors->push_back(it->second);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < doors->size(); i++)
@@ -424,8 +448,10 @@ int builtin::map::builtin_doors(lua_State* L)
             lua->pushobject(*(*doors)[i]);
             lua_rawseti(L, -2, static_cast<int>(i + 1));
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -456,12 +482,15 @@ int builtin::map::builtin_contains(lua_State* L)
                 break;
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -487,8 +516,10 @@ int builtin::map::builtin_belows(lua_State* L)
         {
             belows->push_back(below);
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         for (size_t i = 0; i < belows->size(); i++)
@@ -497,8 +528,10 @@ int builtin::map::builtin_belows(lua_State* L)
             lua->pushobject((*belows)[i]);
             lua_settable(L, -3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -531,11 +564,14 @@ int builtin::map::builtin_tile(lua_State* L)
                 const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
                 server.maps.update_map_cache(map->id, area);
             }
+
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
+
         return builder.run();
     }
     else
@@ -561,16 +597,20 @@ int builtin::map::builtin_tile(lua_State* L)
                 snapshot->object  = tile->object;
                 snapshot->blocked = tile->blocked;
             }
+
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (snapshot->found == false)
                 co_return 0;
+
             lua->pushinteger(snapshot->id);
             lua->pushinteger(snapshot->object);
             lua->pushboolean(snapshot->blocked);
             co_return 3;
         };
+
         return builder.run();
     }
 }
@@ -605,15 +645,19 @@ int builtin::map::builtin_at(lua_State* L)
                 break;
             }
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*result_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*result_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -641,12 +685,15 @@ int builtin::map::builtin_block(lua_State* L)
             *result = map->block(x, y, block_opt);
         else
             *result = map->blocked(x, y);
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -670,6 +717,7 @@ int builtin::map::builtin_bulk_update(lua_State* L)
         lua->rawgeti(2, i);
         if (lua->is_number(-1))
             oids.push_back((uint32_t)lua->tointeger(-1));
+
         lua->pop(1);
     }
 
@@ -684,9 +732,11 @@ int builtin::map::builtin_bulk_update(lua_State* L)
         map->bulk_update(oids);
         co_return;
     };
+
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+
     return builder.run();
 }
 
@@ -720,16 +770,20 @@ int builtin::map::builtin_instance(lua_State* L)
         auto inst = server->maps.find(source, slot);
         if (inst == nullptr)
             inst = server->maps.create_instance(source, slot);
+
         *holder = inst;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -770,13 +824,16 @@ int builtin::map::builtin_clone(lua_State* L)
         *holder = server->maps.clone(source);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*holder);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -799,12 +856,15 @@ int builtin::map::builtin_destroy(lua_State* L)
             co_await server->maps.destroy(map);
             *result = true;
         }
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -835,10 +895,12 @@ int builtin::map::builtin_kick(lua_State* L)
 
         *result = co_await source->kick(*ch);
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -863,16 +925,19 @@ int builtin::map::builtin_set_timer(lua_State* L)
         ::lua_getfield(*lua, 5, "name");
         if (lua->is_string(-1))
             name = lua->tostring(-1);
+
         lua->remove(-1);
 
         ::lua_getfield(*lua, 5, "repeat");
         if (lua->is_nil(-1) == false)
             repeat = lua->toboolean(-1);
+
         lua->remove(-1);
 
         ::lua_getfield(*lua, 5, "once");
         if (lua->is_nil(-1) == false && lua->toboolean(-1))
             repeat = false;
+
         lua->remove(-1);
     }
 
@@ -885,13 +950,16 @@ int builtin::map::builtin_set_timer(lua_State* L)
         *result = co_await server->script_timers.create_or_replace(*map, name, interval_ms, path, func, repeat);
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (result->has_value())
             lua->pushinteger(static_cast<lua_Integer>(result->value()));
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -939,6 +1007,7 @@ int builtin::map::builtin_cancel_timer(lua_State* L)
         lua->pushboolean(*success);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -970,6 +1039,7 @@ int builtin::map::builtin_timer(lua_State* L)
         ch->timer(value, type);
         co_return;
     });
+
     return 0;
 }
 
@@ -1069,13 +1139,16 @@ int builtin::map::builtin_spawn_mob(lua_State* L)
         *mob_ptr = mob;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*mob_ptr == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*mob_ptr);
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -1128,6 +1201,7 @@ int builtin::map::builtin_mkitem(lua_State* L)
         ::lua_getfield(*lua, option_idx, "lifetime");
         if (lua->is_nil(-1) == false)
             lifetime = lua->toboolean(-1);
+
         lua->remove(-1);
     }
 
@@ -1145,12 +1219,15 @@ int builtin::map::builtin_mkitem(lua_State* L)
         *item_holder = item;
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (*item_holder == nullptr)
             lua->pushnil();
         else
             lua->pushobject(*item_holder);
+
         co_return 1;
     };
+
     return builder.run();
 }

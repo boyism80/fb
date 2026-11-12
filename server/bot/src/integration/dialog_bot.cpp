@@ -41,6 +41,7 @@ void dialog_bot::read_appearance_v651(fb::stream_reader<big_endian>& reader)
         this->look  = reader.read<uint16_t>();
         this->color = reader.read<uint8_t>();
     }
+
     reader.read<uint32_t>();
 }
 
@@ -85,8 +86,10 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
         this->message = reader.read<std::string, uint16_t>();
         if (this->type == dialog_type::input)
             reader.read<std::string, uint8_t>(); // ext blob
+
         this->pursuit = reader.read<uint16_t>();
     }
+
     break;
 
     case dialog_type::item:
@@ -108,6 +111,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
             this->item_items.push_back(std::move(item));
         }
     }
+
     break;
 
     case dialog_type::menu:
@@ -125,6 +129,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
             reader.read<uint16_t>(); // menu index
         }
     }
+
     break;
 
     case dialog_type::pursuit:
@@ -140,6 +145,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
             this->menu_menus.push_back(reader.read<std::string, uint8_t>());
         }
     }
+
     break;
 
     case dialog_type::buy:
@@ -173,6 +179,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
             }
         }
     }
+
     break;
 
     case dialog_type::slot:
@@ -187,6 +194,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
             this->slot_slots.push_back(reader.read<uint8_t>());
         }
     }
+
     break;
 
     case dialog_type::spell:
@@ -195,6 +203,7 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
     }
+
     break;
     }
 }

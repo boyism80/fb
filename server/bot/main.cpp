@@ -149,6 +149,7 @@ int main(int argc, char** argv)
                                                        .token  = vm["token"].as<string>(),
                                                        .web    = vm["web"].as<string>(),
                                                    });
+
             boost::asio::co_spawn(context, master.run(), [](std::exception_ptr error) {
                 if (error == nullptr)
                     return;
@@ -161,8 +162,10 @@ int main(int argc, char** argv)
                 {
                     fb::console::puts("master: {}", e.what());
                 }
+
                 std::exit(-1);
             });
+
             context.run();
         }
         else
@@ -171,6 +174,7 @@ int main(int argc, char** argv)
             auto seats = vm["seats"].as<uint32_t>();
             if (name.empty())
                 name = boost::asio::ip::host_name();
+
             if (seats == 0)
                 seats = std::max(1u, fb::config<uint32_t>("thread:logic", 1u));
 
@@ -184,9 +188,11 @@ int main(int argc, char** argv)
                                                      .seats      = seats,
                                                      .max_bots   = vm["max-bots"].as<uint32_t>(),
                                                  });
+
             boost::asio::co_spawn(context, agent.run(), boost::asio::detached);
             context.run();
         }
+
         return 0;
     }
     else if (role.empty() == false)
@@ -206,6 +212,7 @@ int main(int argc, char** argv)
             if (name.empty() == false)
                 names.push_back(name);
         }
+
         fb::bot::integration::lua_integration_test::select(std::move(names), vm["label"].as<string>());
 
         result = run_bot_test<fb::bot::test_mode::INTEGRATION_TEST>(config_path, overrides, cluster);
@@ -227,5 +234,6 @@ int main(int argc, char** argv)
         std::fflush(stderr);
         std::_Exit(result);
     }
+
     return result;
 }

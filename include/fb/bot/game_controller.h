@@ -50,6 +50,7 @@ public:
 
             if (timer)
                 timer->cancel();
+
             promise->set_value(bot);
         }
 
@@ -178,15 +179,19 @@ private:
             bot.set_head_marker(response.head_marker);
             bot.set_name(response.name);
         }
+
         co_return;
     }
+
     template <fb::protocol::CLIENT_VERSION V>
     async::task<void> on_item_unequip(game_bot& bot, const game_resp::item_unequip<V>& response)
     {
         if (response.parts == EQUIPMENT_PARTS::WEAPON)
             bot.set_weapon_dress(0);
+
         co_return;
     }
+
     template <fb::protocol::CLIENT_VERSION V>
     async::task<void> on_update_external(game_bot& bot, const game_resp::update_external<V>& response)
     {
@@ -209,6 +214,7 @@ private:
             bot.set_head_marker(response.head_marker);
             bot.set_name(response.name);
         }
+
         co_return;
     }
 

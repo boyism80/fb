@@ -210,6 +210,7 @@ std::vector<fb::protocol::internal::Spell> spells::to_protocol(uint32_t user) co
 
         result.push_back(fb::protocol::internal::Spell{user, i, spell->model().id, spell->next().to_string()});
     }
+
     return result;
 }
 

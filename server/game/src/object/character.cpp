@@ -116,6 +116,7 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
     {
         ctx->outbound.append(socket_ptr, std::move(wire));
     }
+
     return queued;
 }
 
@@ -182,6 +183,7 @@ void character::on_map_entered(fb::game::map& map)
         auto params = thread->template data<thread_params>();
         params->characters.insert(this->shared_from_this_as<character>());
     }
+
     map.on_character_enter();
 }
 
@@ -193,6 +195,7 @@ void character::on_map_left(fb::game::map& map)
         auto params = thread->template data<thread_params>();
         params->characters.remove(this->shared_from_this_as<character>());
     }
+
     map.on_character_leave();
 }
 
@@ -225,6 +228,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
             co_return false;
         }
+
         map = routed;
     }
 
@@ -242,6 +246,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     {
         if (this->trade != nullptr)
             this->trade->cancel(*this);
+
         this->_world_map = std::nullopt;
     }
 
@@ -284,14 +289,17 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             log_data["old_position_x"] = old_position.x;
             log_data["old_position_y"] = old_position.y;
         }
+
         if (new_map_id.has_value())
         {
             log_data["new_map"]        = new_map_id.value();
             log_data["new_position_x"] = new_position.x;
             log_data["new_position_y"] = new_position.y;
         }
+
         this->server.log.write("map_transfer", log_data);
     }
+
     co_return true;
 }
 
@@ -448,6 +456,7 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
     {
         if (pinned)
             this->home.unpin();
+
         this->cancel_transfer(e.what());
         result = transfer_result::FAILED;
     }
@@ -455,6 +464,7 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
     {
         if (pinned)
             this->home.unpin();
+
         this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
         result = transfer_result::FAILED;
     }
@@ -555,6 +565,7 @@ async::task<void> character::attack(DURATION duration, std::shared_ptr<life> vic
     {
         this->message(e.what());
     }
+
     co_return;
 }
 
@@ -725,6 +736,7 @@ void character::armor_color(std::optional<uint8_t> value)
     this->_armor_color = value;
     if (this->_mimicry.has_value() && this->_mimicry->disguise.has_value())
         this->_mimicry->armor_color = value;
+
     this->show();
 }
 
@@ -939,6 +951,7 @@ STATE character::state() const
 
     if (this->_mimicry.has_value() && this->_mimicry->disguise.has_value())
         return STATE::DISGUISE;
+
     return this->_state;
 }
 
@@ -996,6 +1009,7 @@ void character::state(STATE value)
             log_data["position_x"] = this->position().x;
             log_data["position_y"] = this->position().y;
         }
+
         this->server.log.write("revive", log_data);
     }
 }
@@ -1029,6 +1043,7 @@ void character::log_chat(std::string_view message, std::string_view chat_type)
     auto map                   = this->map();
     if (map != nullptr)
         log_data["map"] = map->model().id;
+
     this->server.log.write("chat", log_data);
 }
 
@@ -1727,6 +1742,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.max.has_value() && *params.max < this->_level)
                 return false;
         }
+
         break;
 
         case DSL::gender:
@@ -1735,6 +1751,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value != this->_gender)
                 return false;
         }
+
         break;
 
         case DSL::strength:
@@ -1743,6 +1760,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value > this->stat.str())
                 return false;
         }
+
         break;
 
         case DSL::intelligence:
@@ -1751,6 +1769,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value > this->stat.intelligence())
                 return false;
         }
+
         break;
 
         case DSL::dexterity:
@@ -1759,6 +1778,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value > this->stat.dex())
                 return false;
         }
+
         break;
 
         case DSL::promotion:
@@ -1767,6 +1787,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value > this->_promotion)
                 return false;
         }
+
         break;
 
         case DSL::class_t:
@@ -1775,6 +1796,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value != this->_class)
                 return false;
         }
+
         break;
 
         case DSL::role:
@@ -1783,6 +1805,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
             if (params.value > this->_role)
                 return false;
         }
+
         break;
         }
     }
@@ -1861,6 +1884,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
             co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true);
             this->server.log.write("friend_chat", log_data);
         }
+
         co_return;
     }
 
@@ -1931,6 +1955,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
             receiver->server.log.write("whisper", recv_log);
             co_return;
         };
+
         builder.enqueue();
     }
 
@@ -2028,6 +2053,7 @@ async::task<void> character::settle_death(std::shared_ptr<fb::game::object> kill
         life::kill(DESTROY_TYPE::DEAD);
         if (this->trade != nullptr)
             this->trade->cancel(*this);
+
         co_await this->death_penalty();
         this->state(STATE::GHOST);
         this->handle_death(killer);
@@ -2038,6 +2064,7 @@ async::task<void> character::settle_death(std::shared_ptr<fb::game::object> kill
         this->_settling_death = false;
         throw;
     }
+
     this->_settling_death = false;
 }
 
@@ -2063,12 +2090,14 @@ void character::handle_death(std::shared_ptr<fb::game::object> killer)
         log_data["position_x"] = this->position().x;
         log_data["position_y"] = this->position().y;
     }
+
     if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
     {
         auto& killer_ch         = static_cast<character&>(*killer);
         log_data["killer_id"]   = static_cast<Json::Int64>(killer_ch.id);
         log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
+
     this->server.log.write("death", log_data);
 
     auto session = this->matchmaker.session();
@@ -2093,6 +2122,7 @@ void character::enqueue_death_warp()
         co_await self->death_warp();
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -2119,6 +2149,7 @@ async::task<void> character::death_warp()
     auto y = params.y;
     if (params.right > params.x)
         x = static_cast<uint16_t>(std::uniform_int_distribution<int>(params.x, params.right)(random_engine));
+
     if (params.bottom > params.y)
         y = static_cast<uint16_t>(std::uniform_int_distribution<int>(params.y, params.bottom)(random_engine));
 
@@ -2135,6 +2166,7 @@ async::task<void> character::settle_kills(mob_vector dead)
     {
         if (m == nullptr)
             continue;
+
         if (m->type() == mob::spawn_type::SUMMONED)
         {
             m->detach_owner();
@@ -2142,6 +2174,7 @@ async::task<void> character::settle_kills(mob_vector dead)
             co_await m->destroy(DESTROY_TYPE::DEAD);
             continue;
         }
+
         groups[m->model().id].push_back(m);
     }
 
@@ -2200,6 +2233,7 @@ async::task<void> character::settle_kills(mob_vector dead)
             co_await m->destroy(DESTROY_TYPE::DEAD);
         }
     }
+
     co_await this->server.threads.follow(self_pivot);
 }
 
@@ -2278,6 +2312,7 @@ async::task<void> character::damage_to(const damage_list& targets, const damage_
     co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
     if (settle.dead_mobs.empty() == false)
         co_await this->settle_kills(std::move(settle.dead_mobs));
+
     co_return;
 }
 
@@ -2333,6 +2368,7 @@ fb::protocol::internal::Character character::to_protocol() const
     {
         dto.mimicry = std::nullopt;
     }
+
     dto.hp               = this->stat.hp();
     dto.base_hp          = this->stat.base_hp();
     dto.additional_hp    = 0;
@@ -2401,6 +2437,7 @@ void character::timer(uint32_t time, TIMER_TYPE type)
 {
     this->listener.on_timer(*this, time, type);
 }
+
 void character::weather(WEATHER_TYPE weather)
 {
     this->listener.on_weather(*this, weather);
@@ -2553,6 +2590,7 @@ bool character::detach_spawned_mob(fb::game::mob& mob)
             return true;
         }
     }
+
     return false;
 }
 
@@ -2633,6 +2671,7 @@ async::task<void> character::death_penalty()
     {
         buff_keys.push_back(k);
     }
+
     for (auto k : buff_keys)
     {
         std::ignore = co_await this->buffs.remove(k);
@@ -2727,24 +2766,29 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
                     item->uid(uid.value());
                     uid.reset();
                 }
+
                 std::ignore = co_await this->items.add(item);
                 if (item->empty() == false && this->items.index(item) == 0xFF)
                     std::ignore = co_await item->map(this->map(), this->position());
             }
+
             break;
         }
+
         case fb::model::enum_value::DSL::money:
         {
             auto params  = fb::model::dsl::money(item.params);
             money       += params.value;
             break;
         }
+
         case fb::model::enum_value::DSL::exp:
         {
             auto params  = fb::model::dsl::exp(item.params);
             exp         += params.value;
             break;
         }
+
         default:
             break;
         }

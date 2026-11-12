@@ -41,10 +41,12 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<trade_bot>([](game_bot& bot, trade_bot& protocol) -> async::task<void> {
         co_return;
     });
+
     this->bind(&game_bot_controller::on_time);
     this->bind<game_resp::update_internal>([this](game_bot& bot, auto& response) {
         return this->on_state(bot, response);
     });
+
     this->bind(&game_bot_controller::on_message);
     this->bind(&game_bot_controller::on_sequence);
     this->bind(&game_bot_controller::on_position);
@@ -52,6 +54,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
         return this->on_map(bot, response);
     });
+
     this->bind(&game_bot_controller::on_transfer);
 }
 
@@ -167,8 +170,10 @@ void game_bot_controller::pin_bot_to_seat(uint32_t bot_id, bot_integration_test*
         auto params = thread.template data<bot_thread_params>();
         if (params != nullptr)
             params->bots.insert({bot_id, bot});
+
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -178,6 +183,7 @@ void game_bot_controller::own(uint32_t bot_id, bot_integration_test* test)
         auto lock                 = std::lock_guard(this->_schedule_mutex);
         this->_bot_owners[bot_id] = test;
     }
+
     this->pin_bot_to_seat(bot_id, test);
 }
 
@@ -194,6 +200,7 @@ void game_bot_controller::move_owner(uint32_t old_bot_id, uint32_t new_bot_id)
         this->_bot_owners.erase(it);
         this->_bot_owners[new_bot_id] = test;
     }
+
     this->pin_bot_to_seat(new_bot_id, test);
 }
 
@@ -203,6 +210,7 @@ bot_integration_test* game_bot_controller::owner_of(uint32_t bot_id)
     auto it   = this->_bot_owners.find(bot_id);
     if (it == this->_bot_owners.end())
         return nullptr;
+
     return it->second;
 }
 
@@ -467,10 +475,13 @@ void game_bot_controller::finish_suite_if_done()
         auto lock = std::lock_guard(this->_schedule_mutex);
         if (this->_finished)
             return;
+
         if (this->_active_seats.empty() == false)
             return;
+
         if (this->_parallel_queue.empty() == false)
             return;
+
         if (this->_serial_queue.empty() == false)
             return;
 
@@ -489,6 +500,7 @@ void game_bot_controller::notify_test_ready(bot_integration_test* test)
 {
     if (test == nullptr)
         return;
+
     // Ready wait is signaled from bot_integration_test::notify_ready via promise.
     std::ignore = test;
 }
@@ -597,6 +609,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     created->set_name(bot.name());
     if (auto attached = bot.attached(); attached != nullptr)
         attached->transfer(bot, *created);
+
     created->credential(bot.credential());
     this->move_owner(bot.id, created->id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
@@ -734,8 +747,10 @@ void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opco
     std::erase_if(cmd_it->second, [hook_id](const hook_entry& hook) {
         return hook.id == hook_id;
     });
+
     if (cmd_it->second.empty())
         test_it->second.erase(cmd_it);
+
     if (test_it->second.empty())
         this->_test_hooks.erase(test_it);
 }
@@ -789,6 +804,7 @@ void game_bot_controller::print_final_test_results()
     auto ms      = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     if (ms < 0)
         ms = 0;
+
     auto total_sec = ms / 1000;
     auto rem_ms    = static_cast<int>(ms % 1000);
     auto minutes   = total_sec / 60;

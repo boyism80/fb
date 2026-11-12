@@ -30,6 +30,7 @@ async::task<void> evaluation_timer::handle(const fb::model::datetime& now, std::
         {
             fb::logger::fatal("evaluation_timer error for character {}: {}", ch->id, e.what());
         }
+
         co_return;
     });
 

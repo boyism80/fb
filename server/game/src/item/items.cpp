@@ -185,6 +185,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
         {
             if (warned == false)
                 owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
+
             warned = true;
             continue;
         }
@@ -247,6 +248,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                         owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
                         if (stop_if_remained)
                             break;
+
                         continue;
                     }
 
@@ -259,6 +261,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                         owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
                         if (stop_if_remained)
                             break;
+
                         continue;
                     }
                 }
@@ -283,6 +286,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             }
         }
     }
+
     co_return indices;
 }
 
@@ -333,8 +337,10 @@ void items::write_item_log(std::string_view                event,
     log_data["index"]          = index;
     if (attr.has_value())
         log_data["delete_type"] = static_cast<int>(attr.value());
+
     if (item.uid() != 0)
         log_data["item_uid"] = static_cast<Json::UInt64>(item.uid());
+
     owner->server.log.write(event, log_data);
 }
 
@@ -375,6 +381,7 @@ async::task<items::item_storage> items::store(uint8_t index, uint16_t count)
         this->_stored.push_back(deleted);
         deleted->container(this);
     }
+
     owner->money(owner->money() - fee);
 
     // Log item deposit event
@@ -386,6 +393,7 @@ async::task<items::item_storage> items::store(uint8_t index, uint16_t count)
     log_data["count"]          = static_cast<Json::Int64>(count);
     if (deleted->uid() != 0)
         log_data["item_uid"] = static_cast<Json::UInt64>(deleted->uid());
+
     owner->server.log.write("item_deposit", log_data);
 
     co_return item_storage::DONE;
@@ -404,6 +412,7 @@ std::shared_ptr<item> items::stored(const fb::model::item& item) const
         if (stored->model() == item)
             return stored;
     }
+
     return nullptr;
 }
 
@@ -497,6 +506,7 @@ async::task<items::item_ptr> items::retrieve(size_t index, uint16_t count, bool 
         log_data["count"]          = static_cast<Json::Int64>(count);
         if (item->uid() != 0)
             log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
+
         owner->server.log.write("item_retrieve", log_data);
 
         co_return item;
@@ -591,6 +601,7 @@ items::item_ptr items::usable(uint8_t index) const
     auto item = this->at(index);
     if (item == nullptr && this->reserved(index))
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_ITEM_LOCKED));
+
     return item;
 }
 
@@ -628,6 +639,7 @@ async::task<items::item_ptr> items::active(uint8_t index)
     {
         owner->message(e.what());
     }
+
     co_return nullptr;
 }
 
@@ -718,6 +730,7 @@ bool items::update(uint8_t index) const
         owner->listener.on_item_remove(*owner, index, ITEM_DELETE_TYPE::NONE);
     else
         owner->listener.on_item_update(*owner, index);
+
     return true;
 }
 
@@ -751,6 +764,7 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
         // Storage stacks may exceed the model capacity, which the item constructor clamps to.
         if (row.count > item->count())
             item->count(row.count);
+
         this->_stored.push_back(item);
     }
     else if (row.parts == static_cast<int16_t>(EQUIPMENT_PARTS::UNKNOWN))
@@ -778,24 +792,28 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
             occupied = this->_weapon != nullptr;
             if (occupied == false)
                 this->_weapon = std::static_pointer_cast<fb::game::weapon>(item);
+
             break;
 
         case EQUIPMENT_PARTS::ARMOR:
             occupied = this->_armor != nullptr;
             if (occupied == false)
                 this->_armor = std::static_pointer_cast<fb::game::armor>(item);
+
             break;
 
         case EQUIPMENT_PARTS::SHIELD:
             occupied = this->_shield != nullptr;
             if (occupied == false)
                 this->_shield = std::static_pointer_cast<fb::game::shield>(item);
+
             break;
 
         case EQUIPMENT_PARTS::HELMET:
             occupied = this->_helmet != nullptr;
             if (occupied == false)
                 this->_helmet = std::static_pointer_cast<fb::game::helmet>(item);
+
             break;
 
         case EQUIPMENT_PARTS::LEFT_HAND:
@@ -807,6 +825,7 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
             if (occupied == false)
                 ring = std::static_pointer_cast<fb::game::ring>(item);
         }
+
         break;
 
         case EQUIPMENT_PARTS::LEFT_AUX:
@@ -818,6 +837,7 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
             if (occupied == false)
                 auxiliary = std::static_pointer_cast<fb::game::auxiliary>(item);
         }
+
         break;
 
         default:
@@ -856,6 +876,7 @@ void items::sync() const
     if (std::ranges::any_of(equipments, [](const auto& x) {
             return x.second != nullptr;
         }))
+
     {
         owner->listener.on_equipment_sync(*owner);
         owner->update_external();
@@ -1005,6 +1026,7 @@ std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring)
     {
         before = this->ring(ring, EQUIPMENT_POSITION::RIGHT);
     }
+
     return before;
 }
 
@@ -1180,9 +1202,11 @@ bool items::has(const fb::model::item& model, uint16_t count) const
             auto slot_item = this->at(i);
             if (slot_item == nullptr)
                 continue;
+
             if (slot_item->model() == model)
                 return slot_item->count() >= count;
         }
+
         return false;
     }
     else
@@ -1195,6 +1219,7 @@ bool items::has(const fb::model::item& model, uint16_t count) const
             if (slot_item != nullptr && slot_item->model() == model)
                 slot_count++;
         }
+
         return slot_count >= count;
     }
 }
@@ -1210,6 +1235,7 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
         auto slot_item = this->at(i);
         if (slot_item == nullptr)
             continue;
+
         const auto& model = slot_item->model();
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
             counts[model.id] += slot_item->count();
@@ -1221,10 +1247,12 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
     {
         if (model == nullptr)
             return false;
+
         auto it = counts.find(model->id);
         if (it == counts.end() || it->second < min_count)
             return false;
     }
+
     return true;
 }
 
@@ -1265,6 +1293,7 @@ async::task<items::item_ptr> items::drop(uint8_t index, uint16_t count, bool act
     {
         owner->message(e.what());
     }
+
     co_return nullptr;
 }
 
@@ -1277,6 +1306,7 @@ async::task<void> items::drop_on_death()
     auto wear = [](const fb::model::equipment& model) {
         return static_cast<uint32_t>(std::ceil(model.durability * fb::model::const_value::death_penalty::durability));
     };
+
     auto droppable = [](const fb::model::item& model) {
         return ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
     };
@@ -1364,9 +1394,10 @@ async::task<void> items::loot(bool boost)
         }
         else
         {
-            auto found  = std::find_if(belows.begin(), belows.end(), [this](const auto& below) {
+            auto found = std::find_if(belows.begin(), belows.end(), [this](const auto& below) {
                 return this->warm(*below) == false;
             });
+
             std::ignore = co_await this->add(found != belows.end() ? *found : belows.front());
         }
     }
@@ -1418,6 +1449,7 @@ async::task<bool> items::throws(uint8_t index, bool all)
     {
         owner->message(e.what());
     }
+
     co_return false;
 }
 
@@ -1452,6 +1484,7 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
     {
         item->trade_count(std::min(item->trade_count(), item->count()));
     }
+
     this->write_item_log("item_remove", *splitted, splitted->count(), index, attr);
 
     if (short_offer && owner->trade != nullptr)
@@ -1545,6 +1578,7 @@ async::task<void> items::remove_expired()
         log_data["count"]          = static_cast<Json::Int64>(expired->count());
         if (expired->uid() != 0)
             log_data["item_uid"] = static_cast<Json::UInt64>(expired->uid());
+
         owner->server.log.write("item_remove", log_data);
 
         expired->container(nullptr);
@@ -1610,6 +1644,7 @@ std::optional<uint32_t> items::required_slots(const std::unordered_map<uint32_t,
             required_size++;
         }
     }
+
     return required_size;
 }
 
@@ -1665,16 +1700,19 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
             count += static_cast<uint16_t>(params.count);
             break;
         }
+
         case fb::model::enum_value::DSL::money:
         {
             auto params  = fb::model::dsl::money(item.params);
             money       += params.value;
             break;
         }
+
         default:
             break;
         }
     }
+
     return this->is_rewardable(buffer, money);
 }
 
@@ -1700,6 +1738,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         auto slot = this->at(static_cast<uint8_t>(i));
         if (slot == nullptr)
             continue;
+
         auto& model = slot->model();
         slots_by_id[model.id].push_back(static_cast<uint8_t>(i));
     }
@@ -1824,6 +1863,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             auto     removed   = this->remove(index, to_remove, delete_type, true);
             if (removed != nullptr)
                 co_await removed->destroy();
+
             remaining -= to_remove;
 
             if (slot->count() == 0)
@@ -1965,6 +2005,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             if (left == 0)
                 required++;
         }
+
         return required <= free_slots;
     };
 
@@ -2014,6 +2055,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
         item_data["count"]   = static_cast<Json::Int64>(params.count);
         source_items.append(item_data);
     }
+
     log_data["source_items"] = source_items;
     auto result_items        = Json::Value(Json::arrayValue);
     for (auto& x : result)
@@ -2024,6 +2066,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
         item_data["count"]   = static_cast<Json::Int64>(params.count);
         result_items.append(item_data);
     }
+
     log_data["result_items"] = result_items;
     owner->server.log.write("item_combine", log_data);
 
@@ -2091,6 +2134,7 @@ std::vector<fb::protocol::internal::Escrow> items::to_escrow_protocol(uint32_t u
     {
         result.push_back(fb::protocol::internal::Escrow{user, id, money});
     }
+
     return result;
 }
 
@@ -2131,6 +2175,7 @@ std::vector<fb::protocol::internal::Item> items::to_protocol() const
         protocol.stored = i;
         result.push_back(protocol);
     }
+
     return result;
 }
 
@@ -2167,9 +2212,11 @@ bool items::hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_pa
         auto split = item->split(part.count);
         if (split == item)
             std::ignore = inventory<fb::game::item>::remove(part.index);
+
         split->container(this);
         held.push_back(escrow_type::part{part.index, split});
     }
+
     std::ignore = this->_escrow.hold(escrow_id, money, held);
 
     // The display shows usable and held money together, so the hold is counted before the usable money drops.
@@ -2254,6 +2301,7 @@ void items::drop_escrow_items()
             if (this->at(part.index) == nullptr)
                 owner->listener.on_item_remove(*owner, part.index, ITEM_DELETE_TYPE::REMOVED);
         }
+
         std::ignore = this->_escrow.hold(escrow_id, held->money, {});
     }
 }

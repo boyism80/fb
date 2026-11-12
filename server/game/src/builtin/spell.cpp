@@ -19,6 +19,7 @@ int builtin::spell::builtin_model(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto spell = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
@@ -31,10 +32,12 @@ int builtin::spell::builtin_model(lua_State* L)
         *model_ptr = &spell->model();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushobject(**model_ptr);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -43,6 +46,7 @@ int builtin::spell::builtin_delay(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc  = lua->argc();
     auto spell = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
@@ -59,6 +63,7 @@ int builtin::spell::builtin_delay(lua_State* L)
             *delay = spell->delay();
             co_return;
         };
+
         builder.resume = [=]() -> async::task<int> {
             lua->pushinteger(*delay);
             co_return 1;
@@ -71,9 +76,11 @@ int builtin::spell::builtin_delay(lua_State* L)
             spell->delay(value);
             co_return;
         };
+
         builder.resume = []() -> async::task<int> {
             co_return 0;
         };
     }
+
     return builder.run();
 }

@@ -24,6 +24,7 @@ async::task<bool> item_drop<V>::handle(fb::socket<character>& session, game_reqs
     auto count = uint16_t{1};
     if (request.all && item != nullptr)
         count = item->count();
+
     std::ignore = co_await ch->items.drop(request.index, count);
     co_return true;
 }

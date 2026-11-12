@@ -15,6 +15,7 @@ character* character_collections::owner_character() const
 {
     if (auto owner = this->_owner.lock())
         return owner.get();
+
     return nullptr;
 }
 
@@ -78,6 +79,7 @@ std::vector<fb::protocol::internal::CollectionUnlock> character_collections::to_
     {
         rows.emplace_back(user, mob_id);
     }
+
     return rows;
 }
 
@@ -129,12 +131,14 @@ async::task<void> character_collections::set(uint8_t group_id, uint8_t slot, boo
     {
         if (this->contains(mob->id))
             co_return;
+
         this->unlock(mob->id);
     }
     else
     {
         if (this->contains(mob->id) == false)
             co_return;
+
         this->remove(mob->id);
     }
 
@@ -203,6 +207,7 @@ uint8_t character_collections::unlocked_count(uint8_t group_id) const
 
         ++count;
     }
+
     return count;
 }
 
@@ -232,6 +237,7 @@ std::vector<uint8_t> character_collections::bitmask(uint8_t group_id) const
 
         bytes[slot / 8] |= static_cast<uint8_t>(1u << (slot % 8));
     }
+
     return bytes;
 }
 

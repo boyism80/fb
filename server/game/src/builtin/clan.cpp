@@ -70,6 +70,7 @@ int builtin::clan::builtin_name(lua_State* L)
         lua->pushstring(guard->value()->name());
     else
         lua->pushnil();
+
     return 1;
 }
 
@@ -127,6 +128,7 @@ int builtin::clan::builtin_role(lua_State* L)
         lua->pushnil();
     else
         lua->pushinteger(member->role);
+
     return 1;
 }
 
@@ -178,6 +180,7 @@ int builtin::clan::builtin_title(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -225,13 +228,16 @@ int builtin::clan::builtin_title(lua_State* L)
                 *error = e.what();
             }
         };
+
         builder.resume = [=]() -> async::task<int> {
             if (error->has_value())
                 lua->pushstring(error->value().c_str());
             else
                 lua->pushnil();
+
             co_return 1;
         };
+
         return builder.run();
     }
     else
@@ -245,6 +251,7 @@ int builtin::clan::builtin_join(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -265,6 +272,7 @@ int builtin::clan::builtin_join(lua_State* L)
         is_member =
             guard.has_value() && guard->value() != nullptr && guard->value()->member(inviter->name()) != nullptr;
     }
+
     if (is_member == false)
     {
         lua->pushstring("inviter is not a member of the clan");
@@ -295,13 +303,16 @@ int builtin::clan::builtin_join(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -310,6 +321,7 @@ int builtin::clan::builtin_leave(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -343,13 +355,16 @@ int builtin::clan::builtin_leave(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -358,6 +373,7 @@ int builtin::clan::builtin_kick(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -393,13 +409,16 @@ int builtin::clan::builtin_kick(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -408,6 +427,7 @@ int builtin::clan::builtin_change_role(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -456,13 +476,16 @@ int builtin::clan::builtin_change_role(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -471,6 +494,7 @@ int builtin::clan::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
     auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
@@ -518,13 +542,16 @@ int builtin::clan::builtin_message(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -544,6 +571,7 @@ int builtin::clan::builtin_allied_clan_id(lua_State* L)
         lua->pushinteger(guard->value()->allied_clan_id().value());
     else
         lua->pushnil();
+
     return 1;
 }
 
@@ -569,6 +597,7 @@ int builtin::clan::builtin_enemy_clan_ids(lua_State* L)
             lua_rawseti(L, -2, ++i);
         }
     }
+
     return 1;
 }
 
@@ -672,13 +701,16 @@ int builtin::clan::builtin_request_ally(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -732,13 +764,16 @@ int builtin::clan::builtin_break_ally(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -792,13 +827,16 @@ int builtin::clan::builtin_declare_enemy(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -852,13 +890,16 @@ int builtin::clan::builtin_end_enemy(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -878,5 +919,6 @@ int builtin::clan::builtin_money(lua_State* L)
         lua->pushinteger(guard->value()->money());
     else
         lua->pushnil();
+
     return 1;
 }

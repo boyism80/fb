@@ -255,6 +255,7 @@ void dialog_list<V>::deserialize(fb::stream_reader<big_endian>& reader)
         {
             this->action = static_cast<uint8_t>(reader.read<uint16_t>());
         }
+
         break;
     }
 
@@ -274,6 +275,7 @@ void dialog_list<V>::deserialize(fb::stream_reader<big_endian>& reader)
             this->index = reader.read<uint8_t>();
             break;
         }
+
         break;
     }
     }
@@ -317,6 +319,7 @@ void dialog_list<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian
         {
             this->action = static_cast<uint8_t>(reader.read<uint16_t>());
         }
+
         break;
     }
 
@@ -343,6 +346,7 @@ void dialog_list<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian
         {
             this->button = DIALOG_RESULT::QUIT;
         }
+
         break;
     }
     }
@@ -495,6 +499,7 @@ void dialog_list<V>::serialize(fb::stream_writer<big_endian>& writer) const
         {
             writer.write<uint16_t>(this->action);
         }
+
         break;
 
     case list_type::LIST:
@@ -506,6 +511,7 @@ void dialog_list<V>::serialize(fb::stream_writer<big_endian>& writer) const
             writer.write<uint8_t>(0x01);
             writer.write<uint8_t>(this->index);
         }
+
         break;
     }
 }

@@ -29,6 +29,7 @@ async::task<void> recovery_timer::handle(const fb::model::datetime& now, std::th
         {
             fb::logger::fatal("recovery_timer error for character {}: {}", ch->id, e.what());
         }
+
         co_return;
     });
 

@@ -106,6 +106,7 @@ async::task<bool> character::options::change(std::vector<std::pair<OPTION, bool>
         {
             this->assign(key, value, true);
         }
+
         co_return true;
     }
     else

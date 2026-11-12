@@ -93,6 +93,7 @@ public:
             auto _ = std::lock_guard(this->_lru_mutex);
             this->_lru_list.remove(hash);
         }
+
         return true;
     }
 
@@ -114,6 +115,7 @@ public:
         {
             out.push_back(it->first);
         }
+
         return out;
     }
 
@@ -124,6 +126,7 @@ private:
         auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
         if (it != this->_lru_list.end())
             this->_lru_list.erase(it);
+
         this->_lru_list.push_front(hash);
     }
 
@@ -508,6 +511,7 @@ public:
         auto  current   = std::optional<T>{};
         if (data.contains(hash))
             current = data.at(hash);
+
         data[hash] = func(static_cast<const std::optional<T>&>(current));
         co_return async_write_guard(std::move(map_guard), hash);
     }
@@ -762,6 +766,7 @@ public:
             auto current = std::optional<T>{};
             if (data.contains(hash))
                 current = data.at(hash);
+
             data[hash] = (*holder)(static_cast<const std::optional<T>&>(current));
             co_return;
         });
@@ -793,6 +798,7 @@ public:
             bucket = std::make_unique<sub_container_type>(capacity);
         }
     }
+
     sharded_container(const sharded_container&) = delete;
     sharded_container(sharded_container&&)      = delete;
 
@@ -942,6 +948,7 @@ public:
                 out.push_back(h);
             }
         }
+
         return out;
     }
 

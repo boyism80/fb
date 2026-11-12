@@ -48,15 +48,19 @@ int builtin::matchmaker::builtin_mu(lua_State* L)
         auto skill = self->matchmaker.get(match_type);
         if (skill.has_value())
             *mu = skill->mu;
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (mu->has_value())
             lua->pushnumber(mu->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -83,15 +87,19 @@ int builtin::matchmaker::builtin_sigma(lua_State* L)
         auto skill = self->matchmaker.get(match_type);
         if (skill.has_value())
             *sigma = skill->sigma;
+
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (sigma->has_value())
             lua->pushnumber(sigma->value());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -117,10 +125,12 @@ int builtin::matchmaker::builtin_queued(lua_State* L)
         *queued = self->matchmaker.queued();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*queued);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -146,13 +156,16 @@ int builtin::matchmaker::builtin_ticket_id(lua_State* L)
         *ticket_id = self->matchmaker.ticket_id();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (ticket_id->has_value())
             lua->pushinteger(static_cast<lua_Integer>(ticket_id->value()));
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -178,13 +191,16 @@ int builtin::matchmaker::builtin_pending_match_id(lua_State* L)
         *pending_match_id = self->matchmaker.pending_match_id();
         co_return;
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (pending_match_id->has_value())
             lua->pushinteger(static_cast<lua_Integer>(pending_match_id->value()));
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -217,13 +233,16 @@ int builtin::matchmaker::builtin_enqueue(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -255,13 +274,16 @@ int builtin::matchmaker::builtin_dequeue(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -300,13 +322,16 @@ int builtin::matchmaker::builtin_confirm(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -345,12 +370,15 @@ int builtin::matchmaker::builtin_decline(lua_State* L)
             *error = e.what();
         }
     };
+
     builder.resume = [=]() -> async::task<int> {
         if (error->has_value())
             lua->pushstring(error->value().c_str());
         else
             lua->pushnil();
+
         co_return 1;
     };
+
     return builder.run();
 }

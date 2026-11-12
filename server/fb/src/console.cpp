@@ -193,6 +193,7 @@ void console::progress(std::string_view text, float progress)
     {
         _max_progress = progress;
     }
+
     _current_policy->progress(text, progress);
 }
 
@@ -212,6 +213,7 @@ std::string console::console_policy::get_aligned_text(align_type align, std::str
         padding = 0;
         break;
     }
+
     return std::string(padding, ' ') + std::string(text);
 }
 
@@ -293,11 +295,13 @@ void console::tty_policy::progress(std::string_view text, float progress)
     {
         os << fill_text;
     }
+
     os << lead_text;
     for (size_t i = 0; i < width - whole_width; ++i)
     {
         os << " ";
     }
+
     os << "]";
 
     os << std::format(" {:>7.2f}% {}", progress, text);

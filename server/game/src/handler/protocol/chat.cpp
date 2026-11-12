@@ -54,6 +54,7 @@ async::task<bool> chat<V>::handle(fb::socket<character>& session, game_reqs::cha
             fb::lua::run_async(std::move(lua), 3);
         }
     }
+
     co_return true;
 }
 
@@ -70,6 +71,7 @@ async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> w
                              request.message);
             co_return true;
         }
+
         co_return false;
     }
 

@@ -38,8 +38,10 @@ fb::model::npc* fb::model::___npc::name2npc(std::string_view name) const
                     cache.clear();
                     cache_owner = published;
                 }
+
                 cache[name_str] = &npc.second;
             }
+
             return &npc.second;
         }
     }

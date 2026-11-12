@@ -32,6 +32,7 @@ public:
         bool                               received    = false;
         std::optional<fb::model::datetime> expire_date = std::nullopt;
     };
+
     using entry_map = std::map<uint32_t, entry>;
     using box_dto   = fb::protocol::internal::StorageBox;
 

@@ -123,6 +123,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     {
         if (m == nullptr)
             continue;
+
         if (m->type() == mob::spawn_type::SUMMONED)
         {
             m->detach_owner();
@@ -130,6 +131,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
             co_await m->destroy(DESTROY_TYPE::DEAD);
             continue;
         }
+
         groups[m->model().id].push_back(m);
     }
 
@@ -166,6 +168,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
             co_await m->destroy(DESTROY_TYPE::DEAD);
         }
     }
+
     co_await this->server.threads.follow(self);
 }
 
@@ -183,6 +186,7 @@ async::task<void> life::damage_to(const damage_list& targets, const damage_opts&
     co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
     if (settle.dead_mobs.empty() == false)
         co_await this->settle_deaths(std::move(settle.dead_mobs));
+
     co_return;
 }
 
@@ -198,6 +202,7 @@ async::task<void> life::damage(uint64_t value, const damage_opts& opts)
     co_await this->settle_character_deaths(settle.dead_characters, nullptr);
     if (settle.dead_mobs.empty() == false)
         co_await this->settle_deaths(std::move(settle.dead_mobs));
+
     co_return;
 }
 
@@ -216,6 +221,7 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
         // HP already zero from damage; skip if already settled as ghost.
         if (ch->stat.hp() != 0)
             continue;
+
         if (ch->state() == STATE::GHOST || ch->settling_death())
             continue;
 
@@ -224,6 +230,7 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
         // onto the victim's destination map thread.
         co_await ch->settle_death(killer);
     }
+
     co_await this->server.threads.follow(self);
 }
 
@@ -260,6 +267,7 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
             fb::logger::warn("unknown error in on_mob_damaged {}", m->model().id);
         }
     }
+
     co_await this->server.threads.follow(attacker->weak_from_this_as<life>());
 }
 
@@ -283,6 +291,7 @@ async::task<void> life::attack(DURATION duration, std::shared_ptr<life> victim)
             lua->pushobject(victim);
         else
             lua->pushnil();
+
         auto results = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<life>(), 3);
         if (results.empty() == false)
             attack_count = static_cast<uint32_t>(results.front().integer());

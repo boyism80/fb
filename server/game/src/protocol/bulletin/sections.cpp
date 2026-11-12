@@ -31,6 +31,7 @@ void bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
     {
         sorted_items.emplace_back(pair.first, &pair.second);
     }
+
     std::sort(sorted_items.begin(), sorted_items.end(), [](const auto& a, const auto& b) {
         return a.first < b.first;
     });

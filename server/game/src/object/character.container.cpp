@@ -82,6 +82,7 @@ std::vector<character::container::character_ptr_t> character::container::snapsho
 
         targets.push_back(ch);
     }
+
     return targets;
 }
 
@@ -94,6 +95,7 @@ std::vector<uint32_t> character::container::collect_ids(character_predicate_t pr
     {
         ids.push_back(ch->id);
     }
+
     return ids;
 }
 
@@ -145,6 +147,7 @@ async::task<void> character::container::foreach_async(character_async_function_t
     {
         if (before != nullptr)
             co_await before->switching();
+
         co_return;
     }
 
@@ -159,8 +162,10 @@ async::task<void> character::container::foreach_async(character_async_function_t
             auto shared_ptr = weak_ptr.lock();
             if (shared_ptr != nullptr)
                 co_await (*fn_holder)(shared_ptr);
+
             co_return;
         };
+
         async::awaitable_then(builder.dispatch(), [promise, remaining](async::awaitable_result<void> result) mutable {
             try
             {
@@ -208,6 +213,7 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
         {
             if (miss != nullptr)
                 miss(name);
+
             continue;
         }
 
@@ -226,6 +232,7 @@ async::task<void> character::container::invoke(std::string_view          name,
     {
         if (miss != nullptr)
             miss(name);
+
         co_return;
     }
 
@@ -235,6 +242,7 @@ async::task<void> character::container::invoke(std::string_view          name,
     auto ptr = weak.lock();
     if (ptr != nullptr)
         fn(ptr);
+
     if (before != nullptr)
         co_await before->switching();
 }
@@ -248,6 +256,7 @@ async::task<void> character::container::invoke_async(std::string_view           
     {
         if (miss != nullptr)
             miss(name);
+
         co_return;
     }
 
@@ -257,6 +266,7 @@ async::task<void> character::container::invoke_async(std::string_view           
     auto ptr = weak.lock();
     if (ptr != nullptr)
         co_await fn(ptr);
+
     if (before != nullptr)
         co_await before->switching();
 }
@@ -299,9 +309,11 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
                         if (moved != nullptr)
                             co_await (*fn_holder)(moved);
                     };
+
                     retry.on_error = [](std::exception& e) {
                         fb::logger::fatal("foreach_enqueue error: {}", e.what());
                     };
+
                     retry.enqueue();
                 }
                 else
@@ -310,9 +322,11 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
                 }
             }
         };
+
         builder.on_error = [](std::exception& e) {
             fb::logger::fatal("foreach_enqueue error: {}", e.what());
         };
+
         builder.enqueue();
     }
 }
@@ -334,6 +348,7 @@ void character::container::foreach_enqueue(const std::vector<std::string>& names
         {
             if (miss != nullptr)
                 miss(name);
+
             continue;
         }
 

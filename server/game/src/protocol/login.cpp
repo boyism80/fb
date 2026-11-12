@@ -41,8 +41,10 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
         auto flags = TRANSFER_PARAM::NONE;
         if (this->transfer.has_value())
             flags |= TRANSFER_PARAM::MAP;
+
         if (this->match.has_value() && this->match->id != 0)
             flags |= TRANSFER_PARAM::MATCH;
+
         if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
             flags |= TRANSFER_PARAM::UI_MODE;
 
@@ -54,6 +56,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
             writer.write<uint16_t>(this->transfer.value().position.x);
             writer.write<uint16_t>(this->transfer.value().position.y);
         }
+
         if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
         {
             writer.write<uint64_t>(this->match->id);
@@ -62,6 +65,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
             writer.write<uint32_t>(this->match->expected);
             writer.write<uint32_t>(this->match->team_count);
         }
+
         if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
             writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
     }
@@ -76,6 +80,7 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->key_size = reader.read<uint8_t>();
     if (this->key_size > sizeof(this->enc_key))
         throw std::runtime_error("invalid encryption key size in login transfer");
+
     reader.read((void*)this->enc_key, this->key_size);
 #ifndef BOT
     this->from = static_cast<fb::protocol::internal::Service>(reader.read<uint8_t>());
@@ -86,6 +91,7 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     auto packed = reader.read<uint16_t>();
     if (is_supported(packed) == false)
         throw std::runtime_error("unsupported client version in login transfer");
+
     this->client_version = static_cast<CLIENT_VERSION>(packed);
 
     this->id   = reader.read<uint32_t>();
@@ -100,6 +106,7 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
         auto y         = reader.read<uint16_t>();
         this->transfer = transfer_param{.world = world, .map = map, .position = fb::model::point<uint16_t>(x, y)};
     }
+
     if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
     {
         auto id         = reader.read<uint64_t>();
@@ -109,6 +116,7 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
         auto team_count = reader.read<uint32_t>();
         this->match = match_param{.id = id, .type = type, .team = team, .expected = expected, .team_count = team_count};
     }
+
     if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());
     else

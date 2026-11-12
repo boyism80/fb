@@ -530,6 +530,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         auto* map_thread = map->thread();
         if (map_thread == nullptr)
             throw std::runtime_error("active thread is null");
+
         if (std::this_thread::get_id() != map_thread->id())
             throw std::runtime_error("active thread not matched");
 #endif
@@ -581,6 +582,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     {
         co_return false;
     }
+
     co_return true;
 }
 
@@ -635,6 +637,7 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
                 auto _     = std::unique_lock(this->_map_lock);
                 this->_map = nullptr;
             }
+
             co_await this->server.threads.switching(weak);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
@@ -704,6 +707,7 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
                 this->_map    = source;
                 this->_thread = source->thread();
             }
+
             map = source;
             co_await this->server.threads.switching(weak);
             if (this->_map != map)
@@ -724,6 +728,7 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
         this->update_position();
         if (notify)
             this->show();
+
         this->update_bgm(map->model().bgm, 100);
 
         if (notify)
@@ -736,6 +741,7 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
                 obj->show(*this);
             }
         }
+
         co_return true;
     }
     catch (std::exception& e)
@@ -800,6 +806,7 @@ std::shared_ptr<fb::game::object> object::side(DIRECTION direction, OBJECT_TYPE 
 
             return x->position() == front;
         });
+
         if (found != nears.end())
             result = *found;
     }

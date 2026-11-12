@@ -28,6 +28,7 @@ struct buy_entry
     uint8_t                count = 0;
     std::optional<uint8_t> percent; // nullopt → wire 0xFF (omit "(N%)")
 };
+
 using buy_entries = std::vector<buy_entry>;
 
 struct speaker
@@ -58,6 +59,7 @@ struct listener_t
     virtual void on_dialog_email(character& me, std::unique_ptr<appearance>&& appearance_ptr, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog_0x30_10(character& me, std::unique_ptr<appearance>&& appearance_ptr, std::string_view message, uint32_t seq = 0xFFFFFFFD) = 0;
 };
+
 // clang-format on
 } // namespace fb::game::dialog
 #endif

@@ -148,6 +148,7 @@ void listener_impl::on_dialog_buy(character&                              me,
                 {
                     options.push_back(entry.model.name);
                 }
+
                 me.send(game_resp::dialog_pursuit<V>(std::move(appearance), options, message, oid, pursuit));
             }
         }

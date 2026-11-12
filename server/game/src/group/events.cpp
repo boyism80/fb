@@ -183,6 +183,7 @@ async::task<void> group::container::on_enter(std::string                target,
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
+
         if (group->revision() > revision)
             co_return;
 
@@ -310,12 +311,14 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
         auto found  = std::find_if(active.begin(), active.end(), [&name](const auto& member) {
             return member->name() == name;
         });
+
         if (found != active.end())
         {
             weak  = *found;
             ch_id = (*found)->id;
             group->detach(weak);
         }
+
         members = group->characters();
     }
 
@@ -354,6 +357,7 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
             },
             members);
     }
+
     this->update_portraits(group_id);
 }
 
@@ -403,6 +407,7 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     {
         co_await ch.matchmaker.drop_ticket("그룹에 들어가 매치메이킹 대기가 취소되었습니다.");
     }
+
     co_return true;
 }
 
@@ -455,6 +460,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint64_t gro
         auto guard = co_await this->enter_write(group_id);
         if (guard.holds_lock() == false)
             co_return;
+
         if (guard.value() == nullptr)
         {
             drop = true;

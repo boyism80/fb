@@ -60,6 +60,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
             std::ignore = you->money_add(money);
             you->message(std::format(_TEXT(MESSAGE_MONEY_GIVE), me->name(), money));
         }
+
         break;
 
         case OBJECT_TYPE::MOB:
@@ -71,6 +72,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
             auto item = this->server.template make<fb::game::cash>(money);
             mob->push_item(item);
         }
+
         break;
 
         default:
@@ -86,6 +88,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
 
     if (error.has_value())
         me->message(error.value());
+
     co_return true;
 }
 

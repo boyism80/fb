@@ -78,6 +78,7 @@ public:
             if (this->_slots[i].has_value())
                 result.push_back(static_cast<uint8_t>(i));
         }
+
         return result;
     }
 
@@ -89,6 +90,7 @@ public:
             if (this->_slots[i].has_value() && this->_slots[i]->id == id)
                 result.push_back(part{static_cast<uint8_t>(i), this->_slots[i]->value});
         }
+
         return result;
     }
 
@@ -123,6 +125,7 @@ public:
         {
             this->_slots[part.index] = slot{id, part.value};
         }
+
         return true;
     }
 

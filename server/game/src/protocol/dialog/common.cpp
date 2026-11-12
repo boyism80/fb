@@ -80,6 +80,7 @@ void dialog<V>::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(0x00);
         writer.write<uint8_t>(0x00);
     }
+
     writer.write<uint32_t>(0x01);
     writer.write<bool>(this->button_prev);
     writer.write<bool>(this->button_next);
@@ -109,6 +110,7 @@ void dialog<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint16_t>(0x00);
         writer.write<uint8_t>(0x00);
     }
+
     writer.write<uint32_t>(0);
     writer.write<uint32_t>(0x01);
     writer.write<bool>(this->button_prev);

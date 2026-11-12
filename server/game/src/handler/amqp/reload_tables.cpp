@@ -42,5 +42,6 @@ async::task<void> reload_tables::handle(const internal_resp::ReloadTables& messa
     {
         fb::logger::fatal("Data table reload failed: {}", e.what());
     }
+
     co_return;
 }

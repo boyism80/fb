@@ -55,6 +55,7 @@ bool service::script_timer::cancel(uint64_t id)
 
     if (timer != nullptr)
         timer->cancel();
+
     return true;
 }
 
@@ -80,6 +81,7 @@ bool service::script_timer::cancel(uint32_t map_id, std::string_view name)
 
     if (timer != nullptr)
         timer->cancel();
+
     return true;
 }
 
@@ -93,9 +95,11 @@ void service::script_timer::cancel_all(uint32_t map_id)
         {
             if (entry.map_id != map_id)
                 continue;
+
             timers.push_back(entry.timer);
             to_erase.push_back(id);
         }
+
         for (auto id : to_erase)
         {
             this->erase_unlocked(id);
@@ -131,6 +135,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
         auto _   = std::lock_guard(this->_mutex);
         at_limit = this->_by_id.size() >= MAX_ACTIVE;
     }
+
     if (at_limit)
     {
         fb::logger::warn("script_timer: max active timers ({}) reached", MAX_ACTIVE);
@@ -185,6 +190,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
 
             if (once)
                 timers.cancel(timer_id);
+
             co_return;
         },
         duration,
@@ -217,6 +223,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
     {
         if (timer != nullptr)
             timer->cancel();
+
         co_return std::nullopt;
     }
 

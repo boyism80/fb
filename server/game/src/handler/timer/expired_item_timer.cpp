@@ -32,6 +32,7 @@ async::task<void> expired_item_timer::handle(const fb::model::datetime& now, std
         {
             fb::logger::warn("expired_item_timer error for character {}: {}", ch->id, e.what());
         }
+
         co_return;
     });
 

@@ -156,9 +156,11 @@ int builtin::game_bot::builtin_request_trade(lua_State* L)
 
         cleanup();
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         push_trade(lua, *result);
         co_return 1;
     };
+
     return builder.run();
 }

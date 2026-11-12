@@ -33,6 +33,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
 
     if (me.group.id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
+
     if (me.name() == target_name_str)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
@@ -318,5 +319,6 @@ async::task<bool> group::container::handle_action(character& actor, std::string_
 
     if (error.has_value() && weak.expired() == false)
         actor.message(error.value(), MESSAGE_TYPE::STATE);
+
     co_return error.has_value() == false;
 }

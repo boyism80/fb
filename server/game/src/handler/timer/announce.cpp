@@ -23,5 +23,6 @@ async::task<void> announce::handle()
         ch->message(message_str, MESSAGE_TYPE::WORLD);
         co_return;
     });
+
     co_return;
 }

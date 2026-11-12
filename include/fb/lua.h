@@ -190,6 +190,7 @@ public:
         auto data = lua_touserdata(ctx, offset);
         if (is_pinned_userdata(ctx, offset))
             return static_cast<pinned_userdata*>(data)->raw;
+
         return *static_cast<luable**>(data);
     }
 
@@ -199,6 +200,7 @@ public:
             static_cast<std::weak_ptr<luable>*>(lua_touserdata(ctx, 1))->~weak_ptr();
         else if (is_pinned_userdata(ctx, 1))
             static_cast<pinned_userdata*>(lua_touserdata(ctx, 1))->~pinned_userdata();
+
         return 0;
     }
 
@@ -396,6 +398,7 @@ public:
             return this->pushuserdata(value);
         }
     }
+
     context& pushuserdata(const luable& value);
     context& push(const void* value);
     context& pop(int offset);
@@ -441,6 +444,7 @@ public:
         else
             return static_cast<T>(lua_tointeger(*this, offset));
     }
+
     bool toboolean(int offset, bool default_value = false);
 
     template <typename T>
@@ -458,6 +462,7 @@ public:
 
             metaname = this->basetable(metaname);
         }
+
         return false;
     }
 
@@ -787,6 +792,7 @@ bool fb::lua::context::func(std::string_view fmt, Args&&... args)
         this->pop(1);
         return false;
     }
+
     return true;
 }
 

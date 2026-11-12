@@ -193,6 +193,7 @@ private:
                     auto  await_dispatch = entry.await_dispatch;
                     if (entry.heartbeat == false)
                         socket.update_last_packet_time(this->now());
+
                     auto fd      = socket.fd();
                     auto weak    = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder = this->threads.new_builder(weak);
@@ -257,6 +258,7 @@ private:
                 fb::logger::fatal("{} [{:#x}]", e.what(), opcode.value());
             else
                 fb::logger::fatal(e.what());
+
             socket.close();
         }
         catch (...)
@@ -265,6 +267,7 @@ private:
                 fb::logger::fatal("unhandled exception while parse packet [{:#x}]", opcode.value());
             else
                 fb::logger::fatal("unhandled exception while parse packet");
+
             socket.close();
         }
     }
@@ -289,6 +292,7 @@ private:
                 fb::logger::fatal("on_disconnected: unknown exception");
             }
         }
+
         this->_disconnecting--;
 
         if (socket.is_open())
@@ -430,6 +434,7 @@ private:
                     fb::logger::fatal("acceptor::accept: error={} (consecutive failures: {})",
                                       error.message(),
                                       this->_accept_failures + 1);
+
                 this->_accept_failures++;
                 socket_ptr->close();
 
@@ -591,6 +596,7 @@ protected:
             root->build<fb::thread, lua::luable>();
             root->build<fb::thread_switchable, lua::luable>();
         }
+
         co_return;
     }
 
@@ -685,6 +691,7 @@ public:
                                 fb::logger::fatal("acceptor::run: io handler error: unknown (failures: {})",
                                                   failures + 1);
                         }
+
                         failures++;
                     }
                 }));
@@ -708,6 +715,7 @@ public:
             {
                 thread.join();
             }
+
             this->threads.join();
             throw;
         }
@@ -720,6 +728,7 @@ public:
                 return this->_exit_requested;
             });
         }
+
         this->shutdown();
 
         for (auto& thread : threads)
@@ -814,6 +823,7 @@ public:
             auto lock             = std::lock_guard(this->_exit_mutex);
             this->_exit_requested = true;
         }
+
         this->_exit_cv.notify_all();
     }
 

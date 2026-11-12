@@ -96,6 +96,7 @@ void log_collector::worker_run()
             this->_buffer_cv.wait_for(lock, batch_interval, [this] {
                 return this->_stop_requested.load(std::memory_order_relaxed) || !this->_buffer.empty();
             });
+
             auto count = std::min(this->_buffer.size(), MAX_BATCH_LOGS);
             batch.reserve(count);
             for (size_t i = 0; i < count; i++)
@@ -137,6 +138,7 @@ void log_collector::worker_run()
             std::lock_guard<std::mutex> lock(this->_buffer_mutex);
             if (this->_buffer.empty())
                 break;
+
             auto count = std::min(this->_buffer.size(), MAX_BATCH_LOGS);
             batch.reserve(count);
             for (size_t i = 0; i < count; i++)
@@ -172,6 +174,7 @@ size_t log_collector::publish(const std::vector<Json::Value>& batch)
             fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", this->_hostname, this->_port);
             return 0;
         }
+
         this->_amqp = std::move(amqp);
     }
 
@@ -207,6 +210,7 @@ size_t log_collector::publish(const std::vector<Json::Value>& batch)
 
             if (count > 0)
                 body += ',';
+
             body += entry;
             count++;
         }
@@ -222,8 +226,10 @@ size_t log_collector::publish(const std::vector<Json::Value>& batch)
             this->_amqp.reset();
             return sent;
         }
+
         sent += count;
     }
+
     return sent;
 }
 
@@ -231,5 +237,6 @@ std::string log_collector::get_routing_key() const
 {
     if (this->_world)
         return std::format("fb.{}.log", *this->_world);
+
     return "fb.log";
 }

@@ -51,6 +51,7 @@ std::optional<uint64_t> unsettled_requests::find(UNSETTLED_TYPE type, uint64_t t
         if (request.type == type && request.target == target)
             return id;
     }
+
     return std::nullopt;
 }
 
@@ -147,6 +148,7 @@ std::vector<unsettled_requests::dto> unsettled_requests::to_protocol() const
                            request.target,
                            Json::writeString(builder, request.detail)});
     }
+
     return dtos;
 }
 
@@ -163,6 +165,7 @@ async::task<void> unsettled_requests::settle()
         if (request.in_flight == false)
             targets.push_back(id);
     }
+
     if (targets.empty())
         co_return;
 
@@ -212,5 +215,6 @@ async::task<void> unsettled_requests::settle()
         if (weak.expired())
             co_return;
     }
+
     this->_settling = false;
 }

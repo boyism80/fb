@@ -100,6 +100,7 @@ void state_machine::cancel(const std::string& id)
 
     if (found->second.timer != nullptr)
         found->second.timer->cancel();
+
     this->_schedules.erase(found);
 }
 
@@ -110,6 +111,7 @@ void state_machine::call(std::string hook, std::vector<fb::lua::value> args)
     builder.func = [self, hook = std::move(hook), args = std::move(args)](auto&) -> async::task<void> {
         co_await self->invoke(hook, args);
     };
+
     builder.enqueue();
 }
 
@@ -131,6 +133,7 @@ async::task<void> state_machine::dispatch(pending_hook entry)
         {
             if (found->second.queued)
                 co_return;
+
             found->second.queued = true;
         }
     }
@@ -149,6 +152,7 @@ async::task<void> state_machine::dispatch(pending_hook entry)
         self->_pending.pop_front();
         co_await self->run_entry(next);
     }
+
     self->_running = false;
 }
 
@@ -227,6 +231,7 @@ async::task<void> state_machine::container::load()
         builder.func = [machine](auto&) -> async::task<void> {
             co_await machine->invoke("on_init", {});
         };
+
         co_await builder.dispatch();
     }
 }

@@ -162,6 +162,7 @@ public:
 
             if (timer)
                 timer->cancel();
+
             promise->set_value(response);
         }
 
@@ -179,6 +180,7 @@ public:
             {
                 fb::logger::warn("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
             }
+
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
 
@@ -213,6 +215,7 @@ public:
 
             if (timer)
                 timer->cancel();
+
             promise->set_value(std::move(response));
         }
 
@@ -230,6 +233,7 @@ public:
             {
                 fb::logger::warn("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
             }
+
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
 
@@ -240,6 +244,7 @@ public:
 
             if (timer)
                 timer->cancel();
+
             promise->set_exception(std::make_exception_ptr(std::runtime_error("connection closed")));
         }
 
@@ -250,6 +255,7 @@ public:
 
             if (timer)
                 timer->cancel();
+
             promise->set_exception(std::make_exception_ptr(std::runtime_error("interrupted")));
         }
 

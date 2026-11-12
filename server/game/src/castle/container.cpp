@@ -62,6 +62,7 @@ async::task<void> castle::container::load_all()
         fb::model::enum_value::DIVINE_BEAST::BLACK_TORTOISE,
         fb::model::enum_value::DIVINE_BEAST::AZURE_DRAGON,
     };
+
     // clang-format on
 
     for (auto divine_beast : ALL)

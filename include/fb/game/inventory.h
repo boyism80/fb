@@ -44,6 +44,7 @@ public:
             if (this->at(i) == nullptr && this->reserved(i) == false)
                 return i;
         }
+
         return 0xFF;
     }
 
@@ -57,6 +58,7 @@ public:
     {
         if (index > CONTAINER_CAPACITY - 1)
             return nullptr;
+
         return this->_elements[index];
     }
 
@@ -67,6 +69,7 @@ public:
         {
             this->_elements[next_slot] = element;
         }
+
         return next_slot;
     }
 
@@ -74,6 +77,7 @@ public:
     {
         if (this->_elements[index] != nullptr)
             return 0xFF;
+
         this->_elements[index] = element;
         return index;
     }
@@ -83,6 +87,7 @@ public:
         auto element = this->at(index);
         if (element == nullptr)
             return false;
+
         this->_elements[index] = nullptr;
         return true;
     }
@@ -91,8 +96,10 @@ public:
     {
         if (src == dst)
             return false;
+
         if (src > CONTAINER_CAPACITY - 1 || dst > CONTAINER_CAPACITY - 1)
             return false;
+
         std::swap(this->_elements[src], this->_elements[dst]);
         return true;
     }
@@ -104,6 +111,7 @@ public:
             if (this->_elements[i] == nullptr && this->reserved(i) == false)
                 return true;
         }
+
         return false;
     }
 
@@ -115,6 +123,7 @@ public:
             if (this->_elements[i] == nullptr && this->reserved(i) == false)
                 count++;
         }
+
         return count;
     }
 

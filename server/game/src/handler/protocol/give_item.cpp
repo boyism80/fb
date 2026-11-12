@@ -77,10 +77,12 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
             else
                 you->message(
                     std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
+
             std::ignore = co_await you->items.add(std::vector<std::shared_ptr<fb::game::item>>{item}, true);
             if (item->empty() == false && you->items.index(item) == 0xFF)
                 std::ignore = co_await me->items.add(item);
         }
+
         break;
 
         case OBJECT_TYPE::MOB:
@@ -92,6 +94,7 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
             item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE, true);
             mob->push_item(item);
         }
+
         break;
 
         default:

@@ -48,6 +48,7 @@ public:
         writer.write<uint16_t>(this->port);
         if (this->parameter.size() > UINT8_MAX)
             throw std::runtime_error(std::format("transfer parameter too large ({} bytes)", this->parameter.size()));
+
         writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.size()));
         writer.write(this->parameter);
     }

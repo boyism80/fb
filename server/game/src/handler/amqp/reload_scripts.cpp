@@ -40,10 +40,12 @@ async::task<void> reload_scripts::handle(const internal_resp::ReloadScripts& mes
                 {
                     requested.pop_back();
                 }
+
                 while (!allowed.empty() && allowed.back() == '/')
                 {
                     allowed.pop_back();
                 }
+
                 if (allowed.empty() || requested != allowed)
                     throw std::runtime_error(std::format("script download url is not allowed: {}", message.url));
 
@@ -90,5 +92,6 @@ async::task<void> reload_scripts::handle(const internal_resp::ReloadScripts& mes
     {
         fb::logger::fatal("Script reload failed: {}", e.what());
     }
+
     co_return;
 }

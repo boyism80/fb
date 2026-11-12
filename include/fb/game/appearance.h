@@ -18,6 +18,7 @@ inline uint8_t walk_delay_from_speed(uint8_t speed)
 {
     if (speed > 16)
         return 0;
+
     return static_cast<uint8_t>(5 * (16 - speed));
 }
 

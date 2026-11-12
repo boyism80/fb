@@ -189,6 +189,7 @@ context& context::pushjson(const Json::Value& json)
     {
         this->pushnil();
     }
+
     return *this;
 }
 
@@ -229,6 +230,7 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
             result._type   = type::NUMBER;
             result._number = lua_tonumber(L, offset);
         }
+
         break;
 
     case LUA_TSTRING:
@@ -268,6 +270,7 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
             result._raw  = luable::raw_userdata(L, offset);
             result._type = type::OBJECT;
         }
+
         break;
     }
 
@@ -295,6 +298,7 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
             result._values.push_back(value::copy(L, -1, visited, objects));
             lua_pop(L, 1);
         }
+
         visited.erase(ptr);
         break;
     }
@@ -303,6 +307,7 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
         fb::logger::warn("lua value copy: {} cannot cross lua states, copied as nil", luaL_typename(L, offset));
         break;
     }
+
     return result;
 }
 
@@ -335,6 +340,7 @@ void value::push(context& ctx) const
             ctx.pushuserdata(*this->_shared);
         else
             ctx.pushuserdata(*this->_raw);
+
         break;
 
     case type::TABLE:
@@ -348,6 +354,7 @@ void value::push(context& ctx) const
             this->_values[i].push(ctx);
             lua_rawset(ctx, -3);
         }
+
         break;
     }
 }
@@ -435,6 +442,7 @@ int context::tointeger(int offset, int default_value)
     else
         return (int)lua_tointeger(*this, offset);
 }
+
 lua_Integer context::tonumber(int offset, lua_Integer default_value)
 {
     if (this->argc() < offset)
@@ -451,12 +459,14 @@ uint64_t context::touint64(int offset, uint64_t default_value)
 {
     if (this->argc() < offset)
         return default_value;
+
     if (lua_type(*this, offset) != LUA_TNUMBER)
         return default_value;
 
     auto value = lua_tointeger(*this, offset);
     if (value < 0)
         return default_value;
+
     return static_cast<uint64_t>(value);
 }
 
@@ -464,8 +474,10 @@ int64_t context::toint64(int offset, int64_t default_value)
 {
     if (this->argc() < offset)
         return default_value;
+
     if (lua_type(*this, offset) != LUA_TNUMBER)
         return default_value;
+
     return static_cast<int64_t>(lua_tointeger(*this, offset));
 }
 
@@ -543,6 +555,7 @@ void context::remove(int offset)
 {
     lua_remove(*this, offset);
 }
+
 void context::new_table()
 {
     lua_newtable(*this);
@@ -604,6 +617,7 @@ bool fb::lua::context::report_error(std::string_view message)
     {
         fb::logger::fatal("lua error handler failed");
     }
+
     return true;
 }
 
@@ -989,6 +1003,7 @@ bool root::push_module(lua_State* L, std::string_view path)
         lua_pop(L, 1);
         return false;
     }
+
     return true;
 }
 
@@ -1007,6 +1022,7 @@ bool root::dump(std::string_view path)
         // A missing file is an optional hook, not an error.
         if (status != LUA_ERRFILE)
             fb::logger::warn("cannot load script {}: {}", path_str, lua_tostring(*this, -1));
+
         lua_pop(*this, 1);
         this->_bytecodes[path_str] = std::vector<char>{};
         return false;
@@ -1068,6 +1084,7 @@ bool root::load_module(lua_State* L, std::string_view path)
         // A missing file is an optional hook, not an error.
         if (status != LUA_ERRFILE)
             fb::logger::warn("cannot load script {}: {}", path_str, lua_tostring(L, -1));
+
         lua_pop(L, 1);
     }
     else if (lua_pcall(L, 0, 1, 0) != LUA_OK)
@@ -1118,6 +1135,7 @@ bool root::validate(std::string_view path, const std::vector<uint8_t>& bytes)
         fb::logger::warn("invalid script {}: module must return a table", path);
         valid = false;
     }
+
     lua_pop(*this, 1);
 
     for (const auto& name : this->loaded_packages())
@@ -1151,8 +1169,10 @@ std::unordered_set<std::string> root::loaded_packages()
     {
         if (lua_type(*this, -2) == LUA_TSTRING)
             names.emplace(lua_tostring(*this, -2));
+
         lua_pop(*this, 1);
     }
+
     lua_pop(*this, 2);
     return names;
 }
@@ -1181,6 +1201,7 @@ void root::invalidate(std::string_view path)
         lua_pushnil(*this);
         lua_setfield(*this, -2, path_str.c_str());
     }
+
     lua_pop(*this, 1);
 }
 
@@ -1293,6 +1314,7 @@ void root::release(context& ctx)
             internal_func(ctx);
             co_return;
         };
+
         builder.enqueue();
     }
     else
@@ -1319,6 +1341,7 @@ void root::revoke(context& ctx)
             internal_func(ctx);
             co_return;
         };
+
         builder.enqueue();
     }
     else
@@ -1355,6 +1378,7 @@ int fb::lua::root::call_builtin(lua_State* ctx)
     {
         std::snprintf(message, sizeof(message), "unknown C++ exception");
     }
+
     return luaL_error(ctx, "%s", message);
 }
 
@@ -1373,6 +1397,7 @@ void fb::lua::root::set_builtins(const luaL_Reg* funcs)
             lua_pushcfunction(*this, func->func);
         else
             this->push_builtin(func->func);
+
         lua_setfield(*this, -2, func->name);
     }
 }
@@ -1449,6 +1474,7 @@ fb::lua::context::guard& fb::lua::context::guard::operator= (context::guard&& ot
         this->_ctx = other._ctx;
         other._ctx = nullptr;
     }
+
     return *this;
 }
 
@@ -1503,6 +1529,7 @@ async::task<std::vector<value>> fb::lua::call(context::guard g, std::weak_ptr<fb
     co_await threads.follow(std::move(pivot));
     if (error)
         std::rethrow_exception(error);
+
     co_return results;
 }
 
@@ -1523,6 +1550,7 @@ std::string fb::lua::context_pool::script_disk_path(std::string_view relative)
     {
         path.erase(path.begin());
     }
+
     return std::format("scripts/{}", path);
 }
 
@@ -1563,8 +1591,10 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
         {
             if (joined.empty() == false)
                 joined += ", ";
+
             joined += failure;
         }
+
         throw std::runtime_error(std::format("failed to reload scripts: {}", joined));
     }
 }
@@ -1585,6 +1615,7 @@ async::task<void> fb::lua::context_pool::patch_scripts(const std::vector<script_
 
             if (failures.empty() == false)
                 failures += ", ";
+
             failures += disk;
         }
 
@@ -1616,6 +1647,7 @@ async::task<void> fb::lua::context_pool::patch_scripts(const std::vector<script_
                 if (!out)
                     throw std::runtime_error(std::format("cannot write script: {}", temp.string()));
             }
+
             std::filesystem::rename(temp, path);
         }
     }
@@ -1640,6 +1672,7 @@ async::task<void> fb::lua::context_pool::patch_scripts(const std::vector<script_
                 std::filesystem::remove(path, ec);
             }
         }
+
         throw;
     }
 
@@ -1649,6 +1682,7 @@ async::task<void> fb::lua::context_pool::patch_scripts(const std::vector<script_
     {
         relative_paths.push_back(file.relative);
     }
+
     co_await this->reload_scripts(relative_paths);
 }
 

@@ -25,6 +25,7 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     auto flags = this->level;
     if (this->ch.options.enabled(OPTION::FIXED_MOVE) == false)
         flags |= UPDATE_STATE_LEVEL::FOLLOW_CAMERA;
+
     writer.write<uint8_t>(static_cast<uint8_t>(flags));
 
     auto [encoded_hp, encoded_maxhp] = fb::game::encode_client_pool(this->ch.stat.hp(), this->ch.stat.maxhp());
@@ -76,6 +77,7 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     auto speed = this->ch.stat.speed();
     if (speed > 5)
         speed = 5;
+
     writer.write<uint8_t>(speed);
 }
 
@@ -88,6 +90,7 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     auto flags = this->level;
     if (this->ch.options.enabled(OPTION::FIXED_MOVE) == false)
         flags |= UPDATE_STATE_LEVEL::FOLLOW_CAMERA;
+
     writer.write<uint8_t>(static_cast<uint8_t>(flags));
 
     auto [encoded_hp, encoded_maxhp] = fb::game::encode_client_pool(this->ch.stat.hp(), this->ch.stat.maxhp());
@@ -146,22 +149,31 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     auto bits = 0u;
     if (this->ch.options.enabled(OPTION::WHISPER))
         bits |= 1u << 0;
+
     if (this->ch.options.enabled(OPTION::ROAR))
         bits |= 1u << 2;
+
     if (this->ch.options.enabled(OPTION::NEWS))
         bits |= 1u << 3;
+
     if (this->ch.options.enabled(OPTION::MAGIC_EFFECT))
         bits |= 1u << 4;
+
     if (this->ch.options.enabled(OPTION::WEATHER_EFFECT))
         bits |= 1u << 5;
+
     if (this->ch.options.enabled(OPTION::FIXED_MOVE))
         bits |= 1u << 6;
+
     if (this->ch.options.enabled(OPTION::FAST_MOVE))
         bits |= 1u << 8;
+
     if (this->ch.options.enabled(OPTION::EFFECT_SOUND))
         bits |= 1u << 12;
+
     if (this->ch.options.enabled(OPTION::VISIBLE_HELMET))
         bits |= 1u << 13;
+
     writer.write<uint32_t>(bits);
 }
 
@@ -213,12 +225,16 @@ void update_internal<V>::deserialize(fb::stream_reader<big_endian>& reader)
     {
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::DIRECTION;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::SIGHT;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::HEAR;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::CHAT;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MAP;
     }
@@ -276,12 +292,16 @@ void update_internal<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_en
     {
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::DIRECTION;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::SIGHT;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::HEAR;
+
         if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::CHAT;
+
         reader.read<uint8_t>();
     }
 

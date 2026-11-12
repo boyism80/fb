@@ -123,6 +123,7 @@ private:
                     this->_queue.pop();
                     this->_in_flight.fetch_add(1, std::memory_order_relaxed);
                 }
+
                 task();
             }
         });
@@ -418,6 +419,7 @@ public:
             if (found != this->_service_delays_ms.end())
                 return fb::model::timespan(std::chrono::milliseconds(found->second));
         }
+
         return this->response_delay();
     }
 
@@ -439,6 +441,7 @@ public:
         auto found = this->_faults.find(std::string(service));
         if (found == this->_faults.end())
             return FAULT::NONE;
+
         return found->second;
     }
 
@@ -505,8 +508,10 @@ public:
         co_await this->switching(thread, service);
         if (error)
             std::rethrow_exception(error);
+
         if (fault == FAULT::RESPONSE_LOST)
             throw http_error(std::format("HTTP GET request failed: response lost fault injected for {}", service));
+
         co_return std::move(*result);
     }
 
@@ -528,6 +533,7 @@ public:
         co_await this->_executor.threads.switching(pivot);
         if (error)
             std::rethrow_exception(error);
+
         co_return std::move(*result);
     }
 
@@ -554,6 +560,7 @@ private:
                                           this->pump();
                                           return;
                                       }
+
                                       try
                                       {
                                           promise->set_value(read_response<Response>(bytes));
@@ -562,6 +569,7 @@ private:
                                       {
                                           promise->set_exception(std::current_exception());
                                       }
+
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
                                       this->pump();
                                   });
@@ -573,6 +581,7 @@ private:
             trigger = this->_queue.empty();
             this->_queue.push(std::move(task));
         }
+
         if (trigger)
             this->pump();
 
@@ -587,6 +596,7 @@ public:
         auto fault  = this->fault(path);
         if (fault == FAULT::NONE)
             fault = this->fault(service);
+
         if (fault == FAULT::UNREACHABLE)
         {
             co_await this->switching(thread, service);
@@ -606,9 +616,11 @@ public:
                 this->_held_requests.push_back([this, host, path_str, request]() {
                     std::ignore = this->boost_post_async<Request>(host, path_str, request);
                 });
+
                 held = true;
             }
         }
+
         if (held)
         {
             co_await this->switching(thread, service);
@@ -629,8 +641,10 @@ public:
         co_await this->switching(thread, service);
         if (error)
             std::rethrow_exception(error);
+
         if (fault == FAULT::RESPONSE_LOST)
             throw http_error(std::format("HTTP POST request failed: response lost fault injected for {}", service));
+
         co_return std::move(*result);
     }
 
@@ -652,6 +666,7 @@ public:
         co_await this->_executor.threads.switching(pivot);
         if (error)
             std::rethrow_exception(error);
+
         co_return std::move(*result);
     }
 
@@ -704,6 +719,7 @@ public:
                                           this->pump();
                                           return;
                                       }
+
                                       promise->set_value(std::move(bytes));
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
                                       this->pump();
@@ -716,6 +732,7 @@ public:
             trigger = this->_queue.empty();
             this->_queue.push(std::move(task));
         }
+
         if (trigger)
             this->pump();
 
@@ -754,6 +771,7 @@ private:
                         this->pump();
                         return;
                     }
+
                     try
                     {
                         promise->set_value(read_response<typename response_of<Request>::type>(bytes));
@@ -762,6 +780,7 @@ private:
                     {
                         promise->set_exception(std::current_exception());
                     }
+
                     this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
                     this->pump();
                 });
@@ -773,6 +792,7 @@ private:
             trigger = this->_queue.empty();
             this->_queue.push(std::move(task));
         }
+
         if (trigger)
             this->pump();
 
@@ -807,6 +827,7 @@ private:
                         this->pump();
                         return;
                     }
+
                     promise->set_value();
                     this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
                     this->pump();
@@ -819,6 +840,7 @@ private:
             trigger = this->_queue.empty();
             this->_queue.push(std::move(task));
         }
+
         if (trigger)
             this->pump();
 

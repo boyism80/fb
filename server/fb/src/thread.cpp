@@ -23,6 +23,7 @@ fb::thread::thread(uint8_t index) :
     _scheduler([this](std::function<void()> fn) {
         this->push(std::move(fn));
     })
+
 {
     this->_thread = std::thread(std::bind(&fb::thread::on_thread, this, std::placeholders::_1), index);
 }
@@ -104,6 +105,7 @@ void fb::thread::on_thread(uint8_t index)
             func = std::move(queue.front());
             queue.pop();
         }
+
         func();
     }
 }
@@ -171,6 +173,7 @@ void fb::thread::on_idle()
             {
                 fb::logger::fatal("timer error in thread {} : unknown exception", index);
             }
+
             timer->end_run();
         });
 
@@ -240,6 +243,7 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
             {
                 fb::logger::fatal("timer error in thread {} : unknown exception", index);
             }
+
             co_return;
         },
         duration,
@@ -369,6 +373,7 @@ bool fb::thread_switch_awaiter::await_suspend(std::coroutine_handle<> handle)
                 fb::timer::repeat_type::once);
         }
     });
+
     return target->try_push(fn);
 }
 

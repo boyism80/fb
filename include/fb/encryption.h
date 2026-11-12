@@ -33,6 +33,7 @@ public:
     {
         return this->_pattern;
     }
+
     inline const uint8_t* iv() const
     {
         return this->_iv.get();

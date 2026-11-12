@@ -100,10 +100,12 @@ int builtin::game_bot::builtin_bulletin_write(lua_State* L)
         *result = resp.type == bulletin_bot::bulletin_type::message &&
                   resp.message_text == fb::model::const_value::string::MESSAGE_BULLETIN_WRITE;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -123,6 +125,7 @@ int builtin::game_bot::builtin_bulletin_get_sections(lua_State* L)
     {
         std::vector<std::pair<uint32_t, std::string>> items;
     };
+
     auto result = std::make_shared<sections_result>();
 
     auto builder  = lua->new_co_builder();
@@ -144,6 +147,7 @@ int builtin::game_bot::builtin_bulletin_get_sections(lua_State* L)
             result->items.emplace_back(section.id, section.title);
         }
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();
         auto i = 1;
@@ -159,8 +163,10 @@ int builtin::game_bot::builtin_bulletin_get_sections(lua_State* L)
             lua->settable(-3);
             lua->settable(-3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -195,6 +201,7 @@ int builtin::game_bot::builtin_bulletin_get_articles(lua_State* L)
 
         *result = resp.articles;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();
         auto i = 1;
@@ -204,8 +211,10 @@ int builtin::game_bot::builtin_bulletin_get_articles(lua_State* L)
             push_article(lua, article);
             lua->settable(-3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -228,6 +237,7 @@ int builtin::game_bot::builtin_bulletin_read_article(lua_State* L)
         uint16_t    id;
         std::string uname, title, contents;
     };
+
     auto result = std::make_shared<article_full>();
 
     auto builder  = lua->new_co_builder();
@@ -249,6 +259,7 @@ int builtin::game_bot::builtin_bulletin_read_article(lua_State* L)
         result->title    = resp.article_title;
         result->contents = resp.article_contents;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();
         lua->pushstring("id");
@@ -265,6 +276,7 @@ int builtin::game_bot::builtin_bulletin_read_article(lua_State* L)
         lua->settable(-3);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -306,10 +318,12 @@ int builtin::game_bot::builtin_bulletin_delete_article(lua_State* L)
 
         *result = resp.message_text == fb::model::const_value::string::MESSAGE_BULLETIN_SUCCESS_DELETE;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -352,10 +366,12 @@ int builtin::game_bot::builtin_bulletin_send_mail(lua_State* L)
 
         *result = resp.message_success;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -388,6 +404,7 @@ int builtin::game_bot::builtin_bulletin_get_mails(lua_State* L)
 
         *result = resp.mails;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();
         auto i = 1;
@@ -397,8 +414,10 @@ int builtin::game_bot::builtin_bulletin_get_mails(lua_State* L)
             push_mail(lua, mail);
             lua->settable(-3);
         }
+
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -420,6 +439,7 @@ int builtin::game_bot::builtin_bulletin_read_mail(lua_State* L)
         uint16_t    id;
         std::string sender_name, title, contents;
     };
+
     auto result = std::make_shared<mail_full>();
 
     auto builder  = lua->new_co_builder();
@@ -441,6 +461,7 @@ int builtin::game_bot::builtin_bulletin_read_mail(lua_State* L)
         result->title       = resp.mail_title;
         result->contents    = resp.mail_contents;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();
         lua->pushstring("id");
@@ -457,6 +478,7 @@ int builtin::game_bot::builtin_bulletin_read_mail(lua_State* L)
         lua->settable(-3);
         co_return 1;
     };
+
     return builder.run();
 }
 
@@ -497,10 +519,12 @@ int builtin::game_bot::builtin_bulletin_delete_mail(lua_State* L)
 
         *result = resp.message_text == fb::model::const_value::string::MESSAGE_BULLETIN_SUCCESS_DELETE;
     };
+
     builder.resume = [lua, result]() -> async::task<int> {
         lua->pushboolean(*result);
         co_return 1;
     };
+
     return builder.run();
 }
 

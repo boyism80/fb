@@ -37,6 +37,7 @@ async::task<void> matchmaking_timer::handle(const fb::model::datetime& now, std:
 
             co_await ptr->matchmaker.reconcile();
         };
+
         builder.enqueue();
         co_return;
     });

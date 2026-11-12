@@ -56,6 +56,7 @@ protected:
     {
         return Service::Gateway;
     }
+
     uint8_t     id() const override final;
     std::string name() const override final;
 

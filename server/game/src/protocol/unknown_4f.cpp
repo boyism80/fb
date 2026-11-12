@@ -61,6 +61,7 @@ void unknown_4f<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>
             e.b       = reader.read<uint32_t>();
             e.c       = reader.read<uint32_t>();
         }
+
         this->entries.push_back(std::move(e));
     }
 }

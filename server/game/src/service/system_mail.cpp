@@ -90,6 +90,7 @@ async::task<std::optional<bool>> service::system_mail::create(uint32_t          
     {
         fb::logger::warn("WriteSystemMail request failed for sender {}: {}", sender, e.what());
     }
+
     co_return std::nullopt;
 }
 
@@ -147,11 +148,13 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                                                              [&](const fb::game::system_mail& existing) {
                                                                  return existing.id == mail.id;
                                                              });
+
                     if (!already_tracked)
                         new_mail_seen = true;
 
                     fetched.push_back(std::move(mail));
                 }
+
                 this->_pending_mails = std::move(fetched);
             }
         }
@@ -174,6 +177,7 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                     (*recipients)[mail.id].push_back(ch->id);
                 }
             }
+
             co_return;
         };
 
@@ -192,6 +196,7 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                 if (ch != nullptr)
                     targets.push_back(ch);
             }
+
             co_await this->server.characters.foreach_async(collect, targets);
         }
 
@@ -253,8 +258,10 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                                 auto ptr = weak.lock();
                                 if (ptr != nullptr)
                                     ptr->mail_box.mark_system_mail(mail_id);
+
                                 co_return;
                             };
+
                             builder.enqueue();
                         }
                     }

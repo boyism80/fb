@@ -27,6 +27,7 @@ std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb:
     {
         if (now_local < this->at.value())
             return this->at.value().local_to_utc();
+
         return std::nullopt;
     }
     else
@@ -88,6 +89,7 @@ bool fb::model::event::in_window(const fb::model::datetime& now,
 {
     if (now < occurrence)
         return false;
+
     return now < (occurrence + duration);
 }
 
@@ -175,6 +177,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
                 if (occ.has_value() && in_window(now, occ.value(), this->duration))
                     return true;
             }
+
             return false;
         }
 
@@ -191,6 +194,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
                     --cursor_year;
                 }
             }
+
             for (int i = 0; i < 12; ++i)
             {
                 if (cursor_year > 0)
@@ -204,6 +208,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
                     if (occ.has_value() && in_window(now, occ.value(), this->duration))
                         return true;
                 }
+
                 cursor_month += static_cast<int>(every);
                 while (cursor_month > 12)
                 {
@@ -211,6 +216,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
                     ++cursor_year;
                 }
             }
+
             return false;
         }
 
@@ -229,10 +235,12 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
             {
                 if (n < back)
                     continue;
+
                 auto occ = this->start + fb::model::timespan(std::chrono::milliseconds((n - back) * step_ms.count()));
                 if (in_window(now, occ, this->duration))
                     return true;
             }
+
             return false;
         }
 
@@ -254,10 +262,12 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
         {
             if (n < back)
                 continue;
+
             auto occ = this->start + fb::model::timespan(std::chrono::milliseconds((n - back) * step_ms.count()));
             if (in_window(now, occ, this->duration))
                 return true;
         }
+
         return false;
     }
 
@@ -271,6 +281,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
             const auto n = base_n + delta;
             if (n < 0)
                 continue;
+
             auto year  = static_cast<int>(this->start.year());
             auto month = static_cast<int>(this->start.month()) + n * static_cast<int>(every);
             while (month > 12)
@@ -278,15 +289,18 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
                 ++year;
                 month -= 12;
             }
+
             while (month < 1)
             {
                 --year;
                 month += 12;
             }
+
             auto occ = solar_occurrence(this->start, year, month, static_cast<int>(this->start.day()));
             if (in_window(now, occ, this->duration))
                 return true;
         }
+
         return false;
     }
 
@@ -298,6 +312,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
             const auto n = base_n / static_cast<int>(every) + delta;
             if (n < 0)
                 continue;
+
             auto occ = solar_occurrence(this->start,
                                         static_cast<int>(this->start.year()) + n * static_cast<int>(every),
                                         static_cast<int>(this->start.month()),
@@ -305,6 +320,7 @@ bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
             if (in_window(now, occ, this->duration))
                 return true;
         }
+
         return false;
     }
 
@@ -321,8 +337,10 @@ bool fb::model::mob_spawn::conditions_met(const fb::model::datetime& now) const
         const auto params = fb::model::dsl::event(dsl.params);
         if (fb::model::table::event->contains(params.id) == false)
             return false;
+
         if (fb::model::table::event[params.id].is_active(now) == false)
             return false;
     }
+
     return true;
 }

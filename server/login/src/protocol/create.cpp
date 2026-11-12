@@ -23,6 +23,7 @@ void create<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
     this->pw = reader.read<std::string, uint8_t>();
     if (reader.readable_size() > 0)
         reader.read<std::string, uint8_t>();
+
     while (reader.readable_size() > 0)
     {
         reader.read<uint8_t>();

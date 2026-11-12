@@ -65,6 +65,7 @@ int builtin::model::mob::builtin_drop(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto model = lua->touserdata<fb::model::mob>(1);
     if (model == nullptr)
         return 0;
@@ -94,6 +95,7 @@ int builtin::model::mob::builtin_drop(lua_State* L)
             }
         }
     }
+
     return 1;
 }
 

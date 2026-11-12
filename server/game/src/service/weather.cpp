@@ -35,10 +35,12 @@ service::weather::weights service::weather::weights_for(int month, int day)
     case 6:
         if (day >= 25)
             return {50, 50, 0};
+
         return {72, 28, 0};
     case 7:
         if (day <= 26)
             return {45, 55, 0};
+
         return {55, 45, 0};
     case 8:
         return {55, 45, 0};
@@ -75,6 +77,7 @@ void service::weather::rebuild_segments(uint32_t seed, int month, int day)
         max_extra = 2;
     else if (month >= 3 && month <= 4)
         max_extra = 2;
+
     auto n = 1u + (rng() % (max_extra + 1u));
 
     uint8_t hours[4]    = {};
@@ -92,10 +95,13 @@ void service::weather::rebuild_segments(uint32_t seed, int month, int day)
                 break;
             }
         }
+
         if (dup)
             continue;
+
         hours[hour_count++] = h;
     }
+
     for (uint8_t i = 0; i < hour_count; ++i)
     {
         for (uint8_t j = i + 1; j < hour_count; ++j)
@@ -115,6 +121,7 @@ void service::weather::rebuild_segments(uint32_t seed, int month, int day)
             t = weather_type::RAIN;
         else if (r >= w.normal + w.rain)
             t = weather_type::SNOW;
+
         this->_segments.push_back({hours[i], t});
     }
 }
@@ -129,6 +136,7 @@ weather_type service::weather::type_at_hour(uint8_t hour) const
         else
             break;
     }
+
     return type;
 }
 
@@ -138,6 +146,7 @@ void service::weather::broadcast_outdoor(weather_type type)
         auto map = ch->map();
         if (map == nullptr)
             co_return;
+
         if (ENUM_IN(map->model().option, fb::model::enum_value::MAP_OPTION::BUILD_IN))
             co_return;
 

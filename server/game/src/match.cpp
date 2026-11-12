@@ -96,9 +96,11 @@ std::vector<std::shared_ptr<match::team>> match::teams()
         if (team != nullptr)
             result.push_back(team);
     }
+
     std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
         return a->id() < b->id();
     });
+
     return result;
 }
 
@@ -113,6 +115,7 @@ std::shared_ptr<match::team> match::find(const character& ch)
         if (team->contains(ch))
             return team;
     }
+
     return nullptr;
 }
 
@@ -128,6 +131,7 @@ std::shared_ptr<fb::game::map> match::map(uint32_t model_id)
     auto inst = this->_server.maps.find(source, this->_slot);
     if (inst == nullptr)
         inst = this->_server.maps.create_instance(source, this->_slot);
+
     return inst;
 }
 
@@ -144,6 +148,7 @@ std::vector<std::shared_ptr<character>> match::snapshot()
         live.push_back(weak);
         result.push_back(ch);
     }
+
     this->_members = std::move(live);
     return result;
 }
@@ -180,6 +185,7 @@ async::task<void> match::invoke(std::string_view func, character& ch, std::share
         std::ignore = co_await fb::lua::call(std::move(lua), ch.weak_from_this_as<character>(), argc);
     else
         fb::lua::run_async(std::move(lua), argc);
+
     co_return;
 }
 
@@ -203,18 +209,23 @@ async::task<void> match::join(character& ch, uint32_t team)
                 break;
             }
         }
+
         if (already == false)
             this->_members.push_back(ch.weak_from_this_as<character>());
+
         if (already == false && team != 0)
         {
             auto& slot = this->_teams[team];
             if (slot == nullptr)
                 slot = std::make_shared<match::team>(this->weak_from_this_as<match>(), team);
+
             slot->enter(ch);
         }
+
         start_wait = already == false && this->_state == MATCH_STATE::waiting && this->_timer == nullptr;
         late       = already == false && this->_state == MATCH_STATE::playing;
     }
+
     if (already)
         co_return;
 
@@ -228,10 +239,12 @@ async::task<void> match::join(character& ch, uint32_t team)
         auto lock = std::lock_guard(this->_mutex);
         full      = this->_state == MATCH_STATE::waiting && this->live_count_locked() >= this->_expected;
     }
+
     if (full)
         this->enqueue_play();
     else if (late)
         co_await this->invoke("on_playing", ch, nullptr, false);
+
     co_return;
 }
 
@@ -251,13 +264,16 @@ void match::leave(character& ch)
             else
                 ++it;
         }
+
         for (auto& [_, team] : this->_teams)
         {
             if (team != nullptr)
                 team->leave(ch);
         }
+
         empty = this->_members.empty();
     }
+
     ch.matchmaker.session(nullptr);
     if (empty && playing)
         this->enqueue_close();
@@ -291,6 +307,7 @@ void match::wait(uint32_t seconds)
             self->wait(seconds);
             co_return;
         };
+
         builder.enqueue();
         return;
     }
@@ -312,6 +329,7 @@ void match::wait(uint32_t seconds)
                 auto inner = std::lock_guard(self->_mutex);
                 waiting    = self->_state == MATCH_STATE::waiting;
             }
+
             if (waiting == false)
                 co_return;
 
@@ -329,6 +347,7 @@ void match::wait(uint32_t seconds)
                 self->enqueue_play();
             else
                 self->finish(0);
+
             co_return;
         },
         fb::model::timespan(std::chrono::seconds(seconds)),
@@ -350,6 +369,7 @@ void match::duration(uint32_t seconds, uint32_t grace_seconds)
             self->duration(seconds, grace_seconds);
             co_return;
         };
+
         builder.enqueue();
         return;
     }
@@ -379,8 +399,10 @@ void match::duration(uint32_t seconds, uint32_t grace_seconds)
                 auto inner = std::lock_guard(self->_mutex);
                 playing    = self->_state == MATCH_STATE::playing;
             }
+
             if (playing)
                 self->finish(grace_seconds);
+
             co_return;
         },
         fb::model::timespan(std::chrono::seconds(seconds)),
@@ -403,6 +425,7 @@ void match::finish(uint32_t grace_seconds)
             self->finish(grace_seconds);
             co_return;
         };
+
         builder.enqueue();
         return;
     }
@@ -447,6 +470,7 @@ void match::finish(uint32_t grace_seconds)
         auto notify_thread = self->_server.threads.current();
         if (notify_thread == nullptr)
             notify_thread = self->_server.threads.at(0);
+
         if (notify_thread == nullptr)
             co_return;
 
@@ -468,6 +492,7 @@ void match::finish(uint32_t grace_seconds)
             fb::timer::repeat_type::once);
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -478,6 +503,7 @@ void match::on_death(character& ch, std::shared_ptr<object> killer)
         auto lock = std::lock_guard(this->_mutex);
         playing   = this->_state == MATCH_STATE::playing;
     }
+
     if (playing == false)
         return;
 
@@ -492,6 +518,7 @@ void match::on_death(character& ch, std::shared_ptr<object> killer)
         lua->pushobject(*killer);
     else
         lua->pushnil();
+
     fb::lua::run_async(std::move(lua), 3);
 }
 
@@ -507,6 +534,7 @@ void match::enqueue_play()
         co_await self->play();
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -522,6 +550,7 @@ void match::enqueue_close()
         co_await self->close();
         co_return;
     };
+
     builder.enqueue();
 }
 
@@ -558,6 +587,7 @@ async::task<void> match::play()
             fb::logger::warn("match play hook failed: {}", e.what());
         }
     }
+
     co_return;
 }
 
@@ -603,6 +633,7 @@ async::task<void> match::close()
         {
             if (map == nullptr || map->is_instance() == false)
                 continue;
+
             if (map->slot() != slot)
                 continue;
 
@@ -639,6 +670,7 @@ bool match::team::contains(const character& ch) const
         if (member != nullptr && member.get() == &ch)
             return true;
     }
+
     return false;
 }
 
@@ -670,6 +702,7 @@ std::vector<std::shared_ptr<character>> match::team::members()
         live.push_back(weak);
         result.push_back(ch);
     }
+
     this->_members = std::move(live);
     return result;
 }
@@ -682,6 +715,7 @@ void match::team::enter(character& ch)
         if (existing != nullptr && existing.get() == &ch)
             return;
     }
+
     this->_members.push_back(ch.weak_from_this_as<character>());
 }
 
@@ -711,6 +745,7 @@ void match::team::pick_leader()
         if (ch != nullptr)
             live.push_back(ch);
     }
+
     if (live.empty())
     {
         this->_leader.reset();
@@ -743,6 +778,7 @@ async::task<void> match::container::join(character& ch,
     auto current = ch.matchmaker.session();
     if (current != nullptr && current->id() == match_id)
         co_return;
+
     if (current != nullptr)
         current->leave(ch);
 

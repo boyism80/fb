@@ -83,6 +83,7 @@ uint64_t fb::game::stat::percent_pool(int64_t base, int64_t buff, float percent)
     auto total = sum + pct_bonus;
     if (total < 1)
         return 1;
+
     return static_cast<uint64_t>(total);
 }
 
@@ -254,6 +255,7 @@ float fb::game::stat::buff_resist(RESIST type) const
     auto i = this->_buff_resist.find(type);
     if (i == this->_buff_resist.end())
         return 0.0f;
+
     return i->second;
 }
 
@@ -269,8 +271,10 @@ float fb::game::stat::resist(RESIST type) const
     auto value = this->base_resist(type) + this->buff_resist(type);
     if (value < 0.0f)
         return 0.0f;
+
     if (value > 1.0f)
         return 1.0f;
+
     return value;
 }
 
@@ -289,6 +293,7 @@ void fb::game::stat::hp(uint64_t value, bool notify)
         auto level = UPDATE_STATE_LEVEL::HP_MP;
         if (client_pool_exceeds_u32(this->_hp, this->maxhp()))
             level |= UPDATE_STATE_LEVEL::BASED;
+
         this->owner.update(level);
     }
 }
@@ -320,6 +325,7 @@ uint64_t fb::game::stat::damage(uint64_t                          value,
         {
             if (mob.get() == &this->owner)
                 continue;
+
             if (mob->map() != ch->map())
                 continue;
 
@@ -358,6 +364,7 @@ void fb::game::stat::mp(uint64_t value, bool notify)
         auto level = UPDATE_STATE_LEVEL::HP_MP;
         if (client_pool_exceeds_u32(this->_mp, this->maxmp()))
             level |= UPDATE_STATE_LEVEL::BASED;
+
         this->owner.update(level);
     }
 }
@@ -478,8 +485,10 @@ uint8_t fb::game::stat::speed() const
     auto sum = static_cast<int>(this->base_speed()) + this->buff_speed();
     if (sum < 0)
         return 0;
+
     if (sum > 5)
         return 5;
+
     return static_cast<uint8_t>(sum);
 }
 
@@ -504,6 +513,7 @@ uint8_t character_stat::speed_cap() const
 {
     if (this->owner.client_version == fb::protocol::CLIENT_VERSION::v651 && this->owner.role() >= ROLE::ADMIN)
         return 10;
+
     return 5;
 }
 
@@ -696,8 +706,10 @@ uint8_t character_stat::speed() const
     auto cap = this->speed_cap();
     if (sum < 0)
         return 0;
+
     if (sum > cap)
         return static_cast<uint8_t>(cap);
+
     return static_cast<uint8_t>(sum);
 }
 
@@ -771,6 +783,7 @@ void character_stat::shift_recovery(const fb::model::timespan& delta)
     this->owner.assert_thread();
     if (this->_hp_recovery_at.has_value())
         this->_hp_recovery_at = this->_hp_recovery_at.value() + delta;
+
     if (this->_mp_recovery_at.has_value())
         this->_mp_recovery_at = this->_mp_recovery_at.value() + delta;
 }
@@ -846,6 +859,7 @@ uint64_t character_stat::damage(uint64_t                          value,
     {
         if (mob->map() != this->owner.map())
             continue;
+
         if (mob->target() != nullptr)
             continue;
 
@@ -862,6 +876,7 @@ uint64_t character_stat::damage(uint64_t                          value,
     {
         this->owner.items.wear_down(parts, 1);
     }
+
     return result;
 }
 
@@ -961,6 +976,7 @@ float mob_stat::base_resist(RESIST type) const
     auto  i     = model.resist.find(type);
     if (i == model.resist.end())
         return 0.0f;
+
     return i->second;
 }
 
@@ -974,6 +990,7 @@ uint64_t mob_stat::hp() const
     {
         sum += part->stat.hp();
     }
+
     return sum;
 }
 
@@ -987,5 +1004,6 @@ uint64_t mob_stat::maxhp() const
     {
         sum += part->stat.maxhp();
     }
+
     return sum;
 }

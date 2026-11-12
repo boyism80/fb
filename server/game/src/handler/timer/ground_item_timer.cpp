@@ -61,5 +61,6 @@ async::task<void> ground_item_timer::handle(const fb::model::datetime& now, std:
             fb::logger::fatal("ground item cleanup failed (oid={}): {}", item->oid(), e.what());
         }
     }
+
     co_return;
 }

@@ -38,6 +38,7 @@ async::task<bool> reputation<V>::handle(fb::socket<character>& session, game_req
         if (ptr != nullptr)
             ptr->message(error.value(), MESSAGE_TYPE::STATE);
     }
+
     co_return true;
 }
 

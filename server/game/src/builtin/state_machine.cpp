@@ -51,6 +51,7 @@ int builtin::state_machine::builtin_get(lua_State* L)
         value->push(*lua);
     else
         lua->pushnil();
+
     return 1;
 }
 
@@ -81,6 +82,7 @@ int builtin::state_machine::builtin_set(lua_State* L)
     {
         throw std::runtime_error("state_machine:set accepts nil, boolean, number, string or table");
     }
+
     return 0;
 }
 
