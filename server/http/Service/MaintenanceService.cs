@@ -409,7 +409,23 @@ namespace Http.Service
             }
         }
 
-        private async Task<List<(MaintenanceSchedule schedule, string member)>> ReadSchedules()
+        public async Task<bool> ClaimNotice(string member, string scheduleId, DateTime start, int minutes, TimeSpan ttl)
+        {
+            var redis = _redisService.GetUnifiedConnection();
+            if (redis == null)
+            {
+                return false;
+            }
+
+            var claimKey = NoticeClaimKey(scheduleId, start, minutes);
+            var transaction = redis.Connection.CreateTransaction();
+            transaction.AddCondition(Condition.SortedSetContains(ScheduleKey, member));
+            transaction.AddCondition(Condition.KeyNotExists(claimKey));
+            _ = transaction.StringSetAsync(claimKey, "1", ttl);
+            return await transaction.ExecuteAsync();
+        }
+
+        public async Task<List<(MaintenanceSchedule schedule, string member)>> ReadSchedules()
         {
             var result = new List<(MaintenanceSchedule, string)>();
             var redis = _redisService.GetUnifiedConnection();

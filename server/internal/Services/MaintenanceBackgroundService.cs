@@ -39,7 +39,7 @@ namespace Internal.Services
                     var redis = _redisService.GetUnifiedConnection();
                     if (redis != null)
                     {
-                        await SendNoticesAsync(redis);
+                        await SendNoticesAsync();
 
                         if (await redis.Connection.StringSetAsync(CleanupLockKey, "1", CleanupLockTtl, When.NotExists))
                         {
@@ -58,10 +58,10 @@ namespace Internal.Services
 
         // Every internal instance runs this; the claim key lets only one of them send each notice.
         // A notice lost after its claim is not resent, because a resend could show it twice.
-        private async Task SendNoticesAsync(Http.Service.Redis redis)
+        private async Task SendNoticesAsync()
         {
             var now = DateTime.UtcNow;
-            foreach (var schedule in await _maintenanceService.GetAllSchedules())
+            foreach (var (schedule, member) in await _maintenanceService.ReadSchedules())
             {
                 var noticeMinutes = schedule.NoticeMinutes.Where(x => x > 0).ToList();
                 if (noticeMinutes.Count == 0)
@@ -77,8 +77,7 @@ namespace Internal.Services
 
                 var remain = start.Value - now;
                 var minutes = noticeMinutes.Where(x => remain <= TimeSpan.FromMinutes(x)).Min();
-                var claimKey = MaintenanceService.NoticeClaimKey(schedule.Id, start.Value, minutes);
-                if (!await redis.Connection.StringSetAsync(claimKey, "1", remain + NoticeClaimRetention, When.NotExists))
+                if (!await _maintenanceService.ClaimNotice(member, schedule.Id, start.Value, minutes, remain + NoticeClaimRetention))
                 {
                     continue;
                 }
