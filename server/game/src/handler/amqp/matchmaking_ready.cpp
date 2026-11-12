@@ -40,7 +40,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                     auto cross_maintenance = ch->server.maintenance.read([](const fb::game::maintenance_state& x) {
                         return x.cross;
                     });
-                    if (cross_maintenance && ch->role() < fb::model::enum_value::ROLE::ADMIN)
+                    if (cross_maintenance.has_value() && cross_maintenance->admits(ch->role(), false) == false)
                     {
                         ch->timer(0, fb::model::enum_value::TIMER_TYPE::OFF);
                         ch->message("교차 서버 점검 중이라 매치에 입장할 수 없습니다.",

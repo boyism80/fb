@@ -7916,90 +7916,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct ActiveMaintenance : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static ActiveMaintenance GetRootAsActiveMaintenance(ByteBuffer _bb) { return GetRootAsActiveMaintenance(_bb, new ActiveMaintenance()); }
-  public static ActiveMaintenance GetRootAsActiveMaintenance(ByteBuffer _bb, ActiveMaintenance obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public ActiveMaintenance __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public string Labels(int j) { int o = __p.__offset(4); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
-  public int LabelsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public string Message { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(6, 1); }
-#else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(6); }
-#endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(6); }
-  public string EndTime { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetEndTimeBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetEndTimeBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetEndTimeArray() { return __p.__vector_as_array<byte>(8); }
-  public bool FinishMatches { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-
-  public static Offset<fb.protocol.@internal.response.raw.ActiveMaintenance> CreateActiveMaintenance(FlatBufferBuilder builder,
-      VectorOffset labelsOffset = default(VectorOffset),
-      StringOffset messageOffset = default(StringOffset),
-      StringOffset end_timeOffset = default(StringOffset),
-      bool finish_matches = false) {
-    builder.StartTable(4);
-    ActiveMaintenance.AddEndTime(builder, end_timeOffset);
-    ActiveMaintenance.AddMessage(builder, messageOffset);
-    ActiveMaintenance.AddLabels(builder, labelsOffset);
-    ActiveMaintenance.AddFinishMatches(builder, finish_matches);
-    return ActiveMaintenance.EndActiveMaintenance(builder);
-  }
-
-  public static void StartActiveMaintenance(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddLabels(FlatBufferBuilder builder, VectorOffset labelsOffset) { builder.AddOffset(0, labelsOffset.Value, 0); }
-  public static VectorOffset CreateLabelsVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateLabelsVectorBlock(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateLabelsVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateLabelsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartLabelsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(1, messageOffset.Value, 0); }
-  public static void AddEndTime(FlatBufferBuilder builder, StringOffset endTimeOffset) { builder.AddOffset(2, endTimeOffset.Value, 0); }
-  public static void AddFinishMatches(FlatBufferBuilder builder, bool finishMatches) { builder.AddBool(3, finishMatches, false); }
-  public static Offset<fb.protocol.@internal.response.raw.ActiveMaintenance> EndActiveMaintenance(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.response.raw.ActiveMaintenance>(o);
-  }
-}
-
-
-static public class ActiveMaintenanceVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyVectorOfStrings(tablePos, 4 /*Labels*/, false)
-      && verifier.VerifyString(tablePos, 6 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 8 /*EndTime*/, false)
-      && verifier.VerifyField(tablePos, 10 /*FinishMatches*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.response.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct Authenticate : IFlatbufferObject
 {
   private Table __p;
@@ -9443,27 +9359,25 @@ public struct GetMaintenance : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public GetMaintenance __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public fb.protocol.@internal.response.raw.ActiveMaintenance? Maintenances(int j) { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.response.raw.ActiveMaintenance?)(new fb.protocol.@internal.response.raw.ActiveMaintenance()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int MaintenancesLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public uint Error { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol.@internal.response.raw.MaintenanceWindow? Home { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.response.raw.MaintenanceWindow?)(new fb.protocol.@internal.response.raw.MaintenanceWindow()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public fb.protocol.@internal.response.raw.MaintenanceWindow? Cross { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.response.raw.MaintenanceWindow?)(new fb.protocol.@internal.response.raw.MaintenanceWindow()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.GetMaintenance> CreateGetMaintenance(FlatBufferBuilder builder,
-      VectorOffset maintenancesOffset = default(VectorOffset),
+      Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> homeOffset = default(Offset<fb.protocol.@internal.response.raw.MaintenanceWindow>),
+      Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> crossOffset = default(Offset<fb.protocol.@internal.response.raw.MaintenanceWindow>),
       uint error = 0) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     GetMaintenance.AddError(builder, error);
-    GetMaintenance.AddMaintenances(builder, maintenancesOffset);
+    GetMaintenance.AddCross(builder, crossOffset);
+    GetMaintenance.AddHome(builder, homeOffset);
     return GetMaintenance.EndGetMaintenance(builder);
   }
 
-  public static void StartGetMaintenance(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddMaintenances(FlatBufferBuilder builder, VectorOffset maintenancesOffset) { builder.AddOffset(0, maintenancesOffset.Value, 0); }
-  public static VectorOffset CreateMaintenancesVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.response.raw.ActiveMaintenance>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateMaintenancesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.response.raw.ActiveMaintenance>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateMaintenancesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.response.raw.ActiveMaintenance>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateMaintenancesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.response.raw.ActiveMaintenance>>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartMaintenancesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(1, error, 0); }
+  public static void StartGetMaintenance(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddHome(FlatBufferBuilder builder, Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> homeOffset) { builder.AddOffset(0, homeOffset.Value, 0); }
+  public static void AddCross(FlatBufferBuilder builder, Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> crossOffset) { builder.AddOffset(1, crossOffset.Value, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
   public static Offset<fb.protocol.@internal.response.raw.GetMaintenance> EndGetMaintenance(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.GetMaintenance>(o);
@@ -9476,8 +9390,9 @@ static public class GetMaintenanceVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyVectorOfTables(tablePos, 4 /*Maintenances*/, fb.protocol.@internal.response.raw.ActiveMaintenanceVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 6 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 4 /*Home*/, fb.protocol.@internal.response.raw.MaintenanceWindowVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*Cross*/, fb.protocol.@internal.response.raw.MaintenanceWindowVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -10312,6 +10227,68 @@ static public class LogoutVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
       && verifier.VerifyString(tablePos, 6 /*Reason*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.response.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
+public struct MaintenanceWindow : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static MaintenanceWindow GetRootAsMaintenanceWindow(ByteBuffer _bb) { return GetRootAsMaintenanceWindow(_bb, new MaintenanceWindow()); }
+  public static MaintenanceWindow GetRootAsMaintenanceWindow(ByteBuffer _bb, MaintenanceWindow obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public MaintenanceWindow __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public string Message { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(4); }
+  public bool FinishMatches { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+
+  public static Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> CreateMaintenanceWindow(FlatBufferBuilder builder,
+      StringOffset messageOffset = default(StringOffset),
+      bool finish_matches = false) {
+    builder.StartTable(2);
+    MaintenanceWindow.AddMessage(builder, messageOffset);
+    MaintenanceWindow.AddFinishMatches(builder, finish_matches);
+    return MaintenanceWindow.EndMaintenanceWindow(builder);
+  }
+
+  public static void StartMaintenanceWindow(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(0, messageOffset.Value, 0); }
+  public static void AddFinishMatches(FlatBufferBuilder builder, bool finishMatches) { builder.AddBool(1, finishMatches, false); }
+  public static Offset<fb.protocol.@internal.response.raw.MaintenanceWindow> EndMaintenanceWindow(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.response.raw.MaintenanceWindow>(o);
+  }
+}
+
+
+static public class MaintenanceWindowVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyString(tablePos, 4 /*Message*/, false)
+      && verifier.VerifyField(tablePos, 6 /*FinishMatches*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

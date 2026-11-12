@@ -31,6 +31,11 @@ namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
+bool maintenance_window::admits(ROLE role, bool in_match) const
+{
+    return role >= ROLE::ADMIN || (this->finish_matches && in_match);
+}
+
 uint8_t fb::game::server::id() const
 {
     return fb::config<uint8_t>("id");

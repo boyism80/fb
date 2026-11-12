@@ -135,12 +135,18 @@ enum class scope
     WORLD
 };
 
+struct maintenance_window
+{
+    std::string message;
+    bool        finish_matches = false;
+
+    bool admits(ROLE role, bool in_match) const;
+};
+
 struct maintenance_state
 {
-    bool        active         = false;
-    bool        finish_matches = false;
-    std::string message;
-    bool        cross = false;
+    std::optional<maintenance_window> home;
+    std::optional<maintenance_window> cross;
 };
 
 struct send_option

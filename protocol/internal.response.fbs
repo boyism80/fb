@@ -391,15 +391,14 @@ table UpdatedCastle {
   error: uint;
 }
 
-table ActiveMaintenance {
-  labels: [string];
+table MaintenanceWindow {
   message: string;
-  end_time: string;
   finish_matches: bool;
 }
 
 table GetMaintenance {
-  maintenances: [ActiveMaintenance];
+  home: MaintenanceWindow?;
+  cross: MaintenanceWindow?;
   error: uint;
 }
 

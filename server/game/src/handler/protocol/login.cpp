@@ -102,11 +102,10 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         std::format("/in-game/init/{}/{}", world, request.id));
 
     auto maintenance = this->server.maintenance.read([](const maintenance_state& x) {
-        return x;
+        return x.home;
     });
     auto in_match    = request.match.has_value() && request.match->id != 0;
-    if (maintenance.active && static_cast<ROLE>(resp.character.role) < ROLE::ADMIN &&
-        (maintenance.finish_matches && in_match) == false)
+    if (maintenance.has_value() && maintenance->admits(static_cast<ROLE>(resp.character.role), in_match) == false)
     {
         fb::logger::info("Character {} login refused: maintenance", resp.character.name);
         co_return nullptr;

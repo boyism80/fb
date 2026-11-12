@@ -5,13 +5,11 @@
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
-#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <format>
 #include <optional>
 #include <string>
-#include <string_view>
 
 using namespace fb::game::handler::timer;
 
@@ -22,7 +20,6 @@ maintenance_timer::maintenance_timer(fb::game::server& server) :
 async::task<void> maintenance_timer::handle()
 {
     auto world = fb::config<std::optional<uint32_t>>("world");
-    auto label = world.has_value() ? std::format("world:{}", world.value()) : std::string("cross");
     auto path  = world.has_value() ? std::format("/maintenance/{}", world.value()) : std::string("/maintenance");
 
     auto state = maintenance_state{};
@@ -33,31 +30,10 @@ async::task<void> maintenance_timer::handle()
         if (resp.error != 0)
             co_return;
 
-        for (const auto& maintenance : resp.maintenances)
-        {
-            auto& labels  = maintenance.labels;
-            auto  targets = [&labels](std::string_view x) {
-                return std::find(labels.begin(), labels.end(), "all") != labels.end() ||
-                       std::find(labels.begin(), labels.end(), x) != labels.end();
-            };
-
-            if (targets(label))
-            {
-                if (state.active)
-                {
-                    state.finish_matches = state.finish_matches && maintenance.finish_matches;
-                }
-                else
-                {
-                    state.active         = true;
-                    state.message        = maintenance.message;
-                    state.finish_matches = maintenance.finish_matches;
-                }
-            }
-
-            if (targets("cross"))
-                state.cross = true;
-        }
+        if (resp.home.has_value())
+            state.home = maintenance_window{resp.home->message, resp.home->finish_matches};
+        if (resp.cross.has_value())
+            state.cross = maintenance_window{resp.cross->message, resp.cross->finish_matches};
     }
     catch (const std::exception& e)
     {
@@ -69,26 +45,23 @@ async::task<void> maintenance_timer::handle()
         value = state;
     });
 
-    if (state.active || state.cross)
+    if (state.home.has_value() || state.cross.has_value())
     {
         auto home = world.has_value();
         this->server.characters.foreach_enqueue([state, home](auto& ch) -> async::task<void> {
-            if (ch->role() >= ROLE::ADMIN)
-                co_return;
-
-            if (state.active)
+            if (state.home.has_value())
             {
-                if (state.finish_matches && ch->matchmaker.session() != nullptr)
+                if (state.home->admits(ch->role(), ch->matchmaker.session() != nullptr))
                     co_return;
 
                 auto socket_ptr = ch->socket_ptr();
                 if (socket_ptr == nullptr)
                     co_return;
 
-                ch->message(state.message, MESSAGE_TYPE::STATE);
+                ch->message(state.home->message, MESSAGE_TYPE::STATE);
                 socket_ptr->close();
             }
-            else if (home && ch->matchmaker.ticket_id().has_value())
+            else if (home && ch->matchmaker.ticket_id().has_value() && state.cross->admits(ch->role(), false) == false)
             {
                 co_await ch->matchmaker.drop_ticket("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.");
             }

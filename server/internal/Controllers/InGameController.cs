@@ -154,7 +154,7 @@ namespace Internal.Controllers
                         if (characterId.HasValue)
                         {
                             var character = await _dbContext.Character.Get(world, characterId.Value);
-                            if (character != null && character.Role < Fb.Model.EnumValue.Role.Admin)
+                            if (character != null && !maintenanceInfo.Admits(character.Role, false))
                             {
                                 return new Response.Transfer
                                 {

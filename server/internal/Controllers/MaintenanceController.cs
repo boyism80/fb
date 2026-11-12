@@ -29,16 +29,8 @@ namespace Internal.Controllers
                 var maintenances = await _maintenanceService.GetActiveMaintenances();
                 return new Response.GetMaintenance
                 {
-                    Maintenances = maintenances
-                        .Where(x => MaintenanceLabel.Matches(x.Labels, label) || MaintenanceLabel.Matches(x.Labels, MaintenanceLabel.Cross))
-                        .Select(x => new Response.ActiveMaintenance
-                        {
-                            Labels = x.Labels,
-                            Message = x.Message ?? string.Empty,
-                            EndTime = x.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                            FinishMatches = x.FinishMatches
-                        })
-                        .ToList(),
+                    Home = Window(maintenances, label),
+                    Cross = Window(maintenances, MaintenanceLabel.Cross),
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -49,6 +41,21 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
+        }
+
+        private static Response.MaintenanceWindow Window(List<MaintenanceInfo> maintenances, string label)
+        {
+            var matched = maintenances.Where(x => MaintenanceLabel.Matches(x.Labels, label)).ToList();
+            if (matched.Count == 0)
+            {
+                return null;
+            }
+
+            return new Response.MaintenanceWindow
+            {
+                Message = matched[0].Message ?? string.Empty,
+                FinishMatches = matched.All(x => x.FinishMatches)
+            };
         }
     }
 }

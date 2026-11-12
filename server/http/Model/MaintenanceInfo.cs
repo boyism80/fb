@@ -21,5 +21,8 @@ namespace Http.Model
 
         [JsonProperty("schedule_id")]
         public string ScheduleId { get; set; } = string.Empty;
+
+        public bool Admits(Fb.Model.EnumValue.Role role, bool inMatch) =>
+            role >= Fb.Model.EnumValue.Role.Admin || (FinishMatches && inMatch);
     }
 }
