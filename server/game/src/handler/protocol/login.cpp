@@ -648,9 +648,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         {
             fb::logger::warn("Character {} reached closed match {}; sending home", ptr->name(), match_id);
             ptr->message(_TEXT(MESSAGE_MATCH_ALREADY_CLOSED), MESSAGE_TYPE::STATE);
-            auto returned = co_await ptr->matchmaker.transfer_home();
-            if (returned == false && ptr->loaded() && ptr->map() == nullptr)
-                ptr->matchmaker.disconnect_after_failed_return();
+            std::ignore = co_await ptr->home.recall();
         }
     };
     builder.enqueue();

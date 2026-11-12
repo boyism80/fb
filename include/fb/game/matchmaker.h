@@ -97,8 +97,6 @@ public:
     async::task<void>                        decline(uint64_t match_id);
     std::shared_ptr<fb::game::match>         session() const;
     void                                     session(std::shared_ptr<fb::game::match> value);
-    [[nodiscard]] async::task<bool>          transfer_home();
-    void                                     disconnect_after_failed_return();
 };
 
 } // namespace fb::game

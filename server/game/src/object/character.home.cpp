@@ -2,6 +2,7 @@
 
 #include <fb/config.h>
 #include <fb/game/map.h>
+#include <fb/game/server.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
@@ -46,6 +47,34 @@ void character::home::restore(uint32_t map, const fb::model::point16_t& position
         return;
 
     this->_spot = spot{map, position};
+}
+
+async::task<bool> character::home::recall()
+{
+    this->_owner.assert_thread();
+
+    auto dest = this->_spot.has_value() ? this->_owner.server.maps.find(this->_spot->map) : nullptr;
+    if (fb::config<std::optional<uint32_t>>("world"))
+    {
+        if (dest == nullptr)
+            co_return false;
+        co_return co_await this->_owner.map(dest, this->_spot->position);
+    }
+
+    auto result = transfer_result::FAILED;
+    if (dest != nullptr)
+        result = co_await this->_owner.transfer(*dest, this->_spot->position);
+
+    if (result != transfer_result::STARTED && this->_owner.transferring() == false)
+        this->disconnect();
+    co_return result == transfer_result::STARTED;
+}
+
+void character::home::disconnect()
+{
+    fb::logger::warn("Character {} could not return home from the cross server; disconnecting", this->_owner.name());
+    if (auto socket_ptr = this->_owner.socket_ptr(); socket_ptr != nullptr)
+        socket_ptr->close();
 }
 
 bool character::home::savable() const

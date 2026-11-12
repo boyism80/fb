@@ -4580,7 +4580,7 @@ int builtin::character::builtin_transfer_home(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *ok = co_await ch->matchmaker.transfer_home();
+        *ok = co_await ch->home.recall();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

@@ -283,13 +283,17 @@ public:
 
     public:
         // clang-format off
-        const std::optional<spot>& pinned() const;
-        bool                       pin();
-        void                       unpin();
-        void                       restore(uint32_t map, const fb::model::point16_t& position);
-        bool                       savable() const;
-        void                       to_protocol(fb::protocol::internal::Character& dto) const;
+        const std::optional<spot>&      pinned() const;
+        bool                            pin();
+        void                            unpin();
+        void                            restore(uint32_t map, const fb::model::point16_t& position);
+        bool                            savable() const;
+        void                            to_protocol(fb::protocol::internal::Character& dto) const;
+        [[nodiscard]] async::task<bool> recall();
         // clang-format on
+
+    private:
+        void disconnect();
     };
 
     class options

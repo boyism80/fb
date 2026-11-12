@@ -844,35 +844,3 @@ void matchmaker::session(std::shared_ptr<fb::game::match> value)
 {
     this->_session = value;
 }
-
-void matchmaker::disconnect_after_failed_return()
-{
-    fb::logger::warn("Character {} could not return home from the cross server; disconnecting", this->owner.name());
-    if (auto socket_ptr = this->owner.socket_ptr(); socket_ptr != nullptr)
-        socket_ptr->close();
-}
-
-async::task<bool> matchmaker::transfer_home()
-{
-    this->owner.assert_thread();
-    auto pinned = this->owner.home.pinned();
-    if (pinned.has_value() == false)
-        co_return false;
-
-    auto dest = this->owner.server.maps.find(pinned->map);
-    if (dest == nullptr)
-        co_return false;
-
-    auto position = pinned->position;
-    if (fb::config<std::optional<uint32_t>>("world"))
-    {
-        co_return co_await this->owner.map(dest, position);
-    }
-    else
-    {
-        auto result = co_await this->owner.transfer(*dest, position);
-        if (result == transfer_result::FAILED)
-            this->disconnect_after_failed_return();
-        co_return result == transfer_result::STARTED;
-    }
-}

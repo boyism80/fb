@@ -588,7 +588,7 @@ async::task<void> match::close()
             ch->timer(0, fb::model::enum_value::TIMER_TYPE::OFF);
             ch->matchmaker.session(nullptr);
             if (ch->map() != nullptr)
-                std::ignore = co_await ch->matchmaker.transfer_home();
+                std::ignore = co_await ch->home.recall();
         }
         catch (std::exception& e)
         {
