@@ -14,6 +14,7 @@ local MESSAGE_TRADE_CANCELLED_BY_ME       = "내가 교환을 취소했습니다
 local MESSAGE_TRADE_SUCCESS               = "교환에 성공했습니다."
 local MESSAGE_TRADE_FAILED                = "교환에 실패했습니다."
 local MESSAGE_ITEM_FULL                   = "더 이상 가질 수 없습니다."
+local MESSAGE_TRADE_PARTNER_BUSY          = "다른 일을 하는 중입니다."
 
 local function progress(bot, message)
     local level = "debug"
@@ -43,6 +44,9 @@ test_suite {
     on_initialize = function(ctx)
         progress(ctx:bot(0), "TRADE TEST INITIALIZED")
         lib.formation.arrange_in_line(ctx)
+        for i = 0, ctx:bot_count() - 1 do
+            qd.close(ctx:bot(i))
+        end
         progress(ctx:bot(0), "FORMATION DONE")
     end,
 
@@ -460,22 +464,44 @@ test_suite {
             end
             qd.remove_npc(bot1)
 
-            progress(bot2, "OPEN F1 MENU, THEN bot1 REQUESTS A TRADE (the menu must close)")
-            if bot2:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end) == nil then
-                progress(bot2, "FAILED: F1 menu did not open")
+            progress(bot1, "OPEN F1 MENU, THEN bot1 REQUESTS A TRADE (bot1's menu must close)")
+            if bot1:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end) == nil then
+                progress(bot1, "FAILED: F1 menu did not open")
                 return false
             end
             trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
 
-            local seq = bot2:last_dialog()
-            bot2:send(protocol.dialog("PURSUIT", 0, "", 0, 0, F1_STORAGE_OPTION))
+            local seq = bot1:last_dialog()
+            bot1:send(protocol.dialog("PURSUIT", 0, "", 0, 0, F1_STORAGE_OPTION))
             ctx:sleep(1000)
-            if bot2:last_dialog() ~= seq then
-                progress(bot2, "FAILED: the F1 menu kept running after the trade started")
+            if bot1:last_dialog() ~= seq then
+                progress(bot1, "FAILED: the F1 menu kept running after the trade started")
                 return false
             end
 
             trade.cancel(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
+
+            progress(bot2, "OPEN F1 MENU, THEN bot1 REQUESTS A TRADE (refused, bot2's menu keeps running)")
+            if bot2:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end) == nil then
+                progress(bot2, "FAILED: F1 menu did not open")
+                return false
+            end
+            local busy = bot1:request(resp.message, protocol.trade("REQUEST", bot2:oid(), {}), function(packet)
+                return string.find(packet.text or "", MESSAGE_TRADE_PARTNER_BUSY, 1, true) ~= nil
+            end)
+            if type(busy) ~= "table" then
+                progress(bot1, "FAILED: a trade with a partner in a dialog was not refused")
+                return false
+            end
+
+            seq = bot2:last_dialog()
+            bot2:send(protocol.dialog("PURSUIT", 0, "", 0, 0, F1_STORAGE_OPTION))
+            ctx:sleep(1000)
+            if bot2:last_dialog() == seq then
+                progress(bot2, "FAILED: the F1 menu stopped after the refused trade")
+                return false
+            end
+            qd.close(bot2)
 
             progress(bot1, "SCENARIO 8 PASSED")
             return true

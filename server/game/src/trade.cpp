@@ -63,6 +63,9 @@ bool trade::begin(character& me, character& you)
         if (you.trade != nullptr)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING), you.name()));
 
+        if (you.dialog.opened())
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_BUSY), you.name()));
+
         // The partner is not in sight
         if (me.sight(you) == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_PARTNER_INVISIBLE));
@@ -72,7 +75,6 @@ bool trade::begin(character& me, character& you)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you.name()));
 
         me.dialog.cancel("trade");
-        you.dialog.cancel("trade");
 
         auto session = std::make_shared<trade>(me, you);
         me.trade     = session;

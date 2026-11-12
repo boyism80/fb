@@ -333,6 +333,7 @@ private:
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
     fb::game::marriage                               _marriage;
+        bool    opened() const;
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;

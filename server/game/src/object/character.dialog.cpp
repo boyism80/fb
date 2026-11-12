@@ -31,6 +31,11 @@ character::dialog::pending character::dialog::take(fb::game::dialog::reply reply
     return taken;
 }
 
+bool character::dialog::opened() const
+{
+    return this->_context != nullptr;
+}
+
 void character::dialog::cancel(std::string_view reason)
 {
     auto context   = this->_context;
