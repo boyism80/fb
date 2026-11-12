@@ -971,7 +971,9 @@ uint64_t mob_stat::hp() const
 
     auto sum = uint64_t{0};
     for (auto& part : this->owner.parts())
+    {
         sum += part->stat.hp();
+    }
     return sum;
 }
 
@@ -982,6 +984,8 @@ uint64_t mob_stat::maxhp() const
 
     auto sum = uint64_t{0};
     for (auto& part : this->owner.parts())
+    {
         sum += part->stat.maxhp();
+    }
     return sum;
 }

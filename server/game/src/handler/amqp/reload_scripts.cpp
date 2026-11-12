@@ -37,9 +37,13 @@ async::task<void> reload_scripts::handle(const internal_resp::ReloadScripts& mes
                 auto requested = message.url;
                 auto allowed   = fb::config<std::string>("download:script", std::string());
                 while (!requested.empty() && requested.back() == '/')
+                {
                     requested.pop_back();
+                }
                 while (!allowed.empty() && allowed.back() == '/')
+                {
                     allowed.pop_back();
+                }
                 if (allowed.empty() || requested != allowed)
                     throw std::runtime_error(std::format("script download url is not allowed: {}", message.url));
 
