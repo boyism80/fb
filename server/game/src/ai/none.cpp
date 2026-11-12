@@ -13,24 +13,14 @@ async::task<bool> none_ai::execute(mob& mob_obj, const datetime& now)
     if (co_await super::execute(mob_obj, now))
         co_return true;
 
-    // Clean up expired damage records
-    super::cleanup_expired_damage(now);
-
-    // Check if current target is still valid
-    auto target = mob_obj.target();
-    if (target == nullptr || !super::should_maintain_target(mob_obj, now))
-        target = super::strongest_attacker(mob_obj, false);
-
+    auto target = super::select_target(mob_obj, now);
     if (target == nullptr)
     {
-        // Clear target and move randomly when no target
-        mob_obj.target(nullptr);
         co_await mob_obj.move(DIRECTION(random(0, 3)));
         co_return true;
     }
 
     // Run away from target
-    mob_obj.target(target);
     co_await super::run_from_target(mob_obj, target);
 
     co_return true;

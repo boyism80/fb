@@ -6,16 +6,7 @@ using namespace fb::game;
 
 async::task<bool> stationary_ai::execute(mob& mob_obj, const datetime& now)
 {
-    super::cleanup_expired_damage(now);
-
-    auto target = mob_obj.target();
-    if (target == nullptr || !super::should_maintain_target(mob_obj, now))
-    {
-        target = super::find_target_in_range(mob_obj, now);
-        if (target != nullptr)
-            mob_obj.target(target);
-    }
-
+    auto target = super::select_target(mob_obj, now);
     if (target == nullptr)
         co_return true;
 
@@ -27,6 +18,11 @@ async::task<bool> stationary_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     co_return true;
+}
+
+std::shared_ptr<life> stationary_ai::find_target(mob& mob_obj, const datetime& now)
+{
+    return super::find_target_in_range(mob_obj, now);
 }
 
 MOB_ATTACK_TYPE stationary_ai::get_type() const

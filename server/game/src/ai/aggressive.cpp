@@ -12,16 +12,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     if (co_await super::execute(mob_obj, now))
         co_return true;
 
-    super::cleanup_expired_damage(now);
-
-    auto target = mob_obj.target();
-    if (target == nullptr || !super::should_maintain_target(mob_obj, now))
-    {
-        target = super::find_target_in_sight(mob_obj, now);
-        if (target != nullptr)
-            mob_obj.target(target);
-    }
-
+    auto target = super::select_target(mob_obj, now);
     if (target == nullptr)
     {
         co_await mob_obj.move(DIRECTION(random(0, 3)));
@@ -51,6 +42,11 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     co_return true;
+}
+
+std::shared_ptr<life> aggressive_ai::find_target(mob& mob_obj, const datetime& now)
+{
+    return super::find_target_in_sight(mob_obj, now);
 }
 
 MOB_ATTACK_TYPE aggressive_ai::get_type() const

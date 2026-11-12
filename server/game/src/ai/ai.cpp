@@ -139,6 +139,22 @@ std::shared_ptr<life> ai::strongest_attacker(mob& mob_obj, bool adjacent) const
     return best_target;
 }
 
+std::shared_ptr<life> ai::find_target(mob& mob_obj, const datetime& now)
+{
+    return this->strongest_attacker(mob_obj, false);
+}
+
+std::shared_ptr<life> ai::select_target(mob& mob_obj, const datetime& now)
+{
+    this->cleanup_expired_damage(now);
+    if (this->should_maintain_target(mob_obj, now))
+        return mob_obj.target();
+
+    auto target = this->find_target(mob_obj, now);
+    mob_obj.target(target);
+    return target;
+}
+
 std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
 {
     auto map = mob_obj.map();

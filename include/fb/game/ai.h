@@ -49,6 +49,8 @@ public:
 
 protected:
     // clang-format off
+    virtual std::shared_ptr<life>   find_target(mob& mob_obj, const datetime& now);
+    std::shared_ptr<life>           select_target(mob& mob_obj, const datetime& now);
     std::shared_ptr<life>           find_target_in_sight(mob& mob_obj, const datetime& now);
     std::shared_ptr<life>           find_target_in_range(mob& mob_obj, const datetime& now);
     void                            cleanup_expired_damage(const datetime& now);

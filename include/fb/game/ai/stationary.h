@@ -16,6 +16,9 @@ public:
     [[nodiscard]] async::task<bool> execute(mob& mob_obj, const datetime& now) override;
     MOB_ATTACK_TYPE                 get_type() const override;
     // clang-format on
+
+protected:
+    std::shared_ptr<life> find_target(mob& mob_obj, const datetime& now) override;
 };
 
 } // namespace fb::game
