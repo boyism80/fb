@@ -9,7 +9,6 @@
 #include <fb/game/life.h>
 #include <fb/game/mail_box.h>
 #include <fb/game/marketplace.h>
-#include <fb/game/marriage.h>
 #include <fb/game/matchmaker.h>
 #include <fb/game/mob.h>
 #include <fb/game/protocol/group_portrait.h>
@@ -18,12 +17,15 @@
 #include <fb/game/storage.h>
 #include <fb/game/trade.h>
 #include <fb/game/unsettled.h>
+#include <fb/model/datetime.h>
 #include <fb/protocol/client_version.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/socket.h>
 #include <fb/synchronized.h>
 
 #include <json/json.h>
 
+#include <array>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -154,6 +156,36 @@ public:
         [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id,
                                                                       int64_t  clan_delta,
                                                                       int64_t  money_delta);
+    };
+
+    class marriage
+    {
+    private:
+        character&                                    _owner;
+        std::optional<uint32_t>                       _spouse_id = std::nullopt;
+        std::string                                   _spouse_name;
+        fb::model::datetime                           _remarriage_after;
+        uint32_t                                      _divorce_count = 0;
+        const std::shared_ptr<fb::async_shared_mutex> _write_lock    = std::make_shared<fb::async_shared_mutex>();
+
+    public:
+        explicit marriage(character& owner);
+
+    public:
+        // clang-format off
+        const std::optional<uint32_t>&                        spouse_id() const;
+        const std::string&                                    spouse_name() const;
+        uint32_t                                              divorce_count() const;
+        bool                                                  remarryable() const;
+        std::optional<std::string>                            refusal() const;
+        std::optional<std::string>                            refusal(const character& target) const;
+        [[nodiscard]] async::task<std::optional<std::string>> marry(std::shared_ptr<character> target);
+        [[nodiscard]] async::task<std::optional<std::string>> divorce();
+        void                                                  restore(const fb::protocol::internal::Marriage& row);
+        // clang-format on
+
+    private:
+        async::task<std::array<std::shared_ptr<fb::async_shared_mutex>, 2>> lock(character& spouse);
     };
 
     class friends
@@ -301,6 +333,7 @@ public:
         void    open(fb::lua::context* context, fb::game::dialog::reply reply, uint16_t limit = 0xFF);
         pending take(fb::game::dialog::reply reply);
         void    cancel(std::string_view reason);
+        bool    opened() const;
         // clang-format on
     };
 
@@ -338,8 +371,6 @@ private:
     std::atomic<LOGIN_STATE>                         _login_state = LOGIN_STATE::LOADING; // raced by login and on_disconnected
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
-    fb::game::marriage                               _marriage;
-        bool    opened() const;
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
@@ -361,6 +392,7 @@ public:
     fb::game::marketplace                         marketplace;
     fb::game::unsettled_requests                  unsettled;
     class clan                                    clan;
+    class marriage                                marriage;
     class friends                                 friends;
     class group                                   group;
     class evaluation                              evaluation;
@@ -596,8 +628,6 @@ public:
     bool                                                      detach_spawned_mob(fb::game::mob& mob);
     [[nodiscard]] async::task<bool>                           reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                         to_protocol() const;
-    const fb::game::marriage&                                 marriage() const;
-    void                                                      marriage(const fb::game::marriage& value);
     void                                                      super_hide(bool enabled);
     void                                                      update_last_afk_time();
     fb::model::datetime&                                      last_afk_time();

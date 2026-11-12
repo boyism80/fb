@@ -4,7 +4,6 @@
 #include <fb/game/appearance.h>
 #include <fb/game/builtin/life.h>
 #include <fb/game/builtin/object.h>
-#include <fb/game/marriage.h>
 #include <fb/game/protocol/character/internal_info.h>
 #include <fb/game/protocol/character/option.h>
 #include <fb/game/protocol/character/show.h>
@@ -180,6 +179,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marketplace_search",           builtin::character::builtin_marketplace_search},
 {"marketplace_get_listings",     builtin::character::builtin_marketplace_get_listings},
 {"marriage",                     builtin::character::builtin_marriage},
+{"marriage_refusal",             builtin::character::builtin_marriage_refusal},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"collection",                   builtin::character::builtin_collection},
@@ -7896,13 +7896,12 @@ int builtin::character::builtin_marriage(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto&       server      = static_cast<fb::game::server&>(lua->executor);
-        const auto& m           = ch->marriage();
-        snapshot->married       = m.spouse_id.has_value();
-        snapshot->remarryable   = !snapshot->married && (ch->server.now() >= m.remarriage_after);
-        snapshot->spouse_id     = m.spouse_id;
-        snapshot->spouse_name   = m.spouse_name;
-        snapshot->divorce_count = m.divorce_count;
+        auto& marriage          = ch->marriage;
+        snapshot->married       = marriage.spouse_id().has_value();
+        snapshot->remarryable   = marriage.remarryable();
+        snapshot->spouse_id     = marriage.spouse_id();
+        snapshot->spouse_name   = marriage.spouse_name();
+        snapshot->divorce_count = marriage.divorce_count();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -7930,6 +7929,54 @@ int builtin::character::builtin_marriage(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_marriage_refusal(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto me = lua->touserdata<fb::game::character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto with_target = lua->argc() >= 2;
+    auto target      = with_target ? lua->touserdata<fb::game::character>(2) : nullptr;
+    if (with_target && target == nullptr)
+    {
+        lua->pushstring("대상을 찾을 수 없습니다.");
+        return 1;
+    }
+
+    auto weak = me->weak_from_this_as<fb::game::character>();
+    auto target_weak =
+        target != nullptr ? target->weak_from_this_as<fb::game::character>() : std::weak_ptr<fb::game::character>{};
+    auto refused  = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (with_target == false)
+        {
+            *refused = me->marriage.refusal();
+            co_return;
+        }
+
+        auto locked = target_weak.lock();
+        if (locked == nullptr)
+            *refused = "대상을 찾을 수 없습니다.";
+        else
+            *refused = me->marriage.refusal(*locked);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (refused->has_value())
+            lua->pushstring(refused->value());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_marry(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -7950,87 +7997,11 @@ int builtin::character::builtin_marry(lua_State* L)
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        auto& server = static_cast<fb::game::server&>(lua->executor);
-
         auto target = target_weak.lock();
-        auto my_map = me->map();
-        if (target == nullptr || me->thread() != target->thread() || my_map == nullptr || my_map != target->map())
-        {
+        if (target == nullptr)
             *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
-            co_return;
-        }
-        if (me->world() != target->world())
-        {
-            *error = "다른 서버 출신과는 결혼할 수 없습니다.";
-            co_return;
-        }
-        if (me->gender() == target->gender())
-        {
-            *error = "같은 성별끼리는 결혼할 수 없습니다.";
-            co_return;
-        }
-
-        const auto& my_m  = me->marriage();
-        const auto& tar_m = target->marriage();
-        if (my_m.spouse_id.has_value())
-        {
-            *error = "이미 결혼을 하셨습니다.";
-            co_return;
-        }
-        if (tar_m.spouse_id.has_value())
-        {
-            *error = "이미 결혼한 상대와는 결혼을 할 수 없습니다.";
-            co_return;
-        }
-        if (server.now() < my_m.remarriage_after)
-        {
-            *error = "재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.";
-            co_return;
-        }
-        if (server.now() < tar_m.remarriage_after)
-        {
-            *error = "상대방은 아직 재혼할 수 없습니다.";
-            co_return;
-        }
-
-        auto resp = internal_resp::UpdatedMarriage{};
-        try
-        {
-            resp = co_await server.http.post(
-                weak,
-                "internal",
-                "/marriage/marry",
-                internal_reqs::Marry{me->world(), me->id, target->id, server.now().to_string()});
-        }
-        catch (fb::http_error& e)
-        {
-            fb::logger::warn("marry request failed: {}", e.what());
-            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
-            co_return;
-        }
-
-        if (resp.error == static_cast<uint32_t>(ERROR_CODE::ALREADY_MARRIED))
-        {
-            *error = "이미 결혼을 하셨습니다.";
-            co_return;
-        }
-        if (resp.error != static_cast<uint32_t>(ERROR_CODE::NONE))
-        {
-            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error);
-            co_return;
-        }
-
-        me->marriage(fb::game::marriage(resp.user));
-
-        auto spouse_row    = resp.spouse;
-        auto spouse_update = server.threads.new_builder(target_weak);
-        spouse_update.func = [target_weak, spouse_row](auto&) -> async::task<void> {
-            auto locked = target_weak.lock();
-            if (locked != nullptr)
-                locked->marriage(fb::game::marriage(spouse_row));
-            co_return;
-        };
-        spouse_update.enqueue();
+        else
+            *error = co_await me->marriage.marry(target);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -8061,64 +8032,7 @@ int builtin::character::builtin_divorce(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto&       server = static_cast<fb::game::server&>(lua->executor);
-        const auto& m      = me->marriage();
-        if (!m.spouse_id.has_value())
-        {
-            *error = "결혼을 한 사람만이 이혼을 할 수 있습니다.";
-            co_return;
-        }
-
-        auto spouse = server.characters.find(m.spouse_id.value());
-
-        if (spouse == nullptr || spouse->hidden(*me))
-        {
-            *error = "배우자가 현재 접속 중이 아닙니다.";
-            co_return;
-        }
-        auto my_map = me->map();
-        if (spouse->thread() != me->thread() || my_map == nullptr || my_map != spouse->map())
-        {
-            *error = "배우자와 같은 곳에 있어야 이혼할 수 있습니다.";
-            co_return;
-        }
-
-        auto now = server.now();
-        now.add_days(7);
-
-        auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
-        auto resp        = internal_resp::UpdatedMarriage{};
-        try
-        {
-            resp = co_await server.http.post(weak,
-                                             "internal",
-                                             "/marriage/divorce",
-                                             internal_reqs::Divorce{me->world(), me->id, spouse->id, now.to_string()});
-        }
-        catch (fb::http_error& e)
-        {
-            fb::logger::warn("divorce request failed: {}", e.what());
-            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
-            co_return;
-        }
-
-        if (resp.error != static_cast<uint32_t>(ERROR_CODE::NONE))
-        {
-            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error);
-            co_return;
-        }
-
-        me->marriage(fb::game::marriage(resp.user));
-
-        auto spouse_row    = resp.spouse;
-        auto spouse_update = server.threads.new_builder(spouse_weak);
-        spouse_update.func = [spouse_weak, spouse_row](auto&) -> async::task<void> {
-            auto locked = spouse_weak.lock();
-            if (locked != nullptr)
-                locked->marriage(fb::game::marriage(spouse_row));
-            co_return;
-        };
-        spouse_update.enqueue();
+        *error = co_await me->marriage.divorce();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

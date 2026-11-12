@@ -383,12 +383,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         }
         ch->friends.load(std::move(entries), resp.friends_revision);
     }
-    ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
-                                        ? this->server.now()
-                                        : fb::model::datetime(resp.marriage.remarriage_after),
-                                    resp.marriage.spouse_id,
-                                    resp.marriage.spouse_name,
-                                    resp.marriage.divorce_count));
+    ch->marriage.restore(resp.marriage);
 
     ch->init();
     ch->collections.sync();

@@ -47,6 +47,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     marketplace(*this),
     unsettled(*this),
     clan(*this),
+    marriage(*this),
     friends(*this),
     group(*this),
     evaluation(*this, server.now(), params.evaluation, params.evaluation_playtime, params.evaluated_targets),
@@ -71,8 +72,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     _ridable_id(params.ridable_id), _level(params.level), _class(params.class_type), _promotion(params.promotion),
     _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
     _divine_beast(params.divine_beast), _reputation(params.reputation), _super_hide(params.super_hide),
-    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version),
-    ui_mode(params.ui_mode)
+    _last_afk_time(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now();
 }
@@ -2371,19 +2371,6 @@ fb::protocol::internal::Character character::to_protocol() const
     }
 
     return dto;
-}
-
-const fb::game::marriage& character::marriage() const
-{
-    this->assert_thread();
-    return this->_marriage;
-}
-
-void character::marriage(const fb::game::marriage& value)
-{
-    this->assert_thread();
-    this->_marriage = value;
-    this->update_internal();
 }
 
 void character::browse_ch(const character& ch)

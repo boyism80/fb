@@ -60,11 +60,6 @@ namespace Internal.Controllers
                 var spouse = await Load(world, request.Spouse);
                 if (user.SpouseId != request.Spouse || spouse.SpouseId != request.User)
                 {
-                    if (user.SpouseId.HasValue || spouse.SpouseId.HasValue)
-                    {
-                        throw new LogicException(ErrorCode.AlreadyMarried);
-                    }
-
                     var remarriageAfter = ParseUtc(request.RemarriageAfter);
                     user.SpouseId = request.Spouse;
                     user.RemarriageAfter = remarriageAfter;

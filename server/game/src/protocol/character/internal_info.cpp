@@ -47,19 +47,19 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
     }
     writer.template write<std::string>(this->ch.title());
 
-    auto& marriage = this->ch.marriage();
+    auto& marriage = this->ch.marriage;
     if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
-        if (marriage.spouse_id.has_value())
-            writer.template write<std::string>(std::string("배우자: ") + marriage.spouse_name);
+        if (marriage.spouse_id().has_value())
+            writer.template write<std::string>(std::string("배우자: ") + marriage.spouse_name());
         else
             writer.template write<std::string>("");
     }
     else
     {
         auto sstream = std::stringstream();
-        if (marriage.spouse_id.has_value())
-            sstream << "배우자: " << marriage.spouse_name << std::endl;
+        if (marriage.spouse_id().has_value())
+            sstream << "배우자: " << marriage.spouse_name() << std::endl;
 
         auto& group_id = this->ch.group.id();
         auto  shown    = false;
