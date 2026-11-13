@@ -34,8 +34,9 @@ local MSG_MATCH_ENDED = "매치가 종료되었습니다."
 local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
 local PROPOSAL_SECONDS_PATTERN = "매치가 제안되었습니다%. (%d+)초"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
-local MSG_GROUP_QUEUED_MINE = "매치메이킹 대기 중에는 그룹원을 받을 수 없습니다."
-local MSG_GROUP_QUEUED_TARGET = "님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다."
+local MSG_QUEUE_DROPPED_BY_MEMBER = "그룹원이 바뀌어 매치메이킹 대기가 취소되었습니다."
+local MSG_QUEUE_DROPPED_BY_JOIN = "그룹에 들어가 매치메이킹 대기가 취소되었습니다."
+local MSG_GROUP_KICKED = "그룹에서 추방당했습니다."
 local MSG_DECLINED = "매치를 거절했습니다. (유형: 1)"
 local MATCHMAKING_SERVICE = "matchmaking"
 local DECLINE_DELAY_MS = 1500
@@ -430,18 +431,36 @@ test_suite {
                 return abort_remaining(a, "FAILED: REGISTER MATCH 2")
             end
 
-            -- The group ticket lists the members it was queued with, so the queued leader takes in no one.
-            progress(a, "STEP 4-1: QUEUED LEADER A CANNOT TAKE IN F")
-            local refused = a:request(
+            -- The group ticket lists the members it was queued with, so taking in a member ends it.
+            local f = ctx:bot(5)
+            progress(a, "STEP 4-1: QUEUED LEADER A TAKES IN F AND LEAVES THE QUEUE")
+            local dropped = a:request(
                 resp.message,
-                protocol.group(ctx:bot(5):name()),
+                protocol.group(f:name()),
                 function(p)
-                    return is_state_text(p, MSG_GROUP_QUEUED_MINE)
+                    return is_state_text(p, MSG_QUEUE_DROPPED_BY_MEMBER)
                 end,
                 MESSAGE_WAIT_MS
             )
-            if refused == nil or refused == false then
-                return abort_remaining(a, "FAILED: QUEUED GROUP TOOK IN A NEW MEMBER")
+            if dropped == nil or dropped == false then
+                return abort_remaining(a, "FAILED: QUEUED GROUP KEPT ITS TICKET AFTER TAKING IN A MEMBER")
+            end
+
+            progress(a, "STEP 4-2: A KICKS F AND REGISTERS MATCH 2 AGAIN")
+            local kicked = a:request_on(
+                f,
+                resp.message,
+                protocol.group(f:name()),
+                function(p)
+                    return is_state_text(p, MSG_GROUP_KICKED)
+                end,
+                MESSAGE_WAIT_MS
+            )
+            if kicked == nil or kicked == false then
+                return abort_remaining(a, "FAILED: A DID NOT KICK F")
+            end
+            if f1_register(a, OPT_MATCH_2, b) == false then
+                return abort_remaining(a, "FAILED: REGISTER MATCH 2 AFTER KICKING F")
             end
 
             progress(b, "STEP 5: B LEAVES GROUP, AB UNREGISTER")
@@ -482,19 +501,27 @@ test_suite {
                 return abort_remaining(e, "FAILED: REGISTER MATCH 2 E")
             end
 
-            -- A player queued alone cannot join a group either, or the two tickets would split the group.
-            local f = ctx:bot(5)
-            progress(f, "STEP 6-1: F CANNOT GROUP WITH QUEUED E")
-            local blocked = f:request(
+            -- A player queued alone leaves the queue when joining a group, or the two tickets would split the group.
+            progress(f, "STEP 6-1: QUEUED E JOINS F'S GROUP AND LEAVES THE QUEUE")
+            local left = f:request_on(
+                e,
                 resp.message,
                 protocol.group(e:name()),
                 function(p)
-                    return is_state_text(p, MSG_GROUP_QUEUED_TARGET)
+                    return is_state_text(p, MSG_QUEUE_DROPPED_BY_JOIN)
                 end,
                 MESSAGE_WAIT_MS
             )
-            if blocked == nil or blocked == false then
-                return abort_remaining(f, "FAILED: QUEUED SOLO PLAYER JOINED A GROUP")
+            if left == nil or left == false then
+                return abort_remaining(f, "FAILED: QUEUED SOLO PLAYER KEPT ITS TICKET IN A GROUP")
+            end
+
+            progress(f, "STEP 6-2: F DISBANDS AND E REGISTERS MATCH 2 AGAIN")
+            if type(lib.group.disband(f)) ~= "table" then
+                return abort_remaining(f, "FAILED: F DID NOT DISBAND")
+            end
+            if f1_register(e, OPT_MATCH_2) == false then
+                return abort_remaining(e, "FAILED: RE-REGISTER MATCH 2 E")
             end
 
             return true

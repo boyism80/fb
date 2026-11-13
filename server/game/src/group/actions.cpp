@@ -37,10 +37,6 @@ async::task<void> group::container::create(character& me, std::string_view targe
     if (me.name() == target_name_str)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
-    // A ticket holds the members it was queued with, so a queued player takes in no one.
-    if (me.matchmaker.queued())
-        throw std::runtime_error("매치메이킹 대기 중에는 그룹원을 받을 수 없습니다.");
-
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
     {
@@ -59,10 +55,6 @@ async::task<void> group::container::create(character& me, std::string_view targe
 
             if (target->options.enabled(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
-
-            if (target->matchmaker.queued())
-                throw std::runtime_error(
-                    std::format("{}님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다.", target_name_str));
         }
     }
 
@@ -116,18 +108,6 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
 
-    auto group_id = actor.group.id();
-    auto adding   = true;
-    if (group_id.has_value())
-    {
-        auto guard = this->try_enter_read(group_id.value());
-        adding     = guard.has_value() == false || guard->value() == nullptr ||
-                 guard->value()->contains(target_name_str) == false;
-    }
-
-    if (adding && actor.matchmaker.queued())
-        throw std::runtime_error("매치메이킹 대기 중에는 그룹원을 받을 수 없습니다.");
-
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
     {
@@ -143,10 +123,6 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 
             if (target->options.enabled(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
-
-            if (target->group.id() != actor.group.id() && target->matchmaker.queued())
-                throw std::runtime_error(
-                    std::format("{}님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다.", target_name_str));
         }
     }
 

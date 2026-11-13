@@ -214,7 +214,8 @@ async::task<void> group::container::on_enter(std::string                target,
         this->_server.characters.foreach_enqueue(
             [name](auto& member) -> async::task<void> {
                 member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), name), MESSAGE_TYPE::STATE);
-                co_return;
+                if (member->matchmaker.queued())
+                    co_await member->matchmaker.drop_ticket("그룹원이 바뀌어 매치메이킹 대기가 취소되었습니다.");
             },
             members);
 
@@ -402,7 +403,7 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     ch.group.id(group_id);
     ch.message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
 
-    // A member on another host was not checked before joining, so its solo ticket ends here.
+    // A ticket holds the members it was queued with, so joining a group ends it.
     if (ch.matchmaker.queued())
     {
         co_await ch.matchmaker.drop_ticket("그룹에 들어가 매치메이킹 대기가 취소되었습니다.");
