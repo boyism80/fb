@@ -90,6 +90,21 @@ void character::on_init()
     this->collections.owner(this->shared_from_this_as<character>());
 }
 
+void character::restrict_super_hide()
+{
+    if (this->_super_hide == false || this->_role >= ROLE::ADMIN)
+        return;
+
+    this->super_hide(false);
+    if (this->_state == STATE::CLOACK)
+        this->state(STATE::NORMAL);
+
+    std::ignore = this->server.http.post(
+        "internal",
+        "/in-game/option",
+        internal_reqs::SetOption{this->_world, this->id, {{static_cast<uint8_t>(OPTION::SUPER_HIDE), false}}});
+}
+
 size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
@@ -538,12 +553,7 @@ void character::role(ROLE value)
             this->spells.remove(i);
     }
 
-    if (value < ROLE::ADMIN && this->_super_hide)
-    {
-        this->super_hide(false);
-        if (this->_state == STATE::CLOACK)
-            this->state(STATE::NORMAL);
-    }
+    this->restrict_super_hide();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -1393,6 +1403,7 @@ void character::update_time(uint8_t hours, uint8_t minutes)
 
 void character::init()
 {
+    this->restrict_super_hide();
     this->_ping_state.enabled        = true;
     this->_ping_state.pong_received  = true;
     this->_ping_state.last_ping_time = this->server.now();

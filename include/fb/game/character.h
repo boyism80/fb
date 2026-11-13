@@ -640,6 +640,9 @@ public:
     std::shared_ptr<fb::socket<character>>                    socket_ptr() const;
     ping_state_t&                                             ping_state();
     // clang-format on
+
+private:
+    void restrict_super_hide();
 };
 
 class character::container
