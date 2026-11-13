@@ -2748,32 +2748,13 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
 
                 auto item = model.make(this->server, piece);
                 if (params.durability.has_value())
-                {
-                    if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
-                    {
-                        auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
-                        equipment->durability(*params.durability);
-                    }
-
-                    if (model.attr(ITEM_ATTRIBUTE::CONSUME))
-                    {
-                        auto consume = std::static_pointer_cast<fb::game::consume>(item);
-                        consume->durability(*params.durability);
-                    }
-                }
-
-                if (params.custom_name.has_value() && params.custom_name->empty() == false &&
-                    *params.custom_name != "null" && model.attr(ITEM_ATTRIBUTE::WEAPON))
-                {
-                    auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
-                    weapon->custom_name(*params.custom_name);
-                }
+                    item->durability(params.durability.value());
 
                 if (uid.has_value())
-                {
                     item->uid(uid.value());
-                    uid.reset();
-                }
+
+                item->custom_name(params.custom_name);
+                uid.reset();
 
                 std::ignore = co_await this->items.add(item);
                 if (item->empty() == false && this->items.index(item) == 0xFF)

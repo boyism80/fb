@@ -94,6 +94,7 @@ public:
     virtual std::string                     tip_message() const;
     virtual std::optional<uint32_t>         durability() const;
     virtual void                            durability(uint32_t value);
+    virtual void                            custom_name(const std::optional<std::string>& name);
     virtual std::string                     inven_name() const;
     virtual std::string                     trade_name() const;
     virtual bool                            empty() const;

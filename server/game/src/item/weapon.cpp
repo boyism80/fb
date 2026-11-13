@@ -67,9 +67,12 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
     return this->_custom_name;
 }
 
-void fb::game::weapon::custom_name(std::string_view name)
+void fb::game::weapon::custom_name(const std::optional<std::string>& name)
 {
-    this->_custom_name = std::string(name);
+    if (name.has_value() == false || name->empty())
+        this->_custom_name.reset();
+    else
+        this->_custom_name = name;
 
     if (this->_container == nullptr)
         return;

@@ -90,15 +90,10 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (model.trade == false || model.duration.has_value() || item->expire_time.has_value())
         throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_REGISTER_ITEM));
 
-    auto durability  = item->durability();
-    auto uid         = item->uid() != 0 ? std::optional<uint64_t>(item->uid()) : std::nullopt;
-    auto custom_name = std::optional<std::string>{};
-    if (model.attr(ITEM_ATTRIBUTE::WEAPON))
-    {
-        auto weapon = static_cast<fb::game::weapon*>(item.get());
-        if (weapon != nullptr && weapon->custom_name().has_value())
-            custom_name = weapon->custom_name().value();
-    }
+    auto row         = item->to_protocol();
+    auto durability  = row.durability;
+    auto uid         = row.uid;
+    auto custom_name = row.custom_name;
 
     if (count > 0 && price > std::numeric_limits<uint64_t>::max() / count)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "price"));

@@ -49,16 +49,13 @@ void login<V>::init_items(const std::vector<internal::Item>& response, character
             expire_time = fb::model::datetime(x.expire_time.value());
 
         auto item = table::item[x.model].make(this->server, x.count, expire_time);
-
         if (x.durability.has_value())
             item->durability(x.durability.value());
 
         if (x.uid.has_value())
             item->uid(x.uid.value());
 
-        if (x.custom_name.has_value() && item->model().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
-
+        item->custom_name(x.custom_name);
         ch.items.load(item, x);
     }
 }

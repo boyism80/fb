@@ -57,6 +57,9 @@ std::optional<uint32_t> item::durability() const
 void item::durability(uint32_t value)
 { }
 
+void item::custom_name(const std::optional<std::string>&)
+{ }
+
 async::task<bool> item::map(std::shared_ptr<fb::game::map>      map,
                             std::optional<fb::model::point16_t> position,
                             map_options                         options)

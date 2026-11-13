@@ -1520,7 +1520,7 @@ int builtin::character::builtin_rename_weapon(lua_State* L)
         else
         {
             ch->money_reduce(price.value());
-            std::static_pointer_cast<fb::game::weapon>(weapon)->custom_name(name);
+            weapon->custom_name(name);
         }
 
         co_return;
