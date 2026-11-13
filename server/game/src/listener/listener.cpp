@@ -289,6 +289,9 @@ void listener_impl::on_show(object& me)
             if (me.hidden(*obj))
                 continue;
 
+            if (obj->sight(me) == false)
+                continue;
+
             auto you = std::static_pointer_cast<character>(obj);
             fb::protocol::visit_client_version(you->client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
                 you->send(game_resp::show<Ver>(static_cast<character&>(me), *you));

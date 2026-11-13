@@ -464,7 +464,7 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
 
         for (const auto& nearby_obj : target->nears())
         {
-            if (oid_set.contains(nearby_obj->oid()))
+            if (oid_set.contains(nearby_obj->oid()) && target->sight(*nearby_obj))
             {
                 changed_objects.push_back(nearby_obj.get());
             }

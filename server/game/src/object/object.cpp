@@ -738,6 +738,9 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
                 if (obj.get() == this)
                     continue;
 
+                if (this->sight(*obj) == false)
+                    continue;
+
                 obj->show(*this);
             }
         }
@@ -888,7 +891,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::sight_in(OBJECT_TYPE type
         if (obj->hidden(*this))
             continue;
 
-        if (this->sight(*obj) == false && obj->sight(*this))
+        if (this->sight(*obj) == false)
             continue;
 
         result.push_back(std::static_pointer_cast<fb::game::object>(obj));
