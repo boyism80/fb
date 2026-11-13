@@ -200,7 +200,14 @@ public sealed class TicketQueue<TMember>
                 break;
             }
 
-            candidates.AddRange(entry.Value);
+            foreach (var ticket in entry.Value)
+            {
+                var effectiveMu = SkillCalculator.GetEffectiveMu(ticket, _options.EffectiveMuSigmaFactor);
+                if (Math.Abs(effectiveMu - anchorEffectiveMu) <= tolerance)
+                {
+                    candidates.Add(ticket);
+                }
+            }
         }
 
         return candidates
