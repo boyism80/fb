@@ -6,6 +6,9 @@ namespace AdminTool.Services
 {
     public class MarketplaceAdminService
     {
+        private const byte ActiveStatus = 0;
+        private const string ListingColumns = "`id`, `world`, `seller_id`, `item_model`, `remaining_count`, `price`, `status`, `expire_date`, `created_date`";
+
         private readonly IConfiguration _configuration;
         private readonly ILogger<MarketplaceAdminService> _logger;
 
@@ -35,10 +38,16 @@ namespace AdminTool.Services
                 parameters.Add("world", world.Value);
             }
 
+            var active = status.HasValue && status.Value == ActiveStatus;
             if (status.HasValue)
             {
                 where.Add("`status` = @status");
                 parameters.Add("status", status.Value);
+            }
+
+            if (active)
+            {
+                where.Add("`expire_date` > UTC_TIMESTAMP(3)");
             }
 
             if (!string.IsNullOrWhiteSpace(sellerIdText) && uint.TryParse(sellerIdText.Trim(), out var sellerId))
@@ -57,9 +66,13 @@ namespace AdminTool.Services
                 _ => "`created_date` DESC"
             };
 
+            var source = active
+                ? $"SELECT {ListingColumns} FROM `marketplace_listing`"
+                : $"SELECT {ListingColumns} FROM `marketplace_listing` UNION ALL SELECT {ListingColumns} FROM `marketplace_listing_archive`";
+
             try
             {
-                var countSql = $"SELECT COUNT(*) FROM `marketplace_listing` WHERE {whereClause}";
+                var countSql = $"SELECT COUNT(*) FROM ({source}) AS l WHERE {whereClause}";
                 var totalCount = await conn.QuerySingleAsync<int>(countSql, parameters);
 
                 var sql = $"""
@@ -73,7 +86,7 @@ namespace AdminTool.Services
                         `status` AS Status,
                         `expire_date` AS ExpireDate,
                         `created_date` AS CreatedDate
-                    FROM `marketplace_listing`
+                    FROM ({source}) AS l
                     WHERE {whereClause}
                     ORDER BY {orderBy}
                     LIMIT @pageSize OFFSET @offset
@@ -120,13 +133,13 @@ namespace AdminTool.Services
                 var stats = new MarketplaceStats
                 {
                     ActiveCount = await conn.QuerySingleAsync<int>(
-                        $"SELECT COUNT(*) FROM `marketplace_listing` WHERE {whereClause} AND `status` = 0",
+                        $"SELECT COUNT(*) FROM `marketplace_listing` WHERE {whereClause} AND `status` = {ActiveStatus} AND `expire_date` > UTC_TIMESTAMP(3)",
                         parameters),
                     TodayPurchaseCount = await conn.QuerySingleAsync<int>(
                         $"SELECT COUNT(*) FROM `marketplace_purchase` WHERE {whereClause} AND `aborted` = 0 AND `created_date` >= @todayStart",
                         todayParams),
                     AveragePrice = await conn.QuerySingleOrDefaultAsync<ulong?>(
-                        $"SELECT CAST(AVG(`price`) AS UNSIGNED) FROM `marketplace_listing` WHERE {whereClause} AND `status` = 0",
+                        $"SELECT CAST(AVG(`price`) AS UNSIGNED) FROM `marketplace_listing` WHERE {whereClause} AND `status` = {ActiveStatus} AND `expire_date` > UTC_TIMESTAMP(3)",
                         parameters) ?? 0
                 };
                 return stats;
