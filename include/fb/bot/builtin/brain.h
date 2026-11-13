@@ -22,6 +22,7 @@ struct brain
     static int builtin_route(lua_State* L);
     static int builtin_reach(lua_State* L);
     static int builtin_warp_at(lua_State* L);
+    static int builtin_region(lua_State* L);
     static int builtin_walk(lua_State* L);
     static int builtin_remember(lua_State* L);
     static int builtin_npcs(lua_State* L);
@@ -51,6 +52,7 @@ struct brain
     static int builtin_roster(lua_State* L);
     static int builtin_recall(lua_State* L);
     static int builtin_mobs(lua_State* L);
+    static int builtin_occupied(lua_State* L);
     static int builtin_spawns(lua_State* L);
     static int builtin_native(lua_State* L);
     static int builtin_habitats(lua_State* L);

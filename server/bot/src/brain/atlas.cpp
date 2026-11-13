@@ -71,6 +71,46 @@ uint32_t atlas::grid::region(const position& at) const
     return this->regions[at.y * this->width + at.x];
 }
 
+atlas::grid::footing atlas::grid::standing(const position& at) const
+{
+    auto found = footing{};
+    auto own   = this->region(at);
+    if (own != 0)
+    {
+        found.regions[found.count++] = own;
+    }
+    else if (this->movable(at))
+    {
+        for (auto direction : {DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM})
+        {
+            auto beside = this->region(atlas::forward(at, direction));
+            auto last   = found.regions.begin() + found.count;
+            if (beside != 0 && std::find(found.regions.begin(), last, beside) == last && this->passable(at, direction))
+                found.regions[found.count++] = beside;
+        }
+    }
+
+    if (found.count == 0)
+        found.regions[found.count++] = ANYWHERE;
+    return found;
+}
+
+bool atlas::grid::enters(uint32_t region, const position& gate) const
+{
+    if (region == ANYWHERE || this->region(gate) == region)
+        return true;
+
+    auto sides = std::array<std::pair<position, DIRECTION>, 4>{
+        std::pair{position(gate.x + 1, gate.y),     DIRECTION::LEFT  },
+        std::pair{position(gate.x,     gate.y + 1), DIRECTION::TOP   },
+        std::pair{position(gate.x - 1, gate.y),     DIRECTION::RIGHT },
+        std::pair{position(gate.x,     gate.y - 1), DIRECTION::BOTTOM},
+    };
+    return std::any_of(sides.begin(), sides.end(), [this, region](const auto& side) {
+        return this->region(side.first) == region && this->passable(side.first, side.second);
+    });
+}
+
 atlas::atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj) :
     _maps_path(maps_path),
     _sobj(sobj)
@@ -452,25 +492,33 @@ bool atlas::warp_at(uint16_t map, const position& at) const
     return found != this->_warp_tiles.end() && found->second.contains((at.y << 16) | at.x);
 }
 
-bool atlas::reaches(uint16_t map, const position& from, const position& gate) const
+uint64_t atlas::place(uint16_t map, uint32_t region)
 {
-    auto grid = this->find_grid(map);
-    if (grid == nullptr)
-        return true;
+    return (static_cast<uint64_t>(map) << 32) | region;
+}
 
-    auto start = grid->region(from);
-    if (start == 0 || grid->region(gate) == start)
-        return true;
+const std::vector<atlas::grid::footing>& atlas::footings(uint16_t map) const
+{
+    {
+        auto lock  = std::lock_guard(this->_footings_mutex);
+        auto found = this->_footings.find(map);
+        if (found != this->_footings.end())
+            return *found->second;
+    }
 
-    auto sides = std::array<std::pair<position, DIRECTION>, 4>{
-        std::pair{position(gate.x + 1, gate.y),     DIRECTION::LEFT  },
-        std::pair{position(gate.x,     gate.y + 1), DIRECTION::TOP   },
-        std::pair{position(gate.x - 1, gate.y),     DIRECTION::RIGHT },
-        std::pair{position(gate.x,     gate.y - 1), DIRECTION::BOTTOM},
-    };
-    return std::any_of(sides.begin(), sides.end(), [&](const auto& side) {
-        return grid->region(side.first) == start && grid->passable(side.first, side.second);
-    });
+    auto exits = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+    auto built = std::make_unique<std::vector<grid::footing>>();
+    for (auto& hop : this->warps(map))
+    {
+        auto landing = this->find_grid(hop.dest);
+        auto leaves  = landing != nullptr && std::any_of(exits.begin(), exits.end(), [&](auto direction) {
+                          return landing->passable(hop.after, direction);
+                      });
+        built->push_back(leaves ? landing->standing(hop.after) : grid::footing{});
+    }
+
+    auto lock = std::lock_guard(this->_footings_mutex);
+    return *this->_footings.try_emplace(map, std::move(built)).first->second;
 }
 
 std::optional<atlas::plan> atlas::route(uint16_t                            from,
@@ -481,29 +529,44 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
                                         const std::unordered_set<uint32_t>& perilous,
                                         const std::unordered_set<uint16_t>& shunned) const
 {
-    auto deadly = [this, &perilous, &targets](uint16_t map) {
+    auto fatal  = std::unordered_map<uint16_t, bool>{};
+    auto deadly = [this, &perilous, &targets, &fatal](uint16_t map) {
+        auto known = fatal.find(map);
+        if (known != fatal.end())
+            return known->second;
+
         auto& spawns = this->spawns(map);
-        return targets.contains(map) == false &&
-               std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
-                   return perilous.contains(spawn.mob);
-               });
+        auto  found  = targets.contains(map) == false &&
+                     std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
+                         return perilous.contains(spawn.mob);
+                     });
+        fatal.emplace(map, found);
+        return found;
     };
 
     struct visit
     {
         uint32_t    cost;
+        uint16_t    map;
+        uint32_t    region;
         position    at;
         const warp* via;
+        uint64_t    prior;
     };
 
-    using node  = std::pair<uint32_t, uint16_t>;
-    auto exits  = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    auto visits = std::unordered_map<uint16_t, visit>{
-        {from, visit{0, at, nullptr}}
-    };
-    auto open = std::priority_queue<node, std::vector<node>, std::greater<node>>{};
-    open.push({0, from});
-    auto reached = std::optional<uint16_t>{};
+    using node  = std::pair<uint32_t, uint64_t>;
+    auto visits = std::unordered_map<uint64_t, visit>{};
+    auto open   = std::priority_queue<node, std::vector<node>, std::greater<node>>{};
+    auto ground = this->find_grid(from);
+    auto begin  = ground != nullptr ? ground->standing(at) : grid::footing{{grid::ANYWHERE}, 1};
+    for (auto i = uint8_t{0}; i < begin.count; i++)
+    {
+        auto spot = atlas::place(from, begin.regions[i]);
+        visits.insert_or_assign(spot, visit{0, from, begin.regions[i], at, nullptr, spot});
+        open.push({0, spot});
+    }
+
+    auto reached = std::optional<uint64_t>{};
     while (open.empty() == false)
     {
         auto [cost, current] = open.top();
@@ -513,43 +576,48 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
         if (cost > here.cost)
             continue;
 
-        if (targets.contains(current) && shunned.contains(current) == false)
+        if (targets.contains(here.map) && shunned.contains(here.map) == false)
         {
             reached = current;
             break;
         }
 
-        for (auto& hop : this->warps(current))
+        auto  around = this->find_grid(here.map);
+        auto& hops   = this->warps(here.map);
+        auto& lands  = this->footings(here.map);
+        for (auto index = size_t{0}; index < hops.size(); index++)
         {
-            if (level < hop.min_level || level > hop.max_level || closed.contains(atlas::gate(current, hop.before)) ||
+            auto& hop   = hops[index];
+            auto& after = lands[index];
+            if (after.count == 0 || level < hop.min_level || level > hop.max_level ||
+                closed.contains(atlas::gate(here.map, hop.before)) ||
                 (deadly(hop.dest) || shunned.contains(hop.dest) && targets.contains(hop.dest) == false) ||
-                this->reaches(current, here.at, hop.before) == false)
-                continue;
-
-            auto landing = this->find_grid(hop.dest);
-            if (landing == nullptr || std::none_of(exits.begin(), exits.end(), [&](auto direction) {
-                    return landing->passable(hop.after, direction);
-                }))
+                (around != nullptr && around->enters(here.region, hop.before) == false))
                 continue;
 
             auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
             auto next  = cost + steps + 1;
-            auto known = visits.find(hop.dest);
-            if (known != visits.end() && known->second.cost <= next)
-                continue;
+            for (auto i = uint8_t{0}; i < after.count; i++)
+            {
+                auto spot  = atlas::place(hop.dest, after.regions[i]);
+                auto known = visits.find(spot);
+                if (known != visits.end() && known->second.cost <= next)
+                    continue;
 
-            visits.insert_or_assign(hop.dest, visit{next, hop.after, &hop});
-            open.push({next, hop.dest});
+                visits.insert_or_assign(spot, visit{next, hop.dest, after.regions[i], hop.after, &hop, current});
+                open.push({next, spot});
+            }
         }
     }
 
     if (reached.has_value() == false)
         return std::nullopt;
 
-    auto result = plan{reached.value(), {}, visits.at(reached.value()).cost, visits.at(reached.value()).at};
-    for (auto hop = visits.at(reached.value()).via; hop != nullptr; hop = visits.at(hop->map).via)
+    auto& last   = visits.at(reached.value());
+    auto  result = plan{last.map, {}, last.cost, last.at};
+    for (auto step = &last; step->via != nullptr; step = &visits.at(step->prior))
     {
-        result.hops.push_back(*hop);
+        result.hops.push_back(*step->via);
     }
     std::reverse(result.hops.begin(), result.hops.end());
     return result;
@@ -562,52 +630,49 @@ std::unordered_set<uint16_t> atlas::reach(uint16_t                            fr
                                           const std::unordered_set<uint32_t>& perilous,
                                           const std::unordered_set<uint16_t>& shunned) const
 {
-    auto deadly = [this, &perilous](uint16_t map) {
+    auto fatal  = std::unordered_map<uint16_t, bool>{};
+    auto deadly = [this, &perilous, &fatal](uint16_t map) {
+        auto known = fatal.find(map);
+        if (known != fatal.end())
+            return known->second;
+
         auto& spawns = this->spawns(map);
-        return std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
+        auto  found  = std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
             return perilous.contains(spawn.mob);
         });
+        fatal.emplace(map, found);
+        return found;
     };
 
-    struct visit
-    {
-        uint32_t cost;
-        position at;
-    };
-
-    using node  = std::pair<uint32_t, uint16_t>;
-    auto exits  = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    auto visits = std::unordered_map<uint16_t, visit>{
-        {from, visit{0, at}}
-    };
+    auto seen   = std::unordered_set<uint64_t>{};
+    auto open   = std::vector<std::pair<uint16_t, uint32_t>>{};
     auto result = std::unordered_set<uint16_t>{};
-    auto open   = std::priority_queue<node, std::vector<node>, std::greater<node>>{};
-    open.push({0, from});
+    auto ground = this->find_grid(from);
+    auto begin  = ground != nullptr ? ground->standing(at) : grid::footing{{grid::ANYWHERE}, 1};
+    for (auto i = uint8_t{0}; i < begin.count; i++)
+    {
+        seen.insert(atlas::place(from, begin.regions[i]));
+        open.push_back({from, begin.regions[i]});
+    }
+
     while (open.empty() == false)
     {
-        auto [cost, current] = open.top();
-        open.pop();
-
-        auto here = visits.at(current);
-        if (cost > here.cost)
-            continue;
+        auto [current, region] = open.back();
+        open.pop_back();
 
         if (shunned.contains(current) == false)
             result.insert(current);
 
-        for (auto& hop : this->warps(current))
+        auto  around = this->find_grid(current);
+        auto& hops   = this->warps(current);
+        auto& lands  = this->footings(current);
+        for (auto index = size_t{0}; index < hops.size(); index++)
         {
-            if (level < hop.min_level || level > hop.max_level || closed.contains(atlas::gate(current, hop.before)) ||
-                this->reaches(current, here.at, hop.before) == false)
-                continue;
-
-            auto landing = this->find_grid(hop.dest);
-            if (landing == nullptr || std::none_of(exits.begin(), exits.end(), [&](auto direction) {
-                    return landing->passable(hop.after, direction);
-                }))
-                continue;
-
-            if (shunned.contains(hop.dest))
+            auto& hop   = hops[index];
+            auto& after = lands[index];
+            if (after.count == 0 || level < hop.min_level || level > hop.max_level ||
+                closed.contains(atlas::gate(current, hop.before)) || shunned.contains(hop.dest) ||
+                (around != nullptr && around->enters(region, hop.before) == false))
                 continue;
 
             if (deadly(hop.dest))
@@ -616,14 +681,11 @@ std::unordered_set<uint16_t> atlas::reach(uint16_t                            fr
                 continue;
             }
 
-            auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
-            auto next  = cost + steps + 1;
-            auto known = visits.find(hop.dest);
-            if (known != visits.end() && known->second.cost <= next)
-                continue;
-
-            visits.insert_or_assign(hop.dest, visit{next, hop.after});
-            open.push({next, hop.dest});
+            for (auto i = uint8_t{0}; i < after.count; i++)
+            {
+                if (seen.insert(atlas::place(hop.dest, after.regions[i])).second)
+                    open.push_back({hop.dest, after.regions[i]});
+            }
         }
     }
     return result;

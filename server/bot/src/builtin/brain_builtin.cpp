@@ -56,6 +56,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"route",    builtin::brain::builtin_route},
     {"reach",    builtin::brain::builtin_reach},
     {"warp_at",  builtin::brain::builtin_warp_at},
+    {"region",   builtin::brain::builtin_region},
     {"walk",     builtin::brain::builtin_walk},
     {"leaps",    builtin::brain::builtin_leaps},
     {"remember", builtin::brain::builtin_remember},
@@ -86,6 +87,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"roster",       builtin::brain::builtin_roster},
     {"recall",   builtin::brain::builtin_recall},
     {"mobs",     builtin::brain::builtin_mobs},
+    {"occupied", builtin::brain::builtin_occupied},
     {"native",     builtin::brain::builtin_native},
     {"cast",       builtin::brain::builtin_cast},
     {"aside",      builtin::brain::builtin_aside},
@@ -873,47 +875,12 @@ fb::bot::brain::destination builtin::brain::read_destination(lua_State* L, int i
     result.steps = static_cast<uint16_t>(lua_tointeger(L, -1));
     lua_pop(L, 1);
 
-    lua_getfield(L, index, "leash");
-    if (lua_istable(L, -1))
-    {
-        auto leash = fb::bot::brain::leash{};
-        lua_getfield(L, -1, "names");
-        if (lua_istable(L, -1))
-        {
-            for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TSTRING; i++)
-            {
-                leash.names.insert(lua->tostring(-1));
-                lua_pop(L, 1);
-            }
-            lua_pop(L, 1);
-        }
-        lua_pop(L, 1);
-        lua_getfield(L, -1, "at");
-        if (lua_istable(L, -1))
-        {
-            lua_pushnil(L);
-            while (lua_next(L, -2) != 0)
-            {
-                if (lua_type(L, -2) == LUA_TSTRING && lua_istable(L, -1))
-                {
-                    lua_getfield(L, -1, "x");
-                    lua_getfield(L, -2, "y");
-                    leash.at.emplace(lua_tostring(L, -4),
-                                     atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)),
-                                                     static_cast<uint16_t>(lua_tointeger(L, -1))));
-                    lua_pop(L, 2);
-                }
-                lua_pop(L, 1);
-            }
-        }
-        lua_pop(L, 1);
-        lua_getfield(L, -1, "steps");
-        leash.steps = static_cast<uint16_t>(lua_tointeger(L, -1));
-        lua_pop(L, 1);
-        if (leash.names.empty() == false)
-            result.leash = std::move(leash);
-    }
+    lua_getfield(L, index, "leeway");
+    if (lua_isnumber(L, -1))
+        result.leeway = static_cast<uint16_t>(std::min<lua_Integer>(lua_tointeger(L, -1), UINT16_MAX));
+
     lua_pop(L, 1);
+
     return result;
 }
 
@@ -1806,6 +1773,18 @@ int builtin::brain::builtin_warp_at(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_region(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto grid = atlas::get().find_grid(static_cast<uint16_t>(lua_tointeger(L, 2)));
+    auto at   = atlas::position(static_cast<uint16_t>(lua_tointeger(L, 3)), static_cast<uint16_t>(lua_tointeger(L, 4)));
+    lua_pushinteger(L, grid != nullptr ? grid->region(at) : 0);
+    return 1;
+}
+
 int builtin::brain::builtin_worn(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -2343,6 +2322,46 @@ int builtin::brain::builtin_mobs(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_occupied(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    auto skipped = std::unordered_set<std::string>{};
+    if (lua_istable(L, 3))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, 3, i) == LUA_TSTRING; i++)
+        {
+            skipped.insert(lua->tostring(-1));
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
+
+    auto index = lua_Integer{1};
+    lua->new_table();
+    for (auto& [_, entry] : bot->sight.entries())
+    {
+        if (entry.look >= game_bot::sight::ITEM_LOOK || skipped.contains(entry.name))
+            continue;
+
+        lua->new_table();
+        lua->pushstring("x");
+        lua->pushinteger(entry.position.x);
+        lua->settable(-3);
+        lua->pushstring("y");
+        lua->pushinteger(entry.position.y);
+        lua->settable(-3);
+        lua_rawseti(L, -2, index++);
+    }
+    return 1;
+}
+
 void builtin::brain::push_mob(lua_State* L, const fb::model::mob& model)
 {
     auto lua = fb::lua::get(L);
@@ -2557,7 +2576,10 @@ int builtin::brain::builtin_steps(lua_State* L)
         }
         lua_pop(L, 1);
     }
-    auto settle = [&goals, &found, &left](const atlas::position& at, int32_t distance) {
+    auto traced  = lua_toboolean(L, 7) != 0;
+    auto parents = std::vector<int64_t>(traced ? size : 0, -1);
+    auto ends    = std::vector<int64_t>(goals.size(), -1);
+    auto settle  = [&goals, &found, &ends, &left, &grid](const atlas::position& at, int32_t distance) {
         for (auto i = size_t{0}; i < goals.size(); i++)
         {
             if (found[i] >= 0)
@@ -2566,6 +2588,7 @@ int builtin::brain::builtin_steps(lua_State* L)
             if (gap <= goals[i].range && (gap > 0 || goals[i].range == 0))
             {
                 found[i] = distance;
+                ends[i]  = static_cast<int64_t>(at.y) * grid->width + at.x;
                 left--;
             }
         }
@@ -2590,6 +2613,8 @@ int builtin::brain::builtin_steps(lua_State* L)
             if (steps[index] >= 0 || avoided[index])
                 continue;
             steps[index] = distance + 1;
+            if (traced)
+                parents[index] = static_cast<int64_t>(at.y) * grid->width + at.x;
             queue.push_back(next);
             settle(next, distance + 1);
         }
@@ -2604,7 +2629,40 @@ int builtin::brain::builtin_steps(lua_State* L)
             lua_pushboolean(L, 0);
         lua_rawseti(L, -2, static_cast<lua_Integer>(i + 1));
     }
-    return 1;
+    if (traced)
+    {
+        lua->new_table();
+        for (auto i = size_t{0}; i < ends.size(); i++)
+        {
+            if (ends[i] < 0)
+            {
+                lua_pushboolean(L, 0);
+            }
+            else
+            {
+                auto route = std::vector<int64_t>{};
+                for (auto at = ends[i]; parents[at] >= 0; at = parents[at])
+                {
+                    route.push_back(at);
+                }
+                lua->new_table();
+                auto order = lua_Integer{1};
+                for (auto at = route.rbegin(); at != route.rend(); at++)
+                {
+                    lua->new_table();
+                    lua->pushstring("x");
+                    lua->pushinteger(*at % grid->width);
+                    lua->settable(-3);
+                    lua->pushstring("y");
+                    lua->pushinteger(*at / grid->width);
+                    lua->settable(-3);
+                    lua_rawseti(L, -2, order++);
+                }
+            }
+            lua_rawseti(L, -2, static_cast<lua_Integer>(i + 1));
+        }
+    }
+    return traced ? 2 : 1;
 }
 
 int builtin::brain::builtin_spawns(lua_State* L)
@@ -2700,7 +2758,13 @@ int builtin::brain::builtin_engage(lua_State* L)
             maneuver.cost = static_cast<int32_t>(lua_tointeger(L, -1));
         lua_getfield(L, 4, "pace");
         maneuver.pace = std::chrono::milliseconds{lua_tointeger(L, -1)};
-        lua_pop(L, 6);
+        lua_getfield(L, 4, "steps");
+        maneuver.steps = static_cast<uint16_t>(lua_tointeger(L, -1));
+        lua_getfield(L, 4, "leeway");
+        if (lua_isnumber(L, -1))
+            maneuver.leeway = static_cast<uint16_t>(std::min<lua_Integer>(lua_tointeger(L, -1), UINT16_MAX));
+
+        lua_pop(L, 8);
     }
     auto result = std::make_shared<fb::bot::brain::event>();
 

@@ -4,6 +4,7 @@
 #include <fb/model/model.h>
 #include <fb/sobj_tbl_file.h>
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -33,9 +34,19 @@ public:
         std::vector<uint8_t>  collisions;
         std::vector<uint32_t> regions;
 
+        static constexpr uint32_t ANYWHERE = 0;
+
+        struct footing
+        {
+            std::array<uint32_t, 4> regions = {};
+            uint8_t                 count   = 0;
+        };
+
         bool     movable(const position& at) const;
         bool     passable(const position& from, DIRECTION direction) const;
         uint32_t region(const position& at) const;
+        footing  standing(const position& at) const;
+        bool     enters(uint32_t region, const position& gate) const;
     };
 
     struct warp
@@ -113,19 +124,25 @@ private:
     fb::sobj_tbl_file     _sobj;
     static constexpr auto ARRIVAL_CACHE_LIMIT = size_t{200000};
 
-    mutable std::mutex                                               _mutex;
-    mutable std::mutex                                               _arrivals_mutex;
-    mutable std::unordered_map<std::string, std::optional<uint32_t>> _arrivals;
-    mutable std::unordered_map<uint16_t, std::unique_ptr<grid>>      _grids;
-    std::unordered_map<uint16_t, std::vector<warp>>                  _warps;
-    std::unordered_map<uint16_t, std::unordered_set<uint32_t>>       _warp_tiles;
-    std::unordered_map<uint16_t, std::vector<spawn>>                 _spawns;
-    std::unordered_map<std::string, std::vector<uint16_t>>           _habitats;
-    std::unordered_map<uint16_t, size_t>                             _ranks;
-    std::unordered_map<std::string, std::vector<dweller>>            _dwellers;
+    mutable std::mutex                                                                _mutex;
+    mutable std::mutex                                                                _arrivals_mutex;
+    mutable std::mutex                                                                _footings_mutex;
+    mutable std::unordered_map<std::string, std::optional<uint32_t>>                  _arrivals;
+    mutable std::unordered_map<uint16_t, std::unique_ptr<grid>>                       _grids;
+    mutable std::unordered_map<uint16_t, std::unique_ptr<std::vector<grid::footing>>> _footings;
+    std::unordered_map<uint16_t, std::vector<warp>>                                   _warps;
+    std::unordered_map<uint16_t, std::unordered_set<uint32_t>>                        _warp_tiles;
+    std::unordered_map<uint16_t, std::vector<spawn>>                                  _spawns;
+    std::unordered_map<std::string, std::vector<uint16_t>>                            _habitats;
+    std::unordered_map<uint16_t, size_t>                                              _ranks;
+    std::unordered_map<std::string, std::vector<dweller>>                             _dwellers;
 
 private:
     atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj);
+
+    static uint64_t place(uint16_t map, uint32_t region);
+
+    const std::vector<grid::footing>& footings(uint16_t map) const;
 
 public:
     static const atlas& get();
@@ -143,7 +160,6 @@ public:
     std::optional<uint32_t>                                 mob(uint16_t map, uint16_t look, uint8_t color) const;
     std::vector<uint16_t>                                   habitats(const std::unordered_set<std::string>& names) const;
     std::vector<dweller>                                    dwellers(const std::unordered_set<std::string>& names) const;
-    bool                                                    reaches(uint16_t map, const position& from, const position& gate) const;
     std::optional<plan>                                     route(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
     std::unordered_set<uint16_t>                            reach(uint16_t from, const position& at, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
     leap_options                                            leaps(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, const std::optional<position>& goal, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned, const std::vector<teleport>& teleports) const;

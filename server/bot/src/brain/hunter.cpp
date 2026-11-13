@@ -127,7 +127,9 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
 
     if (std::abs(target.x - here.x) + std::abs(target.y - here.y) != 1)
     {
-        auto moved = co_await this->walk(bot, destination{{map}, target, 1, 0, maneuver.pace}, detour{});
+        auto moved = co_await this->walk(bot,
+                                         destination{{map}, target, 1, maneuver.steps, maneuver.pace, maneuver.leeway},
+                                         detour{});
         if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
             co_return event{"UNREACHABLE", map, target};
         else if (moved.type != "ARRIVED")

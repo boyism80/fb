@@ -123,13 +123,6 @@ public:
         std::unordered_map<std::string, fb::lua::value> memory;
     };
 
-    struct leash
-    {
-        std::unordered_set<std::string>                  names;
-        std::unordered_map<std::string, atlas::position> at;
-        uint16_t                                         steps = 0;
-    };
-
     struct destination
     {
         std::unordered_set<uint16_t>   maps;
@@ -137,7 +130,7 @@ public:
         uint16_t                       range = 0;
         uint16_t                       steps = 0;
         std::chrono::milliseconds      pace  = std::chrono::milliseconds{0};
-        std::optional<struct leash>    leash;
+        std::optional<uint16_t>        leeway;
     };
 
     struct jump
@@ -174,7 +167,9 @@ public:
         bool                      self = false;
         int32_t                   cost = -1;
         std::string               item;
-        std::chrono::milliseconds pace = std::chrono::milliseconds{0};
+        std::chrono::milliseconds pace  = std::chrono::milliseconds{0};
+        uint16_t                  steps = 0;
+        std::optional<uint16_t>   leeway;
     };
 
     struct answer

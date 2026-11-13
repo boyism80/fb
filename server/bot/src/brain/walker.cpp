@@ -243,6 +243,16 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             return occupied.contains(key) || corrected.contains(key) || detour.avoid.contains(key) ||
                    zone.contains(key);
         });
+        if (destination.leeway.has_value() && directions.has_value() && directions->empty() == false)
+        {
+            auto bare = atlas.path(map, here, target, range, [&](const atlas::position& at) {
+                return corrected.contains(atlas::gate(map, at));
+            });
+
+            if (bare.has_value() && directions->size() > bare->size() + destination.leeway.value())
+                directions.reset();
+        }
+
         if (directions.has_value() == false || directions->empty())
         {
             auto open = atlas.path(map, here, target, range, [&](const atlas::position& at) {
@@ -327,33 +337,6 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             {
                 replan = true;
                 break;
-            }
-            if (destination.leash.has_value())
-            {
-                auto& leash   = destination.leash.value();
-                auto& entries = bot->sight.entries();
-                auto  pulled  = false;
-                auto  open    = [](const atlas::position&) {
-                    return false;
-                };
-                for (auto& name : leash.names)
-                {
-                    auto found  = std::find_if(entries.begin(), entries.end(), [&name](const auto& pair) {
-                        return pair.second.name == name;
-                    });
-                    auto posted = leash.at.find(name);
-                    if (found == entries.end() && posted == leash.at.end())
-                        continue;
-
-                    auto& at     = found != entries.end() ? found->second.position : posted->second;
-                    auto  onward = atlas.path(map, at, next, 0, open);
-                    auto  stay   = atlas.path(map, at, from, 0, open);
-                    if (onward.has_value() && stay.has_value() && onward->size() > leash.steps &&
-                        onward->size() > stay->size())
-                        pulled = true;
-                }
-                if (pulled)
-                    co_return event{"LEASHED", map, from};
             }
             auto step    = std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>{};
             auto failure = std::string{};
