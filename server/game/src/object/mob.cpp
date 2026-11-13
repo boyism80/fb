@@ -241,7 +241,7 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     listener(server.listener),
     _action_time(server.now()),
     _rezen(params.rezen),
-    _spawn_type(params.type),
+    _spawn_type(params.owner != nullptr ? spawn_type::SUMMONED : spawn_type::NATURAL),
     owner(params.owner != nullptr ? params.owner->weak_from_this_as<character>() : std::weak_ptr<character>())
 {
     // Initialize AI strategy based on mob's attack type

@@ -54,7 +54,7 @@ return {
             y = y + 1
             direction = DIRECTION.TOP
         end
-        local mob = me:spawn_mob(message, x, y, true, true, 'SUMMONED')
+        local mob = me:spawn_mob(message, x, y, true, true)
         if mob == nil then
             return me:message('이 지역에는 더 이상 소환할 수 없습니다.')
         end

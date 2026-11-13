@@ -86,7 +86,6 @@ public:
         const bool                     alive = false;
         std::weak_ptr<fb::game::rezen> rezen;
         character*                     owner = nullptr;
-        spawn_type                     type  = spawn_type::NATURAL;
     };
 
 private:

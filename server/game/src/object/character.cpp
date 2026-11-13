@@ -2548,21 +2548,18 @@ bool character::detect() const
     return this->_detect;
 }
 
-async::task<std::shared_ptr<fb::game::mob>> character::spawn_mob(const fb::model::mob&       model,
-                                                                 const fb::model::point16_t& position,
-                                                                 bool                        owned,
-                                                                 bool                        notify,
-                                                                 mob::spawn_type             type)
+async::task<std::shared_ptr<fb::game::mob>>
+character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     this->assert_thread();
     auto map = this->_map;
     if (map == nullptr)
         co_return nullptr;
 
-    if (type == mob::spawn_type::SUMMONED && map->spawnable_summon() == false)
+    if (owned && map->spawnable_summon() == false)
         co_return nullptr;
 
-    auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr, .type = type};
+    auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->server, mob_model, params);
     if (co_await mob->map(map, position, {.notify = notify}) == false)
