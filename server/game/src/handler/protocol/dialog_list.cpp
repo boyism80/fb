@@ -38,7 +38,9 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
         break;
     }
 
-    auto [lua, limit] = ch->dialog.take(expected);
+    auto taken = ch->dialog.take(expected);
+    auto lua   = taken.context;
+    auto limit = taken.limit;
     if (lua == nullptr)
         co_return true;
 
