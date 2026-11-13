@@ -117,11 +117,18 @@ module.exports = function () {
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],
-                                    readinessProbe: {
+                                    startupProbe: {
                                         tcpSocket: {
                                             port: `gateway`
                                         },
                                         initialDelaySeconds: 10,
+                                        periodSeconds: 5,
+                                        failureThreshold: 30
+                                    },
+                                    readinessProbe: {
+                                        tcpSocket: {
+                                            port: `gateway`
+                                        },
                                         periodSeconds: 5,
                                         timeoutSeconds: 3,
                                         failureThreshold: 3
@@ -130,7 +137,6 @@ module.exports = function () {
                                         tcpSocket: {
                                             port: `gateway`
                                         },
-                                        initialDelaySeconds: 30,
                                         periodSeconds: 10,
                                         timeoutSeconds: 3,
                                         failureThreshold: 3

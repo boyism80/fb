@@ -27,17 +27,21 @@ spec:
             - name: config-volume
               mountPath: /app/config.json
               subPath: config.json
-          readinessProbe:
+          startupProbe:
             tcpSocket:
               port: gateway
             initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: gateway
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
           livenessProbe:
             tcpSocket:
               port: gateway
-            initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3

@@ -165,11 +165,18 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: game.port, name: portName },
                                         ],
-                                        readinessProbe: {
+                                        startupProbe: {
                                             tcpSocket: {
                                                 port: portName
                                             },
                                             initialDelaySeconds: 10,
+                                            periodSeconds: 5,
+                                            failureThreshold: 60
+                                        },
+                                        readinessProbe: {
+                                            tcpSocket: {
+                                                port: portName
+                                            },
                                             periodSeconds: 5,
                                             timeoutSeconds: 3,
                                             failureThreshold: 3
@@ -178,7 +185,6 @@ module.exports = function () {
                                             tcpSocket: {
                                                 port: portName
                                             },
-                                            initialDelaySeconds: 30,
                                             periodSeconds: 10,
                                             timeoutSeconds: 3,
                                             failureThreshold: 3

@@ -79,14 +79,15 @@ private:
     static constexpr auto DISCONNECT_TIMEOUT = std::chrono::seconds(30);
 
 private:
-    boost_timers            _timers;
-    mutable std::mutex      _now_mutex;
-    fb::model::timespan     _now_offset;
-    uint32_t                _accept_failures = 0;
-    std::atomic<uint32_t>   _disconnecting   = 0;
-    std::mutex              _exit_mutex;
-    std::condition_variable _exit_cv;
-    bool                    _exit_requested = false;
+    boost_timers                         _timers;
+    mutable std::mutex                   _now_mutex;
+    fb::model::timespan                  _now_offset;
+    uint32_t                             _accept_failures = 0;
+    std::atomic<uint32_t>                _disconnecting   = 0;
+    std::mutex                           _exit_mutex;
+    std::condition_variable              _exit_cv;
+    bool                                 _exit_requested = false;
+    const boost::asio::ip::tcp::endpoint _endpoint;
 
 protected:
     socket_container_sync _sockets;
@@ -94,16 +95,12 @@ protected:
 protected:
     acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 128) :
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
-        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+        boost::asio::ip::tcp::acceptor(context),
         handler(*this),
         http(*this, http_max_concurrent),
-        lua(static_cast<fb::async_executor&>(*this))
-    {
-        static auto flag = std::once_flag{};
-        std::call_once(flag, [port] {
-            console::puts("Listen port : {}", port);
-        });
-    }
+        lua(static_cast<fb::async_executor&>(*this)),
+        _endpoint(boost::asio::ip::tcp::v4(), port)
+    { }
 
 public:
     virtual ~acceptor()
@@ -664,6 +661,11 @@ public:
             this->_running = true;
             // Sync boundary between main thread and async-cpp (startup loaders / Lua init).
             async::awaitable_get(this->on_start());
+            this->open(this->_endpoint.protocol());
+            this->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+            this->bind(this->_endpoint);
+            this->listen();
+            console::puts("Listen port : {}", this->_endpoint.port());
             this->accept();
 
             for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)

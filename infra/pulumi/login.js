@@ -137,11 +137,18 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: worldConf.login.port, name: `login-${index}` },
                                         ],
-                                        readinessProbe: {
+                                        startupProbe: {
                                             tcpSocket: {
                                                 port: `login-${index}`
                                             },
                                             initialDelaySeconds: 10,
+                                            periodSeconds: 5,
+                                            failureThreshold: 30
+                                        },
+                                        readinessProbe: {
+                                            tcpSocket: {
+                                                port: `login-${index}`
+                                            },
                                             periodSeconds: 5,
                                             timeoutSeconds: 3,
                                             failureThreshold: 3
@@ -150,7 +157,6 @@ module.exports = function () {
                                             tcpSocket: {
                                                 port: `login-${index}`
                                             },
-                                            initialDelaySeconds: 30,
                                             periodSeconds: 10,
                                             timeoutSeconds: 3,
                                             failureThreshold: 3
