@@ -54,7 +54,7 @@ protected:
     std::shared_ptr<life>           select_target(mob& mob_obj, const datetime& now);
     std::shared_ptr<life>           find_target_in_sight(mob& mob_obj, const datetime& now);
     std::shared_ptr<life>           find_target_in_range(mob& mob_obj, const datetime& now);
-    void                            forget_untargetable(mob& mob_obj);
+    void                            forget_departed(mob& mob_obj);
     bool                            should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
     bool                            should_maintain_target(const mob& mob_obj, const datetime& now) const;
     uint64_t                        threat(const std::shared_ptr<life>& attacker) const;

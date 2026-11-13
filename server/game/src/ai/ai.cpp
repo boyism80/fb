@@ -88,7 +88,7 @@ void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, uint64_t amount
         return;
 
     this->_threats[attacker] += amount;
-    this->forget_untargetable(mob_obj);
+    this->forget_departed(mob_obj);
     if (this->should_maintain_target(mob_obj, now))
         return;
 
@@ -165,7 +165,7 @@ std::shared_ptr<life> ai::find_adjacent_target(mob& mob_obj, const datetime& now
 
 std::shared_ptr<life> ai::select_target(mob& mob_obj, const datetime& now)
 {
-    this->forget_untargetable(mob_obj);
+    this->forget_departed(mob_obj);
     if (this->should_maintain_target(mob_obj, now))
         return mob_obj.target();
 
@@ -276,11 +276,11 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     return best_target;
 }
 
-void ai::forget_untargetable(mob& mob_obj)
+void ai::forget_departed(mob& mob_obj)
 {
     std::erase_if(this->_threats, [&mob_obj](const auto& entry) {
         auto attacker = entry.first.lock();
-        return attacker == nullptr || mob_obj.targetable(*attacker) == false;
+        return attacker == nullptr || attacker->map() != mob_obj.map() || attacker->alive() == false;
     });
 }
 
