@@ -30,6 +30,12 @@ function M.apart(snap, facts)
     return M.grouped(snap) and escort.complete(snap, facts) == false
 end
 
+function M.walk(snap, facts, member, spot)
+    local world = member.world
+    local walk  = escort.steps(snap, facts, member, { { x = spot.x, y = spot.y } })[1]
+    return type(walk) == "number" and walk or math.abs(spot.x - world.x) + math.abs(spot.y - world.y)
+end
+
 -- A member on another floor comes to mine when its way to the floor it heads for ends here or runs through here.
 -- Counting only where it heads, a healer that crossed ahead to the floor between saw its vanguard heading past
 -- it, walked back to the floor the vanguard was leaving and bounced between the two (offline profile swap seed 1,
@@ -122,10 +128,15 @@ local function beside(snap, facts)
     return M.gather(snap, facts)
 end
 
-local function in_way(snap, member, x, y)
-    local beside = math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y) == 1
-    local mine   = math.abs(x - snap.world.x) + math.abs(y - snap.world.y)
-    return beside and mine > 0 and mine < math.abs(x - member.world.x) + math.abs(y - member.world.y)
+-- How much longer the member's walk to its goal is round me, beside it. Nearer its goal than the member in a straight
+-- line is no test of that: a poet south of its warrior, on the warrior's only way round a wall to its exit, stood
+-- farther from the exit than the warrior, never made way, and both stood for 360s (offline WA+PO 세작 seed 0,
+-- 540-900s, run 17:35).
+local function in_way(snap, facts, member, going)
+    if math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y) ~= 1 then
+        return 0
+    end
+    return facts.detour(snap.world.map, member.world, going, snap.world)
 end
 
 local function off_landing(snap, facts, member)
@@ -160,24 +171,41 @@ end
 -- takes. Walking on toward its goal until one tile nearer sent a poet 35 steps round a wall, out of its
 -- warrior's sight, when the tiles beside it were taken (offline stage supply seed 2, 158-167s). With no tile
 -- aside, as in a corridor one tile wide, I go one step ahead of it toward its goal: waiting for a tile aside
--- left a warrior and its poet facing each other in a corridor for 290s (offline WA+PO 세작 seed 0, 401-691s).
+-- left a warrior and its poet facing each other in a corridor for 290s (offline WA+PO 세작 seed 0, 401-691s). The
+-- step ahead stops short of the goal itself: stepping onto it, a warrior took the tile its poet was walking to
+-- (offline profile 63+65 form seed 0, 735s, run 20:51).
 -- A tile aside lies on my side of the member: one past it is reached only through the member's own tile, and
 -- a poet walking for it and a warrior behind it stood blocked at a dead end for minutes (offline WA+PO seed 0,
--- 217-500s).
+-- 217-500s). Off the way is a tile the member's walk to its goal does not go round, counted in steps: counted as no
+-- nearer its goal in a straight line, a poet stepped from its warrior's only way round a wall onto the next tile of
+-- that way (offline WA+PO 세작 seed 0, 540-900s, run 17:35).
+-- A tile a mob or a crewmate stands on is no tile to step aside to: chosen anyway, a poet under blows walked at the
+-- skeleton beside it to clear its warrior's way, was struck on the way and tried again, 237 times in a run (offline
+-- profile 63+65 seed 0, run 02:47).
 local function aside(snap, facts, member, going)
-    local ahead = math.abs(going.x - member.world.x) + math.abs(going.y - member.world.y)
     local mine  = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
     local goals = {}
+    local taken = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil then
+            taken[mob.x .. "," .. mob.y] = true
+        end
+    end
+    for _, other in ipairs(party.members(snap)) do
+        if other.world.map == snap.world.map and other.world.x ~= nil then
+            taken[other.world.x .. "," .. other.world.y] = true
+        end
+    end
     for dx = -2, 2 do
         for dy = -2, 2 do
-            local far    = math.abs(dx) + math.abs(dy)
-            local x, y   = snap.world.x + dx, snap.world.y + dy
-            local toward = math.abs(going.x - x) + math.abs(going.y - y)
-            local off    = toward >= ahead and math.abs(x - member.world.x) + math.abs(y - member.world.y) >= far
-            local on     = far == 1 and toward < mine
-            if far > 0 and far <= 2 and (x ~= member.world.x or y ~= member.world.y) and (off or on) and
+            local far  = math.abs(dx) + math.abs(dy)
+            local x, y = snap.world.x + dx, snap.world.y + dy
+            local side = math.abs(x - member.world.x) + math.abs(y - member.world.y) >= far
+            local on   = far == 1 and math.abs(going.x - x) + math.abs(going.y - y) < mine and
+                (x ~= going.x or y ~= going.y)
+            if far > 0 and far <= 2 and taken[x .. "," .. y] == nil and (side or on) and
                 (facts.floor == nil or facts.floor(snap.world.map, x, y)) then
-                table.insert(goals, { x = x, y = y, range = 0, far = far, off = off })
+                table.insert(goals, { x = x, y = y, range = 0, far = far, side = side, on = on })
             end
         end
     end
@@ -186,14 +214,38 @@ local function aside(snap, facts, member, going)
     local best  = nil
     for index, goal in ipairs(goals) do
         local walk = steps[index]
-        if type(walk) == "number" and walk <= goal.far and (best == nil or (goal.off and best.off == false) or
-                (goal.off == best.off and walk < best.steps)) then
-            best = { x = goal.x, y = goal.y, steps = walk, off = goal.off }
+        local near = type(walk) == "number" and walk <= goal.far
+        local off  = near and goal.side and facts.detour(snap.world.map, member.world, going, goal) == 0
+        if near and (off or goal.on) and (best == nil or (off and best.off == false) or
+                (off == best.off and walk < best.steps)) then
+            best = { x = goal.x, y = goal.y, steps = walk, off = off }
         end
     end
     return best ~= nil and
         { kind = ACTION.MOVE, dest = { map = snap.world.map, x = best.x, y = best.y, range = 0, steps = best.steps } } or
         nil
+end
+
+-- A crewmate walking at the mob it fights is going there as much as one walking to a tile, and it walks there when
+-- its strongest blow is struck beside the mob. Made way for on its walks alone, a poet held its tile in a corridor
+-- one tile wide while its rogue swung at the skeletons past it, and every swing found no way (offline RO+PO 세작
+-- seed 0, 60-900s, 878 swings unreachable, run 15:23); made way for whatever it fought, a warrior stepped aside for
+-- the mob its poet cursed from afar and walked off round the floor (offline WA+PO 세작 seed 0, 409-410s, run 16:24).
+local function heading(snap, facts, member)
+    local fight = member.battle
+    if member.going ~= nil or type(fight) ~= "table" or fight.map ~= snap.world.map then
+        return member.going
+    end
+    if require("brain.policies.score").melee(member, facts) == false then
+        return nil
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.oid == fight.oid and mob.x ~= nil and
+            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) > 1 then
+            return { map = snap.world.map, x = mob.x, y = mob.y }
+        end
+    end
+    return nil
 end
 
 local function clear_way(snap, facts)
@@ -202,16 +254,17 @@ local function clear_way(snap, facts)
         if landing ~= nil then
             return landing
         end
-        local going = member.going
+        local going = heading(snap, facts, member)
         if going ~= nil and member.task == "FIELD" and going.map == snap.world.map and member.world.map == snap.world.map then
-            local gap = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
-            local moved = gap >= data.adjacent and in_way(snap, member, going.x, going.y) and
-                aside(snap, facts, member, going) or nil
+            local gap     = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
+            local stopped = member.blocker ~= nil and member.blocker.x == snap.world.x and
+                member.blocker.y == snap.world.y
+            local round   = stopped and math.huge or gap >= data.adjacent and in_way(snap, facts, member, going) or 0
+            local moved   = round > 0 and aside(snap, facts, member, going) or nil
             -- I am in the member's way only when its walk round me is longer than my step aside and back: on
             -- open floor its walker turns round me at once, and the tile I stepped aside to was the lane it
             -- turned to, so we both switched lanes in step for 90s (offline RO+PO 흉가 seed 0, map 92, 240-330s).
-            if moved ~= nil and
-                facts.detour(snap.world.map, member.world, going, snap.world) > 2 * moved.dest.steps then
+            if moved ~= nil and round > 2 * moved.dest.steps then
                 return moved
             end
         end
@@ -283,13 +336,14 @@ end
 -- Crossing to the next floor is one move of the whole group: when the vanguard standing beside me heads
 -- for a floor of the plan, I go with it in the same decision. Before, members waited and only followed
 -- after the front had arrived, and the rally that decided that afterwards could send it back
--- (WA+PO, 957/958: the leader crossed and returned again and again).
+-- (WA+PO, 957/958: the leader crossed and returned again and again). Beside is counted in my steps to it, as
+-- it counts me gathered at the exit (hunt.stage).
 local function cross_with(snap, facts)
     local lead = party.vanguard(snap, facts)
     if lead == nil or lead.world.map ~= snap.world.map or lead.world.x == nil or lead.heading == nil then
         return nil
     end
-    if math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) > 2 * data.adjacent then
+    if M.walk(snap, facts, snap, lead.world) > 2 * data.adjacent then
         return nil
     end
     local plan = party.plan(snap, facts)
@@ -356,29 +410,30 @@ M.advance = choose({
 
 -- The gap between casts walks toward the crew: a healer that stood 6 tiles off while healing never closed
 -- in, and fell 50 steps behind when the warrior walked off round a wall (WA+PO 세작, 525-546s). Only the
--- steps that fit the gap are walked, so the next cast is not held back. Beside a mob I stay: leaving it
--- costs the fight its target. Off the ground the entrance is the meeting point that every member walks to
--- on its own: closing in on a warrior just out of its shop sent a poet waiting at the entrance on a 57s
--- walk across 국내성 and back (online group, 16:22). While the vanguard waits for the crew my place is beside it:
--- placing myself between my crewmates walked a poet and a rogue round each other, each out of the waiting
--- warrior's walking reach in turn, and the trio stood 100s on 흉가 91 (unit: trio moves to the next floor).
+-- steps that fit the gap are walked, so the next cast is not held back. Off the ground the entrance is the
+-- meeting point that every member walks to on its own: closing in on a warrior just out of its shop sent a poet
+-- waiting at the entrance on a 57s walk across 국내성 and back (online group, 16:22). While the vanguard waits for
+-- the crew my place is beside it: placing myself between my crewmates walked a poet and a rogue round each other,
+-- each out of the waiting warrior's walking reach in turn, and the trio stood 100s on 흉가 91 (unit: trio moves to
+-- the next floor). Beside a mob I stay for that walk, as leaving it costs the fight its target. Elsewhere the tile
+-- is weighed with the blows taken there and the swings given up off a mob's side (spacing.place). A bot alone has
+-- no entrance to meet at and takes its tile wherever it fights.
 local function placed(snap, facts, budget)
-    if M.grouped(snap) == false or budget <= 0 or snap.world.x == nil or M.on_ground(snap, facts) == false then
+    if budget <= 0 or snap.world.x == nil or (M.grouped(snap) and M.on_ground(snap, facts) == false) then
         return nil
     end
-    for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
-            return nil
-        end
-    end
     local lead = waiting_lead(snap, facts)
-    if lead ~= nil then
-        return to_vanguard(snap, facts, lead, budget)
-    else
+    if lead == nil then
         local place = spacing.place(snap, facts, budget)
         return place ~= nil and
             { kind = ACTION.MOVE, dest = { map = snap.world.map, x = place.x, y = place.y, range = 0, steps = place.steps } } or
             nil
+    else
+        local engaged = false
+        for _, mob in ipairs(snap.world.mobs or {}) do
+            engaged = engaged or (mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1)
+        end
+        return engaged == false and to_vanguard(snap, facts, lead, budget) or nil
     end
 end
 
@@ -414,6 +469,15 @@ end
 function M.close_worth(snap, facts)
     local place = spacing.place(snap, facts, stride(snap))
     return place ~= nil and place.gain or nil
+end
+
+-- Under blows a step to a better tile is one more answer beside heals and strikes, for any crewmate whose place
+-- is not the waiting vanguard's side (user 11-12: poets and mages keep off the mobs and keep the crew's order).
+function M.step_off(snap, facts)
+    if waiting_lead(snap, facts) ~= nil then
+        return nil
+    end
+    return placed(snap, facts, stride(snap))
 end
 
 function M.can_move(snap)

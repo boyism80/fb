@@ -256,6 +256,9 @@ function M.pure(ctx, index)
         reach = function()
             return setmetatable({}, { __index = function() return true end })
         end,
+        region = function()
+            return 0
+        end,
         route = function()
             return { cost = 1, dest = 1 }
         end,

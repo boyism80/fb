@@ -9,11 +9,17 @@ local M = {}
 
 local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
 
+local FIELDS = {
+    hp = { full = "hp_full", ratio = "hp_ratio", top = "max_hp" },
+    mp = { full = "mp_full", ratio = "mp_ratio", top = "max_mp" },
+}
+
 function M.restored(snap, effect, kind)
-    if effect[kind .. "_full"] then
-        return snap.self["max_" .. kind] or 0
+    local field = FIELDS[kind]
+    if effect[field.full] then
+        return snap.self[field.top] or 0
     end
-    return (effect[kind .. "_ratio"] or 0) * (snap.self["max_" .. kind] or 0) + (effect[kind] or 0)
+    return (effect[field.ratio] or 0) * (snap.self[field.top] or 0) + (effect[kind] or 0)
 end
 
 local dosing = setmetatable({}, { __mode = "k" })
@@ -169,7 +175,14 @@ function M.charged(snap)
     return math.max(charge.floor, snap.self.hp - charge.cost)
 end
 
+local rated = setmetatable({}, { __mode = "k" })
+
+-- Asked of one snapshot dozens of times a decision: every fight worked out asks what comes back meanwhile.
 function M.rates(snap)
+    local known = rated[snap]
+    if known ~= nil then
+        return known
+    end
     local buffs = fight.buffs(snap)
     local max   = snap.self.max_mp or 0
     local mp    = 0
@@ -178,13 +191,14 @@ function M.rates(snap)
         local gain   = buffs.charge.chance * max - buffs.charge.mp
         local mend   = M.heal(snap)
         local eating = M.bite(snap, "hp") / cast
+        local paid   = buffs.charge.chance * buffs.charge.cost
         local back   = 0
         local time   = cast
         if mend ~= nil and mend.hp > 0 then
-            back = buffs.charge.cost / mend.hp * mend.mp
-            time = cast * (1 + buffs.charge.cost / mend.hp)
+            back = paid / mend.hp * mend.mp
+            time = cast * (1 + paid / mend.hp)
         elseif eating > 0 then
-            time = cast + buffs.charge.cost / eating
+            time = cast + paid / eating
         end
         mp = math.max(mp, math.max(0, gain - back) / time)
     end
@@ -198,7 +212,9 @@ function M.rates(snap)
     elseif heal ~= nil then
         hp = heal.hp * math.min(1000 / fight.cast(snap), mp / heal.mp)
     end
-    return { hp = hp, mp = mp }
+    known       = { hp = hp, mp = mp }
+    rated[snap] = known
+    return known
 end
 
 local function draining(snap)
@@ -210,6 +226,8 @@ local function draining(snap)
     end
     return false
 end
+
+M.draining = draining
 
 function M.spare(snap)
     local buffs   = fight.buffs(snap)
@@ -225,7 +243,7 @@ function M.spare(snap)
     if mend ~= nil and mend.hp > 0 then
         back = buffs.charge.cost / mend.hp * mend.mp
     end
-    return math.max(opening, (buffs.charge.mp + back) / buffs.charge.chance)
+    return math.max(opening, buffs.charge.mp / buffs.charge.chance + back)
 end
 
 function M.ceiling(snap)
@@ -313,24 +331,47 @@ function M.useful(amount, deficit, top)
     return restored - (math.min(amount, top) - restored)
 end
 
-function M.purchasable(snap, kind)
-    local best = 0
-    for name, shop in pairs(shops) do
-        local effect = items[name]
-        if effect ~= nil and shop.price <= (snap.self.money or 0) then
-            best = math.max(best, M.restored(snap, effect, kind))
+local sold = nil
+
+-- What shops sell that restores, cheapest first: the best a purse affords is asked for every fight worked out,
+-- and most of what shops sell restores nothing.
+local function wares()
+    if sold == nil then
+        sold = {}
+        for name, shop in pairs(shops) do
+            local effect = items[name]
+            if effect ~= nil then
+                table.insert(sold,
+                    { price = shop.price, effect = effect, uses = shop.uses or 1, capacity = shop.capacity or 1 })
+            end
         end
+        table.sort(sold, function(left, right)
+            return left.price < right.price
+        end)
+    end
+    return sold
+end
+
+function M.purchasable(snap, kind)
+    local best  = 0
+    local money = snap.self.money or 0
+    for _, ware in ipairs(wares()) do
+        if ware.price > money then
+            break
+        end
+        best = math.max(best, M.restored(snap, ware.effect, kind))
     end
     return best
 end
 
 function M.carriable(snap, kind)
-    local best = 0
-    for name, shop in pairs(shops) do
-        local effect = items[name]
-        if effect ~= nil and shop.price <= (snap.self.money or 0) then
-            best = math.max(best, M.restored(snap, effect, kind) * (shop.uses or 1) * (shop.capacity or 1))
+    local best  = 0
+    local money = snap.self.money or 0
+    for _, ware in ipairs(wares()) do
+        if ware.price > money then
+            break
         end
+        best = math.max(best, M.restored(snap, ware.effect, kind) * ware.uses * ware.capacity)
     end
     return best
 end

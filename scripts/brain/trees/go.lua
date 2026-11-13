@@ -136,13 +136,28 @@ local function leaving(snap, facts, destination)
     local here = false
     local there = false
     local maps = destination.maps or { destination.map }
+    local floors = {}
     for _, floor in ipairs(plan.floors) do
-        here = here or floor.map == snap.world.map
+        floors[floor.map] = true
+        here              = here or floor.map == snap.world.map
         for _, map in ipairs(maps) do
             there = there or floor.map == map
         end
     end
-    return here and there == false
+    if here == false or there then
+        return false
+    end
+    -- Leaving is the way out through the floor the crew came in by. A way that runs on through the ground and out
+    -- of its far side is a walk like any other: the shop on map 929 lies past the last floor of its ground, and a
+    -- warrior on the first floor, counted as leaving, took 노란비서 to the town, walked back in toward the shop and
+    -- took it again, every 4s (offline WA40+PO40 seed 2, 820-845s, run 22:46).
+    local route = facts.route(maps)
+    for _, hop in ipairs(route ~= nil and route.path or {}) do
+        if floors[hop.map] and floors[hop.dest] == nil then
+            return hop.map == plan.floors[1].map
+        end
+    end
+    return true
 end
 
 function M.jumps(snap, urgent, leaving)

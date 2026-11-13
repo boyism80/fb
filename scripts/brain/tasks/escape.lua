@@ -107,7 +107,8 @@ local function charged(snap)
     local buffs  = combat.buffs(snap)
     local spells = recovery.spells(snap)
     if buffs.charge ~= nil and spells.charge ~= nil and mp >= spells.charge.mp then
-        mp, hp = math.max(mp, (snap.self.max_mp or 0) * buffs.charge.chance), recovery.charged(snap)
+        local paid = buffs.charge.chance * (hp - recovery.charged(snap))
+        mp, hp     = math.max(mp, (snap.self.max_mp or 0) * buffs.charge.chance), hp - paid
     end
     for _, dose in ipairs(recovery.doses(snap, "mp")) do
         local after = math.min(snap.self.max_mp or 0, (snap.self.mp or 0) + dose.amount)
@@ -288,16 +289,16 @@ function M.flee(snap, query, mob, cause)
                 tostring(mob ~= nil and mob.damage),
                 battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
     end
-    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and cause ~= "HEMMED" and cause ~= "CREW" and
-        cause ~= "DOOMED" and
+    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "HEMMED" and cause ~= "CREW" and cause ~= "DOOMED" and
         rally(snap, query, mob) or nil
     local last = snap.record.memory.fleeing
-    local again = last ~= nil and last.map == snap.world.map and cause ~= "FLEEING" and cause ~= "CREW" and
+    local going = M.fleeing_here(snap) ~= nil
+    local again = last ~= nil and last.map == snap.world.map and going == false and cause ~= "CREW" and
         (snap.now or 0) - last.ends < survival.respawn(mob)
     return {
         kind = ACTION.MOVE,
         cause = cause ~= nil and (cause .. ":" .. tostring(mob.name)) or nil,
-        fleeing = meet == nil and cause ~= "FLEEING" and {
+        fleeing = meet == nil and going == false and {
             map = snap.world.map,
             name = mob.name,
             at = snap.now or 0,
@@ -307,27 +308,14 @@ function M.flee(snap, query, mob, cause)
             danger.winnable(score.rested(snap, "REFILL"), query, mob, danger.company(snap, query)) == false) or cause == "HEMMED" or again),
         hemmed = cause == "HEMMED" or again,
         revive = survival.respawn(mob),
-        dest = meet or (cause ~= "HEMMED" and cause ~= "DOOMED" and cause ~= "CREW" and cause ~= "FLEEING" and
-                regroup(snap, query)) or
+        dest = meet or (cause ~= "HEMMED" and cause ~= "DOOMED" and cause ~= "CREW" and regroup(snap, query)) or
             {
                 maps = teleport.returns[snap.self.nation],
                 urgent = cause == "IMMINENT" or cause == "HEMMED" or cause == "DOOMED" or cause == "CREW" or
-                    cause == "FLEEING" or
                     escort.present(snap, query) == nil
             },
         forget = snap.record.death ~= nil
     }
-end
-
-local function abandoned(snap, query, trip)
-    local plan = party.plan(snap, query)
-    local cost = 0
-    for _, member in ipairs(party.members(snap)) do
-        if member.world.map == snap.world.map and member.self.ghost == false and plan ~= nil then
-            cost = cost + (trip.time or 0) * plan.rate
-        end
-    end
-    return cost
 end
 
 function M.worth(snap, query, mob, chance, cause)
@@ -340,8 +328,7 @@ function M.worth(snap, query, mob, chance, cause)
         return math.huge
     end
     local worth = value.baseline(snap, query)
-    local stay  = chance * (danger.loss(snap, query, worth) +
-        abandoned(snap, query, { time = danger.revival(snap, query) }))
+    local stay  = chance * party.death(snap, query, snap, worth)
     if cause == "HEMMED" then
         stay = math.max(0, snap.now - (snap.record.memory.blocked.since or snap.now)) / 1000 * worth.value
     end
@@ -349,7 +336,7 @@ function M.worth(snap, query, mob, chance, cause)
     if trip == nil then
         return -math.huge
     end
-    return stay - (cause == "STRANDED" and trip.risk or trip.cost) - abandoned(snap, query, trip)
+    return stay - (cause == "STRANDED" and trip.risk or trip.cost) - party.alone(snap, snap, trip.time or 0, worth)
 end
 
 return M

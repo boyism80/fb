@@ -1,7 +1,7 @@
 local data    = require("brain.data.combat")
 local battle  = require("brain.policies.battle")
 local combat  = require("brain.policies.combat")
-local danger  = require("brain.policies.danger")
+local escort  = require("brain.policies.escort")
 local failure = require("brain.policies.failure")
 local party   = require("brain.policies.party")
 local score   = require("brain.policies.score")
@@ -95,6 +95,7 @@ function M.value(snap, query)
     if passing(snap, query, found.mob, fight) then
         return -1
     end
+    local hold    = battle.holding(snap, query, found.mob, found.choice.damage)
     -- Striking back only removes the danger of an attacker it ends within the window, so the danger counts in the
     -- share of the fight one cast takes. Counted in full, a poet beside a 18000 hp skeleton cast 화염주 (320) over
     -- healing the warrior whenever it was hit (online group, 14:45, 36 화염주 to 28 heals).
@@ -118,10 +119,10 @@ function M.value(snap, query)
     local gain    = found.choice.value
     if shared then
         local price = math.max(value.spend(snap, query, found.mob), aid.fueling(snap, query, found.mob))
-        gain        = math.min(gain, battle.marginal(snap, found) - (found.choice.mp or 0) * price)
-        return gain + ignored * ended * danger.loss(snap, query, worth)
+        gain        = math.min(gain, battle.marginal(snap, found) - (found.choice.mp or 0) * price - hold)
+        return gain + ignored * ended * party.death(snap, query, snap, worth)
     end
-    return math.max(0, gain + ignored * ended * danger.loss(snap, query, worth))
+    return math.max(-hold, gain + ignored * ended * party.death(snap, query, snap, worth))
 end
 
 function M.attacked(snap, query)
@@ -136,9 +137,16 @@ end
 -- Striking back, the mobs on the crewmate the leader sent me to save are mine to strike too, weighed with the rescue
 -- (battle.target): picking only from the mobs on me, a warrior beside its poet fought its own three skeletons while
 -- three more beat the poet into a flight for 15s (offline stage group seed 1, 173-188s, run 08:29; user 11-11).
+-- One not beside me is struck within the crew's reach, as any fight is (field.target): a warrior chased a mob that fled
+-- its blows 35 tiles round a wall, out of sight of its poet that three others held (offline WA63+PO65 seed 1, 793-806s,
+-- run 19:45).
 function M.strike_back(snap, query)
     return battle.propose(battle.target(snap, query, function(mob)
-        return (battle.attacking(snap, mob) and battle.struck(snap, mob)) or party.rescue_share(snap, query, mob) > 0
+        local beside = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
+        return ((battle.attacking(snap, mob) and battle.struck(snap, mob)) or party.rescue_share(snap, query, mob) > 0) and
+            (beside or escort.tethered(snap, query, mob.x, mob.y, function()
+                return field.walking(snap, query, mob)
+            end))
     end))
 end
 

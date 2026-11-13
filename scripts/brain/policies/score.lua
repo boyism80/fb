@@ -223,6 +223,7 @@ function M.capability(snap, query)
             ranged   = single ~= nil and single.damage or 0,
             mana     = single ~= nil and single.mp or 0,
             strike   = opener ~= nil and opener.damage or 0,
+            heal     = others ~= nil and others.hp or 0,
         },
         ehp      = snap.self.hp / guard,
         hps      = {
@@ -234,6 +235,21 @@ function M.capability(snap, query)
         refill   = refill,
         mobility = mobility(snap),
     }
+end
+
+-- A bot fights from a mob's side when nothing it does from afar outdoes its blow there, a heal on a crewmate counted
+-- by the hp it gives. Told by the attack spell alone, a poet whose swing outdid its 화염주 was one that stays beside
+-- its mob: its swing at 330 and the spell at 320, a level 9x poet held where the skeleton on it struck and swung,
+-- struck 724s over three 15-minute seeds (offline WA+PO 흉가, run 20:18). What it keeps up counts as its one blow
+-- does, and it is told rested, as its kind does not turn with its hp: by the one blow, a level 14 warrior, its swing
+-- at 14 and 금강퇴 at 120, was no striker, and stepping off their mobs nine such warriors killed 4,974 for 5,861; a
+-- level 99 rogue was one only while its hp kept 필살검무 above its spell and killed 724 for 1,292 (offline solos,
+-- runs 21:06 and 19:16).
+function M.melee(snap, query)
+    local strong = M.capability(M.rested(snap), query)
+    local blow   = strong.blow
+    local afar   = strong.dps.single - strong.dps.melee
+    return blow.adjacent >= math.max(blow.ranged, blow.heal) or strong.dps.melee >= math.max(afar, strong.hps.others)
 end
 
 return M

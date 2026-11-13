@@ -25,6 +25,7 @@ function M.member(profile)
         battle    = profile.battle,
         heading   = profile.heading,
         pinned    = profile.pinned,
+        blocker   = profile.blocker,
         walled    = profile.walled,
         peril     = profile.peril,
         dealt     = profile.dealt,
@@ -161,8 +162,12 @@ end
 -- crewmate to walk than the corner of sight is on open ground, as a crewmate is (near). Counted by sight alone,
 -- skeletons across a wall five tiles from a poet were with the crew, and its warrior walked about 40 steps round
 -- the wall for one while the poet that followed was caught on the way and fought alone (offline profile pair
--- rooted striker seed 1, 33-45s, run 13:15). A tile I strike from where I stand needs no walk.
-function M.tethered(snap, query, x, y, walking)
+-- rooted striker seed 1, 33-45s, run 13:15). A tile I strike from where I stand needs no walk. My own walk to it
+-- with a crew on the map is held to the same, as the vanguard walks from its crew no farther than walking reach
+-- (decide): held to my crewmates' walks alone, a warrior beside its poet walked 40 steps round a wall to a mantis
+-- near the poet, 35 tiles from it (offline WA63+PO65 seed 1, 795-806s, run 19:45).
+function M.tethered(snap, query, x, y, walks)
+    local crew = {}
     for _, profile in ipairs(snap.party or {}) do
         local world = profile.world
         if world ~= nil and profile.self ~= nil and profile.self.ghost == false and world.map == snap.world.map and
@@ -170,15 +175,21 @@ function M.tethered(snap, query, x, y, walking)
             if math.abs(world.x - x) > combat.sight.x or math.abs(world.y - y) > combat.sight.y then
                 return false
             end
-            if walking then
-                local steps = M.steps(snap, query, M.member(profile), { { x = x, y = y } })[1]
-                if type(steps) ~= "number" or steps > combat.sight.x + combat.sight.y then
-                    return false
-                end
-            end
+            table.insert(crew, profile)
         end
     end
-    return true
+    if #crew == 0 or walks() == false then
+        return true
+    end
+    local reach = combat.sight.x + combat.sight.y
+    for _, profile in ipairs(crew) do
+        local steps = M.steps(snap, query, M.member(profile), { { x = x, y = y } })[1]
+        if type(steps) ~= "number" or steps > reach then
+            return false
+        end
+    end
+    local steps = M.steps(snap, query, snap, { { x = x, y = y } })[1]
+    return type(steps) == "number" and steps <= reach
 end
 
 function M.center(snap)
@@ -301,20 +312,28 @@ function M.context(snap, query, mob, crew, density, own)
     if opener ~= nil and opener.hp > 0 then
         table.insert(shares, clamp((opener.hp * 1000 / fight.cast(snap) - own) / crew.heal))
     end
+    -- A share weighed once is not weighed again, and no share at all is the fight worked out alone above. The
+    -- fight of the share chosen goes back with it: every caller fought that one a third time.
     local best   = nil
     local result = nil
-    for _, share in ipairs(shares) do
-        local context = arrange(snap, query, mob, crew, density, own, share)
-        local fought  = survival.fight(snap, query, mob, context)
-        local better  = result == nil or
-            (fought.ending > 0 and (result.ending <= 0 or fought.time < result.time)) or
-            (fought.ending <= 0 and result.ending <= 0 and fought.ending > result.ending)
-        if better then
-            best   = context
-            result = fought
+    for index, share in ipairs(shares) do
+        local weighed = false
+        for earlier = 1, index - 1 do
+            weighed = weighed or shares[earlier] == share
+        end
+        if weighed == false then
+            local context = share == 0 and idle or arrange(snap, query, mob, crew, density, own, share)
+            local fought  = share == 0 and alone or survival.fight(snap, query, mob, context)
+            local better  = result == nil or
+                (fought.ending > 0 and (result.ending <= 0 or fought.time < result.time)) or
+                (fought.ending <= 0 and result.ending <= 0 and fought.ending > result.ending)
+            if better then
+                best   = context
+                result = fought
+            end
         end
     end
-    return best
+    return best, result
 end
 
 return M

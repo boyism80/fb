@@ -255,4 +255,14 @@ function M.contact(snap, mob, time)
     return { extra = extra, pressure = burden }
 end
 
+-- The fight again with those that close in while it lasts. With no one closing in it is the fight already worked
+-- out (a crowd of none weighs what no crowd does), and one mob in sight is most of what a bot fights.
+function M.joined(snap, query, mob, context, result)
+    context.crowd = M.contact(snap, mob, result.time)
+    if context.crowd.extra == 0 and context.crowd.pressure == 0 and (context.density or 0) == 0 then
+        return result
+    end
+    return M.fight(snap, query, mob, context)
+end
+
 return M

@@ -11,7 +11,7 @@ function M.peek(store, owner, base, key)
     return bucket ~= nil and bucket[key] or nil
 end
 
-function M.get(store, owner, base, key, compute)
+local function held(store, owner, base)
     local slot = owner or ""
     local ways = store[slot]
     if ways == nil then
@@ -29,10 +29,27 @@ function M.get(store, owner, base, key, compute)
         ways.buckets[base] = bucket
         ways.count = ways.count + 1
     end
+    return bucket
+end
+
+function M.get(store, owner, base, key, compute)
+    local bucket = held(store, owner, base)
     if bucket[key] == nil then
         bucket[key] = compute()
     end
     return bucket[key]
+end
+
+-- A value worked out again that came out alike is handed back as the one kept before, so what was built on
+-- the kept one (caches keyed by it) still stands.
+function M.keep(store, owner, base, key, value, alike)
+    local bucket = held(store, owner, base)
+    local known  = bucket[key]
+    if known ~= nil and alike(known, value) then
+        return known
+    end
+    bucket[key] = value
+    return value
 end
 
 return M

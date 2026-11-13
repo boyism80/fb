@@ -10,7 +10,7 @@ local M = {}
 local RULES = {
     tick = 100,
     lock = 5000,
-    memory = 10000,
+    switch = { melee = 1.1, ranged = 1.3 },
     flee = 0.2,
     recovery = { hp = { every = 10000, rate = 0.005 }, mp = { every = 25000, rate = 0.02 } },
     limit = 3.3,
@@ -54,12 +54,24 @@ function M.new(options)
     })
     world.on_attack = world.runtime.load("interaction.lua").on_attack
     math.randomseed(options.seed or 1)
+    local placed = {}
+    for _, mob in ipairs(options.placed or {}) do
+        if mob.map == options.map then
+            placed[mob.id] = placed[mob.id] or {}
+            table.insert(placed[mob.id], mob)
+        end
+    end
     for _, spawn in ipairs(world.map.spawns) do
         local data = hunting.mobs[spawn.mob]
         if data ~= nil then
             local rezen = { spawn = spawn, data = data, alive = 0, due = nil }
             table.insert(world.rezens, rezen)
-            world:populate(rezen, math.ceil(spawn.count * (options.sparse or 1)))
+            local fixed = placed[data.id] or {}
+            placed[data.id] = nil
+            for _, mob in ipairs(fixed) do
+                world:spawn(rezen, mob.x, mob.y)
+            end
+            world:populate(rezen, math.max(0, math.ceil(spawn.count * (options.sparse or 1)) - #fixed))
         end
     end
     return world
@@ -260,12 +272,11 @@ function World:remember(mob, attacker, dealt)
     if attacker == nil then
         return
     end
-    local record          = mob.damaged[attacker] or { damage = 0, at = 0 }
+    local record          = mob.damaged[attacker] or { damage = 0 }
     record.damage         = record.damage + (dealt or 0)
-    record.at             = self.now
     mob.damaged[attacker] = record
     if self:held(mob) == false then
-        mob.locked = self:strongest(mob, false) or mob.locked
+        mob.locked = self:retarget(mob)
     end
 end
 
@@ -425,8 +436,8 @@ function World:visible(mob, target)
 end
 
 function World:forget(mob)
-    for attacker, record in pairs(mob.damaged) do
-        if attacker.dead or self.now - record.at > RULES.memory then
+    for attacker in pairs(mob.damaged) do
+        if self:present(attacker) == false then
             mob.damaged[attacker] = nil
         end
     end
@@ -443,8 +454,19 @@ function World:strongest(mob, adjacent)
     return best
 end
 
+function World:retarget(mob)
+    local current = mob.locked
+    local leader  = self:strongest(mob, false)
+    if leader == nil or current == nil or current == leader then
+        return leader or current
+    end
+    local margin = self:adjacent(mob, leader) ~= nil and RULES.switch.melee or RULES.switch.ranged
+    local held   = (mob.damaged[current] or { damage = 0 }).damage
+    return mob.damaged[leader].damage > held * margin and leader or current
+end
+
 function World:sighted(mob)
-    return self:strongest(mob, false) or self:nearest(mob, false)
+    return self:retarget(mob) or self:nearest(mob, false)
 end
 
 function World:ranged(mob)
@@ -457,7 +479,6 @@ end
 
 function World:provoke(mob, target)
     mob.locked   = target
-    mob.damaged  = {}
     mob.provoked = { target = target, at = self.now }
 end
 
@@ -467,9 +488,9 @@ function World:held(mob)
         self.now - provoked.at <= RULES.lock
 end
 
-function World:strike(mob, direction)
+function World:strike(mob, direction, victim)
     mob.facing = direction
-    self.on_attack(mob.facade)
+    self.on_attack(mob.facade, false, victim.facade)
 end
 
 function World:chase(mob, target)
@@ -494,7 +515,7 @@ function BEHAVIORS.AGGRESSIVE(world, mob)
     end
     local facing = world:adjacent(mob, target)
     if facing ~= nil then
-        world:strike(mob, facing)
+        world:strike(mob, facing, target)
         return
     end
     if world:approach(mob, target) then
@@ -503,7 +524,7 @@ function BEHAVIORS.AGGRESSIVE(world, mob)
     local adjacent = world:ranged(mob)
     local beside   = adjacent ~= nil and world:adjacent(mob, adjacent) or nil
     if beside ~= nil then
-        world:strike(mob, beside)
+        world:strike(mob, beside, adjacent)
     else
         world:wander(mob)
     end
@@ -517,7 +538,7 @@ function BEHAVIORS.RETALIATE(world, mob)
     end
     local facing = world:adjacent(mob, target)
     if facing ~= nil then
-        world:strike(mob, facing)
+        world:strike(mob, facing, target)
     else
         world:chase(mob, target)
     end
@@ -541,7 +562,7 @@ function BEHAVIORS.RUN_AWAY(world, mob)
     end
     local facing = world:adjacent(mob, target)
     if facing ~= nil then
-        world:strike(mob, facing)
+        world:strike(mob, facing, target)
     else
         world:chase(mob, target)
     end
@@ -557,7 +578,7 @@ function BEHAVIORS.STATIONARY(world, mob)
     end
     local facing = world:adjacent(mob, target)
     if facing ~= nil then
-        world:strike(mob, facing)
+        world:strike(mob, facing, target)
     end
 end
 

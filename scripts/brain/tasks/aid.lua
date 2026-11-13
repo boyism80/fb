@@ -2,7 +2,6 @@ local data     = require("brain.data.combat")
 local magic    = require("brain.data.spells")
 local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
-local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
@@ -46,7 +45,8 @@ local function rescue(snap, query, member, current, restored, heal, worth)
     if blows <= 0 then
         return 0
     end
-    return (math.exp(-current / blows) - math.exp(-(current + restored) / blows)) * danger.loss(member, query, worth)
+    return (math.exp(-current / blows) - math.exp(-(current + restored) / blows)) *
+    party.death(snap, query, member, worth)
 end
 
 local function volley(snap, member)
@@ -63,7 +63,7 @@ end
 local function heals(snap, query, slots, worth)
     local found   = {}
     local mana    = value.spend(snap, query, nil)
-    local reserve = recovery.spare(snap)
+    local reserve = recovery.draining(snap) and 0 or recovery.spare(snap)
     local seen    = value.targets(snap)
     for _, member in ipairs(party.members(snap)) do
         local ally = query.ally(member.self.name)
@@ -272,30 +272,40 @@ function M.ward(snap, query, target, name, worth, current)
     local blows = pressure(snap, target, 2 * combat.cast(snap))
     local hp    = math.max(current or target.self.hp or 0, 1)
     local kept  = math.exp(-blows / hp)
-    return math.max(saved * value.vigor(target, query, worth, mana), share * danger.loss(target, query, worth)) * kept -
+    return math.max(saved * value.vigor(target, query, worth, mana), share * party.death(snap, query, target, worth)) *
+        kept -
         cost
 end
 
+-- A ward is cast on whoever it spares, its caster as well (spell.buff_cast takes any life): kept to the crew, a poet
+-- cast 보호 on its warrior and took the blows of the skeletons held beside it at full weight, 300-400 each, until its
+-- mana ran out and it fled (offline WA+PO 세작 seed 0, 690-724s, run 042648).
 local function wards(snap, query, slots, worth)
-    local found = {}
+    local found   = {}
+    local targets = { { member = snap, hp = snap.self.hp } }
     for _, member in ipairs(party.members(snap)) do
         local ally = query.ally(member.self.name)
         if ally ~= nil and member.self.ghost == false then
-            for name, slot in pairs(slots) do
-                local spell = magic.spells[name]
-                if combat.warding(name) and combat.warded(member.buffs, name) == false and
-                    (spell.mp or 0) <= recovery.free(snap) and
-                    pending(snap, member, name, spell) == false then
-                    table.insert(found, {
-                        oid = ally.oid,
-                        slot = slot,
-                        key = name,
-                        ward = member.self.name .. "|" .. name,
-                        cost = spell.mp or 0,
-                        value = M.ward(snap, query, member, name, worth,
-                            (member.self.max_hp or 0) * (ally.percent or 100) / 100),
-                    })
-                end
+            table.insert(targets,
+                { member = member, oid = ally.oid, hp = (member.self.max_hp or 0) * (ally.percent or 100) / 100 })
+        end
+    end
+    for _, target in ipairs(targets) do
+        local member = target.member
+        for name, slot in pairs(slots) do
+            local spell = magic.spells[name]
+            if combat.warding(name) and combat.warded(member.buffs, name) == false and
+                (spell.mp or 0) <= recovery.free(snap) and
+                pending(snap, member, name, spell) == false then
+                table.insert(found, {
+                    oid = target.oid,
+                    self = target.oid == nil,
+                    slot = slot,
+                    key = name,
+                    ward = member.self.name .. "|" .. name,
+                    cost = spell.mp or 0,
+                    value = M.ward(snap, query, member, name, worth, target.hp),
+                })
             end
         end
     end
@@ -343,7 +353,7 @@ local function action_of(snap, found)
         }
     end
     if found.self then
-        return { kind = ACTION.CAST, slot = found.slot, key = found.key }
+        return { kind = ACTION.CAST, slot = found.slot, key = found.key, ward = found.ward }
     end
     return {
         kind     = ACTION.ATTACK,
@@ -398,12 +408,45 @@ function M.fueling(snap, query, mob)
     return value.fuel(snap, snap, party.members(snap), mob)
 end
 
+-- Out of a fight a cast on a crewmate is the strike at my prey I do not make in that cast, worth its share of the
+-- kill net of its mana and the aggro it holds (outweighs). Ordered before the hunt and weighed alone, every heal
+-- worth more than nothing came first: a rogue with no mana kept back cast 동해의기원 4,890 times and its trio
+-- killed 760 -> 120 (offline profile trio, run 01:48). Under blows the strike back is weighed beside the heal
+-- already (fight weigh), so this counts out of a fight only.
+local forgone = setmetatable({}, { __mode = "k" })
+
+function M.forgone(snap, query)
+    if forgone[snap] == nil then
+        local plan  = party.plan(snap, query)
+        local names = nil
+        for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+            if floor.map == snap.world.map then
+                names = floor.targets
+            end
+        end
+        local found = names ~= nil and require("brain.tasks.field").target(snap, query, names) or nil
+        forgone[snap] = found ~= nil and math.max(0, battle.marginal(snap, found) -
+            (found.choice.mp or 0) * M.fueling(snap, query, found.mob) -
+            battle.holding(snap, query, found.mob, found.choice.damage)) or 0
+    end
+    return forgone[snap]
+end
+
+function M.spared(group)
+    local worth = M.worth(group)
+    return function(snap, query)
+        local found = worth(snap, query)
+        return found ~= nil and found - M.forgone(snap, query) or nil
+    end
+end
+
 -- A strike is worth its share of the kill less what its mana would heal into a crewmate that turns hp into damage,
 -- wherever I strike from: freeing a walled crewmate, clearing my own way, hunting or saving a crewmate. Only the
 -- rescue went unpriced, and a poet sent to save a rogue cast 화염주 five tiles from its 건곤대나이 warrior at 1644 hp
 -- (offline profile trio rooted seed 2, 516.8s, 7 of 25 rescue 화염주 beside such a warrior, run 21:55).
 function M.outweighs(snap, query, found)
-    return battle.marginal(snap, found) >= (found.choice.mp or 0) * M.fueling(snap, query, found.mob)
+    return battle.marginal(snap, found) >= (found.choice.mp or 0) * M.fueling(snap, query, found.mob) +
+        battle.holding(snap, query, found.mob, found.choice.damage)
 end
 
 return M

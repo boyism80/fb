@@ -95,6 +95,7 @@ function M.take(brain, bot)
             x        = position[1],
             y        = position[2],
             mobs     = brain:mobs(bot),
+            occupied = brain:occupied(bot, names),
             items    = brain:items(bot),
             dialog   = seen.dialog,
             no_spell = seen.no_spell,

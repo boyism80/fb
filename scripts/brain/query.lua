@@ -3,7 +3,7 @@ local profile = require("brain.profile")
 
 local M = {}
 
-function M.bind(brain, bot)
+function M.bind(brain, bot, snap)
     local demands = {}
     return {
         npcs = function(names)
@@ -33,8 +33,8 @@ function M.bind(brain, bot)
         roster = function()
             return brain:roster(bot)
         end,
-        steps = function(map, x, y, goals)
-            return brain:steps(map, x, y, goals)
+        steps = function(map, x, y, goals, traced)
+            return terrain.steps(brain, map, x, y, goals, terrain.blocking(snap, map, x, y), traced)
         end,
         detour = function(map, from, to, avoided)
             return terrain.detour(brain, map, from, to, avoided)
@@ -47,6 +47,9 @@ function M.bind(brain, bot)
         end,
         warp = function(map, x, y)
             return brain:warp_at(map, x, y)
+        end,
+        region = function(map, x, y)
+            return brain:region(map, x, y)
         end,
         reach = function(perilous, shunned, from)
             return profile.wait(bot:name(), brain.reach, brain, bot,

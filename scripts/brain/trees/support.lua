@@ -15,4 +15,11 @@ M.care = pick({
     when(together.supporting, act("FIELD", together.close, "close", together.close_worth)),
 }, tree.compared, "care")
 
+M.tend = pick({
+    act("AID", aid.offer("heal"), "heal", aid.spared("heal")),
+    act("AID", aid.offer("debuff"), "debuff", aid.spared("debuff")),
+    act("AID", aid.offer("ward"), "ward", aid.spared("ward")),
+    when(together.supporting, act("FIELD", together.close, "close", together.close_worth)),
+}, tree.compared, "tend")
+
 return M

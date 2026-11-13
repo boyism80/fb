@@ -25,8 +25,9 @@ local function remember_block(brain, bot, event, destination, walls)
         y = destination.y,
         range = destination.range
     }
+    local by = event.detail == "CHARACTER" and event.x ~= nil and { x = event.x, y = event.y } or nil
     brain:remember(bot, "blocked",
-        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest })
+        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest, by = by })
 end
 
 local function patience(brain, bot, destination, detour, event)
@@ -64,7 +65,7 @@ local function blocker(brain, bot, event)
     if event.detail ~= "MOB" or snap.self.ghost then
         return nil
     end
-    local facts = query.bind(brain, bot)
+    local facts = query.bind(brain, bot, snap)
     for _, mob in ipairs(snap.world.mobs) do
         if mob.oid == event.oid and mob.hp ~= nil then
             local choice = battle.choose(snap, facts, mob)
@@ -100,7 +101,11 @@ local function passable(brain, bot, destination, detour, event)
     for _, tile in ipairs(detour.avoid) do
         table.insert(trial.avoid, tile)
     end
-    return brain:route(bot, destination, trial) ~= nil
+    -- The way round an occupant is taken within the walk's leeway, as the walker takes it (decide): past that
+    -- the occupant is cleared or waited for.
+    local round = brain:route(bot, destination, trial)
+    local bare  = round ~= nil and destination.leeway ~= nil and brain:route(bot, destination, detour) or nil
+    return round ~= nil and (bare == nil or round.cost <= bare.cost + destination.leeway)
 end
 
 function M.yielded(event)
@@ -139,7 +144,8 @@ end
 local function journey(brain, bot, destination, detour)
     while brain:active(bot) do
         vacated(brain, bot, detour)
-        go.choose(snapshot.take(brain, bot), query.bind(brain, bot), destination, detour)
+        local snap = snapshot.take(brain, bot)
+        go.choose(snap, query.bind(brain, bot, snap), destination, detour)
         destination.pace = combat.walk
         local event = brain:walk(bot, destination, detour)
         local final = destination.x == event.x and destination.y == event.y
@@ -170,9 +176,10 @@ local function journey(brain, bot, destination, detour)
             remember_block(brain, bot, event, destination)
             log("debug", string.format("[brain:travel] bot=%s blocked by %s %d at map=%d %d,%d wait=%dms", bot:name(),
                 event.detail, event.oid, event.map, event.x, event.y, wait))
-            local target = event.x == event.gx and event.y == event.gy
-            local moved  = wait > 0 and brain:watch(bot, event.oid, wait)
-            local oid    = event.detail == "MOB" and event.oid or nil
+            local target   = event.x == event.gx and event.y == event.gy
+            local moved    = wait > 0 and brain:watch(bot, event.oid, wait)
+            local oid      = event.detail == "MOB" and event.oid or nil
+            detour.blocker = event.detail == "CHARACTER" and { x = event.x, y = event.y } or detour.blocker
             if moved == false and ((target and final) or (target == false and avoided(detour, event))) then
                 return false, event
             elseif moved == false and target then
@@ -200,7 +207,7 @@ local function journey(brain, bot, destination, detour)
                         mob = seen
                     end
                 end
-                if battle.braves(snap, query.bind(brain, bot), mob, event.count or 0) then
+                if battle.braves(snap, query.bind(brain, bot, snap), mob, event.count or 0) then
                     table.insert(detour.braved, event.oid)
                     log("debug", string.format("[brain:travel] bot=%s braves %d beside %d steps at map=%d %d,%d",
                         bot:name(), event.oid, event.count or 0, event.map, event.x, event.y))
@@ -222,7 +229,9 @@ local function journey(brain, bot, destination, detour)
             -- (the online form of offline profile pair rooted healer seed 2, 273.9s).
             log("debug", string.format("[brain:travel] bot=%s blocked off at map=%d %d,%d", bot:name(), event.map,
                 event.x, event.y))
-            remember_block(brain, bot, { map = event.map, detail = detour.crowded and "CHARACTER" or event.detail },
+            local blocker = detour.blocker or {}
+            remember_block(brain, bot,
+                { map = event.map, detail = detour.crowded and "CHARACTER" or event.detail, x = blocker.x, y = blocker.y },
                 destination)
             return false, { type = detour.crowded and "CROWDED" or "BLOCKED", map = event.map, x = event.x, y = event.y }
         else
@@ -241,7 +250,7 @@ end
 
 function M.go(brain, bot, destination)
     local snap  = snapshot.take(brain, bot)
-    local facts = query.bind(brain, bot)
+    local facts = query.bind(brain, bot, snap)
     local risky = destination.risky
     if risky == nil then
         local choice = value.trip(snap, facts, destination, value.baseline(snap, facts))

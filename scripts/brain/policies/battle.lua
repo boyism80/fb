@@ -8,6 +8,7 @@ local escort   = require("brain.policies.escort")
 local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
+local score    = require("brain.policies.score")
 local spacing  = require("brain.policies.spacing")
 local survival = require("brain.policies.survival")
 local value    = require("brain.policies.value")
@@ -310,9 +311,15 @@ local function candidates(snap, facts, mob, state, reachable)
     local spendable = recovery.spendable(snap)
     local free      = recovery.free(snap)
     local seen      = sighted(snap, mob)
+    -- A mob I cannot walk to is fought only with what I aim at it from here: a drink or a buff opens a fight my blows
+    -- go on with, and weighed so, a warrior that could not walk round its poet to a skeleton drank 동동주 at it 331
+    -- times a minute (offline WA+PO 세작 seed 0, run 18:35).
     local add       = function(entry)
-        local aimed = entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true
+        local aimed = entry.aimed == true or (entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true)
         local limit = entry.kind == "HEAL" and spendable or free
+        if reachable == false and (aimed == false or entry.moves == true) then
+            return
+        end
         if state.refused[entry.key] == nil and (entry.mp or 0) <= limit and (seen or aimed == false) then
             table.insert(found, entry)
         end
@@ -323,11 +330,24 @@ local function candidates(snap, facts, mob, state, reachable)
     local adjacent = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1
     local burst    = M.burst(snap)
     local opener   = combat.opener(snap, mob)
-    local reserve  = math.max(recovery.spare(snap), opener ~= nil and opener.mp or 0)
+    -- A strike that spends all the mana there is needs none kept for it, and a spell short of mana drinks the least
+    -- dose that makes it up and is cast next (user 11-12). Kept for the strike, all the mana was held back, and a rogue
+    -- that knew 백열장 never cast it at the mobs on its poet while carrying 5000 doses (offline RO+PO 세작, run 00:27).
+    local drains   = recovery.draining(snap)
+    local reserve  = drains and 0 or math.max(recovery.spare(snap), opener ~= nil and opener.mp or 0)
+    local doses    = drains and recovery.doses(snap, "mp") or {}
+    local mp       = snap.self.mp or 0
     for _, choice in ipairs(options.offense) do
         local spell = magic.spells[choice.name]
         local area  = spell ~= nil and spell.role == "AREA" and spell.type == "NORMAL"
-        if choice.damage > 0 and known[choice.name] ~= nil and choice.mp + reserve <= (snap.self.mp or 0) and
+        local dose  = nil
+        if choice.mp + reserve > mp then
+            for _, entry in ipairs(doses) do
+                dose = dose or
+                    (mp + math.min(entry.amount, (snap.self.max_mp or 0) - mp) >= choice.mp + reserve and entry or nil)
+            end
+        end
+        if choice.damage > 0 and known[choice.name] ~= nil and (choice.mp + reserve <= mp or dose ~= nil) and
             (choice.hp >= 0 or snap.self.hp + choice.hp > burst) and ((area or choice.front) == false or adjacent) then
             local extra = {}
             if area then
@@ -335,15 +355,20 @@ local function candidates(snap, facts, mob, state, reachable)
                     table.insert(extra, { mob = other, damage = choice.damage })
                 end
             end
+            local drunk = dose ~= nil and math.min(dose.amount, (snap.self.max_mp or 0) - mp) or 0
+            local model = dose ~= nil and facts.item(dose.name) or nil
             add({
                 key = choice.name,
                 kind = "CAST",
-                time = cast,
+                time = dose ~= nil and 2 * cast or cast,
                 damage = choice.damage,
-                mp = choice.mp,
+                mp = choice.mp - drunk,
                 hp = choice.hp,
+                price = dose ~= nil and model ~= nil and model.price or nil,
                 extra = extra,
-                maneuver = { kind = MANEUVER.CAST, slot = known[choice.name], cost = choice.mp }
+                aimed = dose ~= nil or nil,
+                maneuver = dose ~= nil and { kind = MANEUVER.USE, item = dose.name } or
+                    { kind = MANEUVER.CAST, slot = known[choice.name], cost = choice.mp }
             })
         end
     end
@@ -549,12 +574,12 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         if entry.debuff ~= nil then
             applied[entry.debuff] = true
         end
-        local prey    = copy(mob, { ratio = left / math.max(mob.hp or 1, 1), applied = applied })
-        local context = escort.context(after, facts, prey, escort.present(snap, facts), nil, recovery.rates(after).hp)
-        rest          = survival.fight(after, facts, prey, context)
-        context.crowd = survival.contact(after, prey, rest.time)
-        rest          = survival.fight(after, facts, prey, context)
-        ending        = rest.ending
+        local prey            = copy(mob, { ratio = left / math.max(mob.hp or 1, 1), applied = applied })
+        local context, fought = escort.context(after, facts, prey, escort.present(snap, facts), nil,
+            recovery.rates(after).hp)
+        rest                  = survival.joined(after, facts, prey, context,
+            fought or survival.fight(after, facts, prey, context))
+        ending                = rest.ending
     elseif hp <= 0 then
         rest = { time = 0, p_die = 1 }
     end
@@ -661,12 +686,19 @@ end
 
 local evaluate = nil
 local endings  = setmetatable({}, { __mode = "k" })
-local targets  = {}
-local SAMPLE   = 5
+
+-- The hp a fight with a mob ends at is kept apart for each reach it was weighed with: kept as one, a mob weighed out
+-- of reach, where blows cannot end it, left its endless fight for the hp a rogue needed beside it (battle.need), and
+-- the rogue walked on to the next floor below half its hp (offline solo seed 201, 562s, run 19:39).
+local function ended(mob, reachable)
+    return tostring(mob.oid or mob.name) .. "|" .. tostring(reachable ~= false)
+end
+local targets = {}
+local SAMPLE  = 5
 
 local chosen = setmetatable({}, { __mode = "k" })
 
-local function kindred(snap, mob, flag)
+local function kindred(snap, facts, mob, flag)
     if mob.x == nil or mob.id == nil then
         return nil
     end
@@ -680,6 +712,20 @@ local function kindred(snap, mob, flag)
             return nil
         end
     end
+    -- A mob a rescue names is weighed for itself: the draw a spell earns at it, or the hold my blows put on it, is
+    -- that mob's own (drawing, holding). Shared with its kind, the draw passed to mobs on nobody or was lost to the
+    -- mob on the crewmate with whichever of them was weighed first: with the first listed weighed, poets took 3.40M
+    -- for 2.51M and were struck 9,125s for 5,743s (offline 25 teams, runs 19:59 and 19:16).
+    if #(snap.party or {}) > 0 then
+        local oid       = tostring(mob.oid)
+        local _, rescue = party.rescued(snap, facts)
+        local awaited   = party.awaited(snap, facts)
+        local drawn     = rescue ~= nil and (rescue.shares or {})[oid] ~= nil
+        local held      = awaited ~= nil and (awaited.shares or {})[oid] ~= nil
+        if drawn or held then
+            return nil
+        end
+    end
     for _, name in ipairs(snap.buffs or {}) do
         if (magic.splashes or {})[name] ~= nil then
             return nil
@@ -688,6 +734,35 @@ local function kindred(snap, mob, flag)
     return table.concat({ mob.id, mob.ratio or 1, distance, tostring(sighted(snap, mob)), tostring(flag) }, "|")
 end
 
+local listed = setmetatable({}, { __mode = "k" })
+
+-- Mobs of one kind at one distance share one weighing, that of the first the snapshot lists. Shared from whichever
+-- was asked about first, a fight's worth hung on the order of the questions: asking fewer of them and nothing else
+-- moved the fights of 4 of 65 episodes (offline 25 teams and solos, runs 19:33 and 19:48).
+local function first_listed(snap, facts, key, flag)
+    local byflag = listed[snap]
+    if byflag == nil then
+        byflag       = {}
+        listed[snap] = byflag
+    end
+    local bykey = byflag[flag]
+    if bykey == nil then
+        bykey = {}
+        for _, mob in ipairs(snap.world.mobs or {}) do
+            local own = kindred(snap, facts, mob, flag)
+            if own ~= nil and bykey[own] == nil then
+                bykey[own] = mob
+            end
+        end
+        byflag[flag] = bykey
+    end
+    return bykey[key]
+end
+
+-- A fight is weighed apart only for a mob I cannot walk to: named reachable or left open, its candidates are the
+-- same. Kept under two keys, a mob was weighed twice in one decision, once to ask whether I would walk to it
+-- (field.walking) and once to pick it (target): 162,094 weighings for 26,735 decisions (offline 8 teams, 5 minutes
+-- each, run 19:36).
 function M.choose(snap, facts, mob, reachable)
     local bysnap = chosen[snap]
     if bysnap == nil then
@@ -699,48 +774,83 @@ function M.choose(snap, facts, mob, reachable)
         byreach = {}
         bysnap[mob] = byreach
     end
-    local flag = reachable == nil and "any" or reachable
+    local flag = reachable ~= false
     if byreach[flag] == nil then
-        local key  = kindred(snap, mob, flag)
+        local key  = kindred(snap, facts, mob, flag)
         local same = key ~= nil and bysnap[key] or nil
         if same == nil then
-            same = {
-                choice = evaluate(snap, facts, mob, reachable) or false,
-                ending = endings[snap] ~= nil and endings[snap][mob.oid or mob.name] or nil
+            local first = key ~= nil and first_listed(snap, facts, key, flag) or mob
+            same        = {
+                choice = evaluate(snap, facts, first, reachable) or false,
+                ending = endings[snap] ~= nil and endings[snap][ended(first, reachable)] or nil
             }
             if key ~= nil then
                 bysnap[key] = same
             end
-        else
-            endings[snap] = endings[snap] or {}
-            endings[snap][mob.oid or mob.name] = same.ending
         end
-        byreach[flag] = same.choice
+        endings[snap]                        = endings[snap] or {}
+        endings[snap][ended(mob, reachable)] = same.ending
+        byreach[flag]                        = same.choice
     end
     return byreach[flag] or nil
 end
 
--- A spell from afar that would make me the one a mob has taken the most damage from draws it off the crewmate
--- it strikes, which is what the leader sent me to do (party.rescue): a mob remembers who hurt it most and turns
--- on that one. Beside the mob any blow draws it as well, so only the spell from afar earns the rescue; a poet
--- that dealt the mob nothing is drawn off at once, a mage whose spells hurt it most is not. Only the spell that
--- overtakes draws: once I lead, the mob is mine already and every further spell earned the rescue again, so
--- warriors cast 백열장 from afar 8,230 times against 35 before (offline run 13:43).
-local function drawing(snap, facts, mob, damage)
+-- A spell from afar that would make me the one a mob has taken the most damage from draws it off the crewmate it
+-- strikes, which is what the leader sent me to do (party.rescue): a mob turns on whoever hurt it most once that one
+-- leads the mob's target by its margin from afar (data.aggro.ranged), and the draw is worth the rescue in the share of
+-- the crewmate's blows that mob deals (party.rescue_share). Beside the mob any blow draws it as well, so only the spell
+-- from afar earns the rescue; a poet that dealt the mob nothing is drawn off at once, a mage whose spells hurt it most
+-- is not. Once I lead, the mob is mine already and no spell earns the rescue again: every further spell earned it, so
+-- warriors cast 백열장 from afar 8,230 times against 35 before (offline run 13:43). Short of the lead, a spell earns it in
+-- the share of the gap it closes: earned by the overtaking spell alone, the first of the casts a poet's own damage
+-- called for was worth nothing, so it was never cast and the poet stayed struck beside its crew (offline 25 teams, run
+-- 20:15).
+local function drawable(snap, facts, mob)
     local victim, rescue = party.rescued(snap, facts)
-    if victim == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or mob.x == nil or
-        math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1 or
-        math.abs(mob.x - victim.world.x) + math.abs(mob.y - victim.world.y) ~= 1 then
+    local share          = rescue ~= nil and (rescue.shares or {})[tostring(mob.oid)] or nil
+    if victim == nil or share == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or mob.x == nil or
+        math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1 then
+        return 0
+    end
+    return rescue.value * share
+end
+
+local function drawing(snap, facts, mob, damage)
+    local whole = drawable(snap, facts, mob)
+    if whole <= 0 then
         return 0
     end
     local key  = tostring(mob.oid)
-    local mine = (M.recent(snap.record.memory.dealt, snap.now)[key] or {}).damage or 0
+    local mine = (M.threat(snap.record.memory.dealt, snap.world.map)[key] or {}).damage or 0
     local most = 0
     for _, member in ipairs(party.members(snap)) do
         local entry = (member.dealt or {})[key]
         most        = math.max(most, entry ~= nil and entry.damage or 0)
     end
-    return mine <= most and mine + damage > most and rescue.value or 0
+    local lead = most * data.aggro.ranged
+    if mine > lead then
+        return 0
+    end
+    return whole * math.min(1, damage / math.max(lead - mine, 1e-9))
+end
+
+-- My blows on a mob a crewmate is sent to draw off me hold it on me: it turns on whoever hurt it most, so each blow is
+-- more the crewmate must deal, its casts and their mana from afar or its swings beside the mob. Uncounted, a poet with
+-- nothing to heal struck back at the mob on it while its striker was sent to draw it, in 29 of 42 such moments, and
+-- stayed struck (offline 25 teams, run 02:05; user 11-12).
+function M.holding(snap, facts, mob, damage)
+    local rescue, helper = party.awaited(snap, facts)
+    if rescue == nil or (damage or 0) <= 0 or (rescue.shares or {})[tostring(mob.oid)] == nil then
+        return 0
+    end
+    local strong = score.capability(helper, facts)
+    local worth  = value.baseline(snap, facts)
+    if rescue.walks == false and strong.blow.ranged > 0 then
+        return damage / strong.blow.ranged *
+            (strong.blow.mana * value.held(helper, facts, mob) + combat.cast(helper) / 1000 * worth.value)
+    end
+    local swing = ((helper.pace or {}).swing or data.swing) / 1000
+    return damage / math.max(strong.blow.adjacent, 1e-9) * swing * worth.value
 end
 
 -- The same order picks the plan when none survives: taking the first listed of equal values, a solo warrior beaten
@@ -752,7 +862,7 @@ end
 
 function evaluate(snap, facts, mob, reachable)
     local baseline = value.baseline(snap, facts)
-    local loss     = danger.loss(snap, facts, baseline)
+    local loss     = party.death(snap, facts, snap, baseline)
     local mana     = value.spend(snap, facts, mob)
     local best     = nil
     local ending   = -math.huge
@@ -760,12 +870,13 @@ function evaluate(snap, facts, mob, reachable)
     local state    = remembered(snap, mob)
     local listed   = candidates(snap, facts, mob, state, reachable)
     local melee    = nil
+    local swung    = nil
     for _, entry in ipairs(listed) do
         if entry.kind == "SWING" then
             melee = entry
             melee.applied = state.applied
-            local _
-            melee.value, _, _, melee.plan = estimate(snap, facts, mob, melee, baseline, loss, mana)
+            swung = table.pack(estimate(snap, facts, mob, melee, baseline, loss, mana))
+            melee.value, melee.plan = swung[1], swung[4]
         end
     end
     local share   = combat.gain(mob, snap) / math.max(mob.hp or 1, 1)
@@ -779,9 +890,17 @@ function evaluate(snap, facts, mob, reachable)
     for _, entry in ipairs(listed) do
         entry.applied = state.applied
         local left
-        entry.value, entry.survives, left, entry.plan = estimate(snap, facts, mob, entry, baseline, loss,
-            entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
-            entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
+        if entry == melee then
+            entry.value, entry.survives, left, entry.plan = table.unpack(swung, 1, 4)
+        else
+            -- The rest of a fight with a mob I cannot walk to is fought from where I stand too: fought on with blows,
+            -- 백열장 at a mob out of a warrior's reach came out worth a whole melee kill and was cast at mobs on nobody
+            -- 8,468 times in a run (offline, run 18:59).
+            entry.value, entry.survives, left, entry.plan = estimate(snap, facts,
+                reachable == false and copy(mob, { walled = true }) or mob, entry, baseline, loss,
+                entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
+                entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
+        end
         -- A spell that hits harder than a swing is worth the swing and the extra damage, less what its mana
         -- would make in a strike that mana holds back: counted free, 백열장 beat every swing and took the mana a
         -- warrior's 건곤대나이 needed (online group, 12:28). Without such a strike it stays free, as before. One
@@ -797,9 +916,13 @@ function evaluate(snap, facts, mob, reachable)
             local gain  = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
             entry.value = math.min(entry.value, melee.value + gain)
         end
-        if entry.kind == "CAST" and (entry.damage or 0) > 0 then
+        -- Only a spell aimed at the mob from here draws it: 투명 counts the blows it makes harder as its damage, and
+        -- counted as a draw it was a rogue's best answer to the mobs on its poet three tiles off, which it never
+        -- touched (offline RO+PO 세작, run 23:21).
+        if entry.kind == "CAST" and (entry.damage or 0) > 0 and entry.maneuver.self ~= true and entry.moves ~= true then
             entry.value = entry.value + drawing(snap, facts, mob, entry.damage)
         end
+        entry.value = entry.value - M.holding(snap, facts, mob, entry.damage)
         if ahead(entry, last) then
             last = entry
         end
@@ -810,7 +933,7 @@ function evaluate(snap, facts, mob, reachable)
         end
     end
     endings[snap] = endings[snap] or {}
-    endings[snap][mob.oid or mob.name] = ending
+    endings[snap][ended(mob, reachable)] = ending
     best = best or last
     if best ~= nil then
         best.safest = safest
@@ -839,10 +962,10 @@ function M.need(snap, facts)
     if nearest == nil then
         return 0
     end
-    local known = endings[snap] ~= nil and endings[snap][nearest.oid or nearest.name] or nil
+    local known = endings[snap] ~= nil and endings[snap][ended(nearest, nil)] or nil
     if known == nil then
         M.choose(snap, facts, nearest)
-        known = endings[snap][nearest.oid or nearest.name]
+        known = endings[snap][ended(nearest, nil)]
     end
     return snap.self.hp - known + 1
 end
@@ -888,10 +1011,14 @@ function M.target(snap, facts, accept)
     local best  = nil
     local near  = {}
     local goals = {}
+    -- A mob my walk could not reach is still struck from where I stand; one a spell from here was refused at is not.
+    -- Dropped whole for the walk, a warrior behind its poet in a corridor one tile wide never weighed the 백열장 at
+    -- the skeleton on the poet, and the poet swung at it alone for 720s (offline WA+PO 세작 seed 2, 180-900s, run 08:34).
     for _, mob in ipairs(snap.world.mobs) do
-        if mob.x ~= nil and M.blocked(snap, mob) == false and accept(mob) then
+        local barred = mob.x ~= nil and M.blocked(snap, mob) or nil
+        if mob.x ~= nil and (barred == nil or barred.cast ~= true) and accept(mob) then
             local distance = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
-            table.insert(near, { mob = mob, distance = distance })
+            table.insert(near, { mob = mob, distance = distance, walled = barred ~= nil })
             table.insert(goals, { x = mob.x, y = mob.y, range = 1 })
         end
     end
@@ -899,7 +1026,7 @@ function M.target(snap, facts, accept)
         {}
     for index, entry in ipairs(near) do
         local steps     = paths[index]
-        entry.reachable = steps ~= false
+        entry.reachable = steps ~= false and entry.walled == false
         entry.steps     = type(steps) == "number" and steps or math.max(0, entry.distance - 1)
     end
     table.sort(near, function(left, right)
@@ -910,11 +1037,16 @@ function M.target(snap, facts, accept)
         table.insert(tiles, { x = entry.mob.x, y = entry.mob.y })
     end
     local gaps = #near > 0 and spacing.costs(snap, facts, tiles) or nil
+    -- A mob is weighed only while the most it can be worth beats the best so far, and a spell that draws it off a
+    -- crewmate is worth its kill and the draw: bounded by the kill alone, the 백열장 at a skeleton on its poet, worth
+    -- 2.59M with the draw, was never weighed against the 1.6M of a warrior's own 건곤대나이 (offline profile 63+65, run
+    -- 23:21).
     for index, entry in ipairs(near) do
         local travel = entry.reachable and entry.steps * step / 1000 * worth or 0
         local guard  = party.rescue_share(snap, facts, entry.mob)
         local apart  = gaps ~= nil and gaps[index + 1] - gaps[1] or 0
-        if best == nil or combat.gain(entry.mob, snap) + guard - math.min(apart, 0) > best then
+        local most   = combat.gain(entry.mob, snap) + guard + drawable(snap, facts, entry.mob) - math.min(apart, 0)
+        if best == nil or most > best then
             local choice = M.choose(snap, facts, entry.mob, entry.reachable)
             local net    = choice ~= nil and
                 choice.value + guard - (choice.approach and travel + apart or 0) or nil
@@ -958,11 +1090,11 @@ function M.capture(snap)
 end
 
 function M.forecast(snap, facts, mob, choice)
-    local crew    = escort.present(snap, facts)
-    local context = escort.context(snap, facts, mob, crew)
-    local fight   = survival.fight(snap, facts, mob, context)
-    local model   = combat.outcome(snap, facts, mob, nil, context.aid)
-    local finite  = function(number)
+    local crew            = escort.present(snap, facts)
+    local context, fought = escort.context(snap, facts, mob, crew)
+    local fight           = fought or survival.fight(snap, facts, mob, context)
+    local model           = combat.outcome(snap, facts, mob, nil, context.aid)
+    local finite          = function(number)
         return number ~= nil and number < math.huge and number > -math.huge and number or -1
     end
     return {
@@ -994,18 +1126,29 @@ function M.forecast(snap, facts, mob, choice)
     }
 end
 
+-- A walk to strike goes no farther than the walk the strike was weighed with: walked to wherever the mob went, a
+-- warrior beside its poet struck at a mantis beside it, followed it through a gap and walked 40 steps round the wall
+-- after it, out of its poet's sight (offline WA63+PO65 seed 1, 795-806s, run 19:45). Nor does it take a way round
+-- the bodies in between that is longer than that walk by more than a walk's leeway (decide): weighed at 14 steps
+-- to the scorpion on its poet seven tiles off, a rogue took the way round the mobs between them, and its 14 steps
+-- ended 17 tiles from the poet, each fighting alone for 37s (offline profile 50+65 form seed 4, 235-276s, run 04:28).
 function M.propose(found, extra)
-    local action = {
+    local maneuver = found.choice.maneuver
+    if found.choice.approach == true and found.steps ~= nil then
+        maneuver = copy(maneuver, { steps = math.max(1, found.steps), leeway = escort.reach() })
+    end
+    local drinking = maneuver.kind == MANEUVER.USE
+    local action   = {
         kind = ACTION.ATTACK,
         oid = found.mob.oid,
-        maneuver = found.choice.maneuver,
-        key = found.choice.key,
+        maneuver = maneuver,
+        key = drinking and maneuver.item or found.choice.key,
         opener = found.choice.opener == true,
         moves = found.choice.moves == true,
         debuff = found.choice.debuff,
         mob = found.mob.name,
         mob_id = found.mob.id,
-        damage = found.choice.damage,
+        damage = drinking == false and found.choice.damage or nil,
         forecast = found.forecast,
         rivals = found.choice.rivals,
         scale = found.choice.value,
@@ -1018,24 +1161,28 @@ end
 
 local GOING = { STRUCK = true, DONE = true, REFUSED = true, APPROACHED = true }
 
--- The damage I dealt each mob over the time a mob remembers its attackers, posted so a crewmate can tell
--- whether a blow of its own would draw that mob off whoever it strikes. Hits are counted at the damage the
--- choice expected: a client sees a mob's hp only as a share, crewmates' blows included.
-function M.recent(dealt, now)
+-- The damage I dealt each mob of this floor, posted so a crewmate can tell whether a blow of its own would draw
+-- that mob off whoever it strikes. A mob keeps what each attacker dealt it until the attacker leaves its floor or dies
+-- (the server's threat table): forgotten after 10s instead, a warrior holding three skeletons off its poet drew them
+-- again every 10-11s (online 053346, 51 백열장). Hits are counted at the damage the choice expected: a client sees a
+-- mob's hp only as a share, crewmates' blows included.
+function M.threat(dealt, map)
     local kept = {}
     for oid, entry in pairs(dealt or {}) do
-        if now - entry.at <= data.aggro.memory then
+        if entry.map == map then
             kept[oid] = entry
         end
     end
     return kept
 end
 
-function M.tally(dealt, oid, action, event, now)
-    local kept = M.recent(dealt, now)
-    if (event == "DONE" or event == "KILLED") and (action.damage or 0) > 0 then
+function M.tally(dealt, oid, action, event, now, map)
+    local kept = M.threat(dealt, map)
+    if event == "KILLED" then
+        kept[tostring(oid)] = nil
+    elseif event == "DONE" and (action.damage or 0) > 0 then
         local entry         = kept[tostring(oid)] or { damage = 0 }
-        kept[tostring(oid)] = { damage = entry.damage + action.damage, at = now }
+        kept[tostring(oid)] = { damage = entry.damage + action.damage, at = now, since = entry.since or now, map = map }
     end
     return kept
 end
@@ -1047,7 +1194,7 @@ end
 function M.blocked(snap, mob)
     local entry = (snap.record.memory.unreachable or {})[tostring(mob.oid)]
     return entry ~= nil and entry.map == snap.world.map and entry.x == mob.x and entry.y == mob.y and
-        (entry.at == nil or snap.now - entry.at < data.rerank)
+        (entry.at == nil or snap.now - entry.at < data.rerank) and entry or nil
 end
 
 function M.settle(memory, blocked, oid, map, action, event, now, visible, moved, spot)
@@ -1087,7 +1234,7 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved,
     local missed = aimed and seen ~= nil and math.abs(seen.x - spot.x) + math.abs(seen.y - spot.y) > 1
     if (event.type == "UNREACHABLE" or event.type == "OCCUPIED" or missed) and seen ~= nil then
         local mob           = seen
-        kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y, at = now }
+        kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y, at = now, cast = missed }
         count               = count + 1
     end
     return GOING[event.type] and memory or nil, count > 0 and kept or nil
@@ -1128,7 +1275,8 @@ function M.step(brain, bot, oid, action)
     end
     brain:remember(bot, "battle", memory)
     brain:remember(bot, "unreachable", blocked)
-    brain:remember(bot, "dealt", M.tally(brain:recall(bot, "dealt"), oid, action, event.type, brain:observe(bot).now))
+    brain:remember(bot, "dealt",
+        M.tally(brain:recall(bot, "dealt"), oid, action, event.type, brain:observe(bot).now, seen.map))
     return event
 end
 

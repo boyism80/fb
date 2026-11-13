@@ -15,6 +15,6 @@ M.steady = pick({ M.flee, restore.restore }, tree.compared, "steady")
 
 M.danger = when(function(snap)
     return snap.self.hp <= battle.burst(snap)
-end, M.steady, "danger")
+end, pick({ M.flee, restore.recover }, tree.compared, "steady"), "danger")
 
 return M

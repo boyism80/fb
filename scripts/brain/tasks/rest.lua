@@ -63,6 +63,14 @@ local function toppable(snap)
     return useful
 end
 
+-- Two volleys are those of the mobs on me now when they strike harder than the plan foresaw: held to the plan's
+-- peak, a rogue with 75 웅담 fought at half its hp, ate one only under 1,560, and with a fourth mob on it (two
+-- volleys 1,768) fled at 1,659 before it was low enough to eat, eight flights in 15 minutes over four grounds
+-- (offline solo rogue 70 seed 6, 767s, run 06:28).
+local function volleys(snap, plan)
+    return 2 * math.max(plan ~= nil and plan.peak or 0, battle.burst(snap))
+end
+
 local function low(snap, query)
     local threat = danger.threat(snap, ahead(snap, query))
     local plan   = party.plan(snap, query)
@@ -71,7 +79,7 @@ local function low(snap, query)
     return snap.self.hp < snap.self.max_hp and
         ((at_gate(snap, query, plan) and toppable(snap)) or
             (threat > 0 and hp <= threat) or
-            hp <= battle.reachable(snap) or hp <= 2 * (plan ~= nil and plan.peak or 0) or
+            hp <= battle.reachable(snap) or hp <= volleys(snap, plan) or
             hp <= entry_need(snap, query) or hp <= battle.need(snap, query))
 end
 
@@ -193,10 +201,27 @@ function M.worth(snap, query, action, healing)
                 deficit = math.min(deficit, entry.amount)
             end
         end
-        gain         = value.mana(snap, query) * deficit
-        -- A charge refills only on success and is paid in hp whatever happens. Valued as a sure refill, it beat a
-        -- poet's own 5000 hp heal under three skeletons: three charges failed, the fourth left it at 918 hp and it
-        -- fled (WA+PO 세작 seed 0, 282-283s).
+        gain       = value.mana(snap, query) * deficit
+        -- Mana my missing hp needs for heals is worth the food those heals spare, and with no food left the heal it
+        -- lets me cast: valued by the hunting alone, which counts mana spent in fights only, a warrior that healed
+        -- with its mana let it run down with 932 홍주 in its bag, ate its last 웅담 under blows and fled at 138 mp
+        -- (offline WA seed 0, 722s, run 19:06).
+        local mend = recovery.heal(snap)
+        local mp   = snap.self.mp or 0
+        if mend ~= nil and mend.mp > 0 and mend.hp > 0 and snap.self.hp < snap.self.max_hp then
+            local need  = (snap.self.max_hp - snap.self.hp) / mend.hp * mend.mp
+            local short = math.max(0, math.min(deficit, need - mp))
+            local food  = #recovery.doses(snap, "hp") > 0 and value.food(snap, query, worth) or math.huge
+            if short > 0 and food < math.huge then
+                gain = math.max(gain, short * mend.hp / mend.mp * food)
+            elseif short > 0 and mend.slot ~= nil and mend.mp <= mp + deficit then
+                local filled = copy(snap, { self = copy(snap.self, { mp = mp + deficit }) })
+                gain         = math.max(gain, M.worth(filled, query, { kind = ACTION.CAST, slot = mend.slot }, true))
+            end
+        end
+        -- A charge refills and costs hp only on success (server spell 4002), so both weigh by its chance. Valued as
+        -- a sure refill, it beat a poet's own 5000 hp heal under three skeletons: three charges failed, the fourth
+        -- left it at 918 hp and it fled (WA+PO 세작 seed 0, 282-283s).
         local charge = combat.buffs(snap).charge
         local slot   = recovery.spells(snap).charge
         if action.kind == ACTION.CAST and charge ~= nil and slot ~= nil and action.slot == slot.slot then
@@ -206,9 +231,9 @@ function M.worth(snap, query, action, healing)
                 local paid   = snap.self.hp - recovery.charged(snap)
                 local before = math.max(0, math.min(1, (2 * blows - snap.self.hp) / blows))
                 local after  = math.max(0, math.min(1, (2 * blows - snap.self.hp + paid) / blows))
-                risk         = after - before
+                risk         = charge.chance * (after - before)
             end
-            gain = gain * charge.chance - risk * danger.loss(snap, query, worth)
+            gain = gain * charge.chance - risk * party.death(snap, query, snap, worth)
         end
         if low(snap, query) then
             worth = { value = 0, exchange = worth.exchange, rate = worth.rate, income = worth.income }
@@ -217,7 +242,7 @@ function M.worth(snap, query, action, healing)
         local plan    = party.plan(snap, query)
         local need    = math.max(outside(snap, query) and snap.self.max_hp or 0, danger.threat(snap, ahead(snap, query)),
             entry_need(snap, query),
-            battle.need(snap, query), battle.reachable(snap), 2 * (plan ~= nil and plan.peak or 0),
+            battle.need(snap, query), battle.reachable(snap), volleys(snap, plan),
             snap.self.hp <= data.shrine.limit and data.shrine.limit + 1 or 1)
         local deficit = math.max(0, math.min(need, snap.self.max_hp) - snap.self.hp)
         local heal    = recovery.heal(snap)
@@ -235,7 +260,7 @@ function M.worth(snap, query, action, healing)
             local after  = math.max(0, math.min(1, (2 * blows - snap.self.hp - amount) / blows))
             saved        = before - after
         end
-        gain = math.max(amount / need, saved) * danger.loss(snap, query, worth)
+        gain = math.max(amount / need, saved) * party.death(snap, query, snap, worth)
         -- Below the need a quick cure or bite costs no time, since nothing else is done until it is over. The walk
         -- to the shrine lasts long enough to be weighed: valued at no time, a commoner hit for 6 of its 43 hp
         -- walked 135s to the shrine (job gather_offering, online).

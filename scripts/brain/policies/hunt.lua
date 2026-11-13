@@ -83,7 +83,7 @@ function M.step(brain, bot, goal)
 
     local here   = bot:position()
     local snap   = snapshot.take(brain, bot)
-    local facts  = query.bind(brain, bot)
+    local facts  = query.bind(brain, bot, snap)
     local risky  = false
     local accept = function(mob)
         return goal.wants(state, mob.name) and state.skipped[tostring(mob.oid)] == nil

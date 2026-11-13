@@ -118,11 +118,6 @@ local function stranded(snap)
 end
 
 M.flee = when(escape.able, choose({
-    when(function(snap)
-        return escape.fleeing_here(snap) ~= nil
-    end, flee("FLEEING", function(snap)
-        return { name = escape.fleeing_here(snap).name }
-    end, certain)),
     when(crew_notified, flee("CREW", notice_mob, certain)),
     when(fatal_near, when(unrecoverable, when(off_plan, when(not_passing, flee("FATAL", fatal_mob, fatal_chance))))),
     when(struck, when(hitter_near, when(no_healer_near, choose({

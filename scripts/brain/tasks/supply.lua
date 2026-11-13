@@ -238,7 +238,7 @@ local function plan(snap, query, kind)
                 end
             end
             local budget = money
-            if lesson ~= nil and (lesson.net > danger.loss(snap, query, value.baseline(snap, query)) or
+            if lesson ~= nil and (lesson.net > party.death(snap, query, snap, value.baseline(snap, query)) or
                     held + (money - lesson.price) / offer.price * offer.each >= (need.crisis or 0)) then
                 budget = money - lesson.price
             end
@@ -281,7 +281,7 @@ local function plan(snap, query, kind)
     if gone ~= nil then
         spent = math.min(spent, gone.spent)
     end
-    local stake = math.max(danger.loss(snap, query, worth), gone ~= nil and gone.stake or 0)
+    local stake = math.max(party.death(snap, query, snap, worth), gone ~= nil and gone.stake or 0)
     local delta = 0
     if need.gain ~= nil then
         local shortage = best.amount / math.max(need.usage * best.length, 1)
@@ -305,7 +305,7 @@ local function plan(snap, query, kind)
                     combat.lethal(snap, mob, math.min(spent * 1000, 2 * data.sight.x * step), snap.self.hp))
             end
         end
-        delta = delta - danger.combine(chances) * danger.loss(snap, query, worth)
+        delta = delta - danger.combine(chances) * party.death(snap, query, snap, worth)
     end
     if data.journal then
         log("debug",

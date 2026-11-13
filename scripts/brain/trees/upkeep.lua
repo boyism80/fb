@@ -49,11 +49,16 @@ local pickup = choose({
 
 M.loot = when(alive, when(has_pile, pickup), "loot")
 
+-- A pile under my feet is picked up before I close on my crew: it takes one action and no walk, and put off for the
+-- walk to the vanguard it had to be walked back to. A poet stood on a fox pelt 60 times and walked off each time
+-- while its rogue, held to its walking reach, never got there, and the two went back and forth for 8 minutes
+-- (offline profile 50+65 form seed 2, 300-780s, run 23:41).
 M.tree = when(alive, choose({
     recover,
+    when(has_pile, when(loot.on_pile, when(pile_pays, act("LOOT", loot.pick, "pick_up")))),
     when(combat.can_cast, choose({
         when(buff.hunting, when(has_buff, when(buff_pays, act("BUFF", buff.cast, "self_buff")))),
-        support.care,
+        support.tend,
     })),
     when(has_pile, when(pile_pays, pickup)),
     when(has_class, when(has_upgrade, when(upgrade_pays, act("EQUIP", equip.propose, "equip")))),

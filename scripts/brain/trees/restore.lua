@@ -1,7 +1,6 @@
 local data     = require("brain.data.combat")
 local combat   = require("brain.policies.combat")
 local recovery = require("brain.policies.recovery")
-local battle   = require("brain.policies.battle")
 local tree     = require("brain.tree")
 local rest     = require("brain.tasks.rest")
 
@@ -13,10 +12,6 @@ end
 
 local function refueling(snap, facts, action)
     return math.max(0, rest.worth(snap, facts, action, false))
-end
-
-local function charge_kills(snap)
-    return recovery.charged(snap) <= battle.burst(snap)
 end
 
 local function alive(snap)
@@ -112,7 +107,6 @@ local refuel = when(can_cast_mana, choose({
     when(has_charge, choose({
         when(below_charge_cost, when(has_mana_dose, act("REST", drink, "drink", refueling))),
         when(lacks_prime, choose({
-            when(charge_kills, when(has_mana_dose, act("REST", drink, "drink_under_attack", refueling))),
             when(combat.can_cast, choose({
                 when(can_heal, act("REST", cast_charge, "charge_to_heal", refueling)),
                 act("REST", cast_charge, "charge", refueling),
@@ -168,6 +162,11 @@ local mend = pick({
     when(healer_beside, act("REST", await_heal, "await_heal", healing)),
 }, tree.compared, "mend")
 
+-- Where I can strike back, the heal comes while I strike and waiting for it adds nothing: a warrior at 1,414 of
+-- 4,769 hp stood still for 7s under four skeletons, valuing the wait at the whole hp it missed, while its poet
+-- cast 공력증강 for the mana to heal it, and died (offline profile 63+65 stage supply seed 5, 701-708s, run 03:20).
+local self_mend = pick({ cure, food, shrine }, tree.compared, "mend")
+
 -- With nothing else left to do, the best way to recover is taken even when it would not pay on its own, since
 -- the other choice is standing still: a 1 hp level-5 bot 20 tiles from the shrine stood for good because its
 -- cheap death made the 5s walk look too dear (state pure 10).
@@ -183,23 +182,33 @@ function M.mendable(snap, facts)
     return rest.low(snap, facts) and tree.run(mend, snap, facts) ~= nil
 end
 
-M.restore = when(alive, choose({
-    when(below_shrine_limit, when(wounded, when(near_shrine, act("REST", rest.thank, "thank", healing)))),
-    when(rest.low, choose({
-        when(combat.can_cast,
-            when(cure_helps,
-                when(cure_beats_food, when(cure_leaves_prime, act("REST", cast_cure, "cure_first", healing))))),
-        when(has_edible, act("REST", eat, "eat_first", healing)),
-        -- A cure that would leave less mana than the strongest attack needs is still weighed against a charge
-        -- first, not skipped for it: a poet keeping 597 mp for 지진 charged under three skeletons instead of
-        -- healing itself, and the failed charges left it at 918 hp (WA+PO 세작 seed 0, 282-283s). Only a charge
-        -- is weighed so, as it is paid in hp; weighed against a drink, a warrior under four 흑령 cast a 50 hp cure
-        -- and drank 동동주 for its mana by turns instead of fighting (offline solo seed 101, 641s).
-        when(combat.can_cast, when(has_charge, when(cure_helps,
-            pick({ act("REST", cast_cure, "cure_over_refuel", healing), refuel }, tree.compared, "cure_or_refuel")))),
-    })),
-    refuel,
-    when(rest.low, mend),
-}), "restore")
+function M.awaiting(snap, facts)
+    return rest.low(snap, facts) and healer_beside(snap, facts)
+end
+
+local function restoring(mending)
+    return when(alive, choose({
+        when(below_shrine_limit, when(wounded, when(near_shrine, act("REST", rest.thank, "thank", healing)))),
+        when(rest.low, choose({
+            when(combat.can_cast,
+                when(cure_helps,
+                    when(cure_beats_food, when(cure_leaves_prime, act("REST", cast_cure, "cure_first", healing))))),
+            when(has_edible, act("REST", eat, "eat_first", healing)),
+            -- A cure that would leave less mana than the strongest attack needs is still weighed against a charge
+            -- first, not skipped for it: a poet keeping 597 mp for 지진 charged under three skeletons instead of
+            -- healing itself, and the failed charges left it at 918 hp (WA+PO 세작 seed 0, 282-283s). Only a charge
+            -- is weighed so, as it is paid in hp; weighed against a drink, a warrior under four 흑령 cast a 50 hp
+            -- cure and drank 동동주 for its mana by turns instead of fighting (offline solo seed 101, 641s).
+            when(combat.can_cast, when(has_charge, when(cure_helps,
+                pick({ act("REST", cast_cure, "cure_over_refuel", healing), refuel }, tree.compared, "cure_or_refuel")))),
+        })),
+        refuel,
+        when(rest.low, mending),
+    }), "restore")
+end
+
+M.restore = restoring(mend)
+
+M.recover = restoring(self_mend)
 
 return M

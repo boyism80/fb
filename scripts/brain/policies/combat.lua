@@ -514,11 +514,18 @@ function M.options(snap, mob, extra)
         byextra = {}
         bymob[stats] = byextra
     end
-    local key   = (snap.self.hp // 1 | 0) * 16777216 + ((snap.self.mp or 0) // 1 | 0)
-    local found = byextra[key]
+    -- Kept by the exact HP and MP: a spell whose damage follows HP (필살검무) came out for 2613.56 where 2613.6 was
+    -- asked while the two shared a whole-number key, so which one was kept hung on which was asked first.
+    local byhp = byextra[snap.self.hp]
+    if byhp == nil then
+        byhp = {}
+        byextra[snap.self.hp] = byhp
+    end
+    local mp    = snap.self.mp or 0
+    local found = byhp[mp]
     if found == nil then
         found = compute(snap, mob, extra)
-        byextra[key] = found
+        byhp[mp] = found
     end
     return found
 end
@@ -667,18 +674,21 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     casts = casts + weak.casts
 
     local exposed = M.exposed(mob, weak)
-    local strike  = M.strike(snap, query, exposed, density, nil, extra)
+    local strike  = mob.walled ~= true and M.strike(snap, query, exposed, density, nil, extra) or 0
     local blow    = M.blow(snap, mob)
     local buffs   = M.buffs(snap)
     local melee   = math.max(strike / combat.swing,
         buffs.opener > 1 and strike * buffs.opener / (2 * cast + combat.swing) or 0)
     local options = M.bloodless(M.options(snap, exposed, extra))
     local left    = (mob.hp or 0) * (mob.ratio or 1)
-    local opener  = best(options.strike, mp, "damage")
+    local opener  = mob.walled ~= true and best(options.strike, mp, "damage") or nil
     local spent   = 0
     local rival   = left / math.max(M.plain(options, mp, left, cast, melee, hp), 1e-9)
+    -- A strike saves only the time its damage takes off the mob, never more than the hp the mob has left: counted
+    -- whole, the less hp a mob had left the surer its 건곤대나이 paid, and a warrior spent 3179 hp on a mob one spell
+    -- ended (brain unit test, warrior63 at a twentieth of a mob's hp).
     local repays  = opener ~= nil and (opener.hp <= 0 or
-        (aid or 0) > 0 and opener.damage / math.max(rival, 1e-9) >= opener.hp / aid)
+        (aid or 0) > 0 and math.min(opener.damage, left) / math.max(rival, 1e-9) >= opener.hp / aid)
     if opener ~= nil and repays and hp - opener.hp > blow then
         left  = left - opener.damage
         mp    = mp - opener.mp
@@ -691,16 +701,23 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     if (aid or 0) > 0 and opener ~= nil and opener.hp > 0 and opener.damage > 0 and left > 0 then
         local period = math.max(cast, opener.hp / aid)
         local cycle  = opener.damage + melee * (period - cast)
+        -- The last strike is cast whole and the swings after it last only as long as the hp it left: counted as a part
+        -- of a cycle, a strike that ended the mob took less time than the cast, so a mob with less hp left fought longer
+        -- and a rogue among foxes valued its 투명 as a swing still on its cooldown (offline profile trio seed 2, 733s,
+        -- run 15:06).
         if cycle / period > rival then
             local count = left / cycle
             if opener.mp > 0 then
                 count = math.min(count, math.floor(mp / opener.mp))
             end
-            left  = math.max(0, left - count * cycle)
-            mp    = math.max(0, mp - math.ceil(count) * opener.mp)
-            time  = time + count * period
-            casts = casts + math.ceil(count)
-            fills = count * (period - cast) * melee / math.max(strike, 1e-9)
+            local whole = math.floor(count)
+            local last  = math.ceil(count) > whole and left - whole * cycle or 0
+            local after = math.max(0, last - opener.damage) / math.max(melee, 1e-9)
+            left        = math.max(0, left - whole * cycle - last)
+            mp          = math.max(0, mp - math.ceil(count) * opener.mp)
+            time        = time + whole * period + (last > 0 and cast or 0) + after
+            casts       = casts + math.ceil(count)
+            fills       = (whole * (period - cast) + after) * melee / math.max(strike, 1e-9)
         end
     end
     local volleys           = 0
@@ -735,10 +752,12 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         swings       = math.ceil((during + after) * melee / math.max(strike, 1e-9))
         time         = time + during + after
     end
+    -- The hp the strike cost is off hp already, so only the blows count against it: counted again within taken, a
+    -- warrior that ended its mob with 건곤대나이 planned ten heals after the fight (brain unit test, warrior63).
     local taken  = landed(time, weak.disable, mob.speed, blow, mob) + spent
     local healed = 0
     local heal   = best(options.heal, mp, "hp")
-    while heal ~= nil and heal.mp > 0 and taken - healed >= hp do
+    while heal ~= nil and heal.mp > 0 and taken - spent - healed >= hp do
         healed = healed + heal.hp
         mp     = mp - heal.mp
         time   = time + cast
@@ -746,7 +765,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         heal   = best(options.heal, mp, "hp")
     end
     local guard = buffs.emergency
-    if guard ~= nil and taken - healed >= hp and mp >= guard.mp and mob.speed ~= nil and mob.speed > 0 then
+    if guard ~= nil and taken - spent - healed >= hp and mp >= guard.mp and mob.speed ~= nil and mob.speed > 0 then
         mp    = mp - guard.mp
         taken = math.max(0, taken - guard.chance * guard.time / mob.speed * blow)
     end
@@ -758,7 +777,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         spent   = spent,
         healed  = healed,
         drained = (snap.self.mp or 0) - mp,
-        margin  = (hp + healed - taken) / math.max(snap.self.max_hp, 1),
+        margin  = (hp + spent + healed - taken) / math.max(snap.self.max_hp, 1),
         p_die   = M.lethal(snap, mob, time - weak.disable, hp + healed),
         gain    = M.gain(mob, snap),
     }
@@ -781,9 +800,9 @@ function M.outcome(snap, query, mob, density, aid, extra)
         known = {}
         bygear[gear] = known
     end
-    local key = string.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", tostring(mob.id or mob.name or mob), snap.self.hp,
+    local key = string.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", tostring(mob.id or mob.name or mob), snap.self.hp,
         snap.self.mp or 0, tostring(density), tostring(aid), tostring(extra), mob.ratio or 1, applied_key(mob),
-        mob.assist ~= nil and tostring(mob.assist) or "", snap.self.phydef or 0, mob.hp or 0)
+        mob.assist ~= nil and tostring(mob.assist) or "", snap.self.phydef or 0, mob.hp or 0, tostring(mob.walled))
     local found = known[key]
     if found == nil then
         found = compute_outcome(snap, query, mob, density, aid, extra)

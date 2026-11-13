@@ -145,6 +145,26 @@ local function decision(snap, facts, found, revisit)
             result.dest = dest
         end
     end
+    -- A walk takes a way round what stands in it only while that way is no longer than the crew's reach, the gap
+    -- at which it still counts as together, and than the steps I have already stood blocked: past that the walker
+    -- goes up to what blocks it and tells me, a mob is fought and a crewmate steps aside (together.make_way). Left
+    -- to the walker, any way round was taken at once: with a skeleton in a one-tile neck of 흉가 93 a rogue and a
+    -- poet walked the 72 steps round the floor while their warrior fought at the neck, and the three were apart
+    -- 148s of 720 over six 2-minute seeds (offline scene profile trio on 흉가 93, run 00:44). Held to two steps, a
+    -- warrior stopped at a doorway its crew stood in that it passes in four (offline profile trio rooted seed 6,
+    -- 320-740s, run 22:38).
+    if result.kind == ACTION.MOVE and result.dest ~= nil then
+        local blocked = snap.record.memory.blocked
+        local waited  = party.stuck(snap, 0) and
+            (snap.now - (blocked.since or blocked.at)) // (snap.pace.step or data.walk) or
+            0
+        local dest    = {}
+        for key, entry in pairs(result.dest) do
+            dest[key] = entry
+        end
+        dest.leeway = escort.reach() + waited
+        result.dest = dest
+    end
     result.rivals = nil
     result.scale  = nil
     result.state  = state
@@ -274,11 +294,11 @@ function M.entered(snap, facts)
         return true, nil
     end
     if entry ~= nil then
-        return true, { roster = roster, ready = entry.ready, at = entry.at }
+        return true, { roster = roster, ready = entry.ready, at = entry.at, map = entry.map }
     end
     local rest  = require("brain.tasks.rest")
     local ready = rest.low(snap, facts) == false and (snap.self.mp or 0) >= rest.mana_need(snap, facts)
-    return true, { roster = roster, ready = ready, at = snap.now }
+    return true, { roster = roster, ready = ready, at = snap.now, map = snap.world.map }
 end
 
 function M.flee(snap, decision)
@@ -448,7 +468,7 @@ function M.lap(brain, bot, snap, decision, facts)
     -- Servicing is over once I hunt again, or once I came back into the ground after it began: only the one in
     -- front takes a hunting spot, so a poet that followed its warrior back in kept its servicing and walked
     -- out again every time it entered (offline WA+PO, 482-911s).
-    if memory.servicing ~= nil and decision.task == "FIELD" and (decision.occupy ~= nil or party.returned(snap)) then
+    if memory.servicing ~= nil and decision.task == "FIELD" and (decision.occupy ~= nil or party.returned(snap, facts)) then
         local crew_busy = false
         for _, member in ipairs(party.members(snap)) do
             crew_busy = crew_busy or (member.errand ~= nil and member.self.ghost == false)
@@ -465,7 +485,7 @@ end
 function M.first(brain, bot, current, alarm)
     local owner = bot:name()
     local snap  = profile.measure(owner, "snapshot", snapshot.take, brain, bot)
-    local facts = query.bind(brain, bot)
+    local facts = query.bind(brain, bot, snap)
     local apart = #(snap.party or {}) > 0 and escort.complete(snap, facts) == false
     if apart and snap.record.memory.apart == nil then
         brain:remember(bot, "apart", snap.now)
@@ -527,7 +547,7 @@ function M.first(brain, bot, current, alarm)
     if moved then
         snap.record.memory.entry = entry
         brain:remember(bot, "entry", entry)
-        if entry ~= nil then
+        if entry ~= nil and party.entering(snap, facts, entry.map or snap.world.map) then
             snap.record.memory.joined = entry.at
             brain:remember(bot, "joined", entry.at)
         end

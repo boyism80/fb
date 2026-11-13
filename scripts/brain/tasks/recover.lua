@@ -1,5 +1,5 @@
-local danger = require("brain.policies.danger")
-local value  = require("brain.policies.value")
+local party = require("brain.policies.party")
+local value = require("brain.policies.value")
 
 local M = {}
 
@@ -65,7 +65,7 @@ function M.profit(snap, query, action)
     end
     local peril = value.peril(snap, query, { map = death.map, x = death.x, y = death.y })
     return (1 - peril) * lost * worth.exchange - value.cost(snap, query, action, worth) -
-        peril * danger.loss(snap, query, worth)
+        peril * party.death(snap, query, snap, worth)
 end
 
 return M

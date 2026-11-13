@@ -68,25 +68,40 @@ local function occupied(propose)
     end
 end
 
-local function stride(snap, x, y, range)
-    local leg = math.min(data.sight.x, data.sight.y) - data.adjacent
-    return math.max(range, math.abs(x - snap.world.x) + math.abs(y - snap.world.y) - leg)
+local function leg()
+    return math.min(data.sight.x, data.sight.y) - data.adjacent
 end
 
+local function stride(snap, x, y, range)
+    return math.max(range, math.abs(x - snap.world.x) + math.abs(y - snap.world.y) - leg())
+end
+
+-- A hunting walk goes a leg along its way and looks again, the leg counted in steps toward a goal that stays put.
+-- Counted as a straight line nearer the goal, the goal changed with every look: a rogue walked five steps east round
+-- a wall to its exit and five back west for 480s (offline RO+PO 흉가 seed 1, 180-660s, run 17:35), and a warrior
+-- walked up beside a wall, nearest its exit in a straight line, and stood there for 700s (WA+PO 흉가 seed 2).
 local function stage(snap, facts, maps, hunting)
     local route = facts.route(maps)
     local exit  = route ~= nil and route.path ~= nil and route.path[1] or nil
     if exit == nil or exit.x == nil then
         return { kind = ACTION.MOVE, dest = { maps = maps } }
     end
-    if math.abs(exit.x - snap.world.x) + math.abs(exit.y - snap.world.y) > data.adjacent then
+    -- The exit is reached in walking steps, as the rally is, and a crewmate is gathered there by its walk to me
+    -- (below, and together.cross_with): four tiles off in a straight line, the stairs of 흉가 93 are 26
+    -- steps round a wall from the passage west of them, and a warrior that counted itself there set its crew
+    -- crossing from the passage. Each took its own way through the one-tile necks, a skeleton in a neck sent whoever
+    -- looked then round the floor the other way, and the three were apart 11-32s seven times (offline profile trio
+    -- seeds 3, 4 and 7 and profile trio rooted seed 3, run 22:02).
+    local far = together.walk(snap, facts, snap, exit)
+    if far > data.adjacent then
         return {
             kind = ACTION.MOVE,
             dest = {
                 map = snap.world.map,
                 x = exit.x,
                 y = exit.y,
-                range = hunting and stride(snap, exit.x, exit.y, data.adjacent) or data.adjacent
+                range = 1,
+                steps = math.min(hunting and leg() or far, far - data.adjacent)
             }
         }
     end
@@ -112,7 +127,7 @@ local function stage(snap, facts, maps, hunting)
         end
         if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
                 party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
-                math.abs(snap.world.x - world.x) + math.abs(snap.world.y - world.y) > 2 * data.adjacent) then
+                together.walk(snap, facts, member, snap.world) > 2 * data.adjacent) then
             return (hunting == true and together.to_rally(snap, facts)) or { kind = ACTION.HOLD }
         end
     end
@@ -170,8 +185,8 @@ local function follow_entry(snap, facts)
     -- entrance (stage), so both meet there whatever either did on the way. With the leader already inside,
     -- the member goes to the leader, except right after a flight: the leader inside is about to leave too
     -- (party.regrouping).
-    if ground.floor_at(lead.world.map) == nil or party.regrouping(snap) then
-        local regate   = party.entry_gate(snap, facts, plan)
+    local regate = party.entry_gate(snap, facts, plan)
+    if ground.floor_at(lead.world.map) == nil or party.regrouping(snap) or party.outbound(snap, regate) then
         local entering = false
         for _, map in ipairs(lead.heading or {}) do
             entering = entering or map == plan.floors[1].map
@@ -191,10 +206,18 @@ local function follow_entry(snap, facts)
                 end
                 return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
             end
-            if math.abs(door.x - snap.world.x) + math.abs(door.y - snap.world.y) <= data.adjacent then
+            -- The entrance is reached in walking steps, as the leader reaches it (stage): four tiles south of the
+            -- entrance and 62 steps round a wall from it, a poet waited there for a warrior that waited four steps
+            -- north of the entrance for the poet, each for good (offline WA+PO 세작 seed 0 from 729s and WA+PO 흉가
+            -- seed 2 from 754s, run 22:46).
+            local far = together.walk(snap, facts, snap, door)
+            if far <= data.adjacent then
                 return { kind = ACTION.HOLD }
             end
-            return { kind = ACTION.MOVE, dest = { map = regate, x = door.x, y = door.y, range = data.adjacent } }
+            return {
+                kind = ACTION.MOVE,
+                dest = { map = regate, x = door.x, y = door.y, range = 1, steps = far - data.adjacent }
+            }
         end
     else
         -- While the group is scattered the member goes where the leader's rally point says, not to wherever
@@ -345,7 +368,7 @@ end
 
 -- A crewmate hurting a mob still alive here is busy here though its task is the hunt: one shooting a skeleton across
 -- a wall looked free, and its vanguard, that may not walk round the wall to join it (escort.tethered), went on to the
--- next floor without it (healer_waits_beside_leader). Hurting is the damage it dealt within the aggro memory (dealt):
+-- next floor without it (healer_waits_beside_leader). Hurting is the damage it dealt on this floor (dealt):
 -- its last battle stays named after a curse or once the fight is over, and a skeleton a poet had cursed across a
 -- wall held its whole crew waiting (offline profile trio seed 12, run 14:24).
 local function crew_busy_here(snap)
@@ -434,7 +457,8 @@ local function roam_to(snap, spot)
             map = snap.world.map,
             x = spot.x,
             y = spot.y,
-            range = stride(snap, spot.x, spot.y, math.min(data.sight.x, data.sight.y))
+            range = math.min(data.sight.x, data.sight.y),
+            steps = leg()
         },
     }
 end
@@ -581,10 +605,10 @@ local on_ground = choose({
 -- while the others serviced (WA+PO 세작, 656s).
 -- A crewmate still fighting on this floor is not left behind: the group leaves once its fight is over
 -- (walking out first split the group on the floor, RO+PO and WA+PO, 610-660s).
-local function servicing_on_floor(snap)
+local function servicing_on_floor(snap, facts)
     local servicing = snap.record.memory.servicing
     if together.grouped(snap) == false or servicing == nil or servicing.leave ~= true or
-        ground.floor_at(snap.world.map) == nil or party.returned(snap) then
+        ground.floor_at(snap.world.map) == nil or party.returned(snap, facts) then
         return false
     end
     for _, member in ipairs(party.members(snap)) do
@@ -605,6 +629,11 @@ end
 
 return choose({
     when(servicing_on_floor, act("FIELD", leave_for_service, "leave_for_service")),
+    -- A floor I am only passing through is left for the entrance as one is for servicing, as the crew gathers there:
+    -- held on it as the group's meeting point, a warrior back from the shop behind 연청산소 stood on the floor it came
+    -- out on, five floors in, and its poet left the entrance to walk them alone, 72s in every one of nine seeds
+    -- (offline WA40+PO40 seeds 0-8, run 07:06).
+    when(party.passing_through, act("FIELD", leave_for_service, "to_entrance")),
     when(function(snap, facts)
         if field.wanted(snap, facts) then
             return true

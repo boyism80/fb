@@ -19,8 +19,14 @@ return when(defend.attacked, when(defend.holds_ground, choose({
     })),
     pick({
         survive.flee,
-        restore.restore,
+        restore.recover,
         support.care,
+        act("FIELD", together.step_off, "step_off", together.close_worth),
         act("DEFEND", defend.strike_back, "attack", defend.value),
     }, tree.compared, "weigh"),
+    -- With nothing above worth doing, what is left for a hurt bot beside its healer is the wait for a heal, and the
+    -- blows land whether it strikes back or stands: a warrior at 1,884 of 5,607 hp, whose own fight with one fox
+    -- weighed as a loss beside its stronger mage, stood under three for 28s (offline WA+MA seed 5, 580-610s, run
+    -- 04:58; user: struck and doing nothing is a bug).
+    when(restore.awaiting, act("DEFEND", defend.strike_back, "strike_awaiting")),
 })), "attacked")

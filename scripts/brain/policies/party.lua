@@ -79,17 +79,32 @@ function M.pinned(snap)
     return M.stuck(snap, snap.pace.swing or combat.swing) and blocked.walls ~= true and blocked.detail ~= "CHARACTER"
 end
 
--- Back in the ground since the servicing began: I last entered it after the servicing began, and on a hunting floor
--- whose entry is not noted yet I am entering it now, as the entry is noted only after the decision (decide.entered).
--- Counting only the entry noted before, a poet that followed its warrior back in after servicing cast a curse
--- first, then took its servicing as unfinished and walked out to town and back (offline WA+PO seeds 0-2, 375-392s).
-function M.returned(snap)
-    local memory = snap.record.memory
-    local at     = memory.joined
-    if ground.floor_at(snap.world.map) ~= nil then
-        at = memory.entry ~= nil and memory.entry.at or snap.now
+-- The tile of the crewmate my last walk stopped at, while I have not moved since: my walker found no way round it.
+-- A walk counted on the floor alone cannot tell, as it does not keep off the mobs my walker keeps off: a poet that
+-- counted a way round it two steps longer stood on its warrior's only way for 360s (offline WA+PO 세작 seed 0,
+-- 540-900s, run 17:35).
+function M.blocker(snap)
+    local blocked = snap.record.memory.blocked
+    return M.stuck(snap, 0) and blocked.detail == "CHARACTER" and blocked.by or nil
+end
+
+-- Where my walk goes, also while it stands stopped at a crewmate. Posted with the walk alone, the goal left my
+-- profile between tries: a warrior stopped at the tile south of it on its way to the stairs of 흉가 92 had a goal
+-- in one of two snapshots its crew took, and the crewmate on that tile makes way only for a walk with a goal
+-- (offline profile trio rooted seed 6, 320-740s, run 22:38, walker held to the judged way). A walk stopped at its
+-- own goal tile was not passing the crewmate on it and keeps no goal: kept, a poet whose place beside its warrior
+-- the warrior had stepped onto sent the warrior off that tile at each of its tries for the stairs of 흉가 97, 26s
+-- (offline profile trio seed 4, 820-846s, run 23:51, same walker).
+local function going(snap, decision)
+    if decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and decision.dest.x ~= nil then
+        return { map = decision.dest.map, x = decision.dest.x, y = decision.dest.y }
     end
-    return memory.servicing ~= nil and at ~= nil and at > memory.servicing.at
+    local by   = M.blocker(snap)
+    local dest = by ~= nil and snap.record.memory.blocked.dest or nil
+    if dest == nil or dest.x == nil or (dest.x == by.x and dest.y == by.y) then
+        return nil
+    end
+    return { map = dest.map, x = dest.x, y = dest.y }
 end
 
 function M.stalled(snap, span)
@@ -127,13 +142,13 @@ function M.profile(snap, query, decision)
         -- posted only once apart, a rogue rooted four tiles from its warrior at the entrance looked free, and the
         -- warrior and poet went in and waited inside without it (offline profile trio rooted seed 1, 204-262s).
         pinned    = grouped and M.pinned(snap) or nil,
+        blocker   = grouped and M.blocker(snap) or nil,
         walled    = grouped and snap.world.x ~= nil and M.walled(snap, query) or nil,
         peril     = grouped and M.peril(snap, query) or nil,
-        dealt     = grouped and require("brain.policies.battle").recent(snap.record.memory.dealt, snap.now) or nil,
+        dealt     = grouped and require("brain.policies.battle").threat(snap.record.memory.dealt, snap.world.map) or nil,
         fallen    = snap.record.death ~= nil and
             { map = snap.record.death.map, at = snap.now - (snap.record.death.age or 0) } or nil,
-        going     = decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and decision.dest.x ~= nil and
-            { map = decision.dest.map, x = decision.dest.x, y = decision.dest.y } or nil,
+        going     = going(snap, decision),
         heading   = decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and
             (decision.dest.maps or { decision.dest.map }) or nil,
         arrives   = arrival(snap, query, decision),
@@ -190,17 +205,27 @@ function M.gate(snap, query, plan, team)
     for _, hop in ipairs(route.path or {}) do
         table.insert(maps, hop.dest)
     end
+    local floors = {}
+    for _, floor in ipairs(plan.floors) do
+        floors[floor.map] = true
+    end
+    local door = first
+    for index = #maps, 1, -1 do
+        if floors[maps[index]] then
+            door = maps[index]
+        end
+    end
     local ids      = hazards(team, query)
     local previous = nil
     for _, map in ipairs(maps) do
         for id in pairs(ids) do
             if query.native(map, id) then
-                return previous or map
+                return previous or map, door
             end
         end
         previous = map
     end
-    return maps[#maps - 1] or first
+    return maps[#maps - 1] or first, door
 end
 
 function M.feasible(snap, query, plan, team)
@@ -349,13 +374,27 @@ function M.plan(snap, query)
             for _, floor in ipairs(plan.floors) do
                 inside = inside or floor.map == snap.world.map
             end
+            -- Worked out from behind the ground, the way to the first floor runs through the other floors and the
+            -- entrance comes out as one of them: the entrance the group came in from stays then. Taken anew, a
+            -- warrior back from the shop past the last floor of 연청산소 walked to an entrance on its second floor
+            -- and waited five floors in, while its poet waited at the door they had come in by and then walked
+            -- those floors alone, 72s in every one of nine seeds (offline WA40+PO40 seeds 0-8, run 06:55).
             local kept = gates[snap.self.name]
             if inside and kept ~= nil and kept.name == plan.name then
                 copy.gate = kept.map
             else
-                copy.gate = M.gate(snap, query, plan, team) or plan.floors[1].map
-                if inside == false then
-                    gates[snap.self.name] = { name = plan.name, map = copy.gate }
+                local gate, first = M.gate(snap, query, plan, team)
+                local floored     = false
+                for _, floor in ipairs(plan.floors) do
+                    floored = floored or floor.map == gate
+                end
+                if floored and kept ~= nil and kept.name == plan.name then
+                    copy.gate = kept.map
+                else
+                    copy.gate = gate or plan.floors[1].map
+                    if inside == false and floored == false then
+                        gates[snap.self.name] = { name = plan.name, map = copy.gate, first = first or plan.floors[1].map }
+                    end
                 end
             end
             plan = copy
@@ -363,6 +402,31 @@ function M.plan(snap, query)
         plans[snap] = plan or false
     end
     return plans[snap] or nil
+end
+
+-- What the crew on a member's floor goes without while that member is away: each crewmate left there loses that time
+-- at the worth the caller weighs with. Valued at the group plan's rate instead, the plan was worked out from fights
+-- priced with this very cost: a warrior's plan without potions rose from 19,742 to 28,520 and it skipped its first
+-- supply (online 105006, 10:52).
+function M.alone(snap, member, seconds, worth)
+    local crew = { snap }
+    for _, other in ipairs(M.members(snap)) do
+        table.insert(crew, other)
+    end
+    local left = 0
+    for _, other in ipairs(crew) do
+        if other.self.name ~= member.self.name and other.world.map == member.world.map and other.self.ghost == false then
+            left = left + 1
+        end
+    end
+    return left * seconds * worth.value
+end
+
+-- A death costs what the dead member loses and what its crew on that floor goes without until it is back, whoever
+-- dies. Priced with the crew for my own death only, a poet healed itself before its warrior, and the warrior, short
+-- of the heals that kept it up, fled doomed 7 times against 3 (offline 15-minute 9 seeds, run 090652).
+function M.death(snap, query, member, worth)
+    return danger.loss(member, query, worth) + M.alone(snap, member, danger.revival(member, query), worth)
 end
 
 function M.leader(snap)
@@ -413,10 +477,9 @@ function M.vanguard_name(snap, query)
     if kept == nil or kept.key ~= key then
         local best = nil
         for _, member in ipairs(team) do
-            local blow  = score.capability(member, query).blow
             local entry = {
                 name  = member.self.name,
-                melee = blow.adjacent >= blow.ranged,
+                melee = score.melee(member, query),
                 hp    = member.self.max_hp or 0,
                 level = member.self.level or 0,
             }
@@ -443,43 +506,59 @@ function M.vanguard(snap, query)
 end
 
 -- What the mobs beside me take and what I set against them, posted so the leader can weigh a rescue for a
--- crewmate it cannot see. My damage counts only while I fight one of them: a poet healing under blows kills
--- nothing, and counted by the spell damage it could deal it looked able to end its own attackers.
+-- crewmate it cannot see. What I set against them is the damage I have dealt them over the time I have been at it:
+-- a poet healing under blows kills nothing. Counted by the spell damage it could deal while it fought one, a poet
+-- swinging at a skeleton at about 110 a second looked able to end it at 1070, so no draw was named and it swung on
+-- (offline profile 63+65, run 02:05), and a rogue's 필살검무, no sustained spell, counted for nothing. A mob beside
+-- me that comes for a crewmate (chaser) is not on me: counted as mine, 11 of the 56 spells strikers cast at mobs on
+-- no crewmate went at a mob whose most damage the striker had dealt itself (offline 25 teams, run 15:23).
 function M.peril(snap, query)
     local battle    = require("brain.policies.battle")
     local fight     = require("brain.policies.combat")
     local attackers = {}
+    local drains    = {}
     local drain     = 0
     local total     = 0
     for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and (mob.speed or 0) > 0 and battle.attacking(snap, mob) then
-            local _, high = fight.spread(snap, mob)
-            drain         = drain + high * 1000 / mob.speed
-            total         = total + (mob.hp or 0) * (mob.ratio or 1)
+        local chaser = mob.x ~= nil and M.chaser(snap, mob, snap.world) or nil
+        if mob.x ~= nil and (mob.speed or 0) > 0 and battle.attacking(snap, mob) and
+            (chaser == nil or chaser.name == snap.self.name) then
+            local _, high             = fight.spread(snap, mob)
+            drains[tostring(mob.oid)] = high * 1000 / mob.speed
+            drain                     = drain + drains[tostring(mob.oid)]
+            total                     = total + (mob.hp or 0) * (mob.ratio or 1)
             table.insert(attackers, mob.oid)
         end
     end
     if #attackers == 0 then
         return nil
     end
-    local fought = (snap.record.memory.battle or {}).oid
-    local dps    = 0
+    local dealt  = battle.threat(snap.record.memory.dealt, snap.world.map)
+    local damage = 0
+    local since  = snap.now
     for _, oid in ipairs(attackers) do
-        if oid == fought then
-            dps = score.capability(snap, query).dps.single
+        local entry = dealt[tostring(oid)]
+        if entry ~= nil then
+            damage = damage + entry.damage
+            since  = math.min(since, entry.since or entry.at)
         end
     end
-    return { drain = drain, hp = total, dps = dps, attackers = attackers }
+    local dps = damage > 0 and damage * 1000 / math.max(snap.now - since, fight.cast(snap)) or 0
+    return { drain = drain, drains = drains, hp = total, dps = dps, attackers = attackers }
 end
 
 -- The leader names one crewmate to save and the one who goes. Saving is worth the death chance it removes
 -- times what that death costs, the chance counted as in a heal's rescue from the blows left after the heals
--- crewmates in sight give it, over the time its attackers live once the helper's opening blow and then its
--- sustained damage join (sustained damage alone ranked a warrior below its poet). Its own heals do not
--- count, as healing itself is what a poet under blows must stop doing to keep its crew alive. Going costs
--- the hunting the helper gives up on the way, priced by the crew's one plan. A rogue that kills its
--- attackers itself is worth little and a poet that cannot is worth its life: a poet under blows waited a
--- minute for a warrior held by its own attackers (offline stage supply seed 2, 165-210s).
+-- crewmates in sight give it. The blows stop once the helper has drawn the attackers off: a mob turns on whoever
+-- hurt it most, so the helper outdoes the crewmate's damage on each, with a spell from where it stands or with
+-- blows once it has walked there (user, 11-12). Counted until the attackers died instead, a poet three skeletons
+-- struck was not worth a warrior's walk of seven tiles (brain unit test, rescuer draws). The attackers then
+-- strike the helper until the crew kills them, a chance of its own death counted the same way against the heals
+-- the others give it, so a poet is not sent to take a rogue's mobs on. Its own heals do not count, as healing
+-- itself is what a poet under blows must stop doing to keep its crew alive. Going costs the hunting the helper
+-- gives up meanwhile, priced by the crew's one plan. A rogue that kills its attackers itself is worth little and a
+-- poet that cannot is worth its life: a poet under blows waited a minute for a warrior held by its own attackers
+-- (offline stage supply seed 2, 165-210s).
 -- A helper's spells count only where they pay for their mana as the helper prices its own strikes (aid.outweighs):
 -- counted in full, the poet beside a 건곤대나이 warrior was the one sent and then kept its mana for heals, so the
 -- warrior was never sent (offline profile trio rooted seed 2, 516.8s, run 21:55).
@@ -499,6 +578,135 @@ local function casts_pay(snap, helper, team, attacker, strong)
     local share = strong.blow.ranged / math.max(attacker.hp or 1, 1) *
         require("brain.policies.combat").gain(attacker, helper.member)
     return share >= strong.blow.mana * value.fuel(snap, helper.member, crew, attacker)
+end
+
+local function dealt_by(snap, member)
+    if member == snap then
+        return require("brain.policies.battle").threat(snap.record.memory.dealt, snap.world.map) or {}
+    end
+    return member.dealt or {}
+end
+
+local function sighted(from, to)
+    return math.abs(from.x - to.x) <= combat.sight.x and math.abs(from.y - to.y) <= combat.sight.y
+end
+
+-- The crewmate a mob comes for, as the server picks its target (ai::find_target_in_sight): the one that dealt it
+-- most within its memory of blows, else the nearest in its sight. I am counted where I would stand. A heal makes
+-- no aggro, so a poet that only healed is chased only for being nearest.
+function M.chaser(snap, mob, at)
+    local crew = { { name = snap.self.name, world = at, dealt = dealt_by(snap, snap) } }
+    for _, member in ipairs(M.members(snap)) do
+        if member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil then
+            table.insert(crew, { name = member.self.name, world = member.world, dealt = dealt_by(snap, member) })
+        end
+    end
+    local best, most = nil, 0
+    for _, entry in ipairs(crew) do
+        local hit = (entry.dealt[tostring(mob.oid)] or {}).damage or 0
+        if hit > most then
+            best, most = entry, hit
+        end
+    end
+    local near = math.huge
+    for _, entry in ipairs(best == nil and crew or {}) do
+        local gap = math.abs(entry.world.x - mob.x) + math.abs(entry.world.y - mob.y)
+        if sighted(mob, entry.world) and gap < near then
+            best, near = entry, gap
+        end
+    end
+    return best
+end
+
+-- The time a helper takes to draw the attackers, and whether it walks for any of them. A spell draws from where the
+-- helper stands only while its mana lasts: counted for a rogue at 0 mp that 필살검무 had emptied, the draw named no
+-- walk, and the mobs in its way to its poet were worth nothing to it (offline RO+PO 세작, run 23:21). A helper whose
+-- strike spends all its mana keeps none and drinks what each spell needs (recovery.spare), one drink before the cast.
+local function drawing_time(snap, helper, team, peril, strong, spells, arrive)
+    local fight    = require("brain.policies.combat")
+    local recovery = require("brain.policies.recovery")
+    local cast     = fight.cast(helper.member) / 1000
+    local swing    = ((helper.member.pace or {}).swing or combat.swing) / 1000
+    local mana     = helper.member.self.mp or 0
+    local top      = helper.member.self.max_mp or 0
+    local doses    = recovery.draining(helper.member) and recovery.doses(helper.member, "mp") or {}
+    local seen     = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        seen[mob.oid] = mob
+    end
+    local ranged, close = 0, 0
+    for _, oid in ipairs(peril.attackers) do
+        local lead, mine = 0, 0
+        for _, other in ipairs(team) do
+            local entry  = dealt_by(snap, other.member)[tostring(oid)]
+            local damage = entry ~= nil and entry.damage or 0
+            if other == helper then
+                mine = damage
+            else
+                lead = math.max(lead, damage)
+            end
+        end
+        local need  = math.max(0, lead - mine)
+        local mob   = seen[oid]
+        local casts = strong.blow.ranged > 0 and math.floor(need / strong.blow.ranged) + 1 or 0
+        local cost  = casts * strong.blow.mana
+        local dose  = nil
+        for _, entry in ipairs(cost > mana and doses or {}) do
+            dose = dose or (mana + math.min(entry.amount, top - mana) >= cost and entry or nil)
+        end
+        if spells and casts > 0 and (cost <= mana or dose ~= nil) and mob ~= nil and mob.x ~= nil and
+            sighted(helper.member.world, mob) then
+            ranged = ranged + casts * cast + (dose ~= nil and cast or 0)
+            mana   = mana + (dose ~= nil and math.min(dose.amount, top - mana) or 0) - cost
+        else
+            close = close + (math.floor(need / math.max(strong.blow.adjacent, 1e-9)) + 1) * swing
+        end
+    end
+    return ranged + (close > 0 and arrive + close or 0), close > 0
+end
+
+local function exposure(snap, query, helper, team, peril, worth, span)
+    local fight = require("brain.policies.combat")
+    local hits  = 0
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        for _, oid in ipairs(peril.attackers) do
+            if mob.oid == oid and (mob.speed or 0) > 0 then
+                local _, high = fight.spread(helper.member, mob)
+                hits          = hits + high * 1000 / mob.speed
+            end
+        end
+    end
+    local mend = 0
+    for _, other in ipairs(team) do
+        local world = other.member.world
+        if other ~= helper and world.map == helper.member.world.map and world.x ~= nil and
+            sighted(world, helper.member.world) then
+            mend = mend + score.capability(other.member, query).hps.others
+        end
+    end
+    local bleed = hits - mend
+    if bleed <= 0 or span <= 0 then
+        return 0
+    end
+    return math.exp(-helper.member.self.hp / (bleed * span)) * M.death(snap, query, helper.member, worth)
+end
+
+-- The blows a crewmate takes until its attackers are drawn off cost it the hp they take, priced as it gets that hp
+-- back, which for a poet is the mana its crew's strikes burn as fuel: priced by the chance of its death alone, a
+-- poet struck at full hp was not worth a rescue, and the warrior beside it fought its own four mobs while three
+-- more beat the poet (offline 25 teams, run 20:53; user 11-12).
+local function struck_price(snap, query, victim, team, worth, attacker)
+    local value = require("brain.policies.value")
+    local crew  = {}
+    for _, other in ipairs(team) do
+        if other ~= victim then
+            table.insert(crew, other.member)
+        end
+    end
+    local mana  = math.max(value.refill(victim.member, query, worth),
+        value.fuel(snap, victim.member, crew, attacker))
+    local price = value.vigor(victim.member, query, worth, mana)
+    return price < math.huge and price or 0
 end
 
 local function weigh_rescue(snap, query)
@@ -527,13 +735,14 @@ local function weigh_rescue(snap, query)
             if drain > 0 and member.self.hp > 0 then
                 local alone    = peril.dps > 0 and peril.hp / peril.dps or math.huge
                 local risk     = math.exp(-member.self.hp / (drain * alone))
-                local loss     = danger.loss(member, query, worth)
+                local loss     = M.death(snap, query, member, worth)
                 local attacker = nil
                 for _, mob in ipairs(snap.world.mobs or {}) do
                     for _, oid in ipairs(peril.attackers or {}) do
                         attacker = attacker or (mob.oid == oid and mob or nil)
                     end
                 end
+                local price = struck_price(snap, query, victim, team, worth, attacker)
                 for _, helper in ipairs(team) do
                     local world  = helper.member.world
                     local strong = helper ~= victim and score.capability(helper.member, query) or nil
@@ -544,13 +753,26 @@ local function weigh_rescue(snap, query)
                         local steps = escort.steps(snap, query, helper.member,
                             { { x = member.world.x, y = member.world.y } })[1]
                         if type(steps) == "number" then
-                            local arrive = steps * ((helper.member.pace or {}).step or combat.walk) / 1000
-                            local left   = math.max(0, peril.hp - peril.dps * arrive - burst)
-                            local ended  = arrive + left / (peril.dps + dps)
-                            local saved  = (risk - math.exp(-member.self.hp / (drain * ended))) * loss
-                            local net    = saved - arrive * worth.value
+                            local arrive       = steps * ((helper.member.pace or {}).step or combat.walk) / 1000
+                            local drawn, walks = drawing_time(snap, helper, team, peril, strong, spells, arrive)
+                            local left         = math.max(0, peril.hp - peril.dps * drawn - burst)
+                            local ended        = drawn + left / (peril.dps + dps)
+                            local saved        = (risk - math.exp(-member.self.hp / (drain * drawn))) * loss +
+                                drain * math.max(0, ended - drawn) * price
+                            local taken        = exposure(snap, query, helper, team, peril, worth, ended - drawn)
+                            local net          = saved - taken - drawn * worth.value
                             if net > 0 and (best == nil or net > best.value) then
-                                best = { name = member.self.name, by = helper.member.self.name, value = net }
+                                local shares = {}
+                                for oid, each in pairs(peril.drains or {}) do
+                                    shares[oid] = each / peril.drain
+                                end
+                                best = {
+                                    name = member.self.name,
+                                    by = helper.member.self.name,
+                                    value = net,
+                                    walks = walks,
+                                    shares = shares,
+                                }
                             end
                         end
                     end
@@ -582,17 +804,37 @@ function M.rescued(snap, query)
     return nil
 end
 
--- A rescuer's share in a mob: the rescue's worth for one beside the crewmate it saves, and for one beside me
--- that stands nearer that crewmate than I do, so the way is cut open before the crewmate's attackers.
+-- The rescue the leader named for me, with the crewmate it sends.
+function M.awaited(snap, query)
+    local rescue = snap.leader == snap.self.name and M.rescue(snap, query) or (M.leader(snap) or {}).rescue
+    if rescue == nil or rescue.name ~= snap.self.name or rescue.by == snap.self.name then
+        return nil
+    end
+    for _, member in ipairs(M.members(snap)) do
+        if member.self.name == rescue.by and member.self.ghost == false then
+            return rescue, member
+        end
+    end
+    return nil
+end
+
+-- A rescuer's share in a mob: the rescue's worth in the share of the crewmate's blows that mob deals, and the whole
+-- rescue for one beside me that stands nearer that crewmate than I do, so the way is cut open before the crewmate's
+-- attackers. Counted whole for every mob beside the crewmate, the rescue went to mobs that struck nobody, and with the
+-- rescue worth the blows its draw ends a warrior cast 백열장 at them 11,398 times in a run (offline, run 18:35).
+-- The way matters only when the rescue walks: with spells that draw from where it stands, a warrior its own mobs
+-- surrounded fought them for the whole rescue (1.49M) over the 백열장 at the skeleton on its poet, worth 89% of it
+-- (offline profile 63+65, run 23:21; user 11-12).
 function M.rescue_share(snap, query, mob)
     local victim, rescue = M.rescued(snap, query)
     if victim == nil or victim.world.map ~= snap.world.map or victim.world.x == nil or mob.x == nil then
         return 0
     end
-    if math.abs(mob.x - victim.world.x) + math.abs(mob.y - victim.world.y) == 1 then
-        return rescue.value
+    local share = (rescue.shares or {})[tostring(mob.oid)]
+    if share ~= nil then
+        return rescue.value * share
     end
-    if math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+    if rescue.walks and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
         local steps = escort.steps(snap, query, victim,
             { { x = mob.x, y = mob.y }, { x = snap.world.x, y = snap.world.y } })
         if type(steps[1]) == "number" and type(steps[2]) == "number" and steps[1] < steps[2] then
@@ -719,7 +961,7 @@ local function compute_rally(snap, query)
     local prices = {}
     for index, member in ipairs(team) do
         local worth = value.baseline(member, query)
-        prices[index] = { worth = worth.value, loss = danger.loss(member, query, worth) }
+        prices[index] = { worth = worth.value, loss = M.death(snap, query, member, worth) }
     end
     local best = nil
     for _, candidate in ipairs(candidates) do
@@ -765,6 +1007,65 @@ local function compute_rally(snap, query)
     return best
 end
 
+-- Coming onto a floor of the plan that is not the one its entrance opens on, while a crewmate is still outside the
+-- ground, is passing through on the way to gather, not coming in: the group comes in together from the entrance
+-- (user 11-09). With the crew already inside there is nobody to gather with and any floor is coming back to it.
+-- Known only while the entrance is, so a bot that never stood outside this ground takes any entry as coming in.
+function M.passing(snap, query, map)
+    local plan = map ~= nil and M.plan(snap, query) or nil
+    local kept = gates[snap.self.name]
+    if plan == nil or kept == nil or kept.name ~= plan.name or map == kept.first then
+        return false
+    end
+    local floor = false
+    for _, entry in ipairs(plan.floors) do
+        floor = floor or entry.map == map
+    end
+    local outside = false
+    for _, member in ipairs(M.members(snap)) do
+        outside = outside or (member.self.ghost == false and ground.same_ground(member.world.map, map) == false)
+    end
+    return floor and outside
+end
+
+-- The floor I came into the ground by and when: the one noted at my entry, and on a hunting floor whose entry is not
+-- noted yet the one I stand on now, as the entry is noted only after the decision (decide.entered).
+local function doorstep(snap)
+    local entry = snap.record.memory.entry
+    if entry ~= nil then
+        return entry.map, entry.at
+    elseif ground.floor_at(snap.world.map) ~= nil then
+        return snap.world.map, snap.now
+    else
+        return nil, nil
+    end
+end
+
+function M.passing_through(snap, query)
+    return M.passing(snap, query, (doorstep(snap)))
+end
+
+-- An entry is coming into the ground when it is onto the ground I hunt and not passing through it. Counted for any
+-- hunting map, the two maps a warrior crossed on its way back from the shop behind 연청산소 made it back in the
+-- ground before it reached it, its servicing ended there, and it stood on the floor it came out on (offline
+-- WA40+PO40 seed 0, 687-706s, run 07:06).
+function M.entering(snap, query, map)
+    local plan = M.plan(snap, query)
+    return (plan == nil or ground.same_ground(map, plan.floors[1].map)) and M.passing(snap, query, map) == false
+end
+
+-- Back in the ground since the servicing began: I last entered it after the servicing began, and on a hunting floor
+-- whose entry is not noted yet I am entering it now, as the entry is noted only after the decision (decide.entered).
+-- Counting only the entry noted before, a poet that followed its warrior back in after servicing cast a curse
+-- first, then took its servicing as unfinished and walked out to town and back (offline WA+PO seeds 0-2, 375-392s).
+-- A floor passed through on the way to the entrance is no coming back (passing).
+function M.returned(snap, query)
+    local memory   = snap.record.memory
+    local door, at = doorstep(snap)
+    at             = at or memory.joined
+    return memory.servicing ~= nil and at ~= nil and at > memory.servicing.at and M.passing(snap, query, door) == false
+end
+
 -- After any member flees, the whole group leaves and meets in front of the entrance. Until this bot has
 -- entered a ground again after the latest flight in the group (joined is its last entry time), a leader
 -- still inside is about to leave too, so a member waits at the entrance instead of walking back in alone.
@@ -788,6 +1089,25 @@ function M.regrouping(snap)
     local lead   = snap.leader ~= snap.self.name and M.leader(snap) or nil
     local led    = lead ~= nil and lead.joined ~= nil and latest ~= nil and lead.joined > latest
     return latest ~= nil and (joined == nil or latest > joined) and led == false
+end
+
+-- A leader on a hunting floor is not always leading the hunt there. One that holds a servicing begun after it last
+-- came in is about to leave as its crew did, and one walking to the entrance is on its way to gather there. Taken
+-- as leading in, a warrior four seconds from walking out to the shop drew its poet, back at the entrance from its own
+-- servicing, onto the first floor, where the poet stood alone for 74s and fled as the warrior reached the entrance
+-- (offline WA40+PO40 seed 8, 661-736s, run 06:28).
+function M.outbound(snap, gate)
+    local lead = snap.leader ~= snap.self.name and M.leader(snap) or nil
+    if lead == nil then
+        return false
+    end
+    local servicing = lead.servicing
+    local gathering = servicing ~= nil and servicing.leave == true and
+        (lead.joined == nil or lead.joined <= servicing.at)
+    for _, map in ipairs(lead.heading or {}) do
+        gathering = gathering or map == gate
+    end
+    return gathering
 end
 
 -- The entrance the group meets at before going in. The gate the leader published is computed from where

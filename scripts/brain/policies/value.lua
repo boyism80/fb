@@ -39,17 +39,27 @@ local function earnings(yields)
     return income
 end
 
+local traded = setmetatable({}, { __mode = "k" })
+
+-- What a coin is worth in exp follows from the ranked grounds alone, and the list stays the same one while
+-- nothing moved (ground.ranked): worked out once for a list, not from every floor of every ground each decision.
 local function exchange(snap, query)
-    local best = nil
-    for _, entry in ipairs(ground.ranked(snap, query)) do
-        for _, floor in ipairs(entry.candidate.floors) do
-            local income = earnings(floor.yields)
-            if income > 0 and floor.rate > 0 and (best == nil or floor.rate / income < best) then
-                best = floor.rate / income
+    local ranked = ground.ranked(snap, query)
+    local found  = traded[ranked]
+    if found == nil then
+        local best = nil
+        for _, entry in ipairs(ranked) do
+            for _, floor in ipairs(entry.candidate.floors) do
+                local income = earnings(floor.yields)
+                if income > 0 and floor.rate > 0 and (best == nil or floor.rate / income < best) then
+                    best = floor.rate / income
+                end
             end
         end
+        found          = best or 0
+        traded[ranked] = found
     end
-    return best or 0
+    return found
 end
 
 local baselines = setmetatable({}, { __mode = "k" })
@@ -319,11 +329,19 @@ end
 -- What one hit point costs to get back: the heal I cast, or else food bought, eaten and fetched like any
 -- supply, at its shop price whether or not I can pay it now (money is made by hunting). Natural regeneration
 -- is not a way to get it back: it is a bonus of the server, and waiting for it stalled bots for minutes.
+-- The heal takes its cast as eating takes its bite, and the cheaper of the two is the price: priced by its mana
+-- alone, a warrior's hp came out at 2.48 a point from its own small heal, and its poet cast 자무주 over 태양의기원
+-- with the warrior at 37% (offline WA63+PO65, run 02:05).
 function M.vigor(snap, query, worth, mana)
     local mend = recovery.heal(snap)
+    local food = restock(snap, query, worth, "hp")
     if mend ~= nil and mend.hp > 0 then
-        return mend.mp / mend.hp * mana
+        return math.min(food, mend.mp / mend.hp * mana + combat.cast(snap) / 1000 * worth.value / mend.hp)
     end
+    return food
+end
+
+function M.food(snap, query, worth)
     return restock(snap, query, worth, "hp")
 end
 
@@ -392,7 +410,7 @@ function M.deserted(snap, query, action)
                     away = trip ~= nil and 2 * trip.time or combat.cast(snap) / 1000
                 end
                 cost = cost +
-                    math.min(1, hits * away / math.max(member.self.hp or 1, 1)) * danger.loss(member, query, worth)
+                    math.min(1, hits * away / math.max(member.self.hp or 1, 1)) * party.death(snap, query, member, worth)
             end
         end
     end
@@ -407,7 +425,7 @@ function M.stay(snap, query, duration, worth)
         local close  = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= data.reach
         table.insert(chances, danger.chance(snap, query, mob, (chases or close) and duration or 0))
     end
-    return danger.combine(chances) * danger.loss(snap, query, worth)
+    return danger.combine(chances) * party.death(snap, query, snap, worth)
 end
 
 function M.peril(snap, query, point)
@@ -605,7 +623,7 @@ end
 
 local function walk(snap, query, dest, worth, origin, best)
     local target = dest.x ~= nil and dest or nil
-    local loss   = danger.loss(snap, query, worth)
+    local loss   = party.death(snap, query, snap, worth)
     local step   = snap.pace.step or data.walk
     local start  = origin or { map = snap.world.map, x = snap.world.x, y = snap.world.y }
     for _, plan in ipairs(plans(snap, query, dest, origin)) do

@@ -65,10 +65,14 @@ local function linked(snap, query, names)
     for _, name in ipairs(names) do
         local open = true
         for _, spot in ipairs(query.npcs({ name })) do
-            -- The path uses this bot's level for warp limits, so the level is part of the key.
+            -- The path uses this bot's level for warp limits, so the level is part of the key. Both ways are
+            -- asked: 환상의섬대장장이 can be walked away from but not to, and its weapon, picked as the best one
+            -- because the way back exists, left a mainland rogue buying nothing for the whole run.
             local key = table.concat({ name, spot.map, table.concat(goal.maps, ","), snap.self.level or 0 }, "|")
             if links[key] == nil then
-                links[key] = query.path({ maps = goal.maps }, nil, nil, spot) ~= nil
+                links[key] = query.path({ maps = goal.maps }, nil, nil, spot) ~= nil and
+                    query.path({ maps = { spot.map } }, nil, nil,
+                        { map = goal.maps[1], x = 0, y = 0, level = snap.self.level }) ~= nil
             end
             open = open and links[key]
         end

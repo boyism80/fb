@@ -53,8 +53,8 @@ function M.bind(mind, snap, world)
         roster = function()
             return world.roster or {}
         end,
-        steps = function(map, x, y, goals)
-            return mind:steps(map, x, y, goals)
+        steps = function(map, x, y, goals, traced)
+            return terrain.steps(mind, map, x, y, goals, terrain.blocking(snap, map, x, y), traced)
         end,
         detour = function(map, from, to, avoided)
             return terrain.detour(mind, map, from, to, avoided)
@@ -64,6 +64,9 @@ function M.bind(mind, snap, world)
         end,
         warp = function(map, x, y)
             return mind:warp_at(map, x, y)
+        end,
+        region = function(map, x, y)
+            return mind:region(map, x, y)
         end,
         ally = function(name)
             return world.ally ~= nil and world.ally(name) or nil

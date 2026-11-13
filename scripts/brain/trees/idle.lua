@@ -10,6 +10,6 @@ end
 
 return tree.pick({
     support.care,
-    restore.restore,
+    restore.recover,
     upkeep.loot,
 }, gainful, "idle")

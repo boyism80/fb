@@ -109,11 +109,10 @@ function M.winnable(snap, query, mob, crew)
             math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) }, "|")
     end
     if cached[slot] == nil then
-        local context = escort.context(snap, query, mob, helpers, nil, recovery.rates(snap).hp)
-        local result  = survival.fight(snap, query, mob, context)
+        local context, fought = escort.context(snap, query, mob, helpers, nil, recovery.rates(snap).hp)
+        local result          = fought or survival.fight(snap, query, mob, context)
         if mob.oid ~= nil then
-            context.crowd = survival.contact(snap, mob, result.time)
-            result        = survival.fight(snap, query, mob, context)
+            result = survival.joined(snap, query, mob, context, result)
         end
         cached[slot] = result.ending > 0
     end

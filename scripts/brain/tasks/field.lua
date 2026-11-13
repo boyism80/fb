@@ -34,11 +34,19 @@ end
 
 -- A mob I would walk to strike is in a crewmate's reach when the crewmate can walk to the fight (escort.tethered),
 -- not by a straight line across walls; one I strike from where I stand is in reach by the straight line, and across
--- a wall it cannot strike back (user, 11-11).
+-- a wall it cannot strike back (user, 11-11). Only a spell aimed at it from here strikes from where I stand: a fight
+-- that opens with a drink or a buff goes on with my blows, and taken for one from here, a vanguard took a mob 65
+-- steps round a wall from its poet for its 웅담 (brain unit test, vanguard_wall_prey).
 local function walking(snap, query, mob)
     local choice = battle.choose(snap, query, mob)
-    return choice == nil or choice.approach == true
+    if choice == nil or choice.approach == true then
+        return true
+    end
+    local aimed = choice.aimed == true or (choice.maneuver.kind == MANEUVER.CAST and choice.maneuver.self ~= true)
+    return aimed == false or choice.moves == true
 end
+
+M.walking = walking
 
 -- The fight stays within a straight sight's reach of every crewmate, and whether the crewmate can walk there is
 -- tethered's to judge. Counting that walk here too, a warrior took six skeletons 8-16 steps from its poet for out of
@@ -59,7 +67,7 @@ local function allowed(snap, mob)
     return true
 end
 
-function M.target(snap, query, names)
+local function sought(snap, query, names)
     local wanted = {}
     for _, name in ipairs(names) do
         wanted[name] = true
@@ -74,7 +82,9 @@ function M.target(snap, query, names)
             if type(shared) == "table" and shared.map == snap.world.map then
                 local found = battle.target(snap, query, function(mob)
                     return mob.oid == shared.oid and wanted[mob.name] ~= nil and M.castable(snap, query, mob) and
-                        approachable(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, walking(snap, query, mob))
+                        approachable(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, function()
+                            return walking(snap, query, mob)
+                        end)
                 end)
                 if found ~= nil then
                     return found
@@ -88,14 +98,36 @@ function M.target(snap, query, names)
     -- rooted healer seed 1, 687-697s, run 08:08).
     local healer = #party.members(snap) > 0 and party.vanguard_name(snap, query) ~= snap.self.name and
         score.capability(snap, query).hps.others > 0
+    -- Whether I would walk to the mob is my best move at it, so it is asked last and only where a crewmate's reach
+    -- hangs on it (escort.tethered). Asked first of every mob in sight, it was weighed for bots with no crew at all:
+    -- 107,047 asks, a fifth of the time spent deciding (offline 8 teams, run 19:36).
     return battle.target(snap, query, function(mob)
-        if wanted[mob.name] == nil or M.castable(snap, query, mob) == false then
+        if wanted[mob.name] == nil or M.castable(snap, query, mob) == false or allowed(snap, mob) == false then
             return false
         end
-        local walk = walking(snap, query, mob)
-        return (healer == false or walk == false or math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1) and
-            allowed(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, walk)
+        local function walks()
+            return walking(snap, query, mob)
+        end
+        local beside = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
+        return (healer == false or beside or walks() == false) and escort.tethered(snap, query, mob.x, mob.y, walks)
     end)
+end
+
+-- One hunt target a snapshot: the heal weighed out of a fight asks for it as the hunt does (aid.forgone), and asked
+-- twice the first ask also took the forecast sample the hunt's strike was due (battle.target): 5,217 of 7,829
+-- picks were the heal's (offline 8 teams, run 19:36).
+local targets = setmetatable({}, { __mode = "k" })
+
+function M.target(snap, query, names)
+    local known = targets[snap]
+    if known == nil then
+        known         = {}
+        targets[snap] = known
+    end
+    if known[names] == nil then
+        known[names] = sought(snap, query, names) or false
+    end
+    return known[names] or nil
 end
 
 function M.revisit(snap)

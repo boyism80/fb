@@ -5,7 +5,6 @@ local items   = require("brain.data.items")
 local shops   = require("brain.data.shops")
 local bag     = require("brain.policies.bag")
 local combat  = require("brain.policies.combat")
-local danger  = require("brain.policies.danger")
 local near    = require("brain.policies.near")
 local party   = require("brain.policies.party")
 local value   = require("brain.policies.value")
@@ -147,8 +146,18 @@ function M.value(snap, query)
     for _, member in ipairs(party.members(snap)) do
         lead = math.max(lead, (member.looted or 0) - (snap.record.memory.looted or 0))
     end
-    local delta = (1 + lead) * (1 - peril) * total * worth.exchange - value.cost(snap, query, move, worth) / (1 + lead) -
-        peril * danger.loss(snap, query, worth) / (1 + lead)
+    -- The walk to the pile is weighed in the steps it takes, as the way on from it is: weighed in a straight line,
+    -- a pelt six tiles off behind a wall cost nothing on the way while the walk through the door took eight, so it
+    -- paid from the far side of the door and no longer two steps on, and a vanguard turned back and forth between
+    -- it and the stairs for five minutes with its crew behind it (offline profile trio rooted seed 3, 325-575s, run
+    -- 05:22).
+    local direct = math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y)
+    local walked = query.steps ~= nil and
+        query.steps(snap.world.map, snap.world.x, snap.world.y, { { x = item.x, y = item.y, range = 0 } })[1] or direct
+    local cost   = type(walked) == "number" and value.cost(snap, query, move, worth) +
+        math.max(0, walked - direct) * (snap.pace.step or data.walk) / 1000 * worth.value or math.huge
+    local delta  = (1 + lead) * (1 - peril) * total * worth.exchange - cost / (1 + lead) -
+        peril * party.death(snap, query, snap, worth) / (1 + lead)
     if data.journal then
         log("debug",
             string.format("[brain:loot] bot=%s t=%s map=%s names=%s price=%s exchange=%s peril=%s delta=%.0f piles=%d",
