@@ -123,6 +123,9 @@ game_bot_controller::game_bot_controller(bot_container& container) :
         if (response.percent < before)
             bot.notice("hurt", response.oid);
 
+        if (response.oid == bot.oid())
+            bot.on_update_hp();
+
         co_return;
     });
 

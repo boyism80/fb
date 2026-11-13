@@ -205,6 +205,7 @@ private:
     uint8_t                         _intelligence  = 0;
     uint8_t                         _dexterity     = 0;
     uint32_t                        _hp            = 0;
+    uint32_t                        _lost          = 0;
     uint32_t                        _mp            = 0;
     uint32_t                        _exp           = 0;
     uint32_t                        _money         = 0;
@@ -311,6 +312,7 @@ public:
     void                                      set_dexterity(uint8_t value);
     uint32_t                                  hp() const;
     void                                      set_hp(uint32_t value);
+    void                                      on_update_hp();
     std::chrono::steady_clock::time_point     struck() const;
     uint32_t                                  mp() const;
     void                                      set_mp(uint32_t value);

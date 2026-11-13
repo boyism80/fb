@@ -385,13 +385,17 @@ void game_bot::set_hp(uint32_t value)
         this->_dying.reset();
     }
 
-    auto hit  = value < this->_hp;
-    this->_hp = value;
-    if (hit)
-    {
-        this->_struck = std::chrono::steady_clock::now();
-        this->notice("hit");
-    }
+    this->_lost = value < this->_hp ? this->_hp - value : 0;
+    this->_hp   = value;
+}
+
+void game_bot::on_update_hp()
+{
+    if (this->_lost == 0)
+        return;
+
+    this->_struck = std::chrono::steady_clock::now();
+    this->notice("hit");
 }
 
 std::chrono::steady_clock::time_point game_bot::struck() const
