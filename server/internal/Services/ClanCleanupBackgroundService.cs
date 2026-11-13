@@ -90,14 +90,8 @@ namespace Internal.Services
                         continue;
                     }
 
-                    if (clan.Money > 0)
-                    {
-                        _logger.LogWarning("Clan {Id} in world {World} has no member but keeps {Money} money", id, world, clan.Money);
-                        continue;
-                    }
-
                     await clans.Remove(world, clan, counterpartIds, uint.MaxValue, new Protocol.CharacterRef());
-                    _logger.LogInformation("Removed clan {Id} without members in world {World}", id, world);
+                    _logger.LogInformation("Removed clan {Id} without members in world {World} with {Money} money", id, world, clan.Money);
                 }
                 catch (Exception e)
                 {
