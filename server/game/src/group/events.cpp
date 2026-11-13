@@ -184,18 +184,14 @@ async::task<void> group::container::on_enter(std::string                target,
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
 
-        if (group->revision() > revision)
+        auto result = group->apply(revision, [&] {
+            group->add_member(name);
+        });
+
+        if (result == apply_result::STALE)
             co_return;
 
-        if (group->revision() + 1 == revision)
-        {
-            group->add_member(name);
-            group->revision(revision);
-        }
-        else if (group->revision() < revision)
-        {
-            reload = true;
-        }
+        reload = result == apply_result::RELOAD;
 
         auto ch = this->_server.characters.find(name);
         if (ch != nullptr)
@@ -291,22 +287,19 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
 
-        if (group->revision() > revision)
+        auto result = group->apply(revision, [&] {
+            group->remove_member(name);
+        });
+
+        if (result == apply_result::STALE)
         {
             if (group->contains(name))
                 co_return;
 
             stale = true;
         }
-        else if (group->revision() + 1 == revision)
-        {
-            group->remove_member(name);
-            group->revision(revision);
-        }
-        else if (group->revision() < revision)
-        {
-            reload = true;
-        }
+
+        reload = result == apply_result::RELOAD;
 
         auto active = group->characters();
         auto found  = std::find_if(active.begin(), active.end(), [&name](const auto& member) {

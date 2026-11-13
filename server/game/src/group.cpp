@@ -134,11 +134,6 @@ uint64_t group::revision() const
     return this->_revision;
 }
 
-void group::revision(uint64_t value)
-{
-    this->_revision = value;
-}
-
 std::vector<group::character_ptr> group::reload(const group& fresh)
 {
     this->_master   = fresh._master;

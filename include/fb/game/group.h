@@ -4,6 +4,7 @@
 #include <async/task.h>
 #include <fb/game/character.h>
 #include <fb/game/lazy_container.h>
+#include <fb/game/revision.h>
 
 #include <cstdint>
 #include <map>
@@ -13,6 +14,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace fb::game {
@@ -58,10 +60,15 @@ public:
     std::vector<std::string>   members() const;
     bool                       contains(std::string_view name) const;
     uint64_t                   revision() const;
-    void                       revision(uint64_t value);
     std::vector<character_ptr> reload(const group& fresh);
     character_vector           nears(const fb::game::map& map, const fb::model::point16_t& position) const;
     // clang-format on
+
+    template <typename F>
+    apply_result apply(uint64_t revision, F&& change)
+    {
+        return apply_revision(this->_revision, revision, std::forward<F>(change));
+    }
 };
 
 class group::container : public lazy_container<group, 16, uint64_t>

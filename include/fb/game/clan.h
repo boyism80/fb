@@ -4,6 +4,7 @@
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
 #include <fb/game/lazy_container.h>
+#include <fb/game/revision.h>
 
 #include <cstdint>
 #include <memory>
@@ -12,6 +13,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace fb::protocol::internal::response {
@@ -45,15 +47,6 @@ private:
     std::unordered_set<uint32_t> _enemy_clan_ids;
     uint64_t                     _money    = 0;
     uint64_t                     _revision = 0;
-
-public:
-    enum class apply_result : uint8_t
-    {
-        STALE,
-        CURRENT,
-        APPLIED,
-        RELOAD,
-    };
 
 public:
     // clang-format off
@@ -98,24 +91,7 @@ public:
     template <typename F>
     apply_result apply(uint64_t revision, F&& change)
     {
-        if (revision < this->_revision)
-        {
-            return apply_result::STALE;
-        }
-        else if (revision == this->_revision)
-        {
-            return apply_result::CURRENT;
-        }
-        else if (revision == this->_revision + 1)
-        {
-            change();
-            this->_revision = revision;
-            return apply_result::APPLIED;
-        }
-        else
-        {
-            return apply_result::RELOAD;
-        }
+        return apply_revision(this->_revision, revision, std::forward<F>(change));
     }
 };
 
