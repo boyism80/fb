@@ -19,6 +19,11 @@ const clock = seconds => {
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 };
 const local = iso => iso ? new Date(iso).toLocaleString('ko-KR', { hour12: false }) : '-';
+const laneProgress = p => [
+  `작업 ${num(p.done)}개 끝`,
+  p.job ? `지금 ${esc(p.job)} · 씨드 ${p.seed}${p.span ? ` · ${clock(p.clock / 1000)} / ${clock(p.span / 1000)}` : ''}` : '',
+  p.alarms ? `<span class="bad">경보 ${num(p.alarms)} · ${esc(p.alarm)}</span>` : '',
+].filter(Boolean).join(' · ');
 const kind = name => name.startsWith('goal:') ? 'goal' : name.startsWith('action:') ? 'action' : 'packet';
 
 const store = {
@@ -273,18 +278,26 @@ function renderIntegration() {
   const failed = suites.filter(s => s.state === 'failed' || s.state === 'lost');
   const running = suites.filter(s => s.state === 'running' || s.state === 'assigned').length;
   const pending = suites.filter(s => s.state === 'pending').length;
+  const lanes = suites.filter(s => s.progress && s.progress.jobs).map(s => s.progress);
+  const jobs = lanes.reduce((most, p) => Math.max(most, p.jobs), 0);
+  const finished = lanes.reduce((t, p) => t + p.done, 0);
+  const underway = lanes.reduce((t, p) => t + (p.span ? p.clock / p.span : 0), 0);
+  const alarms = lanes.reduce((t, p) => t + p.alarms, 0);
+  const worked = jobs ? ` · 작업 ${num(finished)}/${num(jobs)}` : '';
+  const alarmed = jobs ? ` · 경보 ${num(alarms)}` : '';
   count('i-progress', [done.length, suites.length], pair);
-  $('i-meter').style.width = suites.length ? `${(done.length - failed.length) / suites.length * 100}%` : '0%';
+  $('i-meter').style.width = jobs ? `${(finished + underway) / jobs * 100}%` : suites.length ? `${(done.length - failed.length) / suites.length * 100}%` : '0%';
   $('i-meter-bad').style.width = suites.length ? `${failed.length / suites.length * 100}%` : '0%';
-  $('i-progress-sub').textContent = run ? `실행 중 ${running} · 대기 ${pending}` : '-';
+  $('i-progress-sub').textContent = run ? `실행 중 ${running} · 대기 ${pending}${worked}` : '-';
   count('i-result', [passed, failed.length], pair);
-  $('i-result-sub').textContent = run ? `중지 ${suites.filter(s => s.state === 'stopped').length} · 재시도 ${suites.reduce((t, s) => t + s.attempts, 0)}` : '-';
+  $('i-result-sub').textContent = run ? `중지 ${suites.filter(s => s.state === 'stopped').length} · 재시도 ${suites.reduce((t, s) => t + s.attempts, 0)}${alarmed}` : '-';
+  $('i-result-sub').classList.toggle('bad', alarms > 0);
   const packets = run ? run.stats.filter(r => kind(r.name) === 'packet') : [];
   count('i-requests', [packets.reduce((t, r) => t + r.count, 0), packets.reduce((t, r) => t + r.failures, 0)], pair);
   $('i-started').textContent = run ? `${local(run.started_at)} 시작 · ${run.id}` : '-';
 
   $('i-tab-plan').textContent = run ? `${done.length} / ${suites.length}` : '';
-  $('i-plan-note').textContent = run ? `${done.length} / ${suites.length}개 종료 · ${run.state === 'done' ? '끝남' : running ? '진행 중' : '대기 중'}` : '-';
+  $('i-plan-note').textContent = run ? `${done.length} / ${suites.length}개 종료 · ${run.state === 'done' ? '끝남' : running ? '진행 중' : '대기 중'}${worked}${alarmed}` : '-';
   $('i-plan-meter').style.width = $('i-meter').style.width;
   $('i-plan-meter-bad').style.width = $('i-meter-bad').style.width;
   document.querySelector('[data-tabs="itab"] [data-tab="plan"]').classList.toggle('live', !!run && run.state !== 'done');
@@ -292,7 +305,7 @@ function renderIntegration() {
     const order = new Map((S.catalog ? S.catalog.suites : []).map((s, i) => [s.name, [i + 1, s]]));
     sync($('i-plan'), suites, s => s.name, () => {
       const row = document.createElement('tr');
-      row.innerHTML = '<td><span class="phase"></span><span class="order"></span></td><td><div class="file"></div><div class="desc"></div></td><td></td><td class="mono"></td><td class="num"></td><td class="num"></td>';
+      row.innerHTML = '<td><span class="phase"></span><span class="order"></span></td><td><div class="file"></div><div class="desc"></div><div class="desc"></div></td><td></td><td class="mono"></td><td class="num"></td><td class="num"></td>';
       return row;
     }, (row, s) => {
       const [index, info] = order.get(s.name) || [0, null];
@@ -302,7 +315,10 @@ function renderIntegration() {
       cells[0].firstChild.textContent = s.serial ? 'SERIAL' : 'PARALLEL';
       cells[0].lastChild.textContent = index ? `#${index}` : '';
       cells[1].firstChild.textContent = s.name;
-      cells[1].lastChild.textContent = info ? `${info.bots}봇${info.extra_slot ? ' · extra' : ''}${info.labels.length ? ` · ${info.labels.join(', ')}` : ''}` : '';
+      cells[1].children[1].textContent = info ? `${info.bots}봇${info.extra_slot ? ' · extra' : ''}${info.labels.length ? ` · ${info.labels.join(', ')}` : ''}` : '';
+      const told = s.progress && s.progress.jobs ? laneProgress(s.progress) : '';
+      if (cells[1].lastChild.innerHTML !== told)
+        cells[1].lastChild.innerHTML = told;
       cells[2].className = `state ${SUITE_CLS[s.state]}`;
       cells[2].textContent = SUITE_WORD[s.state] || s.state;
       cells[3].textContent = s.agent_name || '—';
@@ -600,7 +616,7 @@ async function showRun(id) {
   $('h-sub').textContent = `${local(run.started_at)} ~ ${local(run.finished_at)} · ${clock(run.elapsed)}${run.kind === 'load' ? ` · 봇 ${num(run.users)}` : ''}`;
   $('h-files').innerHTML = ['summary.json', 'timeline.jsonl', 'stats.csv'].map(f => `<a href="/api/runs/${encodeURIComponent(run.id)}/${f}">${f}</a>`).join('');
   $('h-suites-wrap').hidden = !run.suites.length;
-  $('h-suites').innerHTML = run.suites.map(s => `<tr><td class="file">${esc(s.name)}</td><td class="${SUITE_CLS[s.state]}">${SUITE_WORD[s.state] || s.state}</td><td class="mono">${esc(s.agent_name || '-')}</td><td class="num">${s.attempts}</td><td class="num">${s.seconds ? s.seconds + '초' : '-'}</td></tr>`).join('');
+  $('h-suites').innerHTML = run.suites.map(s => `<tr><td class="file">${esc(s.name)}${s.progress && s.progress.jobs ? `<div class="desc">${laneProgress(s.progress)}</div>` : ''}</td><td class="${SUITE_CLS[s.state]}">${SUITE_WORD[s.state] || s.state}</td><td class="mono">${esc(s.agent_name || '-')}</td><td class="num">${s.attempts}</td><td class="num">${s.seconds ? s.seconds + '초' : '-'}</td></tr>`).join('');
   $('h-stats').innerHTML = statsRows(run.stats.map(r => `<tr><td class="mono">${esc(r.name)}</td><td class="num">${num(r.count)}</td><td class="num${r.failures ? ' bad' : ''}">${num(r.failures)}</td>
 <td class="num">${r.timed ? num(r.p50) : '-'}</td><td class="num">${r.timed ? num(r.p95) : '-'}</td><td class="num">${r.timed ? num(r.p99) : '-'}</td><td class="num">${r.rps}</td></tr>`).join(''), 7);
   draw('h', run.timeline || [], ['h1', 'h2']);

@@ -80,6 +80,9 @@ function M.run(options)
         if ok == false then
             log("warn", string.format("[sim:world] %s lv%d failed: %s", profile.self.class, profile.self.level,
                 (string.gsub(tostring(result), "\n", " | "))))
+            if options.record ~= nil then
+                options.record({ class = profile.self.class, level = profile.self.level, failed = tostring(result) })
+            end
         elseif result.skipped ~= nil then
             log("debug", string.format("[sim:world] %s lv%d skipped %s map=%s", profile.self.class, profile.self.level,
                 result.skipped, tostring(result.map)))
@@ -106,6 +109,20 @@ function M.run(options)
                 tostring(result.died), tostring(result.departed), result.kills, result.exp, result.swings, result.hits,
                 result.taken, result.decisions, table.concat(tasks, ","), table.concat(idle, ","),
                 table.concat(missing, ",")))
+            if options.record ~= nil then
+                options.record({
+                    class = result.class,
+                    level = result.level,
+                    ground = result.ground,
+                    map = result.map,
+                    time = result.time,
+                    died = result.died,
+                    departed = result.departed,
+                    kills = result.kills,
+                    exp = result.exp,
+                    file = path,
+                })
+            end
         end
         output:flush()
     end
@@ -304,6 +321,9 @@ function M.teams(options)
             local ok, result = pcall(driver.team, mind, profiles, settings, team.ground)
             if ok == false then
                 log("warn", string.format("[sim:team] %s failed: %s", team.name, tostring(result)))
+                if options.record ~= nil then
+                    options.record({ failed = tostring(result) })
+                end
                 if options.alarm ~= nil then
                     local file = io.open(options.alarm, "a")
                     file:write(
@@ -323,6 +343,17 @@ function M.teams(options)
                 for _, entry in ipairs(result) do
                     log("debug",
                         string.format("[sim:team] %s seed=%d %s", team.name, options.seed_base or 0, summary(entry)))
+                    if options.record ~= nil then
+                        options.record({
+                            class = entry.class,
+                            level = entry.level,
+                            died = entry.died,
+                            grouped = entry.grouped,
+                            kills = entry.kills,
+                            exp = entry.exp,
+                            file = path,
+                        })
+                    end
                 end
             end
         end

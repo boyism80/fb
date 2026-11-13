@@ -5,8 +5,8 @@ test_suite {
     bot_count = 0,
 
     scenarios = {
-        function()
-            return lanes.run(11)
+        function(ctx)
+            return lanes.run(11, ctx)
         end,
     },
 }

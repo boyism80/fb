@@ -1,5 +1,20 @@
 local M = {}
 
+local function number(value)
+    if math.type(value) == "integer" then
+        return tostring(value)
+    elseif value ~= value then
+        return "0/0"
+    elseif value == math.huge then
+        return "math.huge"
+    elseif value == -math.huge then
+        return "-math.huge"
+    elseif value == math.floor(value) and math.abs(value) < 2 ^ 53 then
+        return string.format("%.1f", value)
+    end
+    return string.format("%.17g", value)
+end
+
 local function encode(value, out)
     local kind = type(value)
     if kind == "table" then
@@ -24,7 +39,9 @@ local function encode(value, out)
         end
         table.insert(out, "}")
     elseif kind == "string" then
-        table.insert(out, string.format("%q", value))
+        table.insert(out, (string.gsub(string.format("%q", value), "\\\n", "\\n")))
+    elseif kind == "number" then
+        table.insert(out, number(value))
     else
         table.insert(out, tostring(value))
     end
@@ -49,18 +66,26 @@ local function plain(value, seen)
     return copied
 end
 
+function M.frozen(value)
+    return plain(value, {})
+end
+
+function M.text(value)
+    local out = { "return " }
+    encode(value, out)
+    return table.concat(out)
+end
+
 function M.dump(path, value)
     return M.write(path, plain(value, {}))
 end
 
 function M.write(path, value)
-    local out = { "return " }
-    encode(value, out)
     local file = io.open(path, "w")
     if file == nil then
         return false
     end
-    file:write(table.concat(out), "\n")
+    file:write(M.text(value), "\n")
     file:close()
     return true
 end

@@ -47,7 +47,7 @@ public:
 private:
     boost::asio::awaitable<bool> session();
     void                         handle(const Json::Value& message);
-    void                         spawn(const std::string& run_id, const std::vector<std::string>& arguments);
+    void                         spawn(const Json::Value& message, const std::vector<std::string>& arguments);
     void                         write(const Json::Value& message);
     void                         stop();
     void                         on_output(const std::shared_ptr<child>& source, Json::Value message);

@@ -366,13 +366,12 @@ master::response master::route(const request& received)
             return failed(http::status::bad_request, "invalid run id");
 
         auto directory = std::filesystem::path{"logs/runs"} / id;
-        if (std::filesystem::exists(directory) == false)
-            return failed(http::status::not_found, "run not found");
-
         if (slash != std::string::npos)
         {
-            auto name = rest.substr(slash + 1);
-            if (name != "summary.json" && name != "timeline.jsonl" && name != "stats.csv")
+            auto name  = rest.substr(slash + 1);
+            auto known = name == "summary.json" || name == "timeline.jsonl" || name == "stats.csv" ||
+                         name == "params.json" || name == "result.json";
+            if (known == false || std::filesystem::exists(directory / name) == false)
                 return failed(http::status::not_found, "file not found");
 
             auto input = std::ifstream(directory / name, std::ios::binary);
@@ -383,6 +382,9 @@ master::response master::route(const request& received)
             sent.body() = std::string{std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
             return sent;
         }
+
+        if (std::filesystem::exists(directory / "summary.json") == false)
+            return failed(http::status::not_found, "run not found");
 
         auto summary = Json::Value{};
         auto input   = std::ifstream(directory / "summary.json", std::ios::binary);
@@ -505,6 +507,7 @@ Json::Value master::report(size_t points) const
         item["attempts"]   = suite.attempts;
         item["seconds"]    = std::round(suite.seconds * 10.0) / 10.0;
         item["log"]        = suite.log;
+        item["progress"]   = suite.progress;
     }
 
     json["timeline"] = Json::Value{Json::arrayValue};
@@ -771,17 +774,46 @@ Json::Value master::start(const Json::Value& body)
         return result;
     }
 
+    auto asked     = body["kind"].asString();
     auto run       = run_state{};
-    run.kind       = body["kind"].asString();
-    run.id         = std::format("{}-{}", master::now("{:%Y%m%d-%H%M%S}"), run.kind);
+    run.kind       = asked == "sim" ? "integration" : asked;
+    run.id         = std::format("{}-{}", master::now("{:%Y%m%d-%H%M%S}"), asked);
+    run.directory  = std::filesystem::absolute(std::filesystem::path{"logs/runs"} / run.id).generic_string();
+    run.params     = body["params"];
     run.started_at = master::now("{:%Y-%m-%dT%H:%M:%SZ}");
     run.started    = clock::now();
     run.client     = body["client"].asString();
     run.target     = body["target"].asString();
+
+    auto names = body["suites"];
+    if (asked == "sim")
+    {
+        auto seats = uint32_t{0};
+        for (auto& [_, agent] : this->_agents)
+        {
+            if (agent.link != nullptr)
+                seats += agent.seats;
+        }
+
+        auto lanes = run.params["sim"].get("lanes", seats).asUInt();
+        names      = Json::Value{Json::arrayValue};
+        for (auto lane = uint32_t{1}; lane <= lanes; lane++)
+        {
+            auto name  = std::format(LANE_SUITE, lane);
+            auto known = std::any_of(this->_catalog.begin(), this->_catalog.end(), [&name](const auto& suite) {
+                return suite.name == name;
+            });
+            if (known)
+                names.append(name);
+        }
+        run.params["sim"]["lanes"] = names.size();
+        names.append(REPORT_SUITE);
+    }
+
     if (run.kind == "integration")
     {
         run.retry = body.get("retry", 1).asUInt();
-        for (auto& name : body["suites"])
+        for (auto& name : names)
         {
             auto found = std::find_if(this->_catalog.begin(), this->_catalog.end(), [&name](const auto& suite) {
                 return suite.name == name.asString();
@@ -826,6 +858,15 @@ Json::Value master::start(const Json::Value& body)
         agent.users    = 0;
         agent.bots     = 0;
         agent.batch.clear();
+    }
+
+    std::filesystem::create_directories(run.directory);
+    if (run.params.isObject())
+    {
+        auto writer        = Json::StreamWriterBuilder{};
+        writer["emitUTF8"] = true;
+        std::ofstream(std::filesystem::path{run.directory} / "params.json", std::ios::binary)
+            << Json::writeString(writer, run.params);
     }
 
     this->_run = std::move(run);
@@ -953,6 +994,7 @@ void master::assign(agent_entry& agent, const std::vector<std::string>& names)
     message["client"]    = run.client;
     message["target"]    = run.target;
     message["seat_base"] = lease != this->_leases.end() ? lease->second.seat_base : 0;
+    message["directory"] = run.directory;
     message["suites"]    = Json::Value{Json::arrayValue};
     for (auto& name : names)
     {
@@ -1049,18 +1091,19 @@ void master::rebalance()
         }
         else if (share > 0)
         {
-            auto lease          = this->_leases.find(agent.key);
-            auto pace           = static_cast<double>(run.rate) * share / run.users;
-            auto message        = Json::Value{};
-            message["type"]     = "run_load";
-            message["run_id"]   = run.id;
-            message["users"]    = share;
-            message["rate"]     = std::max(1u, static_cast<uint32_t>(std::lround(pace)));
-            message["interval"] = pace >= 1.0 ? 1000u : static_cast<uint32_t>(std::lround(1000.0 / pace));
-            message["process"]  = lease != this->_leases.end() ? lease->second.process : 0;
-            message["offset"]   = run.offset;
-            message["client"]   = run.client;
-            message["target"]   = run.target;
+            auto lease           = this->_leases.find(agent.key);
+            auto pace            = static_cast<double>(run.rate) * share / run.users;
+            auto message         = Json::Value{};
+            message["type"]      = "run_load";
+            message["run_id"]    = run.id;
+            message["users"]     = share;
+            message["rate"]      = std::max(1u, static_cast<uint32_t>(std::lround(pace)));
+            message["interval"]  = pace >= 1.0 ? 1000u : static_cast<uint32_t>(std::lround(1000.0 / pace));
+            message["process"]   = lease != this->_leases.end() ? lease->second.process : 0;
+            message["offset"]    = run.offset;
+            message["client"]    = run.client;
+            message["target"]    = run.target;
+            message["directory"] = run.directory;
             agent.link->send(message);
             agent.busy  = true;
             agent.users = share;
@@ -1082,10 +1125,8 @@ void master::finish()
         agent.batch.clear();
     }
 
-    auto directory = std::filesystem::path{"logs/runs"} / run.id;
-    std::filesystem::create_directories(directory);
-
-    auto summary = this->report(0);
+    auto directory = std::filesystem::path{run.directory};
+    auto summary   = this->report(0);
     summary.removeMember("timeline");
     auto writer           = Json::StreamWriterBuilder{};
     writer["indentation"] = "  ";
@@ -1155,7 +1196,7 @@ void master::handle(agent_entry& agent, const Json::Value& message)
                 other.link->send(relayed);
         }
     }
-    else if (type == "suite_started" || type == "suite_finished")
+    else if (type == "suite_started" || type == "suite_progress" || type == "suite_finished")
     {
         if (current == false)
             return;
@@ -1170,6 +1211,10 @@ void master::handle(agent_entry& agent, const Json::Value& message)
             if (type == "suite_started")
             {
                 suite.state = "running";
+            }
+            else if (type == "suite_progress")
+            {
+                suite.progress = message["progress"];
             }
             else
             {

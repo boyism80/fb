@@ -117,12 +117,17 @@ function M.check(actor, snap, bound, decision, path)
     for _, floor in ipairs(plan_now ~= nil and plan_now.floors or {}) do
         hunting = hunting or floor.map == snap.world.map
     end
+    local going = {}
+    for _, map in ipairs(kind == ACTION.MOVE and decision.dest ~= nil and (decision.dest.maps or { decision.dest.map }) or {}) do
+        going[map] = true
+    end
     for _, member in ipairs(hunting and members or {}) do
         local coming = member.task == "FIELD" and require("brain.policies.ground").floor_at(member.world.map) == nil
         for _, map in ipairs(member.heading or {}) do
             coming = coming or map == snap.world.map
         end
-        apart = apart or (member.self.ghost == false and member.world.map ~= snap.world.map and coming == false)
+        apart = apart or (member.self.ghost == false and member.world.map ~= snap.world.map and coming == false and
+            going[member.world.map] == nil)
     end
     if apart then
         dog.split = dog.split or now
@@ -218,7 +223,8 @@ function M.check(actor, snap, bound, decision, path)
         actor:violate("swing_with_spell")
     end
 
-    if (me.class ~= "WARRIOR" or (low and mending.hp > battle.burst(snap))) and least ~= nil and (me.mp or 0) < least and #recovery.doses(snap, "mp") > 0 then
+    local thirsty = (me.class ~= "WARRIOR" and value.mana(snap, bound) > 0) or (low and mending.hp > battle.burst(snap))
+    if thirsty and least ~= nil and (me.mp or 0) < least and #recovery.doses(snap, "mp") > 0 then
         dog.dry = dog.dry or now
         if now - dog.dry >= M.DRY then
             actor:violate("dry_with_doses")

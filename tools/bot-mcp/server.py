@@ -11,6 +11,7 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
+import moments
 import predict
 import sim
 
@@ -459,8 +460,8 @@ def fight_samples(since_minutes: float = 30, cls: str = '', mob: str = '', opene
 
 
 @server.tool()
-def sim_start(teams: list[str] | None = None, seeds: list[int] | None = None, solo: bool = True, lanes: int = 24, minutes: int = 0, profile: bool = False, trace: bool = False) -> dict:
-    """Start the offline world sim on the local cluster (never the remote server). teams defaults to every roster team; minutes 0 keeps the roster duration. Returns immediately; follow with sim_result."""
+def sim_start(teams: list[str] | None = None, seeds: list[int] | None = None, solo: bool = True, lanes: int = 0, minutes: int = 0, profile: bool = False, trace: bool = False) -> dict:
+    """Start the offline world sim on the local cluster (never the remote server): the master plans the lanes, runs them on its agents and collects logs/runs/<run>/result.json. teams defaults to every roster team; lanes 0 gives one lane per agent seat; minutes 0 keeps the roster duration. Returns immediately; follow with sim_result."""
     return sim.start(teams, seeds if seeds is not None else [0, 1, 2], solo, lanes, minutes, profile=profile, trace=trace)
 
 
@@ -596,6 +597,44 @@ def sim_trace(alarm: str = '', bot: str = '', t: int | None = None) -> dict:
 def sim_replay(snapshot: str) -> dict:
     """Recompute a dumped snapshot (.lua) offline with fresh brain modules in the unit harness; returns the decision and the tree node trace in a few seconds."""
     return sim.replay(snapshot)
+
+
+@server.tool()
+def sim_lanes(teams: list[str], seeds: list[int] | None = None, solo: bool = False, count: int = 0, minutes: float = 5, corpus: bool = False,
+              profile: bool = False, audit: int = 0, steps: bool = False, fixed: bool = False) -> dict:
+    """Run chosen sim teams on the cluster through the master, so the run shows on the dashboard; while another run is active it waits in line. Waits and returns the run id (usable with sim_timeline, sim_overview), alarms, spilled recent moments of alarmed bots, the decision cost and, with corpus, the folder of sampled decision moments. count is the number of lanes (0 = one per agent seat); profile records function, cache and caller statistics for sim_profile; audit N redecides every Nth decision with cold caches and alarms on a difference; steps counts Lua instructions inside decisions (repeatable, slows the run); fixed gives each lane the same jobs every run, which sim_same needs (keep count the same in both runs)."""
+    return moments.lanes(teams, seeds if seeds is not None else [0], solo, count, minutes, corpus, profile=profile, audit=audit, steps=steps,
+                         fixed=fixed)
+
+
+@server.tool()
+def sim_same(run_id: str, baseline: str) -> dict:
+    """Compare two sim runs of the same teams and seeds row by row: episodes that differ and the first differing row of each. Zero means every decision was the same. Run both with fixed lanes."""
+    return moments.same(run_id, baseline)
+
+
+@server.tool()
+def sim_moments_base(source: str, shards: int = 4) -> dict:
+    """Redecide every recorded moment of a corpus folder (or a glob of moment or snapshot files) with the current brain and keep the answers as the base for sim_moments_diff. as_played tells how many redecisions match what the sim chose."""
+    return moments.base(source, shards)
+
+
+@server.tool()
+def sim_moments_diff(source: str, shards: int = 4, patch: str = '', stride: int = 1) -> dict:
+    """Redecide the moments again and list the decisions that differ from the base, grouped by tree node (was -> now) with examples to open with sim_moment. patch is a Lua file run before the redecisions to try a change without editing the scripts; stride N redecides every Nth moment only, for a quicker look."""
+    return moments.diff(source, shards, patch, stride)
+
+
+@server.tool()
+def sim_moment(path: str, row: int) -> dict:
+    """Redecide one recorded moment (row of a .moments file, 1-based) and return the decision with the node-by-node tree trace."""
+    return moments.moment(path, row)
+
+
+@server.tool()
+def sim_broken(run_id: str, baseline: str = '') -> dict:
+    """Rule breaks a guarded sim run recorded from the first broken decision to the last (apart, rooted_left, healer_struck, struck_idle, strike_spell, fuel_spell, healer_walks): breaks, seconds and longest per rule, the teams with most, and for the longest break of a bot the .moments file of the decisions before it began (open with sim_moment). baseline adds another run's totals."""
+    return moments.broken(run_id, baseline)
 
 
 @server.tool()

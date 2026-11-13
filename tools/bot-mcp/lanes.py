@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--teams', nargs='*', default=[])
     parser.add_argument('--seeds', nargs='*', type=int, default=[0, 1, 2])
     parser.add_argument('--solo', action='store_true')
-    parser.add_argument('--lanes', type=int, default=24)
+    parser.add_argument('--lanes', type=int, default=0)
     parser.add_argument('--minutes', type=int, default=0)
     parser.add_argument('--target', default=sim.TARGET)
     parser.add_argument('--limit', type=int, default=3600)

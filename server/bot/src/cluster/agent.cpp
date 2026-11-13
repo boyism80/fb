@@ -193,7 +193,7 @@ void agent::handle(const Json::Value& message)
             arguments.push_back("--target");
             arguments.push_back(message["target"].asString());
         }
-        this->spawn(message["run_id"].asString(), arguments);
+        this->spawn(message, arguments);
     }
     else if (type == "run_load")
     {
@@ -226,7 +226,7 @@ void agent::handle(const Json::Value& message)
             arguments.push_back("--target");
             arguments.push_back(message["target"].asString());
         }
-        this->spawn(message["run_id"].asString(), arguments);
+        this->spawn(message, arguments);
     }
     else if (type == "scale" || type == "sync" || type == "occupied")
     {
@@ -245,8 +245,9 @@ void agent::handle(const Json::Value& message)
     }
 }
 
-void agent::spawn(const std::string& run_id, const std::vector<std::string>& arguments)
+void agent::spawn(const Json::Value& message, const std::vector<std::string>& arguments)
 {
+    auto run_id = message["run_id"].asString();
     if (this->_child != nullptr)
     {
         auto refused      = Json::Value{};
@@ -267,6 +268,7 @@ void agent::spawn(const std::string& run_id, const std::vector<std::string>& arg
     {
         created->process = boost::process::child(this->_options.executable,
                                                  boost::process::args(arguments),
+                                                 boost::process::env["FB_RUN_DIR"] = message["directory"].asString(),
                                                  (boost::process::std_out & boost::process::std_err) > created->output,
                                                  boost::process::std_in < created->input);
     }

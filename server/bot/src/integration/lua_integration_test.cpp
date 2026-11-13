@@ -395,6 +395,7 @@ IMPLEMENT_LUA_EXTENSION(lua_integration_test, "fb.integration.ctx")
     {"unhook",     fb::bot::builtin::integration_test::builtin_unhook},
     {"suite_slot", fb::bot::builtin::integration_test::builtin_suite_slot},
     {"extra_slot", fb::bot::builtin::integration_test::builtin_extra_slot},
+    {"progress",   fb::bot::builtin::integration_test::builtin_progress},
 END_LUA_EXTENSION;
 // clang-format on
 
@@ -1163,4 +1164,25 @@ int builtin::integration_test::builtin_extra_slot(lua_State* L)
 
     lua_pushinteger(L, static_cast<lua_Integer>(fb::config<uint32_t>("cluster:seat_base", 0) + slot.value()));
     return 1;
+}
+
+int builtin::integration_test::builtin_progress(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto test = lua->touserdata<fb::bot::integration::lua_integration_test>(1);
+    if (test == nullptr)
+        return 0;
+
+    auto text        = lua_tostring(L, 2);
+    auto reported    = Json::Value{};
+    reported["type"] = "suite_progress";
+    reported["name"] = test->key();
+    if (text == nullptr || fb::bot::cluster::link::decode(text, reported["progress"]) == false)
+        return luaL_error(L, "progress(text) requires a JSON object");
+
+    test->controller.container.link.send(reported);
+    return 0;
 }

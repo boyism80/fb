@@ -5,17 +5,17 @@ import glob
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 MASTER = os.environ.get('BOT_MASTER', 'http://127.0.0.1:8089')
-PLAN = os.path.join(ROOT, 'scripts', 'sim', 'world', 'lane_plan.lua')
 BOT = os.path.join(ROOT, 'server', 'bot')
 LOGS = os.path.join(BOT, 'logs', 'cluster')
+RUNS = os.path.join(BOT, 'logs', 'runs')
 TARGET = '175.123.108.99:30000'
 ANSI = re.compile(r'\x1b\[[0-9;]*m')
 TEAM = re.compile(r'\[sim:team\] (.+?) seed=(\d+) (\w+) lv(\d+) died=(\w+).*?kills=(\d+) exp=(\d+)')
@@ -24,8 +24,6 @@ OUTPUT = re.compile(r'output=(\S+?\.jsonl)')
 LABEL = re.compile(r'\[sim:team\] label=(.+?) seed=(\d+) teams=')
 BATTLE = re.compile(r'\[brain:battle\] bot=(\S+) hp=(\d+) mp=(\d+) mob=(\S*) (.*) picks (\S+)')
 FAILED = re.compile(r'failed: .*|lua error.*')
-ALL_TEAMS = ['WA+PO', 'RO+PO', 'WA9+PO', 'WA63+PO65', 'WA+PO 세작', 'RO+PO 세작', 'WA+PO 흉가', 'RO+PO 흉가',
-             'profile 63+65', 'MA', 'PO', 'RO', 'WA']
 DRINKS = ('동동주', '막걸리', '백세주', '오십세주', '팔십세주', '홍주', '파란시약')
 STRIKES = ('건곤대나이', '필살검무')
 WATCHED = ('보호', '무장', '공력증강', '건곤대나이', '필살검무', '투명', '비영승보', '혼마술', '마비', '절망', '중독')
@@ -37,58 +35,57 @@ def call(path, body=None):
     return json.loads(urllib.request.urlopen(request, timeout=30).read())
 
 
-QUEUES = os.path.join(LOGS, 'queue')
-COSTS = os.path.join(LOGS, 'lane-costs.json')
+def asked(teams=None, seeds=(0, 1, 2), solo=True, lanes=None, minutes=0, **options):
+    found = {'seeds': list(seeds), 'solo': solo, 'minutes': minutes}
+    if teams:
+        found['teams'] = list(teams)
+    if lanes:
+        found['lanes'] = lanes
+    found.update({name: value for name, value in options.items() if value is not None})
+    return {'sim': found}
 
 
-def lane_costs():
-    costs = {}
-    if os.path.exists(COSTS):
-        with open(COSTS, encoding='utf-8') as source:
-            costs = json.load(source)
-    if os.path.isdir(QUEUES):
-        for folder in sorted(os.listdir(QUEUES)):
-            path = os.path.join(QUEUES, folder)
-            for name in glob.glob(os.path.join(path, '*.done')):
-                with open(name, encoding='utf-8') as source:
-                    for line in source:
-                        key, _, seconds = line.rstrip('\n').partition('\t')
-                        if key and seconds:
-                            costs[key] = float(seconds)
-            shutil.rmtree(path, ignore_errors=True)
-    with open(COSTS, 'w', encoding='utf-8') as target:
-        json.dump(costs, target, ensure_ascii=False)
-    return costs
+def listed(value):
+    return value if isinstance(value, list) else []
 
 
-def write_plan(teams, seeds, solo, lanes, minutes, profile=False, trace=False, exp=None, alarm=None, halt=False, audit=0):
-    names = ', '.join(json.dumps(name, ensure_ascii=False) for name in teams)
-    numbers = ', '.join(str(seed) for seed in seeds)
-    costs = lane_costs()
-    queue = os.path.join(QUEUES, str(time.time_ns())).replace('\\', '/')
-    os.makedirs(queue, exist_ok=True)
-    table = ', '.join(f'[{json.dumps(key, ensure_ascii=False)}] = {value}' for key, value in sorted(costs.items()))
-    with open(PLAN, 'w', encoding='utf-8', newline='\n') as plan:
-        plan.write(f'return {{ lanes = {lanes}, seeds = {{ {numbers} }}, teams = {{ {names} }}, '
-                   f'queue = [[{queue}]], costs = {{ {table} }}, '
-                   f'solo = {"true" if solo else "false"}, profile = {"true" if profile else "false"}, trace = {"true" if trace else "false"}, '
-                   f'{"" if exp is None else f"exp = {exp}, "}{f"guard = true, halt = {str(halt).lower()}, stall = 30000, bounce = 1000, {f'audit = {audit}, ' if audit else ''}alarm = [[{alarm}]], " if alarm else ""}duration = {int(minutes * 60000)} }}\n')
+def summary(run_id, seconds, found):
+    home = os.path.join(RUNS, run_id)
+    alarm = os.path.join(home, 'alarm.jsonl')
+    decisions = found.get('decisions', 0)
+    return {'run': run_id, 'seconds': seconds, 'home': home, 'episodes': found.get('jobs', 0),
+            'errors': listed(found.get('errors'))[:5], 'lua_errors': sorted(scan(run_id)[2])[:10], 'alarm': alarm,
+            'rules': found.get('rules') or {}, 'violations': listed(found.get('violations')), 'stopped': found.get('stopped', False),
+            'corpus': found.get('corpus'), 'broke': found.get('broke') or {}, 'audit': found.get('audit', 0),
+            'cost': {'decisions': decisions, 'decide_seconds': round(found.get('decide_seconds', 0.0), 1),
+                     'ms_per_decision': round(found.get('ms', 0.0), 2), 'job_seconds': found.get('job_seconds', 0),
+                     'steps_k': found.get('steps', 0), 'steps_k_per_decision': round(found.get('steps', 0) / max(decisions, 1), 1)},
+            'recent': sorted(os.path.basename(name) for name in glob.glob(alarm + '.*.moments'))}
 
 
-def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=TARGET, profile=False, trace=False, exp=None):
+def begin(params, target=''):
+    while True:
+        try:
+            return call('/api/runs', {'kind': 'sim', 'client': '', 'target': target, 'params': params})['id']
+        except urllib.error.HTTPError as refused:
+            reason = json.loads(refused.read()).get('error')
+            if reason != 'a run is in progress':
+                raise RuntimeError(f'the master refused the sim: {reason}')
+        except urllib.error.URLError:
+            raise RuntimeError(f'no master answers at {MASTER}: start the bot master and its agents first')
+        time.sleep(2)
+
+
+def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=0, minutes=0, target=TARGET, profile=False, trace=False, exp=None):
     state = call('/api/state').get('run') or {}
     if state.get('state') == 'running':
         return {'error': 'a run is active', 'run': state.get('id')}
-    teams = ALL_TEAMS if teams is None else teams
-    write_plan(teams, seeds, solo, lanes, minutes, profile, trace, exp)
-    suites = [f'brain_lane_{lane:02d}_test' for lane in range(1, lanes + 1)]
-    run_id = call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': 1, 'client': '',
-                                'target': target})['id']
-    return {'run': run_id, 'teams': len(teams), 'seeds': list(seeds), 'solo': solo, 'target': target}
+    run_id = call('/api/runs', {'kind': 'sim', 'client': '', 'target': target,
+                                'params': asked(teams, seeds, solo, lanes, minutes, profile=profile, trace=trace, exp=exp)})['id']
+    return {'run': run_id, 'seeds': list(seeds), 'solo': solo, 'target': target}
 
 
 BASELINE = os.path.join(LOGS, 'exp-baseline.json')
-KNOWN = ()
 EXP_CHECK_MS = 300000
 EXP_FLOOR = 0.6
 
@@ -139,66 +136,34 @@ def exp_drops(path, seeds):
     return drops
 
 
-def scenario(teams=None, seeds=(0, 1, 2), solo=True, minutes=15, target=TARGET, on_problem='continue', audit=0):
+def scenario(teams=None, seeds=(0, 1, 2), solo=True, minutes=15, target=TARGET, on_problem='continue', audit=0, corpus=False):
     try:
-        return watched_scenario(teams, seeds, solo, minutes, target, on_problem, audit)
+        return watched_scenario(teams, seeds, solo, minutes, target, on_problem, audit, corpus)
     except Exception as failure:
         call('/api/runs/current/stop', {})
         return {'stopped': True, 'violations': [{'rule': 'watcher_failed', 'scene': 'watcher', 'error': repr(failure)}]}
 
 
-def watched_scenario(teams, seeds, solo, minutes, target, on_problem, audit=0):
+def watched_scenario(teams, seeds, solo, minutes, target, on_problem, audit=0, corpus=False):
     halt = on_problem == 'stop'
-    for _ in range(60):
-        if (call('/api/state').get('run') or {}).get('state') != 'running':
-            break
-        time.sleep(1)
-    if not teams:
-        with open(os.path.join(ROOT, 'scripts', 'sim', 'world', 'roster.lua'), encoding='utf-8') as source:
-            teams = list(dict.fromkeys(re.findall(r'name = "([^"]+)"', source.read())))
-    alarm = os.path.join(LOGS, f'alarm-{int(time.time())}.jsonl').replace('\\', '/')
-    os.makedirs(os.path.dirname(alarm), exist_ok=True)
+    run_id = begin(asked(teams, seeds, solo, None, minutes, halt=halt, audit=audit or None, corpus=corpus), target)
     started = time.time()
-    write_plan(teams, seeds, solo, 24, minutes, trace=True, alarm=alarm, halt=halt, audit=audit)
-    suites = [f'brain_lane_{lane:02d}_test' for lane in range(1, 25)]
-    run_id = call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': 1, 'client': '', 'target': target})['id']
-    def raised():
-        if os.path.exists(alarm) is False:
-            return []
-        return complete_rows(alarm)
-
+    growth = os.path.join(RUNS, run_id, 'alarm.jsonl.exp')
     while True:
         suites = (call('/api/state').get('run') or {}).get('suites', [])
-        broken = [suite['name'] for suite in suites if suite.get('state') == 'failed']
-        if halt and broken:
+        broken = [{'rule': 'suite_failed', 'scene': suite['name']} for suite in suites if suite.get('state') == 'failed']
+        raised = (exp_drops(growth, seeds) or broken[:6]) if halt else []
+        if raised:
             call('/api/runs/current/stop', {})
-            write_plan(teams, seeds, solo, 24, minutes, trace=True)
-            return {'run': run_id, 'stopped': True, 'seconds': round(time.time() - started),
-                    'violations': [{'rule': 'suite_failed', 'scene': name} for name in broken[:6]]}
-        drops = exp_drops(alarm + '.exp', seeds) if halt else []
-        if drops:
-            call('/api/runs/current/stop', {})
-            time.sleep(1)
-            write_plan(teams, seeds, solo, 24, minutes, trace=True)
-            return {'run': run_id, 'stopped': True, 'seconds': round(time.time() - started), 'violations': drops}
-        stopping = [row for row in raised() if row.get('rule') not in KNOWN]
-        if halt and stopping:
-            call('/api/runs/current/stop', {})
-            time.sleep(1)
-            write_plan(teams, seeds, solo, 24, minutes, trace=True)
-            return {'run': run_id, 'stopped': True, 'seconds': round(time.time() - started), 'alarm': alarm, 'violations': stopping[:6],
-                    'known': len(raised()) - len(stopping)}
+            return {'run': run_id, 'stopped': True, 'seconds': round(time.time() - started), 'violations': raised}
         if progress(run_id)['state'] != 'running':
-            found = raised() + [{'rule': 'lua_error', 'detail': error} for error in sorted(scan(run_id)[2])]
-            write_plan(teams, seeds, solo, 24, minutes, trace=True)
-            return {'run': run_id, 'stopped': False, 'seconds': round(time.time() - started), 'count': len(found),
-                    'rules': dict(collections.Counter(entry['rule'] for entry in found)), 'violations': found[:30]}
+            return summary(run_id, round(time.time() - started), call(f'/api/runs/{run_id}/result.json'))
         time.sleep(1)
 
 
 def latest_alarm():
-    found = sorted(glob.glob(os.path.join(LOGS, 'alarm-*.jsonl')), key=os.path.getmtime)
-    return found[-1] if found else None
+    found = sorted(glob.glob(os.path.join(RUNS, '*', 'params.json')), key=os.path.getmtime)
+    return os.path.join(os.path.dirname(found[-1]), 'alarm.jsonl') if found else None
 
 
 def audit(alarm=''):
@@ -338,22 +303,22 @@ def scan(run_id):
 
 
 def profile_of(run_id, limit=30):
-    found = []
-    pattern = re.compile(r'\[sim:prof\] (\S+) calls=(\d+) own=([\d.]+)s total=([\d.]+)s')
-    wall = None
-    for path in glob.glob(os.path.join(LOGS, run_id + '-rel-*.log')):
-        with open(path, 'rb') as log:
-            for raw in log:
-                if b'[sim:prof]' not in raw:
-                    continue
-                line = ANSI.sub('', raw.decode('utf-8', 'replace'))
-                match = pattern.search(line)
-                if match:
-                    found.append({'name': match.group(1), 'calls': int(match.group(2)), 'own': float(match.group(3)),
-                                  'total': float(match.group(4))})
-                elif 'wall=' in line:
-                    wall = line.split('wall=')[1].strip()
-    return {'wall': wall, 'functions': sorted(found, key=lambda entry: -entry['own'])[:limit]}
+    with open(os.path.join(RUNS, run_id, 'result.json'), encoding='utf-8') as source:
+        found = json.load(source).get('profile') or {}
+    spent = lambda item: -item[1]['time']
+    functions = [{'name': name, 'calls': entry['calls'], 'own': round(entry['own'], 2), 'total': round(entry['total'], 2)}
+                 for name, entry in (found.get('functions') or {}).items()]
+    sites = {name: {**entry, 'time': round(entry['time'], 2),
+                    'fields': {field[1:]: count for field, count in (entry.get('fields') or {}).items()}}
+             for name, entry in (found.get('sites') or {}).items()}
+    choosers = {name: {**entry, 'time': round(entry['time'], 2)} for name, entry in (found.get('choosers') or {}).items()}
+    callers = {}
+    for name, entry in (found.get('callers') or {}).items():
+        asked_of, _, caller = name.partition(' ')
+        callers.setdefault(asked_of, {})[caller] = {'calls': entry['calls'], 'time': round(entry['time'], 2)}
+    return {'wall': round(found.get('wall', 0.0), 1), 'functions': sorted(functions, key=lambda entry: -entry['own'])[:limit],
+            'sites': dict(sorted(sites.items(), key=spent)), 'choosers': dict(sorted(choosers.items(), key=spent)),
+            'callers': {name: dict(sorted(entries.items(), key=spent)) for name, entries in callers.items()}}
 
 
 def rows(path):
@@ -1131,18 +1096,19 @@ def main():
     parser.add_argument('--no-solo', action='store_true')
     parser.add_argument('--raw', action='store_true')
     parser.add_argument('--on-problem', choices=['continue', 'stop'], default='continue')
-    parser.add_argument('--lanes', type=int, default=24)
+    parser.add_argument('--lanes', type=int, default=0)
     parser.add_argument('--minutes', type=int, default=0)
     parser.add_argument('--target', default=TARGET)
     parser.add_argument('--profile', action='store_true')
     parser.add_argument('--trace', action='store_true')
+    parser.add_argument('--corpus', action='store_true')
     args = parser.parse_args()
     if args.command == 'baseline':
         output = save_baseline(args.run)
     elif args.command == 'unit':
         output = unit(args.team)
     elif args.command == 'scenario':
-        output = scenario(args.teams, args.seeds, not args.no_solo, args.minutes or 15, args.target, args.on_problem, args.audit)
+        output = scenario(args.teams, args.seeds, not args.no_solo, args.minutes or 15, args.target, args.on_problem, args.audit, args.corpus)
     elif args.command == 'start':
         output = start(args.teams, args.seeds, not args.no_solo, args.lanes, args.minutes, args.target, args.profile, args.trace)
     elif args.command == 'wait':

@@ -29,6 +29,9 @@ public:
     };
 
 private:
+    static constexpr auto LANE_SUITE   = "brain_lane_{:02}_test";
+    static constexpr auto REPORT_SUITE = "brain_sim_report_test";
+
     using clock    = std::chrono::steady_clock;
     using request  = boost::beast::http::request<boost::beast::http::string_body>;
     using response = boost::beast::http::response<boost::beast::http::string_body>;
@@ -80,12 +83,15 @@ private:
         uint32_t    attempts = 0;
         double      seconds  = 0.0;
         std::string log;
+        Json::Value progress;
     };
 
     struct run_state
     {
         std::string                         id;
         std::string                         kind;
+        std::string                         directory;
+        Json::Value                         params;
         std::string                         state = "running";
         std::string                         started_at;
         std::string                         finished_at;

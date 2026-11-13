@@ -255,6 +255,33 @@ return {
                     { class = "POET", low = 90, high = 99, spells = { "생명의기원", "공력증강" } },
                 }
             },
+            {
+                name = "WA+MA",
+                prepared = true,
+                ground = {},
+                members = {
+                    { class = "WARRIOR", low = 63, high = 79, spells = { "건곤대나이" } },
+                    { class = "MAGE", low = 60, high = 79, spells = { "공력증강", "마비", "절망", "중독" } },
+                }
+            },
+            {
+                name = "MA+PO",
+                prepared = true,
+                ground = {},
+                members = {
+                    { class = "MAGE", low = 60, high = 79, spells = { "공력증강", "마비", "절망", "중독" } },
+                    { class = "POET", low = 60, high = 79, spells = { "혼마술", "공력증강" } },
+                }
+            },
+            {
+                name = "WA40+PO40",
+                prepared = true,
+                ground = {},
+                members = {
+                    { class = "WARRIOR", low = 40, high = 49, spells = { "백열장" } },
+                    { class = "POET", low = 40, high = 49, spells = { "공력증강", "구름의기원" } },
+                }
+            },
         },
     },
 }
