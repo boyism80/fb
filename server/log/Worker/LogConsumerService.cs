@@ -202,11 +202,11 @@ namespace Log.Worker
                     {
                         if (inserted)
                         {
-                            await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                            await _channel.BasicAckAsync(deliveryTag, false, CancellationToken.None);
                         }
                         else
                         {
-                            await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
+                            await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, CancellationToken.None);
                         }
                     }
                     catch (Exception ex)
@@ -346,7 +346,7 @@ namespace Log.Worker
                 var queueName = Encoding.UTF8.GetString(raw);
                 await DeclareDeadQueueAsync(_publisher, queueName, cancellationToken);
                 await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, queueName, true, new BasicProperties(result.BasicProperties), result.Body, cancellationToken);
-                await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
+                await _channel.BasicAckAsync(result.DeliveryTag, false, CancellationToken.None);
                 moved++;
             }
 
@@ -423,7 +423,7 @@ namespace Log.Worker
                 _logger.LogInformation($"Processed {logCount} log entries");
                 foreach (var message in _pending)
                 {
-                    await AckAsync(message, cancellationToken);
+                    await AckAsync(message);
                 }
                 _pending.Clear();
             }
@@ -437,7 +437,7 @@ namespace Log.Worker
                     try
                     {
                         await logRepository.BulkInsertAsync(message.Logs);
-                        await AckAsync(message, cancellationToken);
+                        await AckAsync(message);
                     }
                     catch (Exception e) when (e is InvalidDataException || (e is MySqlException mysql && DataErrorNumbers.Contains(mysql.Number)))
                     {
@@ -453,7 +453,7 @@ namespace Log.Worker
                 foreach (var message in rejected)
                 {
                     _logger.LogError($"Dropping a log message from {message.QueueName} rejected by the database: {Encoding.UTF8.GetString(message.Body)}");
-                    await AckAsync(message, cancellationToken);
+                    await AckAsync(message);
                 }
 
                 if (failed.Count > 0)
@@ -464,7 +464,7 @@ namespace Log.Worker
                         {
                             _logger.LogError($"Moving a log message that failed on a reachable database to {message.QueueName}{DeadQueueSuffix}");
                             await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
-                            await AckAsync(message, cancellationToken);
+                            await AckAsync(message);
                         }
                     }
                     else
@@ -523,20 +523,20 @@ namespace Log.Worker
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", deadQueueName);
-                        await AckAsync(message, cancellationToken);
+                        await AckAsync(message);
                         continue;
                     }
 
                     try
                     {
                         await logRepository.BulkInsertAsync(message.Logs);
-                        await AckAsync(message, cancellationToken);
+                        await AckAsync(message);
                         replayed++;
                     }
                     catch (Exception ex) when (ex is InvalidDataException || (ex is MySqlException mysql && DataErrorNumbers.Contains(mysql.Number)))
                     {
                         _logger.LogError(ex, $"Dropping a log message from {deadQueueName} rejected by the database: {Encoding.UTF8.GetString(message.Body)}");
-                        await AckAsync(message, cancellationToken);
+                        await AckAsync(message);
                     }
                     catch (Exception ex)
                     {
@@ -551,7 +551,7 @@ namespace Log.Worker
                         if (replays >= MaxDeadReplays)
                         {
                             _logger.LogError(ex, $"Dropping a log message from {deadQueueName} after {replays} failed replays: {Encoding.UTF8.GetString(message.Body)}");
-                            await AckAsync(message, cancellationToken);
+                            await AckAsync(message);
                             continue;
                         }
 
@@ -562,7 +562,7 @@ namespace Log.Worker
                             [ReplayCountHeader] = replays
                         };
                         await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, queueName, true, properties, message.Body, cancellationToken);
-                        await AckAsync(message, cancellationToken);
+                        await AckAsync(message);
                     }
                 }
 
@@ -600,11 +600,11 @@ namespace Log.Worker
             };
         }
 
-        private async Task AckAsync(PendingMessage message, CancellationToken cancellationToken)
+        private async Task AckAsync(PendingMessage message)
         {
             try
             {
-                await _channel.BasicAckAsync(message.DeliveryTag, false, cancellationToken);
+                await _channel.BasicAckAsync(message.DeliveryTag, false, CancellationToken.None);
             }
             catch (Exception ex)
             {
