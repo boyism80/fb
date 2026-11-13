@@ -99,7 +99,15 @@ void object::show()
 void object::show(object& to)
 {
     this->assert_thread();
+    if (this->visible(to) == false)
+        return;
+
     this->listener.on_show(*this, to);
+}
+
+bool object::visible(const object& viewer) const
+{
+    return viewer.sight(*this) && this->hidden(viewer) == false;
 }
 
 void object::update_external()
@@ -252,31 +260,25 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj.get())
             continue;
 
-        if (this->hidden(*obj) == false)
-        {
-            auto before_sight = obj->sight(before);
-            auto after_sight  = obj->sight(*this);
+        auto before_sight = obj->sight(before);
+        auto after_sight  = obj->sight(*this);
 
-            if (!before_sight && after_sight) // I entered the other object's sight
-            {
-                this->show(*obj);
-            }
-            else if (refresh && before_sight && after_sight) // Force refresh while already in sight
-            {
-                this->show(*obj);
-            }
-            else
-            {
-            }
+        if (!before_sight && after_sight) // I entered the other object's sight
+        {
+            this->show(*obj);
+        }
+        else if (refresh && before_sight && after_sight) // Force refresh while already in sight
+        {
+            this->show(*obj);
+        }
+        else
+        {
         }
 
         // Other object entered my sight
-        if (obj->hidden(*this) == false)
+        if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
         {
-            if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
-            {
-                obj->show(*this);
-            }
+            obj->show(*this);
         }
     }
 
@@ -736,9 +738,6 @@ async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t>
             for (auto& obj : map->nears(this->_position))
             {
                 if (obj.get() == this)
-                    continue;
-
-                if (this->sight(*obj) == false)
                     continue;
 
                 obj->show(*this);

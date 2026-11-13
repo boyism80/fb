@@ -286,10 +286,7 @@ void listener_impl::on_show(object& me)
 
         for (auto& obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
-            if (me.hidden(*obj))
-                continue;
-
-            if (obj->sight(me) == false)
+            if (me.visible(*obj) == false)
                 continue;
 
             auto you = std::static_pointer_cast<character>(obj);
@@ -306,9 +303,6 @@ void listener_impl::on_show(object& me)
 
 void listener_impl::on_show(object& me, object& you)
 {
-    if (me.hidden(you))
-        return;
-
     if (you.is(OBJECT_TYPE::CHARACTER) == false)
         return;
 

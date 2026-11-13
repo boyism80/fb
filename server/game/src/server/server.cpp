@@ -76,10 +76,7 @@ void fb::game::server::send(object&                     object,
 
         for (auto& x : shared_ptr->nears(OBJECT_TYPE::CHARACTER, true))
         {
-            if (x->sight(*shared_ptr) == false)
-                continue;
-
-            if (shared_ptr->hidden(*x))
+            if (shared_ptr->visible(*x) == false)
                 continue;
 
             if (allowed(*x) == false)

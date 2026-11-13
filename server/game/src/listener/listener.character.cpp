@@ -305,9 +305,6 @@ void listener_impl::on_screen_refresh(character& ch)
 
     for (auto& obj : ch.sight_in(OBJECT_TYPE::OBJECT))
     {
-        if (obj->hidden(ch))
-            continue;
-
         obj->show(ch);
     }
 
