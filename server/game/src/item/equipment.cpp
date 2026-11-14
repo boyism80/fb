@@ -50,12 +50,10 @@ async::task<bool> fb::game::equipment::active()
     if (this->_container == nullptr)
         co_return false;
 
-    auto before = std::shared_ptr<fb::game::item>();
-    auto owner  = this->_container->owner();
+    auto owner = this->_container->owner();
     if (owner == nullptr)
         co_return false;
 
-    auto  parts = EQUIPMENT_PARTS::UNKNOWN;
     auto& model = this->model();
 
     for (auto& dsl : model.condition)
@@ -127,62 +125,8 @@ async::task<bool> fb::game::equipment::active()
         }
     }
 
-    switch (model.attr())
-    {
-    case ITEM_ATTRIBUTE::WEAPON:
-        before = owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
-        parts  = EQUIPMENT_PARTS::WEAPON;
-        break;
-
-    case ITEM_ATTRIBUTE::ARMOR:
-        before = owner->items.armor(this->shared_from_this_as<fb::game::armor>());
-        parts  = EQUIPMENT_PARTS::ARMOR;
-        break;
-
-    case ITEM_ATTRIBUTE::SHIELD:
-        before = owner->items.shield(this->shared_from_this_as<fb::game::shield>());
-        parts  = EQUIPMENT_PARTS::SHIELD;
-        break;
-
-    case ITEM_ATTRIBUTE::HELMET:
-        before = owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
-        parts  = EQUIPMENT_PARTS::HELMET;
-        break;
-
-    case ITEM_ATTRIBUTE::RING:
-        if (owner->items.ring(EQUIPMENT_POSITION::LEFT) == nullptr)
-        {
-            parts = EQUIPMENT_PARTS::LEFT_HAND;
-        }
-        else
-        {
-            parts = EQUIPMENT_PARTS::RIGHT_HAND;
-        }
-
-        before = owner->items.ring(this->shared_from_this_as<fb::game::ring>());
-        break;
-
-    case ITEM_ATTRIBUTE::AUXILIARY:
-        if (owner->items.auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr)
-        {
-            parts = EQUIPMENT_PARTS::LEFT_AUX;
-        }
-        else
-        {
-            parts = EQUIPMENT_PARTS::RIGHT_AUX;
-        }
-
-        before = owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
-        break;
-
-    default:
-        throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INVALID_TYPE));
-    }
-
+    auto parts  = co_await owner->items.wear(this->shared_from_this_as<fb::game::equipment>());
     std::ignore = co_await fb::game::item::active();
-
-    owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
-    std::ignore = co_await owner->items.add(before);
 
     // Execute equipment activation script
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_equipment_active");

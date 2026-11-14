@@ -117,6 +117,7 @@ public:
     item_ptr                                        usable(uint8_t index) const;
     [[nodiscard]] async::task<item_ptr>             active(uint8_t index);
     [[nodiscard]] async::task<uint8_t>              inactive(EQUIPMENT_PARTS parts);
+    [[nodiscard]] async::task<EQUIPMENT_PARTS>      wear(equipment_ptr equipment);
     equipment_ptr                                   equipment_off(EQUIPMENT_PARTS parts);
     bool                                            wear_down(EQUIPMENT_PARTS parts, uint32_t value);
     uint8_t                                         index(const fb::model::item& item) const;
@@ -131,25 +132,19 @@ public:
     void                                            sync() const;
 
 private:
+    equipment_ptr                                   put(EQUIPMENT_PARTS parts, equipment_ptr equipment);
+    void                                            deactivate(EQUIPMENT_PARTS parts, const equipment_ptr& equipment);
     void                                            notify_equipment_swap(EQUIPMENT_PARTS parts, const equipment_ptr& before, const equipment_ptr& after);
     void                                            write_item_log(std::string_view event, const fb::game::item& item, uint16_t count, uint8_t index, std::optional<ITEM_DELETE_TYPE> attr = std::nullopt) const;
     bool                                            warm(const fb::game::item& item) const;
 
 public:
     weapon_ptr                                      weapon() const;
-    weapon_ptr                                      weapon(weapon_ptr weapon);
     armor_ptr                                       armor() const;
-    armor_ptr                                       armor(armor_ptr armor);
     shield_ptr                                      shield() const;
-    shield_ptr                                      shield(shield_ptr shield);
     helmet_ptr                                      helmet() const;
-    helmet_ptr                                      helmet(helmet_ptr helmet);
     ring_ptr                                        ring(EQUIPMENT_POSITION position) const;
-    ring_ptr                                        ring(ring_ptr ring);
-    ring_ptr                                        ring(ring_ptr ring, EQUIPMENT_POSITION position);
     auxiliary_ptr                                   auxiliary(EQUIPMENT_POSITION position) const;
-    auxiliary_ptr                                   auxiliary(auxiliary_ptr auxiliary);
-    auxiliary_ptr                                   auxiliary(auxiliary_ptr auxiliary, EQUIPMENT_POSITION position);
     item_ptr                                        find(std::string_view name) const;
     item_ptr                                        find(const fb::model::item& model) const;
     item_ptr                                        find(uint64_t uid) const;

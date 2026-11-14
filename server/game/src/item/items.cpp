@@ -47,53 +47,122 @@ std::shared_ptr<character> items::owner() const
     return this->_owner.lock();
 }
 
-std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
+std::shared_ptr<equipment> items::put(EQUIPMENT_PARTS parts, std::shared_ptr<fb::game::equipment> equipment)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return nullptr;
 
-    auto equipment = std::shared_ptr<fb::game::equipment>{nullptr};
+    auto before = std::shared_ptr<fb::game::equipment>{nullptr};
     switch (parts)
     {
     case EQUIPMENT_PARTS::WEAPON:
-        equipment = this->weapon(nullptr);
+        before = std::exchange(this->_weapon, std::static_pointer_cast<fb::game::weapon>(equipment));
         break;
 
     case EQUIPMENT_PARTS::ARMOR:
-        equipment = this->armor(nullptr);
+        before = std::exchange(this->_armor, std::static_pointer_cast<fb::game::armor>(equipment));
         break;
 
     case EQUIPMENT_PARTS::SHIELD:
-        equipment = this->shield(nullptr);
+        before = std::exchange(this->_shield, std::static_pointer_cast<fb::game::shield>(equipment));
         break;
 
     case EQUIPMENT_PARTS::HELMET:
-        equipment = this->helmet(nullptr);
+        before = std::exchange(this->_helmet, std::static_pointer_cast<fb::game::helmet>(equipment));
         break;
 
     case EQUIPMENT_PARTS::LEFT_HAND:
-        equipment = this->ring(nullptr, EQUIPMENT_POSITION::LEFT);
+        before = std::exchange(this->_rings[static_cast<int>(EQUIPMENT_POSITION::LEFT)],
+                               std::static_pointer_cast<fb::game::ring>(equipment));
         break;
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
-        equipment = this->ring(nullptr, EQUIPMENT_POSITION::RIGHT);
+        before = std::exchange(this->_rings[static_cast<int>(EQUIPMENT_POSITION::RIGHT)],
+                               std::static_pointer_cast<fb::game::ring>(equipment));
         break;
 
     case EQUIPMENT_PARTS::LEFT_AUX:
-        equipment = this->auxiliary(nullptr, EQUIPMENT_POSITION::LEFT);
+        before = std::exchange(this->_auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)],
+                               std::static_pointer_cast<fb::game::auxiliary>(equipment));
         break;
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
-        equipment = this->auxiliary(nullptr, EQUIPMENT_POSITION::RIGHT);
+        before = std::exchange(this->_auxiliaries[static_cast<int>(EQUIPMENT_POSITION::RIGHT)],
+                               std::static_pointer_cast<fb::game::auxiliary>(equipment));
         break;
 
     default:
         return nullptr;
     }
 
-    if (equipment == nullptr)
-        return nullptr;
+    this->notify_equipment_swap(parts, before, equipment);
+    owner->update_external();
+    if (parts == EQUIPMENT_PARTS::HELMET)
+        owner->group.refresh_portrait();
+
+    return before;
+}
+
+async::task<EQUIPMENT_PARTS> items::wear(std::shared_ptr<fb::game::equipment> equipment)
+{
+    auto parts = EQUIPMENT_PARTS::UNKNOWN;
+    switch (equipment->model().attr())
+    {
+    case ITEM_ATTRIBUTE::WEAPON:
+        parts = EQUIPMENT_PARTS::WEAPON;
+        break;
+
+    case ITEM_ATTRIBUTE::ARMOR:
+        parts = EQUIPMENT_PARTS::ARMOR;
+        break;
+
+    case ITEM_ATTRIBUTE::SHIELD:
+        parts = EQUIPMENT_PARTS::SHIELD;
+        break;
+
+    case ITEM_ATTRIBUTE::HELMET:
+        parts = EQUIPMENT_PARTS::HELMET;
+        break;
+
+    case ITEM_ATTRIBUTE::RING:
+        parts =
+            this->ring(EQUIPMENT_POSITION::LEFT) == nullptr ? EQUIPMENT_PARTS::LEFT_HAND : EQUIPMENT_PARTS::RIGHT_HAND;
+        break;
+
+    case ITEM_ATTRIBUTE::AUXILIARY:
+        parts = this->auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr ? EQUIPMENT_PARTS::LEFT_AUX
+                                                                     : EQUIPMENT_PARTS::RIGHT_AUX;
+        break;
+
+    default:
+        throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INVALID_TYPE));
+    }
+
+    auto before = this->put(parts, equipment);
+    this->remove(equipment, 1, ITEM_DELETE_TYPE::NONE, false);
+    if (before == nullptr)
+        co_return parts;
+
+    this->deactivate(parts, before);
+    std::ignore = co_await this->add(before);
+    co_return parts;
+}
+
+std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
+{
+    auto equipment = this->put(parts, nullptr);
+    if (equipment != nullptr)
+        this->deactivate(parts, equipment);
+
+    return equipment;
+}
+
+void items::deactivate(EQUIPMENT_PARTS parts, const std::shared_ptr<fb::game::equipment>& equipment)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
 
     owner->stat.hp(owner->stat.hp(), false);
     owner->stat.mp(owner->stat.mp(), false);
@@ -122,7 +191,6 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     }
 
     owner->show();
-    return equipment;
 }
 
 bool items::wear_down(EQUIPMENT_PARTS parts, uint32_t value)
@@ -939,20 +1007,6 @@ std::shared_ptr<weapon> items::weapon() const
     return this->_weapon;
 }
 
-std::shared_ptr<weapon> items::weapon(std::shared_ptr<fb::game::weapon> weapon)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before = this->_weapon;
-
-    this->_weapon = weapon;
-    this->notify_equipment_swap(EQUIPMENT_PARTS::WEAPON, before, weapon);
-    owner->update_external();
-    return before;
-}
-
 std::shared_ptr<armor> items::armor() const
 {
     auto owner = this->_owner.lock();
@@ -960,21 +1014,6 @@ std::shared_ptr<armor> items::armor() const
         return nullptr;
 
     return this->_armor;
-}
-
-std::shared_ptr<armor> items::armor(std::shared_ptr<fb::game::armor> armor)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before = this->_armor;
-
-    this->_armor = armor;
-    this->notify_equipment_swap(EQUIPMENT_PARTS::ARMOR, before, armor);
-    owner->update_external();
-
-    return before;
 }
 
 std::shared_ptr<shield> items::shield() const
@@ -986,21 +1025,6 @@ std::shared_ptr<shield> items::shield() const
     return this->_shield;
 }
 
-std::shared_ptr<shield> items::shield(std::shared_ptr<fb::game::shield> shield)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before = this->_shield;
-
-    this->_shield = shield;
-    this->notify_equipment_swap(EQUIPMENT_PARTS::SHIELD, before, shield);
-    owner->update_external();
-
-    return before;
-}
-
 std::shared_ptr<helmet> items::helmet() const
 {
     auto owner = this->_owner.lock();
@@ -1008,22 +1032,6 @@ std::shared_ptr<helmet> items::helmet() const
         return nullptr;
 
     return this->_helmet;
-}
-
-std::shared_ptr<helmet> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before = this->_helmet;
-
-    this->_helmet = helmet;
-    this->notify_equipment_swap(EQUIPMENT_PARTS::HELMET, before, helmet);
-    owner->update_external();
-    owner->group.refresh_portrait();
-
-    return before;
 }
 
 std::shared_ptr<ring> items::ring(EQUIPMENT_POSITION position) const
@@ -1035,42 +1043,6 @@ std::shared_ptr<ring> items::ring(EQUIPMENT_POSITION position) const
     return this->_rings[static_cast<int>(position)];
 }
 
-std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    std::shared_ptr<fb::game::ring> before = nullptr;
-
-    if (this->_rings[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
-    {
-        before = this->ring(ring, EQUIPMENT_POSITION::LEFT);
-    }
-    else
-    {
-        before = this->ring(ring, EQUIPMENT_POSITION::RIGHT);
-    }
-
-    return before;
-}
-
-std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before = this->_rings[static_cast<int>(position)];
-
-    this->_rings[static_cast<int>(position)] = ring;
-    auto parts = (position == EQUIPMENT_POSITION::LEFT) ? EQUIPMENT_PARTS::LEFT_HAND : EQUIPMENT_PARTS::RIGHT_HAND;
-    this->notify_equipment_swap(parts, before, ring);
-    owner->update_external();
-
-    return before;
-}
-
 std::shared_ptr<auxiliary> items::auxiliary(EQUIPMENT_POSITION position) const
 {
     auto owner = this->_owner.lock();
@@ -1078,41 +1050,6 @@ std::shared_ptr<auxiliary> items::auxiliary(EQUIPMENT_POSITION position) const
         return nullptr;
 
     return this->_auxiliaries[static_cast<int>(position)];
-}
-
-std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    std::shared_ptr<fb::game::auxiliary> before = nullptr;
-
-    if (this->_auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
-    {
-        before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::LEFT);
-    }
-    else
-    {
-        before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::RIGHT);
-    }
-
-    return before;
-}
-
-std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary, EQUIPMENT_POSITION position)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    auto before                                    = this->_auxiliaries[static_cast<int>(position)];
-    this->_auxiliaries[static_cast<int>(position)] = auxiliary;
-    auto parts = (position == EQUIPMENT_POSITION::LEFT) ? EQUIPMENT_PARTS::LEFT_AUX : EQUIPMENT_PARTS::RIGHT_AUX;
-    this->notify_equipment_swap(parts, before, auxiliary);
-    owner->update_external();
-
-    return before;
 }
 
 std::shared_ptr<item> items::find(std::string_view name) const

@@ -3752,50 +3752,29 @@ int builtin::character::builtin_weapon(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto ch   = lua->touserdata<fb::game::character>(1);
+    auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto weapon   = std::make_shared<std::shared_ptr<fb::game::weapon>>();
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            *weapon = ch->items.weapon();
-            co_return;
-        };
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto weapon   = std::make_shared<std::shared_ptr<fb::game::weapon>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *weapon = ch->items.weapon();
+        co_return;
+    };
 
-        builder.resume = [=]() -> async::task<int> {
-            if (*weapon == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(*weapon);
+    builder.resume = [=]() -> async::task<int> {
+        if (*weapon == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*weapon);
 
-            co_return 1;
-        };
+        co_return 1;
+    };
 
-        return builder.run();
-    }
-    else
-    {
-        auto value    = lua->touserdata<fb::game::weapon>(2);
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            ch->items.weapon(value);
-            co_return;
-        };
-
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
-        };
-
-        return builder.run();
-    }
+    return builder.run();
 }
 
 int builtin::character::builtin_title(lua_State* L)
