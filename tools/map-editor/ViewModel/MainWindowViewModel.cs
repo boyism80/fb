@@ -474,6 +474,7 @@ namespace MapEditor.ViewModel
             });
             FocusWarpIssueCommand = new RelayCommand<WarpIssue>(issue => _ = FocusWarpIssue(issue));
             DeleteCheckedWarpsCommand = new RelayCommand(_ => DeleteCheckedWarps());
+            WarpAlignCommand = new RelayCommand(_ => WarpAlignRequested?.Invoke());
             ShortcutEditorCommand = new RelayCommand(_ => ShortcutEditorRequested?.Invoke());
             InitializeMapCommands();
             InitializeTemplates();
@@ -3039,14 +3040,6 @@ namespace MapEditor.ViewModel
         private void OnDocumentChanged()
         {
             foreach (var issue in WarpIssues)
-            {
-                issue.InOpenMap = issue.MapId == Document?.Id;
-                if (issue.InOpenMap == false)
-                {
-                    issue.Checked = false;
-                }
-            }
-            foreach (var issue in TemplateWarpIssues)
             {
                 issue.InOpenMap = issue.MapId == Document?.Id;
                 if (issue.InOpenMap == false)

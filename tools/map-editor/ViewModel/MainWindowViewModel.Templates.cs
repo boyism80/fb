@@ -13,9 +13,6 @@ namespace MapEditor.ViewModel
 {
     public partial class MainWindowViewModel
     {
-        public event Action TemplateScanRequested;
-        public event Action TemplateWarpCheckRequested;
-
         public ObservableCollection<MapTemplate> Templates { get; } = new ObservableCollection<MapTemplate>();
         public ICollectionView TemplateView { get; private set; }
         public string TemplateQuery { get; set; } = "";
@@ -36,17 +33,13 @@ namespace MapEditor.ViewModel
         public bool SelectByTemplate { get; set; } = true;
 
         public string TemplatePath => string.IsNullOrWhiteSpace(User.TemplateFile) ? TemplateFile.DefaultPath : User.TemplateFile;
-        public ObservableCollection<TemplateWarpIssue> TemplateWarpIssues { get; } = new ObservableCollection<TemplateWarpIssue>();
 
         public RelayCommand PlaceTemplateCommand { get; private set; }
         public RelayCommand EditTemplateCommand { get; private set; }
         public RelayCommand<System.Collections.IList> DeleteTemplatesCommand { get; private set; }
         public RelayCommand SaveSelectionAsTemplateCommand { get; private set; }
         public RelayCommand FindTemplateCommand { get; private set; }
-        public RelayCommand ScanTemplatesCommand { get; private set; }
-        public RelayCommand TemplateWarpCheckCommand { get; private set; }
         public RelayCommand ChangeTemplateFileCommand { get; private set; }
-        public RelayCommand MoveTemplateWarpsCommand { get; private set; }
         public RelayCommand FindTemplatePlacesCommand { get; private set; }
 
         /// <summary>
@@ -90,10 +83,7 @@ namespace MapEditor.ViewModel
             });
             SaveSelectionAsTemplateCommand = new RelayCommand(_ => SaveTemplateFrom(Selection.ToList()));
             FindTemplateCommand = new RelayCommand(_ => FindTemplate(SelectedTemplate));
-            ScanTemplatesCommand = new RelayCommand(_ => TemplateScanRequested?.Invoke());
-            TemplateWarpCheckCommand = new RelayCommand(_ => TemplateWarpCheckRequested?.Invoke());
             ChangeTemplateFileCommand = new RelayCommand(_ => ChangeTemplateFile());
-            MoveTemplateWarpsCommand = new RelayCommand(_ => MoveTemplateWarps());
             FindTemplatePlacesCommand = new RelayCommand(_ => _ = FindTemplatePlaces(SelectedTemplate));
 
             LoadTemplates();
@@ -522,140 +512,6 @@ namespace MapEditor.ViewModel
             }
             SelectTemplateInstance(new TemplateInstance { Template = template, X = place.X, Y = place.Y }, SelectMode.Replace);
             StatusText = $"'{template.Name}' {place.Label}";
-        }
-
-        /// <summary>
-        /// Finds repeated object clusters on every map that are not templates yet.
-        /// </summary>
-        public async Task<List<MapTemplate>> ScanTemplates(TemplateScanOptions options, IProgress<(double Done, string Text)> progress, CancellationToken token)
-        {
-            if (_spawns == null)
-            {
-                throw new InvalidOperationException("the editor is still loading");
-            }
-
-            var maps = await CorpusSnapshot(progress);
-            var doors = DoorTable.Copy();
-            var existing = Templates.Select(t => t.Signature(doors)).ToHashSet();
-            var names = _spawns.MapNames;
-            return await Task.Run(() => TemplateScan.Run(maps, names.Find, options, existing, doors, progress, token), token);
-        }
-
-        /// <summary>
-        /// Template-based warp position analysis over every map (the open map with its unsaved cells and warps).
-        /// </summary>
-        public async Task<List<TemplateWarpIssue>> CheckTemplateWarps(IProgress<(double Done, string Text)> progress, CancellationToken token)
-        {
-            if (_spawns == null)
-            {
-                throw new InvalidOperationException("the editor is still loading");
-            }
-
-            if (Templates.Count == 0)
-            {
-                throw new InvalidOperationException("등록된 템플릿이 없습니다. 먼저 템플릿을 추가하거나 자동 스캔하세요.");
-            }
-
-            var maps = await CorpusSnapshot(progress);
-            progress.Report((0, "워프 시트 읽는 중..."));
-            var spawns = _spawns;
-            var warps = await Task.Run(() => spawns.ReadAllWarps(), token);
-            if (Document != null)
-            {
-                warps[Document.Id] = Document.Warps.ToList();
-            }
-
-            var matcher = new TemplateMatcher(Templates.ToList(), DoorTable.Partners());
-            var names = _spawns.MapNames;
-            var issues = await Task.Run(() => TemplateWarpCheck.Run(maps, warps, matcher, names.Find, progress, token), token);
-
-            TemplateWarpIssues.Clear();
-            foreach (var issue in issues)
-            {
-                issue.InOpenMap = issue.MapId == Document?.Id;
-                TemplateWarpIssues.Add(issue);
-            }
-            return issues;
-        }
-
-        public async Task FocusTemplateWarpIssue(TemplateWarpIssue issue)
-        {
-            if (issue == null)
-            {
-                return;
-            }
-
-            if (Document?.Id != issue.MapId)
-            {
-                var entry = Maps.FirstOrDefault(m => m.Id == issue.MapId);
-                if (entry == null)
-                {
-                    return;
-                }
-
-                await OpenMap(entry);
-                if (Document?.Id != issue.MapId)
-                {
-                    return;
-                }
-
-                SelectedMap = entry;
-                FocusRequested?.Invoke(issue.X, issue.Y);
-            }
-            else
-            {
-                Jump(issue.X, issue.Y);
-            }
-
-            foreach (var item in TemplateWarpIssues)
-            {
-                item.InOpenMap = item.MapId == Document.Id;
-            }
-
-            var warp = Document.Warps.FirstOrDefault(w => w.X == issue.X && w.Y == issue.Y && w.Dest == issue.Dest);
-            if (warp != null)
-            {
-                SelectEntity(warp, add: false);
-            }
-        }
-
-        /// <summary>
-        /// Moves the warps of the checked issues on the open map to the suggested cells as one undo step.
-        /// </summary>
-        public void MoveTemplateWarps()
-        {
-            if (Document == null)
-            {
-                return;
-            }
-
-            var issues = TemplateWarpIssues.Where(i => i.Checked && i.MapId == Document.Id).ToList();
-            if (issues.Count == 0)
-            {
-                StatusText = "옮길 워프를 체크하세요. 현재 열린 맵의 항목만 옮길 수 있습니다.";
-                return;
-            }
-
-            var moved = 0;
-            var skipped = 0;
-            using (Document.Group())
-            {
-                foreach (var issue in issues)
-                {
-                    var warp = Document.Warps.FirstOrDefault(w => w.X == issue.X && w.Y == issue.Y && w.Dest == issue.Dest);
-                    if (warp == null || issue.CanMove == false || Document.Warps.Any(w => w != warp && w.X == issue.SuggestX && w.Y == issue.SuggestY) || Document.Map.Contains(issue.SuggestX, issue.SuggestY) == false)
-                    {
-                        skipped++;
-                        continue;
-                    }
-                    warp.X = issue.SuggestX;
-                    warp.Y = issue.SuggestY;
-                    TemplateWarpIssues.Remove(issue);
-                    moved++;
-                }
-            }
-            OverlayInvalidated?.Invoke();
-            StatusText = $"워프 {moved}개 이동 (실행 취소 가능){(skipped > 0 ? $", {skipped}개는 추가 워프이거나 워프가 없거나 제안 칸이 차 있어 건너뜀" : "")}";
         }
     }
 }

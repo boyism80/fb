@@ -25,8 +25,7 @@ namespace MapEditor
                     old.DoorEditRequested -= ShowDoorEdit;
                     old.NewMapRequested -= ShowNewMap;
                     old.SaveAsRequested -= ShowSaveAs;
-                    old.TemplateScanRequested -= ShowTemplateScan;
-                    old.TemplateWarpCheckRequested -= ShowTemplateWarpCheck;
+                    old.WarpAlignRequested -= ShowWarpAlign;
                     old.GoToRequested -= ShowGoTo;
                 }
                 if (e.NewValue is MainWindowViewModel editor)
@@ -37,8 +36,7 @@ namespace MapEditor
                     editor.DoorEditRequested += ShowDoorEdit;
                     editor.NewMapRequested += ShowNewMap;
                     editor.SaveAsRequested += ShowSaveAs;
-                    editor.TemplateScanRequested += ShowTemplateScan;
-                    editor.TemplateWarpCheckRequested += ShowTemplateWarpCheck;
+                    editor.WarpAlignRequested += ShowWarpAlign;
                     editor.GoToRequested += ShowGoTo;
                     MinimapImage.Side = Math.Clamp(editor.User.MinimapSide, 100, 800);
                     PlaceMinimap();
@@ -55,7 +53,7 @@ namespace MapEditor
             };
         }
 
-        private TemplateWarpWindow _templateWarp;
+        private WarpAlignWindow _warpAlign;
         private Point? _minimapDrag;
         private Point _minimapStart;
         private double _minimapSideStart;
@@ -75,20 +73,15 @@ namespace MapEditor
             ShowGoTo();
         }
 
-        private void ShowTemplateScan()
+        private void ShowWarpAlign()
         {
-            new TemplateScanWindow(Editor) { Owner = this }.ShowDialog();
-        }
-
-        private void ShowTemplateWarpCheck()
-        {
-            if (_templateWarp == null)
+            if (_warpAlign == null)
             {
-                _templateWarp = new TemplateWarpWindow(Editor) { Owner = this };
-                _templateWarp.Closed += (s, e) => _templateWarp = null;
-                _templateWarp.Show();
+                _warpAlign = new WarpAlignWindow(Editor) { Owner = this };
+                _warpAlign.Closed += (s, e) => _warpAlign = null;
+                _warpAlign.Show();
             }
-            _templateWarp.Activate();
+            _warpAlign.Activate();
         }
 
         private void OnMapListKeyDown(object sender, KeyEventArgs e)

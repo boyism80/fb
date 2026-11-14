@@ -279,8 +279,7 @@
                 <MenuItem Header="현재 맵 워프 검사" InputGestureText="{Binding ShortcutMap[CheckWarps].Text}" Command="{Binding CheckWarpsCommand}" CommandParameter="map" />
                 <MenuItem Header="전체 맵 워프 검사" InputGestureText="{Binding ShortcutMap[CheckAllWarps].Text}" Command="{Binding CheckWarpsCommand}" CommandParameter="all" />
                 <Separator />
-                <MenuItem Header="템플릿 자동 스캔 (전체 맵)..." Command="{Binding ScanTemplatesCommand}" />
-                <MenuItem Header="템플릿 기준 워프 위치 분석 (전체 맵)..." Command="{Binding TemplateWarpCheckCommand}" />
+                <MenuItem Header="워프 위치 통일..." Command="{Binding WarpAlignCommand}" />
             </MenuItem>
             <MenuItem Header="설정(_S)">
                 <MenuItem Header="단축키..." InputGestureText="{Binding ShortcutMap[ShortcutEditor].Text}" Command="{Binding ShortcutEditorCommand}" />
@@ -852,8 +851,6 @@
                                          ToolTip="다른 맵이면 그 맵을 새 탭으로 열고 건물을 선택해 가운데로 이동" />
                                 <WrapPanel>
                                     <Button Content="선택 영역으로 추가..." Command="{Binding SaveSelectionAsTemplateCommand}" />
-                                    <Button Content="자동 스캔..." Command="{Binding ScanTemplatesCommand}" />
-                                    <Button Content="워프 위치 분석..." Command="{Binding TemplateWarpCheckCommand}" />
                                 </WrapPanel>
                                 <TextBlock Text="{Binding TemplatePath}" Foreground="{StaticResource SemiTextBrush}" TextTrimming="CharacterEllipsis" Margin="4 2"
                                            ToolTip="설정 → 템플릿 파일 위치에서 변경" />

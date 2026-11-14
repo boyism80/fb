@@ -415,9 +415,22 @@ namespace MapEditor.Table
 
         public void SaveWarp(int mapId, IEnumerable<WarpEntry> warps)
         {
-            var rows = warps.Select(w => new[] { "", $"{w.X}, {w.Y}", w.Dest, w.Condition }).ToList();
+            SaveWarps(new Dictionary<int, IEnumerable<WarpEntry>> { [mapId] = warps });
+        }
+
+        public void SaveWarps(IReadOnlyDictionary<int, IEnumerable<WarpEntry>> warps)
+        {
+            if (warps.Count == 0)
+            {
+                return;
+            }
+
             ReopenMap();
-            _warpSheet.Write(mapId, rows);
+            foreach (var (mapId, list) in warps)
+            {
+                var rows = list.Select(w => new[] { "", $"{w.X}, {w.Y}", w.Dest, w.Condition }).ToList();
+                _warpSheet.Write(mapId, rows);
+            }
             _mapWritten = XlsxFile.Save(_mapBook, MapPath);
         }
     }

@@ -27,28 +27,5 @@ namespace MapEditor.Mcp
                 return Json(new { deleted, declined = deleted == 0, status = _editor.StatusText });
             });
         }
-
-        [McpServerTool(Name = "list_templates"), Description("Templates of the user's template file (buildings made of tiles and objects): id, name, size, " +
-                                                          "object/tile cell counts and how often each appears on the open map.")]
-        public Task<string> ListTemplates(string query = "", int limit = 100)
-        {
-            return OnUi("list_templates", false, () => Json(_editor.Templates
-                .Where(t => string.IsNullOrWhiteSpace(query) || t.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .Take(Math.Clamp(limit, 1, 1000))
-                .Select(t => new { t.Id, t.Name, t.Auto, t.Width, t.Height, objects = t.ObjectCount, tiles = t.TileCount, onOpenMap = t.OpenMapCount })));
-        }
-
-        [McpServerTool(Name = "place_template"), Description("Write a template with its top-left at (x, y) in one undo step. Cells without a tile keep the map's tile, " +
-                                                          "cells without an object keep the map's object. Requires write permission.")]
-        public Task<string> PlaceTemplate(int id, int x, int y)
-        {
-            return OnUi("place_template", true, () =>
-            {
-                RequireDocument();
-                var template = _editor.Templates.FirstOrDefault(t => t.Id == id) ?? throw new ArgumentException($"template {id} not found");
-                var changed = _editor.PlaceTemplate(template, x, y);
-                return Json(new { template = template.Name, x, y, changed });
-            });
-        }
     }
 }

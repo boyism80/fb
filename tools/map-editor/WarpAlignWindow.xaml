@@ -1,0 +1,69 @@
+<Window x:Class="MapEditor.WarpAlignWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="워프 위치 통일" Width="1180" Height="720" MinWidth="860" MinHeight="480"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SemiTextBrush}" Margin="0 0 0 8"
+                       Text="문 앞 빈 칸에 있는 워프는 그대로 둡니다. 실제로 올라서는 문이고 그 너머에 발판이 있을 때만 워프를 문 위로, 착지를 발판으로 밉니다. 문 옆 조각으로 나오는 착지만 그 문의 앞쪽으로 돌립니다. 자홍은 지금 워프, 주황은 지금 착지, 노랑은 제안 워프, 초록은 제안 착지입니다. 체크한 곳만 워프 시트에 반영됩니다." />
+            <DockPanel Margin="0 0 0 6">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="StartButton" Content="검색" Click="OnStart" Width="72" />
+                    <Button x:Name="CancelButton" Content="중지" Click="OnCancel" Width="72" Margin="6 0 0 0" IsEnabled="False" />
+                </StackPanel>
+                <TextBox x:Name="FilterBox" Margin="0 0 8 0" ToolTip="맵 번호, 이름, 좌표, 제안으로 거릅니다" TextChanged="OnFilterChanged" />
+            </DockPanel>
+            <ProgressBar x:Name="ProgressBar" Height="14" Minimum="0" Maximum="1" Margin="0 0 0 4" />
+            <TextBlock x:Name="ProgressText" Foreground="{StaticResource SemiTextBrush}" Margin="0 0 0 8" Text="검색을 누르면 전체 맵을 읽습니다. 열린 맵은 저장하지 않은 칸과 워프를 봅니다." />
+        </StackPanel>
+
+        <DockPanel DockPanel.Dock="Bottom" Margin="0 8 0 0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="체크한 제안 적용" Click="OnApply" Margin="0 0 6 0" />
+                <Button Content="닫기" IsCancel="True" Width="72" />
+            </StackPanel>
+            <TextBlock VerticalAlignment="Center" Foreground="{StaticResource SemiTextBrush}"
+                       Text="행을 고르면 오른쪽에서 제안 위치를 봅니다. 더블클릭은 그 맵을 열고 지금 워프 칸으로 이동합니다." />
+        </DockPanel>
+
+        <Border DockPanel.Dock="Right" Width="390" Margin="8 0 0 0" Background="{StaticResource InputBrush}" Padding="8">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" x:Name="PreviewCaption" TextWrapping="Wrap" Margin="0 0 0 6" />
+                <TextBlock DockPanel.Dock="Bottom" x:Name="PreviewNote" TextWrapping="Wrap" Foreground="{StaticResource SemiTextBrush}" Margin="0 6 0 0" />
+                <Button DockPanel.Dock="Bottom" Content="맵에서 이 위치 보기" Click="OnOpenMap" Margin="0 6 0 0" HorizontalAlignment="Left" />
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <Image x:Name="PreviewImage" Stretch="None" />
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <DockPanel>
+            <CheckBox x:Name="SelectAllBox" DockPanel.Dock="Top" Content="전체 선택" Margin="0 0 0 4" Click="OnSelectAll" />
+            <DataGrid x:Name="ProposalGrid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="False"
+                      SelectionMode="Single" EnableRowVirtualization="True" MouseDoubleClick="OnDoubleClick" SelectionChanged="OnSelected" PreviewKeyDown="OnGridKey"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="" Width="32">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Checked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="맵" Binding="{Binding MapLabel}" IsReadOnly="True" Width="140" />
+                    <DataGridTextColumn Header="오브젝트" Binding="{Binding Anchor}" IsReadOnly="True" Width="80" />
+                    <DataGridTextColumn Header="배치" Binding="{Binding Place}" IsReadOnly="True" Width="80" />
+                    <DataGridTextColumn Header="지금 워프" Binding="{Binding Cells}" IsReadOnly="True" Width="110" />
+                    <DataGridTextColumn Header="제안 워프" Binding="{Binding ProposedCells}" IsReadOnly="True" Width="110" />
+                    <DataGridTextColumn Header="제안 착지" Binding="{Binding ProposedLanding}" IsReadOnly="True" Width="110" />
+                    <DataGridTextColumn Header="제안" Binding="{Binding Action}" IsReadOnly="True" Width="260" />
+                    <DataGridTextColumn Header="참고" Binding="{Binding Note}" IsReadOnly="True" Width="180" />
+                    <DataGridTextColumn Header="목적지" Binding="{Binding Destination}" IsReadOnly="True" Width="180" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </DockPanel>
+</Window>
