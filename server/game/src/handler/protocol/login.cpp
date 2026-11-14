@@ -368,7 +368,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             fb::logger::warn("{} escrow {} has no unsettled request (money {})", ch->name(), escrow_id, money);
     }
 
-    this->server.system_storage.init_from_login(*ch, resp.storage_boxes, resp.archived_storage_boxes);
+    ch->storage_box.load(resp.storage_boxes, resp.archived_storage_boxes);
     ch->options.load(resp.option);
     {
         auto entries = std::vector<friend_entry>{};

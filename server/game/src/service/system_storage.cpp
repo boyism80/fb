@@ -6,8 +6,6 @@
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
-#include <json/json.h>
-
 #include <algorithm>
 #include <cstdint>
 #include <exception>
@@ -15,7 +13,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -50,38 +47,6 @@ system_storage_box service::system_storage::from_system_storage_dto(const fb::pr
     return box;
 }
 
-storage_box::entry service::system_storage::from_storage_box_dto(const fb::protocol::internal::StorageBox& dto)
-{
-    auto box = storage_box::entry{};
-    box.id   = dto.id;
-    if (dto.system_storage_box_id != 0)
-        box.system_storage_box_id = dto.system_storage_box_id;
-
-    box.title   = dto.title;
-    box.message = dto.message;
-
-    if (!dto.attachments.empty())
-    {
-        auto json   = Json::Value{};
-        auto reader = Json::Reader{};
-        auto stream = std::istringstream(dto.attachments);
-        if (reader.parse(stream, json) && json.isArray())
-        {
-            box.attachments.reserve(json.size());
-            for (const auto& item : json)
-            {
-                box.attachments.emplace_back(item);
-            }
-        }
-    }
-
-    box.received = dto.received;
-    if (dto.expired_date.has_value())
-        box.expire_date = fb::model::datetime(dto.expired_date.value());
-
-    return box;
-}
-
 void service::system_storage::prune_expired_boxes(std::vector<system_storage_box>& boxes,
                                                   const fb::model::datetime&       now)
 {
@@ -91,23 +56,6 @@ void service::system_storage::prune_expired_boxes(std::vector<system_storage_box
                                    return box.expired(now);
                                }),
                 boxes.end());
-}
-
-std::string service::system_storage::attachments_to_json(const std::vector<fb::model::dsl>& attachments)
-{
-    auto json_array = Json::Value(Json::arrayValue);
-    for (const auto& dsl : attachments)
-    {
-        json_array.append(dsl.to_json());
-    }
-
-    auto builder           = Json::StreamWriterBuilder{};
-    builder["emitUTF8"]    = true;
-    builder["indentation"] = "";
-    auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-    auto stream            = std::ostringstream{};
-    writer->write(json_array, &stream);
-    return stream.str();
 }
 
 service::system_storage::system_storage(fb::game::server& server) :
@@ -121,20 +69,6 @@ void service::system_storage::on_write(const fb::protocol::internal::SystemStora
         return;
 
     this->join(dto.user);
-}
-
-void service::system_storage::init_from_login(character&                                             ch,
-                                              const std::vector<fb::protocol::internal::StorageBox>& boxes,
-                                              const std::vector<uint32_t>&                           archived)
-{
-    auto entries = std::vector<storage_box::entry>{};
-    entries.reserve(boxes.size());
-    for (const auto& dto : boxes)
-    {
-        entries.push_back(from_storage_box_dto(dto));
-    }
-
-    ch.storage_box.init(entries, archived);
 }
 
 async::task<void> service::system_storage::sync(character& ch)
@@ -192,7 +126,7 @@ service::system_storage::create(uint32_t                           world,
                                                               name,
                                                               std::string(title),
                                                               std::string(message),
-                                                              attachments_to_json(attachments),
+                                                              storage_box::attachments_to_json(attachments),
                                                               expire_date,
                                                               std::string(external_ref)};
 

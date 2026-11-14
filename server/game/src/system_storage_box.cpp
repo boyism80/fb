@@ -2,10 +2,6 @@
 
 #include <fb/game/character.h>
 
-#include <json/json.h>
-
-#include <sstream>
-
 using namespace fb::game;
 
 bool system_storage_box::expired(const fb::model::datetime& now) const
@@ -27,23 +23,8 @@ storage_box::entry system_storage_box::to_entry() const
     e.system_storage_box_id = this->id;
     e.title                 = this->title;
     e.message               = this->message;
-
-    if (!this->attachments.empty())
-    {
-        auto json   = Json::Value{};
-        auto reader = Json::Reader{};
-        auto stream = std::istringstream(this->attachments);
-        if (reader.parse(stream, json) && json.isArray())
-        {
-            e.attachments.reserve(json.size());
-            for (const auto& item : json)
-            {
-                e.attachments.emplace_back(item);
-            }
-        }
-    }
-
-    e.received = false;
+    e.attachments           = storage_box::attachments_from_json(this->attachments);
+    e.received              = false;
     if (this->expire_date.has_value())
         e.expire_date = this->expire_date;
 

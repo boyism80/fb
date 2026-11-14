@@ -52,22 +52,24 @@ private:
     uint32_t   _sequence = 1;
 
     // clang-format off
-    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    static entry       from_dto(const box_dto& dto);
     static box_dto     to_save_dto(uint32_t user_id, const entry& box);
     static bool        expired(const entry& box, const fb::model::datetime& now);
     // clang-format on
 
 public:
     // clang-format off
-    static const char*              result_name(receive_result result);
+    static const char*                        result_name(receive_result result);
+    static std::string                        attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    static std::vector<fb::model::dsl>        attachments_from_json(const std::string& json);
 
-    explicit                        storage_box(character& owner);
-    void                            init(const std::vector<entry>& entries, const std::vector<uint32_t>& archived);
-    void                            add(const std::vector<entry>& entries);
-    bool                            contains_system_box(uint32_t system_storage_box_id) const;
+    explicit                                  storage_box(character& owner);
+    void                                      load(const std::vector<box_dto>& boxes, const std::vector<uint32_t>& archived);
+    void                                      add(const std::vector<entry>& entries);
+    bool                                      contains_system_box(uint32_t system_storage_box_id) const;
     [[nodiscard]] async::task<receive_result> receive_reward(uint32_t entry_id);
-    const entry_map&                entries() const;
-    std::vector<box_dto>            to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
+    const entry_map&                          entries() const;
+    std::vector<box_dto>                      to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
     // clang-format on
 };
 } // namespace fb::game

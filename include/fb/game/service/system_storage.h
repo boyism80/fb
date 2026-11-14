@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace fb::protocol::internal {
-class StorageBox;
 class SystemStorageBox;
 } // namespace fb::protocol::internal
 
@@ -38,9 +37,7 @@ public:
 
 private:
     static system_storage_box from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto);
-    static storage_box::entry from_storage_box_dto(const fb::protocol::internal::StorageBox& dto);
-    static void        prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now);
-    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    static void prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now);
     fb::async_generator<void> distribute_coroutine();
 
     std::vector<system_storage_box> _pending_boxes;
@@ -63,7 +60,6 @@ public:
     async::task<void> distribute();
     void              join(uint32_t user);
     void              on_write(const fb::protocol::internal::SystemStorageBox& dto);
-    void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes, const std::vector<uint32_t>& archived);
     // clang-format on
 };
 

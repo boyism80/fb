@@ -46,6 +46,44 @@ std::string storage_box::attachments_to_json(const std::vector<fb::model::dsl>& 
     return stream.str();
 }
 
+std::vector<fb::model::dsl> storage_box::attachments_from_json(const std::string& json)
+{
+    auto attachments = std::vector<fb::model::dsl>{};
+    if (json.empty())
+        return attachments;
+
+    auto value  = Json::Value{};
+    auto reader = Json::Reader{};
+    auto stream = std::istringstream(json);
+    if (reader.parse(stream, value) == false || value.isArray() == false)
+        return attachments;
+
+    attachments.reserve(value.size());
+    for (const auto& item : value)
+    {
+        attachments.emplace_back(item);
+    }
+
+    return attachments;
+}
+
+storage_box::entry storage_box::from_dto(const box_dto& dto)
+{
+    auto box = entry{};
+    box.id   = dto.id;
+    if (dto.system_storage_box_id != 0)
+        box.system_storage_box_id = dto.system_storage_box_id;
+
+    box.title       = dto.title;
+    box.message     = dto.message;
+    box.attachments = attachments_from_json(dto.attachments);
+    box.received    = dto.received;
+    if (dto.expired_date.has_value())
+        box.expire_date = fb::model::datetime(dto.expired_date.value());
+
+    return box;
+}
+
 storage_box::box_dto storage_box::to_save_dto(uint32_t user_id, const entry& box)
 {
     const auto system_storage_id = box.system_storage_box_id.has_value() ? box.system_storage_box_id.value() : 0u;
@@ -83,7 +121,7 @@ std::vector<storage_box::box_dto> storage_box::to_save_dtos(uint32_t user_id, co
     return dtos;
 }
 
-void storage_box::init(const std::vector<entry>& entries, const std::vector<uint32_t>& archived)
+void storage_box::load(const std::vector<box_dto>& boxes, const std::vector<uint32_t>& archived)
 {
     this->_owner.assert_thread();
 
@@ -91,8 +129,9 @@ void storage_box::init(const std::vector<entry>& entries, const std::vector<uint
     this->_sequence = 1;
 
     auto now = this->_owner.server.now();
-    for (const auto& e : entries)
+    for (const auto& dto : boxes)
     {
+        auto e = from_dto(dto);
         if (e.id >= this->_sequence)
             this->_sequence = e.id + 1;
 
