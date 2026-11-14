@@ -446,7 +446,6 @@ async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
                                                                  request.id,
                                                                  request.name,
                                                                  fb::config<uint8_t>("id"),
-                                                                 false,
                                                                  fb::config<std::optional<uint32_t>>("world")});
         switch (static_cast<ERROR_CODE>(resp.error))
         {

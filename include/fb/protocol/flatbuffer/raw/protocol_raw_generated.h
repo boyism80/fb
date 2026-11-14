@@ -4918,8 +4918,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_UID = 6,
     VT_NAME = 8,
     VT_HOST = 10,
-    VT_FORCE = 12,
-    VT_PROCESS_WORLD = 14
+    VT_PROCESS_WORLD = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -4933,9 +4932,6 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t host() const {
     return GetField<uint8_t>(VT_HOST, 0);
   }
-  bool force() const {
-    return GetField<uint8_t>(VT_FORCE, 0) != 0;
-  }
   const nullable::nullable_uint *process_world() const {
     return GetPointer<const nullable::nullable_uint *>(VT_PROCESS_WORLD);
   }
@@ -4946,7 +4942,6 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
-           VerifyField<uint8_t>(verifier, VT_FORCE, 1) &&
            VerifyOffset(verifier, VT_PROCESS_WORLD) &&
            verifier.VerifyTable(process_world()) &&
            verifier.EndTable();
@@ -4969,9 +4964,6 @@ struct LoginBuilder {
   void add_host(uint8_t host) {
     fbb_.AddElement<uint8_t>(Login::VT_HOST, host, 0);
   }
-  void add_force(bool force) {
-    fbb_.AddElement<uint8_t>(Login::VT_FORCE, static_cast<uint8_t>(force), 0);
-  }
   void add_process_world(::flatbuffers::Offset<nullable::nullable_uint> process_world) {
     fbb_.AddOffset(Login::VT_PROCESS_WORLD, process_world);
   }
@@ -4992,14 +4984,12 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint8_t host = 0,
-    bool force = false,
     ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   LoginBuilder builder_(_fbb);
   builder_.add_process_world(process_world);
   builder_.add_name(name);
   builder_.add_uid(uid);
   builder_.add_world(world);
-  builder_.add_force(force);
   builder_.add_host(host);
   return builder_.Finish();
 }
@@ -5010,7 +5000,6 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     uint32_t uid = 0,
     const char *name = nullptr,
     uint8_t host = 0,
-    bool force = false,
     ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogin(
@@ -5019,7 +5008,6 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
       uid,
       name__,
       host,
-      force,
       process_world);
 }
 

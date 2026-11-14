@@ -81,7 +81,7 @@ namespace Internal.Controllers
                     Uid = request.Uid,
                     Host = request.Host,
                     World = request.ProcessWorld
-                }, request.Force);
+                });
 
                 if (!success)
                 {
@@ -175,27 +175,9 @@ namespace Internal.Controllers
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
-                    // A live owner deletes the session itself after its disconnect save; deleting it here would let
-                    // the next login read the character before that save lands.
-                    var session = await _sessionService.Get(world, request.Name);
-                    if (session != null)
+                    if (await _sessionService.KickOut(world, request.Name) == false)
                     {
-                        await _rabbitMqService.PublishAsync(new Response.KickOut
-                        {
-                            Uid = session.Uid,
-                            Name = request.Name,
-                            World = world
-                        }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
-
-                        var owner = await _serverStateService.GetHostConfig(session.World, Protocol.Service.Game, (byte)session.Host);
-                        if (owner != null)
-                        {
-                            throw new LogicException(ErrorCode.AlreadyLogin);
-                        }
-                        else
-                        {
-                            await _sessionService.Delete(world, request.Name, (byte)session.Host);
-                        }
+                        throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
 

@@ -41,6 +41,7 @@ public class Program
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddScoped<Marketplace.Service.DbContext>();
+        builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Marketplace.Services.MarketplaceParcelService>();

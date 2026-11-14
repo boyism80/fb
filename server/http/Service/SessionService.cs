@@ -3,6 +3,7 @@ using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using Protocol = fb.protocol.@internal;
 using Response = fb.protocol.@internal.response;
 
 namespace Http.Service
@@ -11,20 +12,9 @@ namespace Http.Service
     {
         private readonly RedisService _redisService;
         private readonly RabbitMqService _rabbitMqService;
+        private readonly ServerStateService _serverStateService;
         private const int SessionTtlSeconds = 300; // 5 minutes
         private const int MinTtlSeconds = 240; // 4 minutes (minimum TTL before refresh)
-
-        private static readonly string LoginScript = """
-            local session = redis.call('hget', @key, @name)
-            if session ~= false then
-                redis.call('hdel', @key, @name)
-                return { 0, session }
-            else
-                redis.call('hset', @key, @name, @session)
-                redis.call('expire', @key, @ttl)
-                return { 1 }
-            end
-            """;
 
         private static readonly string TryLoginScript = """
             local session = redis.call('hget', @key, @name)
@@ -66,10 +56,11 @@ namespace Http.Service
             end
             """;
 
-        public SessionService(RedisService redisService, RabbitMqService rabbitMqService)
+        public SessionService(RedisService redisService, RabbitMqService rabbitMqService, ServerStateService serverStateService)
         {
             _redisService = redisService;
             _rabbitMqService = rabbitMqService;
+            _serverStateService = serverStateService;
         }
 
         public async Task<Session> Get(uint world, string name)
@@ -155,7 +146,7 @@ namespace Http.Service
             await RefreshTTL(world);
         }
 
-        public async Task<bool> Login(uint world, string name, Session session, bool force = false)
+        public async Task<bool> Login(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
@@ -165,7 +156,7 @@ namespace Http.Service
             }
 
             var redisResult = await redis.EvalAsync(
-                force ? LoginScript : TryLoginScript,
+                TryLoginScript,
                 new
                 {
                     key = new RedisKey(key),
@@ -174,27 +165,34 @@ namespace Http.Service
                     ttl = SessionTtlSeconds
                 });
 
-            var success = (bool)redisResult[0];
-            if (success)
+            return (bool)redisResult[0];
+        }
+
+        public async Task<bool> KickOut(uint world, string name)
+        {
+            var session = await Get(world, name);
+            if (session == null)
             {
                 return true;
             }
 
-            // If force is true and login failed, publish KickOut message
-            if (force)
+            await _rabbitMqService.PublishAsync(new Response.KickOut
             {
-                var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
+                Uid = session.Uid,
+                Name = name,
+                World = world
+            }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
 
-                // Publish KickOut message to notify the game server to disconnect the existing user
-                await _rabbitMqService.PublishAsync(new Response.KickOut
-                {
-                    Uid = existingSession.Uid,
-                    Name = name,
-                    World = world
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(existingSession));
+            // A live owner deletes the session itself after its disconnect save; deleting it here would let
+            // the next login read the character before that save lands.
+            var owner = await _serverStateService.GetHostConfig(session.World, Protocol.Service.Game, (byte)session.Host);
+            if (owner != null)
+            {
+                return false;
             }
 
-            return false;
+            await Delete(world, name, (byte)session.Host);
+            return true;
         }
 
         public async Task RefreshTTL(uint world)
