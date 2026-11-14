@@ -1,6 +1,7 @@
 #include <fb/game/character.h>
 
 #include <fb/game/server.h>
+#include <fb/logger.h>
 
 #include <algorithm>
 #include <memory>
@@ -93,7 +94,7 @@ bool character::friends::has_mutual() const
     return false;
 }
 
-async::task<void> character::friends::broadcast(std::string_view message, MESSAGE_TYPE type, bool mutual_only)
+async::task<bool> character::friends::broadcast(std::string_view message, MESSAGE_TYPE type, bool mutual_only)
 {
     this->_owner.assert_thread();
 
@@ -122,24 +123,36 @@ async::task<void> character::friends::broadcast(std::string_view message, MESSAG
             locals);
     }
 
-    if (to_uids.empty() == false)
+    if (to_uids.empty())
+        co_return true;
+
+    auto& server        = this->_owner.server;
+    auto  weak          = this->_owner.weak_from_this_as<character>();
+    auto  world         = this->_owner.world();
+    auto  host          = fb::config<uint32_t>("id");
+    auto  process_world = fb::config<std::optional<uint32_t>>("world");
+    auto  delivered     = true;
+    try
     {
-        auto world         = this->_owner.world();
-        auto host          = fb::config<uint32_t>("id");
-        auto process_world = fb::config<std::optional<uint32_t>>("world");
-        std::ignore        = co_await this->_owner.server.http.post("internal",
-                                                             "/in-game/friend-broadcast",
-                                                             internal_reqs::FriendBroadcast{world,
-                                                                                            host,
-                                                                                            this->_owner.id,
-                                                                                            this->_owner.name(),
-                                                                                            message_str,
-                                                                                            static_cast<uint8_t>(type),
-                                                                                            std::move(to_uids),
-                                                                                            process_world});
+        std::ignore = co_await server.http.post("internal",
+                                                "/in-game/friend-broadcast",
+                                                internal_reqs::FriendBroadcast{world,
+                                                                               host,
+                                                                               this->_owner.id,
+                                                                               this->_owner.name(),
+                                                                               message_str,
+                                                                               static_cast<uint8_t>(type),
+                                                                               std::move(to_uids),
+                                                                               process_world});
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn("friend broadcast failed: {}", e.what());
+        delivered = false;
     }
 
-    co_return;
+    co_await server.threads.switching(weak);
+    co_return delivered;
 }
 
 void character::friends::sync(uint8_t enabled)

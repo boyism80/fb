@@ -207,7 +207,7 @@ public:
         bool                             is_mutual(uint32_t uid) const;
         bool                             is_mutual(std::string_view name) const;
         bool                             has_mutual() const;
-        [[nodiscard]] async::task<void>  broadcast(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
+        [[nodiscard]] async::task<bool>  broadcast(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
         void                             sync(uint8_t enabled);
         // clang-format on
     };

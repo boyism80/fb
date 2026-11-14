@@ -412,7 +412,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         if (ch->role() <= ROLE::USER)
         {
             auto message = std::format(_TEXT(MESSAGE_FRIEND_LOGIN), ch->name());
-            co_await ch->friends.broadcast(message, MESSAGE_TYPE::NOTIFY, true);
+            std::ignore  = co_await ch->friends.broadcast(message, MESSAGE_TYPE::NOTIFY, true);
         }
     }
 

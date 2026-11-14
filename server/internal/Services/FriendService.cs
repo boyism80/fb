@@ -191,29 +191,37 @@ namespace Internal.Services
 
             foreach (var toUid in targets)
             {
-                var toName = await _dbContext.Character.GetName(world, toUid);
-                if (string.IsNullOrEmpty(toName))
+                try
                 {
-                    continue;
-                }
+                    var toName = await _dbContext.Character.GetName(world, toUid);
+                    if (string.IsNullOrEmpty(toName))
+                    {
+                        continue;
+                    }
 
-                var session = await _sessionService.Get(world, toName);
-                if (session == null)
-                {
-                    continue;
-                }
+                    var session = await _sessionService.Get(world, toName);
+                    if (session == null)
+                    {
+                        continue;
+                    }
 
-                if (session.Host == request.Host && session.World == request.ProcessWorld)
-                {
-                    continue;
-                }
+                    if (session.Host == request.Host && session.World == request.ProcessWorld)
+                    {
+                        continue;
+                    }
 
-                await _rabbitMqService.PublishAsync(new Response.FriendMessage
+                    await _rabbitMqService.PublishAsync(new Response.FriendMessage
+                    {
+                        ToUid = toUid,
+                        Message = request.Message,
+                        Type = request.Type
+                    }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
+                }
+                catch (Exception e)
                 {
-                    ToUid = toUid,
-                    Message = request.Message,
-                    Type = request.Type
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
+                    _logger.LogWarning(e, "Friend broadcast failed world={World} from={From} to={To}",
+                        world, request.FromUid, toUid);
+                }
             }
 
             return new Response.FriendBroadcast

@@ -1912,7 +1912,9 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
 
             this->message(text, MESSAGE_TYPE::NOTIFY);
-            co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true);
+            if (co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true) == false)
+                this->message(_TEXT(MESSAGE_REQUEST_UNCONFIRMED), MESSAGE_TYPE::NOTIFY);
+
             this->server.log.write("friend_chat", log_data);
         }
 
