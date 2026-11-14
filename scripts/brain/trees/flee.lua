@@ -1,4 +1,5 @@
 local battle   = require("brain.policies.battle")
+local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
 local recovery = require("brain.policies.recovery")
@@ -74,18 +75,20 @@ local function struck(snap)
     return battle.pressed(snap)
 end
 
-local function burst_lethal(snap)
+-- What the crew heals me within one cast stands with the hp I have, as it does when a fight is weighed
+-- (battle.estimate). Told only whether a healer stood near, two mages healing each other 500 a cast never fled the
+-- 일본밀정 that struck them for a thousand, and one of them died in every seed (offline watch mages, run 18:20).
+local function cover(snap, facts)
+    return snap.self.hp + escort.ready(escort.present(snap, facts), combat.cast(snap))
+end
+
+local function burst_lethal(snap, facts)
     local burst = battle.burst(snap)
-    return burst > 0 and snap.self.hp <= burst
+    return burst > 0 and cover(snap, facts) <= burst
 end
 
 local function cannot_lift(snap)
     return escape.can_lift(snap) == false
-end
-
-local function no_healer_near(snap, facts)
-    local crew = escort.present(snap, facts)
-    return crew == nil or crew.heal <= 0 or crew.stock <= 0
 end
 
 local function hitter_near(snap)
@@ -102,7 +105,7 @@ local function doom(snap, facts)
         return 0
     end
     local pick = battle.choose(snap, facts, escape.adjacent_hitter(snap), true)
-    return (pick ~= nil and pick.safest or 0) * math.max(0, math.min(1, (2 * burst - snap.self.hp) / burst))
+    return (pick ~= nil and pick.safest or 0) * math.max(0, math.min(1, (2 * burst - cover(snap, facts)) / burst))
 end
 
 local function doomed(snap, facts)
@@ -110,7 +113,7 @@ local function doomed(snap, facts)
 end
 
 local function below_outrun(snap, facts)
-    return snap.self.hp <= escape.outrun_need(snap, facts)
+    return cover(snap, facts) <= escape.outrun_need(snap, facts)
 end
 
 local function stranded(snap)
@@ -120,11 +123,11 @@ end
 M.flee = when(escape.able, choose({
     when(crew_notified, flee("CREW", notice_mob, certain)),
     when(fatal_near, when(unrecoverable, when(off_plan, when(not_passing, flee("FATAL", fatal_mob, fatal_chance))))),
-    when(struck, when(hitter_near, when(no_healer_near, choose({
+    when(struck, when(hitter_near, choose({
         when(burst_lethal, when(cannot_lift, flee("IMMINENT", escape.adjacent_hitter, certain))),
         when(doomed, flee("DOOMED", escape.adjacent_hitter, doom)),
         when(stranded, when(below_outrun, flee("STRANDED", escape.adjacent_hitter, certain))),
-    })))),
+    }))),
     when(hemmed_in, flee("HEMMED", escape.hemmed, certain)),
 }), "flee")
 

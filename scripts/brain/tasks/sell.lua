@@ -52,24 +52,55 @@ local function trip(snap, query, good, worth)
     return value.detour(snap, query, { maps = maps }, worth)
 end
 
+-- A good sold leaves the room it can fill again: a bundle one slot of it, as the server keeps a bundle in one slot,
+-- and anything else a slot apiece. Counted as every free slot full of it, a sold 호박 never ran short again.
 local function lost(snap, yields, horizon, freed, sold)
     local loss = 0
+    local free = math.max(0, snap.bag.capacity - snap.bag.used) + freed
     for name, entry in pairs(yields) do
         local buyer = buyers[name]
         if buyer ~= nil and entry.rate > 0 then
-            local room = sold[name] and (math.max(0, snap.bag.capacity - snap.bag.used) + freed) * entry.capacity or
-                bag.room(snap, name, entry.capacity, freed)
+            local room = bag.room(snap, name, entry.capacity, freed)
+            if sold[name] then
+                room = entry.capacity > 1 and (free > 0 and entry.capacity or 0) or free
+            end
             loss = loss + buyer.price * math.max(0, entry.rate * horizon - room)
         end
     end
     return loss
 end
 
+-- The time left before the next servicing, where goods are sold on the way at no trip of their own: the plan's
+-- floors swept once at their kill rates, less what this lap has taken already.
+local function lap(snap, hunt)
+    local total = 0
+    for _, floor in ipairs(hunt.floors or {}) do
+        if (floor.kills or 0) <= 0 or floor.mobs == nil then
+            return math.huge
+        end
+        total = total + floor.mobs / floor.kills
+    end
+    local since = snap.record.memory.serviced
+    local spent = type(since) == "number" and math.max(0, (snap.now - since) / 1000) or 0
+    return math.max(0, total - spent)
+end
+
+-- A trip to the buyer is weighed against making it later, not against never making it: while the next kill loses
+-- nothing the trip costs the same after it and the kill is hunted on top, and the loot lost counts only until the
+-- next servicing sells it anyway. Standing at the buyer there is no trip to put off. Weighed against never selling
+-- until the bag was full, a mage with one 호박 of its hundred-to-a-slot walked a minute to the shop after each first
+-- pickup (online 103233, 123007).
 local function gain(snap, query, found, route, worth)
     local length = route ~= nil and route.time or 0
     local risk   = route ~= nil and route.risk or 0
+    local reach  = 1 - (route ~= nil and route.chance or 0)
     local hunt   = worth.hunt
     if hunt == nil or hunt.yields == nil or (hunt.loot or 0) <= 0 then
+        return -length * worth.value - risk
+    end
+    local last = (hunt.floors or {})[#(hunt.floors or {})]
+    local kill = last ~= nil and (last.kills or 0) > 0 and 1 / last.kills or 0
+    if length > 0 and lost(snap, hunt.yields, kill, 0, {}) <= 0 then
         return -length * worth.value - risk
     end
     local freed = 0
@@ -78,10 +109,11 @@ local function gain(snap, query, found, route, worth)
         sold[good.name] = true
         freed = freed + (good.whole and 1 or 0)
     end
-    local window = (math.max(0, snap.bag.capacity - snap.bag.used) + freed) / hunt.loot
-    local stay   = lost(snap, hunt.yields, window, 0, {})
-    local after  = lost(snap, hunt.yields, math.max(0, window - length), freed, sold)
-    return (stay - after) * worth.exchange - length * worth.value - risk
+    local window  = (math.max(0, snap.bag.capacity - snap.bag.used) + freed) / hunt.loot
+    local horizon = math.min(window, lap(snap, hunt))
+    local stay    = lost(snap, hunt.yields, horizon, 0, {})
+    local after   = lost(snap, hunt.yields, math.max(0, horizon - length), freed, sold)
+    return (stay - after) * worth.exchange * reach - length * worth.value - risk
 end
 
 function M.has_goods(snap, query)

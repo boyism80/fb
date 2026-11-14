@@ -145,15 +145,18 @@ end
 function M.pays(snap, query)
     local found = plan(snap, query)
     local worth = value.baseline(snap, query)
-    local trip  = value.cost(snap, query, M.next_step(snap, query), worth)
-    return found.value - trip * (1 + #party.members(snap)) > 0
+    local step  = M.next_step(snap, query)
+    local trip  = value.cost(snap, query, step, worth)
+    return found.value * value.arrival(snap, query, step, worth) - trip * (1 + #party.members(snap)) > 0
 end
 
 M.low = rest.low
 
 function M.value(snap, query)
     local found = plan(snap, query)
-    local net   = found.value - value.cost(snap, query, M.next_step(snap, query), value.baseline(snap, query))
+    local worth = value.baseline(snap, query)
+    local step  = M.next_step(snap, query)
+    local net   = found.value * value.arrival(snap, query, step, worth) - value.cost(snap, query, step, worth)
     return net / found.span * combat.cast(snap) / 1000
 end
 

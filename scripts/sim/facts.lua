@@ -53,8 +53,8 @@ function M.bind(mind, snap, world)
         roster = function()
             return world.roster or {}
         end,
-        steps = function(map, x, y, goals, traced)
-            return terrain.steps(mind, map, x, y, goals, terrain.blocking(snap, map, x, y), traced)
+        steps = function(map, x, y, goals, traced, strict)
+            return terrain.steps(mind, map, x, y, goals, terrain.blocking(snap, map, x, y), traced, strict)
         end,
         detour = function(map, from, to, avoided)
             return terrain.detour(mind, map, from, to, avoided)

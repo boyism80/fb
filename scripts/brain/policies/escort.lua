@@ -1,6 +1,7 @@
 local combat   = require("brain.data.combat")
 local magic    = require("brain.data.spells")
 local fight    = require("brain.policies.combat")
+local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 local survival = require("brain.policies.survival")
 
@@ -51,7 +52,10 @@ function M.crew(members, query)
     local stock = 0
     local bonus = 0
     for index, member in ipairs(members) do
-        table.insert(keys, score.signature(member, ""))
+        -- A member rested for a plan is kept by the mode it was rested in: kept by its build alone, a rogue
+        -- refilled and the same rogue dry shared one plan, so whichever was asked first answered both and its
+        -- mana came out worth nothing (brain unit probe, rogue50 beside poet65: 10354.5 either way).
+        table.insert(keys, score.signature(member, member.mode or ""))
         table.insert(names, member.self.name)
         local hps    = score.capability(member, query).hps
         heals[index] = hps.others
@@ -276,18 +280,36 @@ function M.gathering(snap, query)
     return gathered[snap] or nil
 end
 
+-- Each member's mana goes by the time it fights and the share of its heals it casts, kept by its name: told only
+-- by whoever led the plan, a rogue beside its poet weighed its mana potions by the poet's 24.77 a second (brain unit
+-- probe, rogue50 beside poet65).
 local function arrange(snap, query, mob, crew, density, own, share)
     local support = share * crew.heal
     local aid     = (support + own) / 1000
     local speed   = 0
+    local drains  = {}
     for index, member in ipairs(crew.members) do
         local helper = fight.outcome(member, query, mob, density, aid)
+        local busy   = crew.heals[index] > 0 and share or 0
+        local mend   = recovery.heal(member)
+        local heals  = busy > 0 and mend ~= nil and mend.hp > 0 and
+            crew.heals[index] / 1000 * busy * mend.mp / mend.hp or 0
+        local fights = 0
         if helper.time < math.huge then
-            local busy = crew.heals[index] > 0 and share or 0
-            speed      = speed + (1 - busy) / helper.time
+            speed  = speed + (1 - busy) / helper.time
+            fights = helper.time > 0 and (1 - busy) * helper.drained / helper.time or 0
         end
+        drains[member.self.name] = fights + heals
     end
-    return { density = density, aid = aid, speed = speed, support = support, share = share, assist = crew.assist }
+    return {
+        density = density,
+        aid = aid,
+        speed = speed,
+        support = support,
+        share = share,
+        assist = crew.assist,
+        drains = drains
+    }
 end
 
 local function clamp(value)

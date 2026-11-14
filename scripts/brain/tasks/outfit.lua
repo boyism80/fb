@@ -153,7 +153,9 @@ end
 local function net(snap, query)
     local found  = plan(snap, query)
     local action = M.next_step(snap, query)
-    return found.value - value.cost(snap, query, action, value.baseline(snap, query)) * (1 + #party.members(snap))
+    local worth  = value.baseline(snap, query)
+    return found.value * value.arrival(snap, query, action, worth) -
+        value.cost(snap, query, action, worth) * (1 + #party.members(snap))
 end
 
 function M.has_plan(snap, query)

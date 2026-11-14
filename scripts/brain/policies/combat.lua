@@ -65,6 +65,30 @@ function M.warding(name)
         ((boost.damage_derate or 0) > 0 or (boost.buff_phydef or 0) > 0)
 end
 
+local MODELED = { damage_rate = true, buff_hit = true, buff_dam = true, buff_phydef = true, damage_derate = true }
+
+-- A buff the fight model counts: a boost it reads, a strike multiplier, a splash or an echo.
+function M.valued(name)
+    local data = magic.spells[name]
+    if data == nil then
+        return false
+    end
+    for key in pairs(data.boost or {}) do
+        if MODELED[key] then
+            return true
+        end
+    end
+    if (magic.multipliers or {})[name] ~= nil or (magic.splashes or {})[name] ~= nil then
+        return true
+    end
+    for _, echo in ipairs(magic.echoes or {}) do
+        if echo == name then
+            return true
+        end
+    end
+    return false
+end
+
 local NONE = {}
 
 local function compute_buffs(snap)
@@ -647,16 +671,20 @@ end
 
 local outcomes = setmetatable({}, { __mode = "k" })
 
-local function applied_key(mob)
-    if mob.applied == nil or next(mob.applied) == nil then
-        return ""
+-- Debuffs are kept by their names. A mob with no word of what is on it has my own debuffs planned against it and one
+-- known to bear none has not, so the two keep apart: kept as one, whichever was asked first answered both, and a
+-- warrior chose 웅담 or a swing on the same mob by whether the danger checks had fought it first (offline audit, run
+-- 17:06). A crew's table is no key either: it goes with its crew and its address comes back for another.
+local function names_key(names)
+    if names == nil then
+        return "?"
     end
-    local names = {}
-    for name in pairs(mob.applied) do
-        names[#names + 1] = name
+    local sorted = {}
+    for name in pairs(names) do
+        sorted[#sorted + 1] = name
     end
-    table.sort(names)
-    return table.concat(names, ",")
+    table.sort(sorted)
+    return table.concat(sorted, ",")
 end
 
 local function compute_outcome(snap, query, mob, density, aid, extra)
@@ -801,8 +829,8 @@ function M.outcome(snap, query, mob, density, aid, extra)
         bygear[gear] = known
     end
     local key = string.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", tostring(mob.id or mob.name or mob), snap.self.hp,
-        snap.self.mp or 0, tostring(density), tostring(aid), tostring(extra), mob.ratio or 1, applied_key(mob),
-        mob.assist ~= nil and tostring(mob.assist) or "", snap.self.phydef or 0, mob.hp or 0, tostring(mob.walled))
+        snap.self.mp or 0, tostring(density), tostring(aid), tostring(extra), mob.ratio or 1, names_key(mob.applied),
+        names_key(mob.assist), snap.self.phydef or 0, mob.hp or 0, tostring(mob.walled))
     local found = known[key]
     if found == nil then
         found = compute_outcome(snap, query, mob, density, aid, extra)

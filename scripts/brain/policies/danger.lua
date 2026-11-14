@@ -149,14 +149,16 @@ function M.threats(snap, query)
     return kinds
 end
 
+-- The fight is worked out last: most mobs neither keep up nor kill with one blow, and fought first for each of them,
+-- telling the deadly ones took a quarter of the decision time (offline profile, run 16:14).
 function M.deadly(snap, query, mob, crew)
-    if not combat.seeks(mob) or M.winnable(snap, query, mob, crew) then
+    if not combat.seeks(mob) then
         return false
     end
     local step   = snap.pace.step or data.walk
     local chases = mob.speed ~= nil and mob.speed <= step
     local lethal = mob.damage ~= nil and combat.mitigate(mob.damage, snap.self.phydef or 0, 0) >= snap.self.hp
-    return chases or lethal
+    return (chases or lethal) and M.winnable(snap, query, mob, crew) == false
 end
 
 function M.perilous(snap, query, crew)
@@ -276,11 +278,36 @@ function M.fatal(snap, query)
     return fatals[snap] or nil
 end
 
+-- The chance a mob that seeks me kills me while I pass `distance` tiles from it for `walk` ms at the most: one that
+-- keeps up with my steps has all of that time, a slower one only what is left of my time in its sight once it has
+-- closed on me. The walk planned and the walk under way are told the same way: told by keeping up alone, a walk past
+-- 황담비 at the gate of 대각봉1 came out free, while at the gate one blow that kills turned the walk back on sight,
+-- five times, and two bots died there (online 123007).
+-- A walk that passes the mob stays in its sight across the whole of it, not only for the tiles that would take me
+-- straight out of it: counted so, a slower mob three tiles off never reached me in time, and a rogue on its way to
+-- buy gear walked on past 황담비 and three 백담비 and died beside them, twice (online 193625).
+function M.passing(snap, query, mob, distance, walk)
+    local sight = math.max(data.sight.x, data.sight.y)
+    if combat.seeks(mob) == false or distance > sight then
+        return 0
+    end
+    local step   = snap.pace.step or data.walk
+    local window = walk
+    if mob.speed == nil or mob.speed > step then
+        local across = 2 * sight * step
+        local close  = math.max(0, distance - data.reach) * (mob.speed or math.huge)
+        window       = math.min(walk, math.max(0, across - close))
+    end
+    return M.chance(snap, query, mob, window)
+end
+
 function M.lethal_mob(snap, query)
     local crew = escort.gathering(snap, query) or false
     for _, mob in ipairs(snap.world.mobs) do
-        local near = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
-        if M.deadly(snap, query, mob, crew) or (near and combat.seeks(mob) and M.winnable(snap, query, mob, crew) == false) then
+        local distance = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) or 0
+        local near     = mob.x ~= nil and distance <= 1
+        local reaches  = M.deadly(snap, query, mob, crew) and M.passing(snap, query, mob, distance, math.huge) > 0
+        if reaches or (near and combat.seeks(mob) and M.winnable(snap, query, mob, crew) == false) then
             return mob
         end
     end

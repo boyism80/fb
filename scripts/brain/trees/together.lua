@@ -182,6 +182,10 @@ end
 -- A tile a mob or a crewmate stands on is no tile to step aside to: chosen anyway, a poet under blows walked at the
 -- skeleton beside it to clear its warrior's way, was struck on the way and tried again, 237 times in a run (offline
 -- profile 63+65 seed 0, run 02:47).
+-- No tile aside takes me farther by walk from where the member goes than I stand: the nearest was a pocket beside a
+-- one-tile neck, farther from the entrance we both walked to, so my own walk to the entrance took me back into the
+-- neck at once and its leader turned back from it, both for 470s (offline watch mages seed 0, map 3176, 244-720s,
+-- run 18:31).
 local function aside(snap, facts, member, going)
     local mine  = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
     local goals = {}
@@ -209,14 +213,22 @@ local function aside(snap, facts, member, going)
             end
         end
     end
-    local steps = facts.steps ~= nil and #goals > 0 and facts.steps(snap.world.map, snap.world.x, snap.world.y, goals) or
-        {}
-    local best  = nil
+    local steps  = {}
+    local toward = {}
+    if facts.steps ~= nil and #goals > 0 then
+        local points = { table.unpack(goals) }
+        table.insert(points, { x = snap.world.x, y = snap.world.y })
+        steps  = facts.steps(snap.world.map, snap.world.x, snap.world.y, goals)
+        toward = facts.steps(snap.world.map, going.x, going.y, points)
+    end
+    local here = type(toward[#goals + 1]) == "number" and toward[#goals + 1] or math.huge
+    local best = nil
     for index, goal in ipairs(goals) do
-        local walk = steps[index]
-        local near = type(walk) == "number" and walk <= goal.far
-        local off  = near and goal.side and facts.detour(snap.world.map, member.world, going, goal) == 0
-        if near and (off or goal.on) and (best == nil or (off and best.off == false) or
+        local walk  = steps[index]
+        local near  = type(walk) == "number" and walk <= goal.far
+        local off   = near and goal.side and facts.detour(snap.world.map, member.world, going, goal) == 0
+        local ahead = type(toward[index]) == "number" and toward[index] or math.huge
+        if near and (off or goal.on) and ahead <= here and (best == nil or (off and best.off == false) or
                 (off == best.off and walk < best.steps)) then
             best = { x = goal.x, y = goal.y, steps = walk, off = off }
         end

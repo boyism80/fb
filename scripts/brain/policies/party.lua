@@ -29,7 +29,8 @@ local function summary(plan)
         floors = floors,
         yields = plan
             .yields,
-        gate = plan.gate
+        gate = plan.gate,
+        crowd = plan.crowd
     }
 end
 
@@ -246,12 +247,19 @@ function M.feasible(snap, query, plan, team)
 end
 
 local function solo(snap, query)
-    local best = ground.choose(snap, query, ground.mode(snap))
-    return best ~= nil and (best.peak or best.rate) or 0
+    return ground.choose(snap, query, ground.mode(snap))
 end
 
+-- The group's leader weighs taking one more in as two weigh a pair: everyone already in shares one rate (the server
+-- splits exp evenly), so the crew gains when the larger plan's rate beats the plan it has, and the newcomer when it
+-- beats hunting alone. Only pairs were weighed, and a rogue that came to its poet after the warrior hunted alone
+-- beside the pair with no way in (online 123007). Only the leader adds members (group::container::handle_action).
+-- Alone, each is weighed against the other hunting alone as well: two that would hunt the same ground share its
+-- respawn, and taken whole, two mages each alone on 국내해골굴 outweighed hunting it together (brain unit probe).
 function M.offer(snap, query)
-    if snap.self.ghost or snap.self.class == "NONE" or snap.self.grouping ~= true or #(snap.group or {}) > 0 then
+    local grouped = #(snap.group or {}) > 0
+    if snap.self.ghost or snap.self.class == "NONE" or snap.self.grouping ~= true or
+        (grouped and (snap.leader ~= snap.self.name or #snap.group >= combat.party.size)) then
         return nil
     end
     if offers[snap] ~= nil then
@@ -259,7 +267,10 @@ function M.offer(snap, query)
     end
     local origin = snap
     snap         = score.recovered(snap, query)
-    local mine   = solo(snap, query)
+    local team   = { snap }
+    for _, member in ipairs(M.members(snap)) do
+        table.insert(team, member)
+    end
     local nearby = {}
     local parted = snap.record.memory.left
     local recent = {}
@@ -283,19 +294,32 @@ function M.offer(snap, query)
         local b = math.abs(right.profile.self.level - snap.self.level)
         return a < b or (a == b and left.name < right.name)
     end)
-    local best = nil
+    if #nearby == 0 then
+        offers[origin] = false
+        return nil
+    end
+    local current = grouped and ground.party(team, query, "SUPPLY") or nil
+    local alone   = grouped == false and solo(snap, query) or nil
+    local best    = nil
     for rank, entry in ipairs(nearby) do
         if rank > combat.party.scan then
             break
         end
-        local other = M.member(entry.profile)
-        local plan  = ground.party({ snap, other }, query, "SUPPLY")
-        if plan ~= nil and M.feasible(snap, query, plan, { snap, other }) == nil then
+        local other   = M.member(entry.profile)
+        local members = { other }
+        for index = #team, 1, -1 do
+            table.insert(members, 1, team[index])
+        end
+        local plan = ground.party(members, query, "SUPPLY")
+        if plan ~= nil and M.feasible(snap, query, plan, members) == nil then
             plan = nil
         end
         if plan ~= nil then
+            local theirs  = solo(other, query)
+            local mine    = grouped and (current ~= nil and (current.peak or current.rate) or 0) or
+                ground.contended(snap, query, alone, theirs)
             local gain    = (plan.peak or plan.rate) - mine
-            local partner = (plan.peak or plan.rate) - solo(other, query)
+            local partner = (plan.peak or plan.rate) - ground.contended(other, query, theirs, alone)
             if gain > 0 and partner > 0 and (best == nil or gain > best.gain) then
                 best = { name = entry.name, gain = gain, plan = plan }
             end

@@ -33,8 +33,8 @@ function M.bind(brain, bot, snap)
         roster = function()
             return brain:roster(bot)
         end,
-        steps = function(map, x, y, goals, traced)
-            return terrain.steps(brain, map, x, y, goals, terrain.blocking(snap, map, x, y), traced)
+        steps = function(map, x, y, goals, traced, strict)
+            return terrain.steps(brain, map, x, y, goals, terrain.blocking(snap, map, x, y), traced, strict)
         end,
         detour = function(map, from, to, avoided)
             return terrain.detour(brain, map, from, to, avoided)

@@ -7,31 +7,6 @@ local value    = require("brain.policies.value")
 
 local M = {}
 
-local MODELED = { damage_rate = true, buff_hit = true, buff_dam = true, buff_phydef = true, damage_derate = true }
-
-local function echoed(name)
-    for _, echo in ipairs(magic.echoes or {}) do
-        if echo == name then
-            return true
-        end
-    end
-    return false
-end
-
-local function boosted(data)
-    for key in pairs(data.boost or {}) do
-        if MODELED[key] then
-            return true
-        end
-    end
-    return false
-end
-
-local function valued(name, data)
-    return boosted(data) or (magic.multipliers or {})[name] ~= nil or (magic.splashes or {})[name] ~= nil or
-        echoed(name)
-end
-
 function M.hunting(snap, query)
     local order = snap.record.memory.order
     return (order ~= nil and order.task == "HUNT") or (snap.self.class ~= "NONE" and ground.choose(snap, query) ~= nil)
@@ -44,11 +19,16 @@ local function worth(snap, query, name, data)
             table.insert(spells, spell)
         end
     end
-    local without = setmetatable({ spells = spells }, { __index = snap })
-    local power   = value.power(snap, query)
-    local lost    = power > 0 and 1 - value.power(without, query) / power or 0
-    local rate    = value.baseline(snap, query).value
-    local cast    = combat.cast(snap) / 1000
+    local without  = setmetatable({ spells = spells }, { __index = snap })
+    local baseline = value.baseline(snap, query)
+    -- A buff that strikes the mobs beside the target is worth the crowd the ground puts beside it: weighed against
+    -- one mob alone, 측면공격 and 후면공격 came out worth nothing on every ground and no warrior ever cast them
+    -- (online 120559 and 123007, offline 115523).
+    local extra    = baseline.hunt ~= nil and baseline.hunt.crowd or nil
+    local power    = value.power(snap, query, extra)
+    local lost     = power > 0 and 1 - value.power(without, query, extra) / power or 0
+    local rate     = baseline.value
+    local cast     = combat.cast(snap) / 1000
     return rate * (lost * (data.buff_time or 0) - cast) - value.spend(snap, query) * (data.mp or 0)
 end
 
@@ -64,7 +44,7 @@ function M.best(snap, query)
     local best = nil
     for name, slot in pairs(learned) do
         local data = magic.spells[name]
-        if data ~= nil and data.role == "BUFF" and data.self ~= false and data.trigger == nil and valued(name, data) and active[name] == nil and
+        if data ~= nil and data.role == "BUFF" and data.self ~= false and data.trigger == nil and combat.valued(name) and active[name] == nil and
             recovery.free(snap) >= (data.mp or 0) then
             local blocked = false
             local rate    = (data.boost or {}).damage_rate or 0

@@ -156,16 +156,27 @@ local SKILLS = {
         end
         return true
     end,
+    -- The server's group command toggles: sent for one already in my group it takes that one out (internal
+    -- /group/toggle). The group is read first and a member already in it is left alone: sent again, the invite
+    -- that had made a group of poet94 and warrior93 took the warrior out three seconds later, twice (online 184910).
+    -- Only an answer from the server refuses: with none in time the group may have been made all the same, and a
+    -- refusal held for good on the map left the poet unable to ask again there.
     [ACTION.INVITE] = function(brain, bot, action)
-        wait.reply(bot, resp.message, protocol.group(action.name), function(packet)
+        synced(bot)
+        if string.find(brain:observe(bot).group or "", action.name, 1, true) ~= nil then
+            return true
+        end
+        local answer = wait.reply(bot, resp.message, protocol.group(action.name), function(packet)
             return packet.text ~= nil and string.find(packet.text, action.name, 1, true) ~= nil
         end, WEAR_WAIT)
         synced(bot)
         local text = brain:observe(bot).group or ""
-        if string.find(text, action.name, 1, true) == nil then
-            return false, "REFUSED"
+        log("debug", string.format("[brain:invite] bot=%s name=%s answered=%s grouped=%s", bot:name(), action.name,
+            tostring(answer ~= nil), tostring(string.find(text, action.name, 1, true) ~= nil)))
+        if string.find(text, action.name, 1, true) ~= nil then
+            return true
         end
-        return true
+        return false, answer ~= nil and "REFUSED" or "UNANSWERED"
     end,
     [ACTION.LEAVE]  = function(brain, bot, action)
         wait.reply(bot, resp.message, protocol.group(bot:name()), function(packet)

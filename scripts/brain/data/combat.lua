@@ -33,5 +33,5 @@ return {
     },
     shrine        = { npcs = { "좌성황", "우성황", "공성성황", "성황할머니" }, limit = 100, words = "감사합니다" },
     group         = { bonus = { POET = 0.1 } },
-    party         = { scan = 4 },
+    party         = { scan = 4, size = 8 },
 }

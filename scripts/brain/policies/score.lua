@@ -132,10 +132,54 @@ function M.recovered(snap, query)
     return result
 end
 
+local trimmed = setmetatable({}, { __mode = "k" })
+
+-- Asked dry, a plan keeps only the self buffs the bot's own mana income pays for, cheapest first: counted kept up with
+-- no mana at all, a dry plan was as good as a refilled one and no mana potion ever paid for a buff. Only a plan asked
+-- dry drops them: rested as it stands, a bot that could buy no mana dropped the buff it was weighing and never cast it
+-- (brain unit test, pure state 18).
+local function kept(snap)
+    local income  = recovery.rates(snap).mp
+    local dropped = {}
+    local paid    = 0
+    for _, entry in ipairs(recovery.upkeeps(snap)) do
+        if paid + entry.cost <= income then
+            paid = paid + entry.cost
+        else
+            table.insert(dropped, entry.name)
+        end
+    end
+    if #dropped == 0 or snap.spells == nil then
+        return snap.spells
+    end
+    local key    = table.concat(dropped, ",")
+    local byself = trimmed[snap.spells]
+    if byself == nil then
+        byself = {}
+        trimmed[snap.spells] = byself
+    end
+    if byself[key] == nil then
+        local skip  = {}
+        local found = {}
+        for _, name in ipairs(dropped) do
+            skip[name] = true
+        end
+        for _, spell in ipairs(snap.spells) do
+            if skip[spell.name] == nil then
+                table.insert(found, spell)
+            end
+        end
+        byself[key] = found
+    end
+    return byself[key]
+end
+
 function M.rested(snap, mode)
-    local mp   = (mode or recovery.reserve(snap)) == "REFILL" and recovery.ceiling(snap) or 0
-    local full = setmetatable({ hp = snap.self.max_hp, mp = mp }, { __index = snap.self })
-    return setmetatable({ self = full }, { __index = snap })
+    local state  = mode or recovery.reserve(snap)
+    local mp     = state == "REFILL" and recovery.ceiling(snap) or 0
+    local full   = setmetatable({ hp = snap.self.max_hp, mp = mp }, { __index = snap.self })
+    local spells = mode == "DRY" and kept(snap) or snap.spells
+    return setmetatable({ self = full, mode = state, spells = spells }, { __index = snap })
 end
 
 local signatures = setmetatable({}, { __mode = "k" })
@@ -184,13 +228,13 @@ compute_signature = function(snap, mode)
         dam, table.concat(gear, ","), table.concat(spells, ","), mode or recovery.reserve(snap) }, "|")
 end
 
-function M.capability(snap, query)
+function M.capability(snap, query, extra)
     local options   = fight.options(snap, NEUTRAL)
     local refill    = recovery.rates(snap)
     local regen     = refill.mp
     local recovered = refill.hp
     local rate      = 1000 / fight.cast(snap)
-    local swing     = fight.strike(snap, query, NEUTRAL)
+    local swing     = fight.strike(snap, query, NEUTRAL, nil, nil, extra)
     local melee     = swing * 1000 / combat.swing
     local single    = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "ATTACK"

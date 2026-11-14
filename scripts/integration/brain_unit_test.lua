@@ -1084,6 +1084,47 @@ test_suite {
                         local pick        = battle.choose(snap, bound, mob, true)
                         return pick ~= nil and pick.key == "CHARGE", tostring(pick and pick.key)
                     end),
+                    case("a charge is weighed by its chance of success", function()
+                        local rest     = require("brain.tasks.rest")
+                        local recovery = require("brain.policies.recovery")
+                        local function weighed(int)
+                            local snap, bound = state("poet65", { mp = 35, hp = 2400, int = int })
+                            local slot        = recovery.spells(snap).charge
+                            return rest.worth(snap, bound, { kind = ACTION.CAST, slot = slot.slot }, false)
+                        end
+                        local plain = weighed(65)
+                        local surer = weighed(255)
+                        return plain > 0 and surer > plain, string.format("int65=%.1f int255=%.1f", plain, surer)
+                    end),
+                    case("a party plan tells a member refilled from dry whichever is asked first", function()
+                        local function team()
+                            local snap, bound                          = state("rogue50", { mp = 735, money = 70300 })
+                            local poet                                 = state("poet65")
+                            snap.world.map, snap.world.x, snap.world.y = 863, 13, 12
+                            poet.world.map, poet.world.x, poet.world.y = 863, 14, 12
+                            snap.party                                 = { party.profile(poet, bound, nil) }
+                            snap.group                                 = { snap.self.name, poet.self.name }
+                            snap.leader                                = snap.self.name
+                            local members                              = { snap }
+                            for _, member in ipairs(party.members(snap)) do
+                                table.insert(members, member)
+                            end
+                            return members, bound
+                        end
+                        local first, bound  = team()
+                        local refill        = ground.party(first, bound, "REFILL")
+                        local dry           = ground.party(first, bound, "DRY")
+                        local second, again = team()
+                        local dried         = ground.party(second, again, "DRY")
+                        local refilled      = ground.party(second, again, "REFILL")
+                        if refill == nil or dry == nil or dried == nil or refilled == nil then
+                            return false, "no plan"
+                        end
+                        local detail = string.format("refill=%.1f/%.1f dry=%.1f/%.1f", refill.rate, refilled.rate,
+                            dry.rate, dried.rate)
+                        local same = refill.rate == refilled.rate and dry.rate == dried.rate
+                        return same and refill.rate > dry.rate, detail
+                    end),
                     case("heal instead of attacking when hp is low and mana is there", function()
                         local snap, bound = state("poet65", { hp = 850, mp = 423 })
                         without(snap, "혼마술")
@@ -4988,6 +5029,31 @@ test_suite {
                         }
                         local kept    = combat.bloodless(options).offense
                         return #kept == 1 and kept[1].name == "paid", "kept=" .. #kept
+                    end),
+                    case("a walk past a slower mob that kills in one blow is not free three tiles off", function()
+                        local danger      = require("brain.policies.danger")
+                        local snap, bound = state("rogue92")
+                        local mob         = mob_named("황담비", snap.world.x + 3, snap.world.y, 101)
+                        local near        = danger.passing(snap, bound, mob, 3, 4000)
+                        local far         = danger.passing(snap, bound, mob, 9, 4000)
+                        return near > 0.5 and far == 0, string.format("near=%.3f far=%.3f", near, far)
+                    end),
+                    case("a mob known to bear nothing is not fought as one whose debuffs nobody knows", function()
+                        local snap, bound = state("poet65")
+                        local function doll(changes)
+                            local mob = mob_named("양철인형", snap.world.x + 1, snap.world.y, 101)
+                            for key, value in pairs(changes) do
+                                mob[key] = value
+                            end
+                            return mob
+                        end
+                        local bare     = combat.outcome(snap, bound, doll({ applied = {} }))
+                        local unknown  = combat.outcome(snap, bound, doll({}))
+                        local assisted = combat.outcome(snap, bound, doll({ assist = { ["혼마술"] = true } }))
+                        local again    = combat.outcome(snap, bound, doll({ assist = { ["혼마술"] = true } }))
+                        return unknown.casts > bare.casts and again == assisted,
+                            string.format("casts=%d/%d shared=%s", bare.casts, unknown.casts,
+                                tostring(again == assisted))
                     end),
                     case("a run-away mob comes on sight and hits back until it flees", function()
                         local danger      = require("brain.policies.danger")

@@ -319,9 +319,9 @@ end
 
 local powers = {}
 
-function M.power(snap, query)
-    return memo.get(powers, snap.self.name, "", score.signature(snap, ""), function()
-        local ability = score.capability(score.rested(snap), query)
+function M.power(snap, query, extra)
+    return memo.get(powers, snap.self.name, "", score.signature(snap, "") .. "|" .. tostring(extra or 0), function()
+        local ability = score.capability(score.rested(snap), query, extra)
         return ability.dps.single * ability.ehp
     end)
 end
@@ -384,8 +384,9 @@ function M.mana(snap, query)
         dry  = ground.party(members, query, "DRY") or dry
     end
     local found = 0
-    if full ~= nil and full.drain > 0 then
-        found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / full.drain)
+    local drain = full ~= nil and ground.drain(full, snap) or 0
+    if drain > 0 then
+        found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / drain)
     end
     manas[snap.self.name] = { period = period, found = found }
     return found
@@ -475,13 +476,42 @@ local function segments(origin, route, target)
     local map   = origin.map
     local x, y  = origin.x, origin.y
     for _, hop in ipairs(route.path or {}) do
-        table.insert(found, { map = map, steps = math.abs(hop.x - x) + math.abs(hop.y - y) })
+        table.insert(found, {
+            map = map,
+            steps = math.abs(hop.x - x) + math.abs(hop.y - y),
+            area = {
+                left = math.min(x, hop.x),
+                top = math.min(y, hop.y),
+                right = math.max(x, hop.x),
+                bottom = math.max(y, hop.y)
+            }
+        })
         map, x, y = hop.dest, hop.ax, hop.ay
     end
     local tx = target ~= nil and target.x or route.x or x
     local ty = target ~= nil and target.y or route.y or y
-    table.insert(found, { map = map, steps = math.abs(tx - x) + math.abs(ty - y) })
+    table.insert(found, {
+        map = map,
+        steps = math.abs(tx - x) + math.abs(ty - y),
+        area = {
+            left = math.min(x, tx),
+            top = math.min(y, ty),
+            right = math.max(x, tx),
+            bottom = math.max(y, ty)
+        }
+    })
     return found
+end
+
+-- Tiles between two areas: a walk from one end of a map to the other is taken as the box its ends span, and a mob
+-- where it was seen or anywhere it spawns. With nothing known of where the mob is, it is taken on the walk.
+local function apart(walk, area)
+    if walk == nil or area == nil then
+        return 0
+    end
+    local dx = math.max(0, area.left - walk.right, walk.left - area.right)
+    local dy = math.max(0, area.top - walk.bottom, walk.top - area.bottom)
+    return dx + dy
 end
 
 local nativity = {}
@@ -496,7 +526,18 @@ local function natives(perilous, query, map)
         known = {}
         for _, id in ipairs(perilous) do
             if query.native(map, id) then
-                table.insert(known, { mob = hunting.mobs[id], weight = 1 })
+                local mob  = hunting.mobs[id]
+                local area = nil
+                for _, spot in ipairs(mob ~= nil and query.spawns(map, { mob.name }) or {}) do
+                    area = area or { left = spot.left, top = spot.top, right = spot.right, bottom = spot.bottom }
+                    area = {
+                        left = math.min(area.left, spot.left),
+                        top = math.min(area.top, spot.top),
+                        right = math.max(area.right, spot.right),
+                        bottom = math.max(area.bottom, spot.bottom)
+                    }
+                end
+                table.insert(known, { mob = mob, weight = 1, area = area })
             end
         end
         nativity.maps[map] = known
@@ -504,11 +545,15 @@ local function natives(perilous, query, map)
     return known
 end
 
+local function tile(x, y)
+    return x ~= nil and y ~= nil and { left = x, top = y, right = x, bottom = y } or nil
+end
+
 local function threats(snap, query, map)
     local found = {}
     if map == snap.world.map then
         for _, mob in ipairs(visible(snap, query)) do
-            table.insert(found, { mob = mob, weight = 1 })
+            table.insert(found, { mob = mob, weight = 1, area = tile(mob.x, mob.y) })
         end
     else
         for _, entry in ipairs(natives(danger.perilous(snap, query), query, map)) do
@@ -519,7 +564,13 @@ local function threats(snap, query, map)
     if type(seen) == "table" then
         local mob = hunting.mobs[seen.mob] or seen.stats
         if mob ~= nil then
-            table.insert(found, { mob = mob, weight = danger.weight(snap, seen), period = danger.period(seen) })
+            local stats = type(seen.stats) == "table" and seen.stats or {}
+            table.insert(found, {
+                mob = mob,
+                weight = danger.weight(snap, seen),
+                period = danger.period(seen),
+                area = tile(stats.x, stats.y)
+            })
         end
     end
     return found
@@ -532,9 +583,8 @@ function M.exposure(snap, query, parts)
     local period = 0
     for _, part in ipairs(parts) do
         for _, threat in ipairs(threats(snap, query, part.map)) do
-            local chases = threat.mob.speed ~= nil and threat.mob.speed <= step
-            local expose = chases and part.steps * step or 0
-            local chance = threat.weight * danger.chance(snap, query, threat.mob, expose)
+            local distance = apart(part.area, threat.area)
+            local chance   = threat.weight * danger.passing(snap, query, threat.mob, distance, part.steps * step)
             table.insert(all, chance)
             if threat.period == nil then
                 table.insert(native, chance)
@@ -646,6 +696,7 @@ local function walk(snap, query, dest, worth, origin, best)
                     cost = cost,
                     time = time,
                     risk = risk,
+                    chance = chance,
                     decay = risk - fixed * loss,
                     period = period,
                     risky = plan.risky,
@@ -667,12 +718,24 @@ function M.trip(snap, query, dest, worth)
             cost = time * worth.value + M.stay(snap, query, time * 1000, worth),
             time = time,
             risk = 0,
+            chance = 0,
             decay = 0,
             period = 0,
             risky = false
         }
     end
     return walk(snap, query, dest, worth, nil, best)
+end
+
+-- What an errand gains it gains only by getting there alive: its trip's risk is the death's loss alone, and with the
+-- gear weighed whole, a rogue walked for it past 황담비 at the gate of 대각봉1 with a death all but sure (risk 2.08M)
+-- and died there, as did three mages, five deaths in one run (online 201514).
+function M.arrival(snap, query, action, worth)
+    if action == nil or action.kind ~= ACTION.MOVE or action.dest == nil then
+        return 1
+    end
+    local trip = M.trip(snap, query, action.dest, worth)
+    return trip ~= nil and 1 - (trip.chance or 0) or 0
 end
 
 function M.recoiling(snap, query, dest)
@@ -735,6 +798,7 @@ function M.detour(snap, query, dest, worth)
         cost = time * worth.value + risk,
         time = time,
         risk = risk,
+        chance = trip.chance,
         decay = trip.decay,
         period = trip.period,
         risky = trip.risky,

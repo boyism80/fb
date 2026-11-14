@@ -277,9 +277,11 @@ end
 -- The server lands the ambush behind the mob, else beside it, on a tile that is floor and free, and casts
 -- nothing at all when none is. Its cost is 0 mp, so the cast still reads as done and the rogue stays cloaked:
 -- among three stags it cast 2050 ambushes for 15 kills in 736s and never swung (RO seed 2, map 63).
+-- Landed behind, the rogue faces the way the mob faces and the server doubles a blow on its back
+-- (life::calculate_damage); landed beside, it faces the mob's flank and the blow is a plain one.
 local function lands(snap, facts, mob)
     local dx, dy = mob.x - snap.world.x, mob.y - snap.world.y
-    for _, tile in ipairs({ { mob.x + dx, mob.y + dy }, { mob.x + dy, mob.y + dx }, { mob.x - dy, mob.y - dx } }) do
+    for index, tile in ipairs({ { mob.x + dx, mob.y + dy }, { mob.x + dy, mob.y + dx }, { mob.x - dy, mob.y - dx } }) do
         local free = facts.floor == nil or facts.floor(snap.world.map, tile[1], tile[2])
         for _, other in ipairs(snap.world.mobs or {}) do
             free = free and (other.x ~= tile[1] or other.y ~= tile[2])
@@ -290,10 +292,10 @@ local function lands(snap, facts, mob)
                 member.world.y ~= tile[2])
         end
         if free then
-            return true
+            return index == 1 and magic.back_attack or 1
         end
     end
-    return false
+    return nil
 end
 
 local function sighted(snap, mob)
@@ -311,6 +313,13 @@ local function candidates(snap, facts, mob, state, reachable)
     local spendable = recovery.spendable(snap)
     local free      = recovery.free(snap)
     local seen      = sighted(snap, mob)
+    -- The swing and the cast keep apart cooldowns: what I cast or drink while my swing still cools takes from the fight
+    -- only the part that outlasts the cooldown (overlap), and the blows that land meanwhile land all the same. Counted
+    -- whole, a rogue beside its mob waited out its swing after 투명 238 times where 비영승보 would have struck in the
+    -- gap (online 120559); taken off the blows as well, a poet among skeletons weighed every action safe, never fled
+    -- and died charging (offline WA+PO 세작 seed 6, run 15:41).
+    local beside    = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1
+    local cooling   = beside and combat.backswing(snap) or 0
     -- A mob I cannot walk to is fought only with what I aim at it from here: a drink or a buff opens a fight my blows
     -- go on with, and weighed so, a warrior that could not walk round its poet to a skeleton drank 동동주 at it 331
     -- times a minute (offline WA+PO 세작 seed 0, run 18:35).
@@ -319,6 +328,9 @@ local function candidates(snap, facts, mob, state, reachable)
         local limit = entry.kind == "HEAL" and spendable or free
         if reachable == false and (aimed == false or entry.moves == true) then
             return
+        end
+        if entry.kind ~= "SWING" then
+            entry.overlap = math.min(entry.time, cooling)
         end
         if state.refused[entry.key] == nil and (entry.mp or 0) <= limit and (seen or aimed == false) then
             table.insert(found, entry)
@@ -372,21 +384,35 @@ local function candidates(snap, facts, mob, state, reachable)
             })
         end
     end
+    -- A strike short of mana is drunk for as a spell is, by the bot whose strike spends all its mana: offered only
+    -- with the mana already there, a rogue among its doses started four fights in five under the 60 its 필살검무
+    -- costs and swung instead (online 120559, 123007).
     for _, choice in ipairs(options.strike) do
-        if known[choice.name] ~= nil and choice.mp <= (snap.self.mp or 0) and adjacent and
-            snap.self.hp - choice.hp > burst and mends(snap, facts, (snap.self.mp or 0) - choice.mp, choice.hp) and
+        local dose = nil
+        if choice.mp > mp then
+            for _, entry in ipairs(doses) do
+                dose = dose or (mp + math.min(entry.amount, (snap.self.max_mp or 0) - mp) >= choice.mp and entry or nil)
+            end
+        end
+        local drunk = dose ~= nil and math.min(dose.amount, (snap.self.max_mp or 0) - mp) or 0
+        if known[choice.name] ~= nil and (choice.mp <= mp or dose ~= nil) and adjacent and
+            snap.self.hp - choice.hp > burst and mends(snap, facts, mp + drunk - choice.mp, choice.hp) and
             bears(snap, facts, mob, choice) then
             local spell = magic.spells[choice.name]
+            local model = dose ~= nil and facts.item(dose.name) or nil
             add({
                 key = choice.name,
                 kind = "STRIKE",
-                time = cast,
+                time = dose ~= nil and 2 * cast or cast,
                 damage = choice.damage,
-                mp = choice.mp,
+                mp = choice.mp - drunk,
                 spend = spell ~= nil and (spell.damage_mp or 0) > 0 and (recovery.opening(snap) or choice.mp) or nil,
                 hp = -choice.hp,
+                price = dose ~= nil and model ~= nil and model.price or nil,
                 opener = true,
-                maneuver = { kind = MANEUVER.CAST, slot = known[choice.name], cost = choice.mp }
+                aimed = dose ~= nil or nil,
+                maneuver = dose ~= nil and { kind = MANEUVER.USE, item = dose.name } or
+                    { kind = MANEUVER.CAST, slot = known[choice.name], cost = choice.mp }
             })
         end
     end
@@ -458,6 +484,10 @@ local function candidates(snap, facts, mob, state, reachable)
             time = cast,
             mp = charge.mp - charging.chance * refill,
             hp = charging.chance * change,
+            outcomes = {
+                { share = charging.chance, mp = charge.mp - refill, hp = change },
+                { share = 1 - charging.chance, mp = charge.mp, hp = 0 },
+            },
             maneuver = { kind = MANEUVER.CAST, slot = charge.slot, self = true }
         })
     end
@@ -486,15 +516,18 @@ local function candidates(snap, facts, mob, state, reachable)
             })
         end
     end
+    -- An ambush is one more blow struck on the cast's cooldown, cloaked or not: offered only under the cloak, a rogue
+    -- whose 투명 a swing had spent swung on alone while the cast stood idle (online 120559).
     for name, slot in pairs(known) do
-        local spell = magic.spells[name]
-        if cloak > 1 and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and adjacent and
-            gated(snap, facts, mob) == false and lands(snap, facts, mob) and strands(snap, facts, mob) == false then
+        local spell   = magic.spells[name]
+        local landing = spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and
+            adjacent and gated(snap, facts, mob) == false and lands(snap, facts, mob) or nil
+        if landing ~= nil and strands(snap, facts, mob) == false then
             add({
                 key = name,
                 kind = "CAST",
-                time = math.max(cast, swing),
-                damage = strike * cloak * magic.back_attack,
+                time = cast,
+                damage = strike * cloak * landing,
                 mp = spell.mp or 0,
                 moves = true,
                 maneuver = { kind = MANEUVER.CAST, slot = slot, cost = spell.mp or 0 }
@@ -597,7 +630,7 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         local exposed = 1 - math.min(1, M.burst(snap) / hp)
         p_die = 1 - (1 - p_die) * (mp < combat.buffs(snap).charge.mp and exposed * exposed or exposed)
     end
-    local time     = (entry.time + refill + rest.time) / 1000
+    local time     = (entry.time - (entry.overlap or 0) + refill + rest.time) / 1000
     local ready    = ground.need(snap, facts)
     local charging = combat.buffs(snap).charge
     if charging ~= nil then
@@ -609,9 +642,12 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     if short > 0 and regen > 0 then
         time = time + short / regen
     end
+    -- Hp a blow spends comes back at the rate I am healed, my crew's heals with it, as a strike's does (delay): left
+    -- free beside a healer, 금강퇴 filled the cast between every two swings once its time overlapped the swing's
+    -- cooldown, 1962 to 4119 casts a run, and 홍주 went 1555 to 1835 (offline WA+PO 흉가, runs 11:55 and 17:32).
     if entry.melee ~= nil then
         time = time + delay(snap, mob, entry, regen, taken)
-    elseif (entry.hp or 0) < 0 and regen > 0 and (crew == nil or crew.heal <= 0) then
+    elseif (entry.hp or 0) < 0 and regen > 0 then
         time = time - entry.hp / regen
     end
     if (entry.wasted or 0) > 0 then
@@ -641,6 +677,27 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
             entry.kind ~= "CHARGE" and hp > M.burst(snap) and hp > combat.spike(snap, { { mob = mob, count = 1 } })),
         ending,
         plan
+end
+
+-- An action that ends one of several ways is worth what each way is worth by its chance, and it survives only when
+-- every way it can end does: weighed at the hp of its average way, a 공력증강 that more often than not left 114 hp
+-- came out at 470, and a mage at 1,044 hp beside a spider charged and died (offline watch mage60 seed 0, run 18:20).
+local function gamble(snap, facts, mob, entry, worth, loss, mana)
+    local value    = 0
+    local ending   = 0
+    local survives = true
+    local plan     = { time = 0, p_die = 0, ending = 0, rest = 0, extra = 0, drained = 0 }
+    for _, outcome in ipairs(entry.outcomes) do
+        local found, safe, left, planned = estimate(snap, facts, mob, copy(entry, { hp = outcome.hp, mp = outcome.mp }),
+            worth, loss, mana)
+        value                            = value + outcome.share * found
+        ending                           = ending + outcome.share * left
+        survives                         = survives and (outcome.share <= 0 or safe)
+        for key in pairs(plan) do
+            plan[key] = plan[key] + outcome.share * (planned[key] or 0)
+        end
+    end
+    return value, survives, ending, plan
 end
 
 local function lasting(snap, name, at)
@@ -896,7 +953,7 @@ function evaluate(snap, facts, mob, reachable)
             -- The rest of a fight with a mob I cannot walk to is fought from where I stand too: fought on with blows,
             -- 백열장 at a mob out of a warrior's reach came out worth a whole melee kill and was cast at mobs on nobody
             -- 8,468 times in a run (offline, run 18:59).
-            entry.value, entry.survives, left, entry.plan = estimate(snap, facts,
+            entry.value, entry.survives, left, entry.plan = (entry.outcomes ~= nil and gamble or estimate)(snap, facts,
                 reachable == false and copy(mob, { walled = true }) or mob, entry, baseline, loss,
                 entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
                 entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
@@ -1022,8 +1079,8 @@ function M.target(snap, facts, accept)
             table.insert(goals, { x = mob.x, y = mob.y, range = 1 })
         end
     end
-    local paths = #goals > 0 and facts.steps ~= nil and facts.steps(snap.world.map, snap.world.x, snap.world.y, goals) or
-        {}
+    local paths = #goals > 0 and facts.steps ~= nil and
+        facts.steps(snap.world.map, snap.world.x, snap.world.y, goals, nil, true) or {}
     for index, entry in ipairs(near) do
         local steps     = paths[index]
         entry.reachable = steps ~= false and entry.walled == false

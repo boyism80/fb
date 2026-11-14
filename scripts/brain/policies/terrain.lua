@@ -37,7 +37,11 @@ end
 -- way (together.make_way). Counted as walls, a poet in the one-tile way to the stairs of 흉가 91 turned its
 -- rogue's 5 steps into the walk round the floor and back with every step either took, and the trio never left
 -- (unit: trio moves to the next floor without bouncing).
-function M.steps(source, map, x, y, goals, occupied, traced)
+-- A strike walk is the hunter's: it walks round whoever stands in the way within the steps it was weighed with and
+-- ends UNREACHABLE when no way round is left, so a strike is weighed strict, with no bare walk to fall back on.
+-- Weighed by the bare walk, a poet freeing its rogue from the mobs round it struck 673 times at mobs it could not
+-- reach and 389 of them ended UNREACHABLE at once (offline RO+PO 세작, run 09:06).
+function M.steps(source, map, x, y, goals, occupied, traced, strict)
     if occupied == nil or #occupied == 0 then
         return source:steps(map, x, y, goals, nil, traced)
     end
@@ -56,7 +60,7 @@ function M.steps(source, map, x, y, goals, occupied, traced)
     local found, routes = source:steps(map, x, y, goals, avoided, traced)
     local bare, ways    = nil, nil
     for index = 1, #goals do
-        if found[index] == false then
+        if found[index] == false and strict ~= true then
             if bare == nil then
                 bare, ways = source:steps(map, x, y, goals, nil, traced)
             end

@@ -106,12 +106,13 @@ end
 
 local function evaluate(snap, query, kind)
     if kind == "mp" then
-        if recovery.least(snap) == nil then
+        if recovery.least(snap) == nil and recovery.upkeep(snap) <= 0 then
             return nil
         end
         local refill = ground.choose(snap, query, "REFILL")
         local dry    = ground.choose(snap, query, "DRY")
-        if recovery.rates(snap).mp >= (refill ~= nil and refill.drain or 0) and recovery.rates(snap).mp > 0 then
+        local income = recovery.rates(snap).mp
+        if income >= (refill ~= nil and ground.drain(refill, snap) or 0) and income > 0 then
             local spare = recovery.ignition(snap)
             return spare > 0 and { crisis = spare, stock = recovery.spare(snap), loot = 0 } or nil
         end
@@ -124,13 +125,13 @@ local function evaluate(snap, query, kind)
             refill = ground.party(members, query, "REFILL") or refill
             dry    = ground.party(members, query, "DRY") or dry
         end
-        if refill == nil or refill.drain <= 0 then
+        if refill == nil or ground.drain(refill, snap) <= 0 then
             return nil
         end
         return {
             gain = refill.rate - (dry ~= nil and dry.rate or 0),
             base = dry ~= nil and dry.rate or 0,
-            usage = refill.drain,
+            usage = ground.drain(refill, snap),
             loot = refill.loot,
             level = ground.lifetime(snap, refill.rate)
         }
@@ -273,6 +274,7 @@ local function plan(snap, query, kind)
     local spend = best.count * best.offer.price * worth.exchange
     local path  = value.detour(snap, query, { maps = { route.dest } }, worth)
     local risk  = path ~= nil and path.risk or 0
+    local reach = 1 - (path ~= nil and path.chance or 0)
     local spent = (path ~= nil and path.time or trip * 2 / 1000) * (1 + #party.members(snap))
     local gone  = snap.record.memory.shop
     if gone == nil or gone.map ~= route.dest or gone.spent == nil or (snap.now or 0) - gone.at >= data.rerank then
@@ -288,14 +290,14 @@ local function plan(snap, query, kind)
         local cover    = held / math.max(need.usage, 1)
         local urgency  = gone == nil and route.dest ~= snap.world.map and spent > 0 and
             math.max(0, math.min(1, 2 - cover / spent)) or 1
-        delta          = gain * best.length * math.min(1, shortage) * urgency - need.base * spent - spend - risk
+        delta          = gain * best.length * math.min(1, shortage) * urgency * reach - need.base * spent - spend - risk
     else
         local loss   = stake
         local target = route.dest == snap.world.map and (need.stock or need.crisis) or need.crisis
         local charge = recovery.spells(snap).charge
         local onhand = (charge == nil and kind == "mp" and route.dest ~= snap.world.map) and held + (snap.self.mp or 0) or
             held
-        delta        = loss * math.max(0, 1 - onhand / math.max(target, 1)) - worth.value * spent - spend - risk
+        delta        = loss * math.max(0, 1 - onhand / math.max(target, 1)) * reach - worth.value * spent - spend - risk
     end
     if route.dest ~= snap.world.map then
         local chances = {}

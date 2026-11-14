@@ -380,4 +380,43 @@ function M.reserve(snap)
     return (M.sustains(snap) or M.purchasable(snap, "mp") > 0) and "REFILL" or "DRY"
 end
 
+-- The self buffs a fight model counts as kept up, cheapest first, with the mana a second each costs to keep: of
+-- buffs that exclude one another only the strongest is kept, as the bot casts (buff.best). Counted free, they made a
+-- rogue's plan the same with its mana refilled or dry, and no plan ever priced the 이중공격 it kept up.
+function M.upkeeps(snap)
+    local learned = {}
+    for _, spell in ipairs(snap.spells or {}) do
+        learned[spell.name] = true
+    end
+    local found = {}
+    for _, spell in ipairs(snap.spells or {}) do
+        local data = magic.spells[spell.name]
+        if data ~= nil and data.role == "BUFF" and data.self ~= false and data.trigger == nil and
+            fight.valued(spell.name) and type(data.mp) == "number" and data.mp > 0 and (data.buff_time or 0) > 0 then
+            local rate    = (data.boost or {}).damage_rate or 0
+            local blocked = false
+            for _, other in ipairs(data.excludes or {}) do
+                local rival = magic.spells[other]
+                blocked     = blocked or (learned[other] == true and rival ~= nil and
+                    ((rival.boost or {}).damage_rate or 0) > rate)
+            end
+            if blocked == false then
+                table.insert(found, { name = spell.name, cost = data.mp / data.buff_time })
+            end
+        end
+    end
+    table.sort(found, function(left, right)
+        return left.cost < right.cost or (left.cost == right.cost and left.name < right.name)
+    end)
+    return found
+end
+
+function M.upkeep(snap)
+    local total = 0
+    for _, entry in ipairs(M.upkeeps(snap)) do
+        total = total + entry.cost
+    end
+    return total
+end
+
 return M

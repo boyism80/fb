@@ -88,6 +88,8 @@ end
 
 local tables = setmetatable({}, { __mode = "k" })
 
+local perishing = {}
+
 local function ledger(snap, ability, crew)
     local key    = crew ~= nil and crew.key or ""
     local byself = tables[snap.self]
@@ -151,6 +153,7 @@ local function assess(snap, query, floor, ability, crew)
     local deaths  = 0
     local targets = {}
     local drained = 0
+    local crewed  = {}
     local taken   = 0
     local pain    = 0
     local fought  = 0
@@ -203,7 +206,14 @@ local function assess(snap, query, floor, ability, crew)
         end
         local deadly = book.deadly[mob.id]
         if deadly == nil then
-            deadly = danger.deadly(snap, query, mob, false)
+            -- A floor is safe for the crew that hunts it: told alone, a mob two kill together barred the floor
+            -- from the pair as well, and two mages planned below the grounds they could hold together (user, 11-13).
+            -- Weighed with the crew it is kept past this plan by the build, the rested mode and the crew: worked out
+            -- again for every plan, it took a quarter of the decision time (offline profile, run 16:14).
+            deadly = memo.get(perishing, snap.self.name, score.signature(snap, snap.mode or ""),
+                mob.id .. (crew ~= nil and crew.key or ""), function()
+                    return danger.deadly(snap, query, mob, crew or false)
+                end)
             book.deadly[mob.id] = deadly
         end
         if fight.seeks(mob) and fight.hits(mob) and deadly then
@@ -226,10 +236,13 @@ local function assess(snap, query, floor, ability, crew)
             need       = math.max(need, hurt)
             margin     = math.min(margin, ending / math.max(snap.self.max_hp, 1))
             drained    = drained + entry.count * result.drained
-            taken      = taken + entry.count * hurt
-            pain       = pain + entry.count * result.taken
-            fought     = fought + entry.count * result.time
-            loot       = loot + entry.count * (mob.loot or 0)
+            for name, rate in pairs(context.drains or {}) do
+                crewed[name] = (crewed[name] or 0) + entry.count * result.time * rate
+            end
+            taken  = taken + entry.count * hurt
+            pain   = pain + entry.count * result.taken
+            fought = fought + entry.count * result.time
+            loot   = loot + entry.count * (mob.loot or 0)
             for _, drop in ipairs(mob.drops or {}) do
                 local found = yields[drop.name] or { rate = 0, capacity = drop.capacity }
                 found.rate = found.rate + entry.count * drop.count * drop.chance
@@ -244,6 +257,11 @@ local function assess(snap, query, floor, ability, crew)
     for _, entry in pairs(yields) do
         entry.rate = time > 0 and entry.rate / time * 1000 or 0
     end
+    local drains = {}
+    for _, member in ipairs(crew ~= nil and crew.members or {}) do
+        local name   = member.self.name
+        drains[name] = (time > 0 and (crewed[name] or 0) / time * 1000 or 0) + recovery.upkeep(member)
+    end
     return {
         map     = floor.map,
         safe    = safe and #targets > 0,
@@ -254,7 +272,8 @@ local function assess(snap, query, floor, ability, crew)
         need    = need,
         margin  = margin,
         targets = targets,
-        drain   = time > 0 and drained / time * 1000 or 0,
+        drain   = (time > 0 and drained / time * 1000 or 0) + recovery.upkeep(snap),
+        drains  = drains,
         spend   = kills > 0 and drained / kills or 0,
         wear    = time > 0 and taken / time * 1000 or 0,
         pain    = time > 0 and pain / time * 1000 or 0,
@@ -649,6 +668,33 @@ local function lapped(snap, query, candidate, worth, moving, crew)
     return finish, rate, best
 end
 
+-- What a plan is worth when a rival hunts the same floors beside it: the rival's kills join the others' demand on
+-- every floor both plans hold, and the respawn they share settles the rate (share). Plans on other floors keep theirs.
+function M.contended(snap, query, plan, rival)
+    if plan == nil then
+        return 0
+    end
+    local value = plan.peak or plan.rate
+    local taken = {}
+    local both  = false
+    for _, floor in ipairs(rival ~= nil and rival.floors or {}) do
+        taken[floor.map] = floor.kills or 0
+    end
+    for _, floor in ipairs(plan.floors) do
+        both = both or taken[floor.map] ~= nil
+    end
+    if both == false then
+        return value
+    end
+    local shared  = setmetatable({
+        demand = function(map, crew)
+            return query.demand(map, crew) + (taken[map] or 0)
+        end
+    }, { __index = query })
+    local _, rate = lapped(snap, shared, { floors = plan.floors }, {}, false, nil)
+    return math.min(value, rate)
+end
+
 local function rank(snap, query, mode, crew, worth)
     local ranked = {}
     for _, candidate in ipairs(candidates(snap, query, mode, crew)) do
@@ -918,6 +964,7 @@ local function available(snap, query, ranked, shunned, crew, guards)
                 need    = floors[#floors].need,
                 margin  = floors[#floors].margin,
                 drain   = floors[#floors].drain,
+                drains  = floors[#floors].drains,
                 spend   = floors[#floors].spend,
                 wear    = floors[#floors].wear,
                 pain    = floors[#floors].pain,
@@ -926,6 +973,7 @@ local function available(snap, query, ranked, shunned, crew, guards)
                 loot    = floors[#floors].loot,
                 yields  = floors[#floors].yields,
                 deaths  = floors[#floors].deaths,
+                crowd   = floors[#floors].crowd,
             })
         end
     end
@@ -1023,6 +1071,13 @@ end
 
 function M.mode(snap)
     return nil
+end
+
+-- The mana a second this bot spends on a plan: its own when the plan has it among the crew, else the plan's, which
+-- is the leader's own and so the bot's when it leads or hunts alone.
+function M.drain(plan, snap)
+    local own = plan.drains ~= nil and plan.drains[snap.self.name] or nil
+    return own or plan.drain
 end
 
 -- A mode is the state of the member asking (members[1]): its plan with its mana refilled against one without. Set on
@@ -1160,6 +1215,7 @@ function M.hold(members, query, name)
         need   = last.need,
         margin = last.margin,
         drain  = last.drain,
+        drains = last.drains,
         spend  = last.spend,
         wear   = last.wear,
         pain   = last.pain,
