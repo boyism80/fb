@@ -27,7 +27,7 @@ void listener_impl::on_spell_remove(life& me, uint8_t index)
 void listener_impl::on_spell_delay(life& me, const spell& spell, uint32_t delay)
 {
     auto buff = me.buffs.find(spell.model().id);
-    if (buff != nullptr && buff->remaining() > std::chrono::seconds(delay))
+    if (buff != nullptr && buff->remaining() >= std::chrono::seconds(1))
         me.send(game_resp::spell_buff(*buff));
     else
         me.send(game_resp::spell_delay(spell, delay));
