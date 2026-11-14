@@ -461,7 +461,15 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
-            if (co_await this->server.save(*this, true) == false)
+            if (co_await this->server.save(*this) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+            auto&& released = co_await this->server.http.post(
+                this->weak_from_this_as<character>(),
+                "internal",
+                "/in-game/logout",
+                internal_reqs::Logout{this->world(), this->name(), fb::config<uint8_t>("id")});
+            if (released.success == false || this->hand_off() == false)
                 throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
             co_await this->listener.on_transfer(*this, map, position, ip, port, option);

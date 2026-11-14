@@ -192,7 +192,7 @@ uint8_t fb::game::server::brightness() const
     return brightness_from_time(static_cast<uint8_t>(this->_time.hours()), static_cast<uint8_t>(this->_time.minutes()));
 }
 
-async::task<bool> fb::game::server::save(character& ch, bool release)
+async::task<bool> fb::game::server::save(character& ch)
 {
     // Save overwrites items, spells, achievements and quests; a partially loaded character would wipe them.
     if (ch.transferring() == false && (ch.inited() == false || ch.loaded() == false))
@@ -239,15 +239,7 @@ async::task<bool> fb::game::server::save(character& ch, bool release)
         co_return success;
 
     shared->save_ack();
-    if (success == false || release == false)
-        co_return success;
-
-    auto&& released =
-        co_await this->http.post(weak,
-                                 "internal",
-                                 "/in-game/logout",
-                                 internal_reqs::Logout{shared->world(), shared->name(), fb::config<uint8_t>("id")});
-    co_return released.success && shared->hand_off();
+    co_return success;
 }
 
 async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               actor,

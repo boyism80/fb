@@ -461,6 +461,7 @@ private:
     // clang-format off
     bool                            begin_transfer();
     void                            cancel_transfer(std::string_view message);
+    bool                            hand_off();
     void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
@@ -539,7 +540,6 @@ public:
     bool                                                      abort_login();
     [[nodiscard]] async::task<transfer_result>                transfer(fb::game::map& map, const fb::model::point16_t& position, const transfer_option& option = {}, map_callback before = {});
     [[nodiscard]] async::task<transfer_result>                transfer(fb::game::map& map, const fb::model::point16_t& position, std::string ip, uint16_t port, const transfer_option& option = {}, map_callback before = {});
-    bool                                                      hand_off();
     bool                                                      transferring() const;
     bool                                                      transferred() const;
     ROLE                                                      role() const;
