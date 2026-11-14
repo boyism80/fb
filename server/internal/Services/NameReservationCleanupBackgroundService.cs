@@ -4,7 +4,7 @@ using Http.Service;
 
 namespace Internal.Services
 {
-    public class NameReservationCleanupBackgroundService : BackgroundService
+    public class NameReservationCleanupBackgroundService : ReadyBackgroundService
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(5);
         private const int RowLimit = 500;
@@ -15,13 +15,14 @@ namespace Internal.Services
 
         public NameReservationCleanupBackgroundService(
             IServiceScopeFactory scopeFactory,
-            ILogger<NameReservationCleanupBackgroundService> logger)
+            HealthCheckService health,
+            ILogger<NameReservationCleanupBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {

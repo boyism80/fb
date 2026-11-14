@@ -42,6 +42,7 @@ builder.Services.AddSingleton<ShutdownService>();
 builder.Services.AddScoped<CacheService>();
 builder.Services.AddSingleton<ServerStateService>();
 builder.Services.AddSingleton<Http.Service.BulletinService>();
+builder.Services.AddSingleton<HealthCheckService>();
 builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
 builder.Services.Configure<AdminTool.Options.TablePublishOptions>(
@@ -75,6 +76,7 @@ var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
 var dataTableLoader = new DataTableLoader(logger);
 dataTableLoader.Run();
+app.Services.GetRequiredService<HealthCheckService>().MarkReady();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

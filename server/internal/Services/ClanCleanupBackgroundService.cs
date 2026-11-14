@@ -6,7 +6,7 @@ using Response = fb.protocol.@internal.response;
 
 namespace Internal.Services
 {
-    public class ClanCleanupBackgroundService : BackgroundService
+    public class ClanCleanupBackgroundService : ReadyBackgroundService
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private const int RowLimit = 500;
@@ -20,7 +20,8 @@ namespace Internal.Services
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
             RabbitMqService rabbitMqService,
-            ILogger<ClanCleanupBackgroundService> logger)
+            HealthCheckService health,
+            ILogger<ClanCleanupBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
@@ -28,7 +29,7 @@ namespace Internal.Services
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {

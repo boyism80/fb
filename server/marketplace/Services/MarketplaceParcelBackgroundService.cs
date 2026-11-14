@@ -3,10 +3,9 @@ using Http.Service;
 
 namespace Marketplace.Services
 {
-    public class MarketplaceParcelBackgroundService : BackgroundService
+    public class MarketplaceParcelBackgroundService : ReadyBackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly HealthCheckService _health;
         private readonly ILogger<MarketplaceParcelBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(30);
@@ -18,10 +17,9 @@ namespace Marketplace.Services
         public MarketplaceParcelBackgroundService(
             IServiceScopeFactory scopeFactory,
             HealthCheckService health,
-            ILogger<MarketplaceParcelBackgroundService> logger)
+            ILogger<MarketplaceParcelBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
-            _health = health;
             _logger = logger;
         }
 
@@ -30,13 +28,8 @@ namespace Marketplace.Services
             _wake.Writer.TryWrite(true);
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
-            while (_health.IsReady == false && stoppingToken.IsCancellationRequested == false)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 var full = false;

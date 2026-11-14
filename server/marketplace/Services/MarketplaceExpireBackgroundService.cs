@@ -9,11 +9,10 @@ using StackExchange.Redis;
 
 namespace Marketplace.Services
 {
-    public class MarketplaceExpireBackgroundService : BackgroundService
+    public class MarketplaceExpireBackgroundService : ReadyBackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
-        private readonly HealthCheckService _health;
         private readonly MarketplaceParcelBackgroundService _parcelSender;
         private readonly ILogger<MarketplaceExpireBackgroundService> _logger;
 
@@ -37,22 +36,16 @@ namespace Marketplace.Services
             RedisService redisService,
             HealthCheckService health,
             MarketplaceParcelBackgroundService parcelSender,
-            ILogger<MarketplaceExpireBackgroundService> logger)
+            ILogger<MarketplaceExpireBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
-            _health = health;
             _parcelSender = parcelSender;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
-            while (_health.IsReady == false && stoppingToken.IsCancellationRequested == false)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 try

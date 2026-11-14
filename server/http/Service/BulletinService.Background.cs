@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Http.Service
 {
-    public class BulletinBackgroundService : BackgroundService
+    public class BulletinBackgroundService : ReadyBackgroundService
     {
         private readonly BulletinService _bulletinService;
         private readonly IServiceScopeFactory _scopeFactory;
@@ -25,7 +25,8 @@ namespace Http.Service
             IServiceScopeFactory scopeFactory,
             ILogger<BulletinBackgroundService> logger,
             IConfiguration configuration,
-            LogService logService)
+            LogService logService,
+            HealthCheckService health) : base(health)
         {
             _bulletinService = bulletinService;
             _scopeFactory = scopeFactory;
@@ -34,7 +35,7 @@ namespace Http.Service
             _logService = logService;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
             // Get world keys: DbContext uses ConnectionStrings:MySql:worlds:{world}:...
             var worlds = new List<uint>();

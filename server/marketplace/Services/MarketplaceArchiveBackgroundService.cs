@@ -6,11 +6,10 @@ using StackExchange.Redis;
 
 namespace Marketplace.Services
 {
-    public class MarketplaceArchiveBackgroundService : BackgroundService
+    public class MarketplaceArchiveBackgroundService : ReadyBackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
-        private readonly HealthCheckService _health;
         private readonly ILogger<MarketplaceArchiveBackgroundService> _logger;
         private DateTime _lastBoxCleanup = DateTime.MinValue;
 
@@ -36,21 +35,15 @@ namespace Marketplace.Services
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
             HealthCheckService health,
-            ILogger<MarketplaceArchiveBackgroundService> logger)
+            ILogger<MarketplaceArchiveBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
-            _health = health;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
-            while (_health.IsReady == false && stoppingToken.IsCancellationRequested == false)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 try

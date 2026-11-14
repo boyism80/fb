@@ -4,7 +4,7 @@ using Http.Service;
 namespace Internal.Services
 {
     // Every internal pod runs this: archiving and purging are idempotent, so overlapping runs are harmless.
-    public class SystemArchiveBackgroundService : BackgroundService
+    public class SystemArchiveBackgroundService : ReadyBackgroundService
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan SweepInterval = TimeSpan.FromDays(1);
@@ -19,14 +19,15 @@ namespace Internal.Services
         public SystemArchiveBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
-            ILogger<SystemArchiveBackgroundService> logger)
+            HealthCheckService health,
+            ILogger<SystemArchiveBackgroundService> logger) : base(health)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task RunAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
