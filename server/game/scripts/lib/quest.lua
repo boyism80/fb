@@ -694,7 +694,7 @@ function M.king_dialog(me, npc, opts)
                 return
             end
 
-            if sel == 1 then
+            if sel ~= 1 then
                 return
             end
 
