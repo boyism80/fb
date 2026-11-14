@@ -214,6 +214,10 @@ function M.decide(brain, bot, snap, decision, path, current)
     entry.action          = decision.kind
     entry.key             = decision.key
     entry.item            = decision.item
+    entry.buff            = decision.buff
+    entry.buffs           = snap.buffs
+    entry.weighed         = decision.weighed
+    entry.supply          = decision.supply
     entry.dest            = decision.dest
     entry.cpu, entry.wait = profile.spent(bot:name())
     entry.parts           = profile.parts(bot:name())

@@ -90,6 +90,25 @@ local function captured(name)
     return base, facts.bind(brain_, base)
 end
 
+local function buffed(snap)
+    local active = {}
+    for _, name in ipairs(snap.buffs or {}) do
+        active[name] = true
+    end
+    for _, learned in ipairs(snap.spells or {}) do
+        local spell = spells.spells[learned.name]
+        if spell ~= nil and spell.role == "BUFF" then
+            active[learned.name] = true
+        end
+    end
+    local list = {}
+    for name in pairs(active) do
+        table.insert(list, name)
+    end
+    table.sort(list)
+    return list
+end
+
 local function surround(snap, name, count)
     local spots = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
     for index = 1, count do
@@ -1125,6 +1144,35 @@ test_suite {
                         local same = refill.rate == refilled.rate and dry.rate == dried.rate
                         return same and refill.rate > dry.rate, detail
                     end),
+                    case("an ambush jumps a crewmate in the way, behind it or else beside it, never onto a warp", function()
+                        local snap, bound = state("rogue50")
+                        local facts = setmetatable({
+                            floor = function()
+                                return true
+                            end,
+                            warp = function()
+                                return false
+                            end,
+                        }, { __index = bound })
+                        local mate = state("poet65", { name = "vault_mate" })
+                        mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + 1, snap.world.y
+                        snap.party = { party.profile(mate, bound, nil) }
+                        local behind = battle.vault(snap, facts, mate.world.x, mate.world.y)
+                        table.insert(snap.world.mobs, mob_named("흑해골", snap.world.x + 2, snap.world.y, 901))
+                        local beside = battle.vault(snap, facts, mate.world.x, mate.world.y)
+                        local warped = battle.vault(snap, setmetatable({
+                            warp = function()
+                                return true
+                            end,
+                        }, { __index = facts }), mate.world.x, mate.world.y)
+                        return behind ~= nil and behind.x == snap.world.x + 2 and behind.y == snap.world.y and
+                            beside ~= nil and beside.x == snap.world.x + 1 and beside.y == snap.world.y - 1 and
+                            warped == nil,
+                            string.format("behind=%s,%s beside=%s,%s warped=%s", tostring(behind and behind.x),
+                                tostring(behind and behind.y), tostring(beside and beside.x),
+                                tostring(beside and beside.y),
+                                tostring(warped ~= nil))
+                    end),
                     case("heal instead of attacking when hp is low and mana is there", function()
                         local snap, bound = state("poet65", { hp = 850, mp = 423 })
                         without(snap, "혼마술")
@@ -1340,6 +1388,175 @@ test_suite {
                     case("leaving without the cardinal leap and far from the gate uses a scroll", function()
                         local means = leave_by("poet65", 200, false, { "비영사천문" })
                         return means == "귀환" or means == "노란비서", means
+                    end),
+                    case("a mana dose is bought by what a refill costs: the cheapest for a few drinks, a big one for many", function()
+                        local supply = require("brain.tasks.supply")
+                        local function dry(name, round, drop)
+                            local snap, bound = state(name)
+                            for _, spell in ipairs(drop or {}) do
+                                without(snap, spell)
+                            end
+                            local kept = {}
+                            for _, item in ipairs(snap.bag.items) do
+                                if (items[item.name] or {}).mp == nil then
+                                    table.insert(kept, item)
+                                end
+                            end
+                            snap.bag.items                          = kept
+                            snap.bag.used                           = #kept
+                            snap.pace.cast                          = round
+                            snap.self.mp                            = 0
+                            local choice, _, _, _, _, _, _, _, kind = supply.order(snap, bound)
+                            return kind == "mp" and choice ~= nil and choice.name or tostring(kind)
+                        end
+                        local rogue = dry("rogue92", 60)
+                        local timed = dry("poet94", 60, { "공력증강" })
+                        local free  = dry("poet94", nil, { "공력증강" })
+                        return rogue == "동동주" and timed ~= "동동주" and timed ~= "mp" and free == "동동주",
+                            string.format("rogue=%s poet=%s poet_untimed=%s", rogue, timed, free)
+                    end),
+                    case("a strike that spends all the mana stocks doses past one 동동주", function()
+                        local supply = require("brain.tasks.supply")
+                        local function rogue(doses, shop)
+                            local snap, bound = state("rogue92")
+                            local dose        = nil
+                            local kept        = {}
+                            for _, item in ipairs(snap.bag.items) do
+                                if (items[item.name] or {}).mp == nil then
+                                    table.insert(kept, item)
+                                elseif item.name == "동동주" then
+                                    dose = item
+                                end
+                            end
+                            for _, uses in ipairs(doses) do
+                                table.insert(kept, setmetatable({ count = uses }, { __index = dose }))
+                            end
+                            snap.bag.items = kept
+                            snap.bag.used  = #kept
+                            snap.pace.cast = 60
+                            snap.self.mp   = 0
+                            if shop ~= nil then
+                                snap.world.map = shop
+                            end
+                            local choice, _, _, dest, _, _, _, _, kind = supply.order(snap, bound)
+                            return kind == "mp" and choice ~= nil and choice.name or nil, dest
+                        end
+                        local _, shop = rogue({})
+                        local more    = rogue({ 200, 200, 200 }, shop)
+                        return shop ~= nil and more == "동동주",
+                            string.format("shop=%s more=%s", tostring(shop), tostring(more))
+                    end),
+                    case("a crewmate heals the others when its heals outdo its damage, not for knowing a heal", function()
+                        local score        = require("brain.policies.score")
+                        local rogue, bound = state("rogue92")
+                        local poet         = state("poet94")
+                        local warrior      = state("warrior93")
+                        local heals        = score.capability(rogue, bound).hps.others
+                        return heals > 0 and score.healer(rogue, bound) == false and score.healer(poet, bound) and
+                            score.healer(warrior, bound) == false,
+                            string.format("rogue heals=%.0f healer=%s poet=%s warrior=%s", heals,
+                                tostring(score.healer(rogue, bound)), tostring(score.healer(poet, bound)),
+                                tostring(score.healer(warrior, bound)))
+                    end),
+                    case("a strike that spends hp is cast while it takes more of the mob than it stakes of me: at full hp, not from a third", function()
+                        local battle = require("brain.policies.battle")
+                        local function pick(hp, count)
+                            local snap, bound = state("warrior93", { hp = hp })
+                            local poet        = state("poet94")
+                            local rogue       = state("rogue92", { hp = 3000 })
+                            local kept        = {}
+                            for _, item in ipairs(snap.bag.items) do
+                                if (items[item.name] or {}).hp == nil then
+                                    table.insert(kept, item)
+                                end
+                            end
+                            snap.bag.items               = kept
+                            poet.world.x, poet.world.y   = snap.world.x - 2, snap.world.y
+                            rogue.world.x, rogue.world.y = snap.world.x + 2, snap.world.y
+                            snap.party                   = { party.profile(poet, bound, nil), party.profile(rogue, bound,
+                                nil) }
+                            snap.group                   = { snap.self.name, poet.self.name, rogue.self.name }
+                            snap.leader                  = snap.self.name
+                            local found                  = battle.choose(snap, bound, surround(snap, "지해골", count), true)
+                            return tostring(found and found.key)
+                        end
+                        local full, worn, third, crowd = pick(6972, 3), pick(5000, 1), pick(2291, 1), pick(2291, 3)
+                        return full == "건곤대나이" and worn == "건곤대나이" and third ~= "건곤대나이" and crowd ~= "건곤대나이",
+                            string.format("full=%s worn=%s third=%s crowd=%s", full, worn, third, crowd)
+                    end),
+                    case("a ground held by the crew keeps its crowd, so the buffs that strike beside the target are cast on it", function()
+                        local buff                                    = require("brain.tasks.buff")
+                        local snap, bound                             = state("warrior93", { mp = 1309 })
+                        local poet                                    = state("poet94")
+                        local rogue                                   = state("rogue92")
+                        snap.world.map, snap.world.x, snap.world.y    = 22, 16, 103
+                        poet.world.map, poet.world.x, poet.world.y    = 22, 15, 103
+                        rogue.world.map, rogue.world.x, rogue.world.y = 22, 17, 103
+                        snap.party                                    = { party.profile(poet, bound, nil), party.profile(
+                            rogue, bound, nil) }
+                        snap.group                                    = { snap.self.name, poet.self.name, rogue.self
+                            .name }
+                        snap.leader                                   = snap.self.name
+                        snap.record.memory.commit                     = "흑해골굴"
+                        snap.buffs                                    = {}
+                        local cast                                    = {}
+                        for _ = 1, 6 do
+                            local best = buff.best(snap, bound)
+                            if best == nil or best.value < 0 then
+                                break
+                            end
+                            cast[best.name] = true
+                            table.insert(snap.buffs, best.name)
+                        end
+                        local plan = party.plan(snap, bound)
+                        return plan ~= nil and plan.crowd ~= nil and cast["측면공격"] == true and cast["후면공격"] == true,
+                            string.format("plan=%s crowd=%s cast=%s", tostring(plan and plan.name),
+                                tostring(plan and plan.crowd),
+                                table.concat(snap.buffs, ","))
+                    end),
+                    case("a leap short of mana drinks the least dose that makes it up, and with no dose it is no leap", function()
+                        local go = require("brain.trees.go")
+                        local function leap(snap)
+                            for _, jump in ipairs(go.jumps(snap, false)) do
+                                if jump.spell == "비영사천문" then
+                                    return jump
+                                end
+                            end
+                            return nil
+                        end
+                        local full    = state("poet65")
+                        full.self.mp  = 30
+                        local short   = state("poet65")
+                        short.self.mp = 15
+                        local dry     = state("poet65")
+                        dry.self.mp   = 15
+                        dry.bag.items = {}
+                        local kept    = leap(full)
+                        local fueled  = leap(short)
+                        local dose    = fueled ~= nil and fueled.fuel ~= nil and items[fueled.fuel] or nil
+                        return kept ~= nil and kept.fuel == nil and dose ~= nil and (dose.mp or 0) >= 15 and
+                            leap(dry) == nil,
+                            string.format("full=%s fuel=%s dry=%s", tostring(kept and kept.fuel),
+                                tostring(fueled and fueled.fuel), tostring(leap(dry) ~= nil))
+                    end),
+                    case("a walk counted in more steps than a leap takes weighs leaps, a walk of fewer does not", function()
+                        local go          = require("brain.trees.go")
+                        local snap, bound = state("poet65")
+                        local mock        = setmetatable({
+                            leaps = function()
+                                return nil
+                            end,
+                        }, { __index = bound })
+                        local cost        = math.ceil(data.transfer / snap.pace.step)
+                        local function weighed(steps)
+                            local detour = { closed = {}, perilous = {}, shunned = {}, avoid = {}, spent = {} }
+                            go.choose(snap, mock,
+                                { map = snap.world.map, x = snap.world.x + 40, y = snap.world.y, range = 1, steps = steps },
+                                detour)
+                            return #detour.jumps
+                        end
+                        local long, short = weighed(cost + 1), weighed(cost)
+                        return long > 0 and short == 0, string.format("long=%d short=%d", long, short)
                     end),
                     case("a way that runs on through the ground to a shop past it is no leaving and takes no leap", function()
                         local snap, bound = recorded("supply_through_ground")
@@ -2349,6 +2566,7 @@ test_suite {
                     end),
                     case("stairs four tiles off behind a wall are walked to before the crew crosses", function()
                         local snap, bound                                      = recorded("stairs_behind_wall")
+                        snap.buffs                                             = buffed(snap)
                         snap.world.map, snap.world.x, snap.world.y             = 93, 3, 9
                         snap.world.mobs, snap.world.occupied, snap.world.items = {}, {}, {}
                         snap.record.memory.leg                                 = nil
@@ -3731,7 +3949,7 @@ test_suite {
                         local mate = snap.party[1].self.name
                         return seen ~= nil and seen.crew ~= nil and seen.crew[mate] == true, tostring(seen and seen.crew)
                     end),
-                    case("a member beside the vanguard crosses with it to the next floor", function()
+                    case("a member beside the vanguard waits for it to cross and follows once it is over", function()
                         local probe, probed = apart_floors("poet65", "rogue50")
                         local plan = party.plan(probe, probed)
                         local first, second = plan.floors[1].map, plan.floors[2] and plan.floors[2].map
@@ -3740,11 +3958,20 @@ test_suite {
                         snap.world.map, snap.world.x, snap.world.y, snap.world.mobs = first, 10, 10, {}
                         lead.world.map, lead.world.x, lead.world.y = first, 11, 10
                         lead.heading, lead.task = { second }, "FIELD"
-                        local pick = decide.choose(snap, bound, nil, nil)
+                        local waiting = decide.choose(snap, bound, nil, nil)
+                        local after, followed = apart_floors("poet65", "rogue50")
+                        local over = after.party[1]
+                        after.world.map, after.world.x, after.world.y, after.world.mobs = first, 10, 10, {}
+                        over.world.map, over.world.x, over.world.y = second, 5, 5
+                        over.heading, over.task = nil, "FIELD"
+                        local pick = decide.choose(after, followed, nil, nil)
                         local maps = pick ~= nil and pick.dest ~= nil and (pick.dest.maps or { pick.dest.map }) or {}
-                        return second ~= nil and pick ~= nil and pick.kind == ACTION.MOVE and maps[1] == second,
-                            string.format("task=%s kind=%s dest=%s next=%s", tostring(pick and pick.task),
-                                tostring(pick and pick.kind), tostring(maps[1]), tostring(second))
+                        return second ~= nil and waiting ~= nil and waiting.kind == ACTION.HOLD and pick ~= nil and
+                            pick.kind == ACTION.MOVE and maps[1] == second,
+                            string.format("waiting=%s task=%s kind=%s dest=%s next=%s",
+                                tostring(waiting and waiting.kind),
+                                tostring(pick and pick.task), tostring(pick and pick.kind), tostring(maps[1]),
+                                tostring(second))
                     end),
                     case("after a flight a member walks to the gate, not to the leader inside", function()
                         local snap, bound, lead, plan = after_flight("rogue50", "poet65")
@@ -3769,18 +3996,21 @@ test_suite {
                             string.format("task=%s kind=%s dest=%s gate=%s", tostring(pick and pick.task),
                                 tostring(pick and pick.kind), tostring(maps[1]), tostring(gate))
                     end),
-                    case("after a flight a member at the gate follows the leader crossing in", function()
+                    case("after a flight the vanguard at the gate leads its crew in", function()
                         local snap, bound, lead, plan = after_flight("rogue50", "poet65")
-                        local gate = plan.gate
+                        local gate = party.entry_gate(snap, bound, plan)
                         snap.world.map = gate
                         lead.world.map, lead.world.x, lead.world.y = gate, snap.world.x + 1, snap.world.y
-                        lead.heading = { plan.floors[1].map }
+                        lead.heading, lead.task = nil, "FIELD"
+                        data.trace = true
                         local pick = decide.choose(snap, bound, nil, nil)
-                        local maps = pick ~= nil and pick.dest ~= nil and (pick.dest.maps or { pick.dest.map }) or {}
-                        return pick ~= nil and pick.kind == ACTION.MOVE and maps[1] == plan.floors[1].map,
-                            string.format("task=%s kind=%s dest=%s first=%s", tostring(pick and pick.task),
-                                tostring(pick and pick.kind), tostring(maps[1]),
-                                tostring(plan.floors[1].map))
+                        data.trace = false
+                        local rows = decide.offers[snap.self.name] or {}
+                        local path = rows[1] ~= nil and rows[1].path or ""
+                        return pick ~= nil and pick.kind == ACTION.MOVE and
+                            string.find(path, "lead_gate", 1, true) ~= nil,
+                            string.format("task=%s kind=%s path=%s", tostring(pick and pick.task),
+                                tostring(pick and pick.kind), path)
                     end),
                     case("healthy bot in a hard fight does not escape", function()
                         local snap, bound = state("poet65")
@@ -4434,6 +4664,8 @@ test_suite {
                         local warrior = suite.profile(list, "warrior63", 100000, brain_)
                         local poet = suite.profile(list, "warrior63", 100000, brain_)
                         poet.bag = { items = {}, used = 0, capacity = poet.bag.capacity }
+                        without(warrior, "측면공격")
+                        without(warrior, "후면공격")
                         local settings = setmetatable(
                             {
                                 seed = 1,
@@ -4730,10 +4962,10 @@ test_suite {
                         local crew        = require("brain.policies.escort").present(snap, bound)
                         local pick        = decide.choose(snap, bound, nil, nil)
                         return crew ~= nil and crew.stock < snap.self.max_hp - snap.self.hp and pick ~= nil and
-                            pick.kind ~= ACTION.HOLD,
-                            string.format("kind=%s task=%s item=%s hp=%s stock=%s", tostring(pick and pick.kind),
-                                tostring(pick and pick.task), tostring(pick and pick.item), tostring(snap.self.hp),
-                                tostring(crew and crew.stock))
+                            (pick.kind ~= ACTION.HOLD or (pick.pause or 0) > 0),
+                            string.format("kind=%s task=%s item=%s pause=%s hp=%s stock=%s", tostring(pick and pick.kind),
+                                tostring(pick and pick.task), tostring(pick and pick.item), tostring(pick and pick.pause),
+                                tostring(snap.self.hp), tostring(crew and crew.stock))
                     end),
                     case("a poet short of mana charges among skeletons even when the charge leaves less than the next volley", function()
                         local snap, bound = recorded("charge_under_attack")
@@ -4841,6 +5073,7 @@ test_suite {
                     end),
                     case("leader whose old walk failed still fetches a rooted member", function()
                         local snap, bound = recorded("leader_ignores_rooted_member")
+                        snap.buffs = buffed(snap)
                         snap.world.mobs = {}
                         snap.self.struck = nil
                         snap.party[1].heading = nil

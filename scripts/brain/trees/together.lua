@@ -139,6 +139,45 @@ local function in_way(snap, facts, member, going)
     return facts.detour(snap.world.map, member.world, going, snap.world)
 end
 
+local function front(snap, x, y)
+    local nearest = nil
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil then
+            local gap = math.abs(mob.x - x) + math.abs(mob.y - y)
+            nearest   = nearest == nil and gap or math.min(nearest, gap)
+        end
+    end
+    return nearest or 0
+end
+
+-- Off the landing the vanguard steps toward the mobs and the rest no nearer them than the vanguard stands: stepping to
+-- the nearest tile, a warrior first on 흑해골굴3 stepped back into a dead end beside the warp home, its rogue after it,
+-- and the poet that landed last stood alone in the one-tile neck ahead of them with a skeleton on it (online trio
+-- 085344, 18:07; user 11-14: the vanguard always goes in first).
+local function landing_tile(snap, facts, goals, steps)
+    local leading  = party.vanguard_name(snap, facts) == snap.self.name
+    local vanguard = leading == false and party.vanguard(snap, facts) or nil
+    local limit    = vanguard ~= nil and vanguard.world.map == snap.world.map and vanguard.world.x ~= nil and
+        front(snap, vanguard.world.x, vanguard.world.y) or nil
+    for _, bound in ipairs(limit ~= nil and { limit, false } or { false }) do
+        local best = nil
+        for index, goal in ipairs(goals) do
+            local walk  = steps[index]
+            local ahead = front(snap, goal.x, goal.y)
+            if type(walk) == "number" and (bound == false or ahead >= bound) then
+                local rank = leading and ahead or 0
+                if best == nil or rank < best.rank or (rank == best.rank and walk < best.steps) then
+                    best = { x = goal.x, y = goal.y, steps = walk, rank = rank }
+                end
+            end
+        end
+        if best ~= nil then
+            return best
+        end
+    end
+    return nil
+end
+
 local function off_landing(snap, facts, member)
     if passing(snap, facts, member) == false then
         return nil
@@ -157,12 +196,7 @@ local function off_landing(snap, facts, member)
         end
     end
     local steps = facts.steps ~= nil and facts.steps(snap.world.map, snap.world.x, snap.world.y, goals) or {}
-    local best  = nil
-    for index, goal in ipairs(goals) do
-        if type(steps[index]) == "number" and (best == nil or steps[index] < best.steps) then
-            best = { x = goal.x, y = goal.y, steps = steps[index] }
-        end
-    end
+    local best  = landing_tile(snap, facts, goals, steps)
     return best ~= nil and { kind = ACTION.MOVE, dest = { map = snap.world.map, x = best.x, y = best.y, range = 0 } } or
         nil
 end
@@ -345,12 +379,11 @@ local function retry(snap, _facts)
     return { kind = ACTION.MOVE, dest = blocked.dest }
 end
 
--- Crossing to the next floor is one move of the whole group: when the vanguard standing beside me heads
--- for a floor of the plan, I go with it in the same decision. Before, members waited and only followed
--- after the front had arrived, and the rally that decided that afterwards could send it back
--- (WA+PO, 957/958: the leader crossed and returned again and again). Beside is counted in my steps to it, as
--- it counts me gathered at the exit (hunt.stage).
-local function cross_with(snap, facts)
+-- Crossing to the next floor the vanguard goes first: when the vanguard standing beside me heads for a floor of the
+-- plan, I stay beside it until it is over, and the rally takes me after it. Crossing in the same decision, a rogue and
+-- a poet landed on the floor with their warrior and the poet, last, stood ahead of it (online trio 085344, 18:07;
+-- user 11-14). Beside is counted in my steps to it, as it counts me gathered at the exit (hunt.stage).
+local function cross_after(snap, facts)
     local lead = party.vanguard(snap, facts)
     if lead == nil or lead.world.map ~= snap.world.map or lead.world.x == nil or lead.heading == nil then
         return nil
@@ -361,7 +394,7 @@ local function cross_with(snap, facts)
     local plan = party.plan(snap, facts)
     for _, map in ipairs(lead.heading) do
         if map ~= snap.world.map and floor_of(snap, plan, map) ~= nil then
-            return { kind = ACTION.MOVE, dest = { maps = { map } } }
+            return { kind = ACTION.HOLD }
         end
     end
     return nil
@@ -394,7 +427,7 @@ M.rejoin = choose({
 
 M.keep = when(M.apart, when(M.on_ground, choose({
     act("FIELD", close_in, "close_in"),
-    act("FIELD", cross_with, "cross_with"),
+    act("FIELD", cross_after, "cross_after"),
     M.regroup,
     act("FIELD", along, "along"),
     act("FIELD", retry, "retry_walk"),
@@ -412,7 +445,7 @@ M.make_way = act("FIELD", clear_way, "make_way")
 
 M.advance = choose({
     act("FIELD", close_in, "close_in"),
-    act("FIELD", cross_with, "cross_with"),
+    act("FIELD", cross_after, "cross_after"),
     act("FIELD", M.to_rally, "rally"),
     act("FIELD", along, "along"),
     act("FIELD", beside, "beside"),
@@ -469,7 +502,7 @@ local supports = setmetatable({}, { __mode = "k" })
 function M.supporting(snap, facts)
     if supports[snap] == nil then
         supports[snap] = M.grouped(snap) and party.vanguard_name(snap, facts) ~= snap.self.name and
-            waiting_lead(snap, facts) == nil and require("brain.policies.score").capability(snap, facts).hps.others > 0
+            waiting_lead(snap, facts) == nil and require("brain.policies.score").healer(snap, facts)
     end
     return supports[snap]
 end

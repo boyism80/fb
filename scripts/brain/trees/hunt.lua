@@ -87,7 +87,7 @@ local function stage(snap, facts, maps, hunting)
         return { kind = ACTION.MOVE, dest = { maps = maps } }
     end
     -- The exit is reached in walking steps, as the rally is, and a crewmate is gathered there by its walk to me
-    -- (below, and together.cross_with): four tiles off in a straight line, the stairs of 흉가 93 are 26
+    -- (below, and together.cross_after): four tiles off in a straight line, the stairs of 흉가 93 are 26
     -- steps round a wall from the passage west of them, and a warrior that counted itself there set its crew
     -- crossing from the passage. Each took its own way through the one-tile necks, a skeleton in a neck sent whoever
     -- looked then round the floor the other way, and the three were apart 11-32s seven times (offline profile trio
@@ -146,6 +146,13 @@ local function not_vanguard(snap, facts)
     return vanguard(snap, facts) == false
 end
 
+-- The vanguard leads the group in from the entrance whoever leads the group, the leader without one named (user 11-14:
+-- the vanguard always goes in first).
+local function leads_entry(snap, facts)
+    local name = party.vanguard_name(snap, facts)
+    return name == snap.self.name or (name == nil and leader(snap))
+end
+
 -- Entering from outside always works the same way: the group decided the ground, every member walks to
 -- its entrance on its own (after its own servicing, or after a flight), and they go in together from
 -- there. Walking with crew or fetching by a rally pulled the leader back to wherever a member was, and
@@ -172,7 +179,7 @@ end
 
 local function follow_entry(snap, facts)
     local plan = party.plan(snap, facts)
-    local lead = party.leader(snap)
+    local lead = party.vanguard(snap, facts) or party.leader(snap)
     local gate = plan.gate or plan.floors[1].map
     if lead == nil or lead.world.x == nil then
         return { kind = ACTION.HOLD }
@@ -185,40 +192,35 @@ local function follow_entry(snap, facts)
     -- entrance (stage), so both meet there whatever either did on the way. With the leader already inside,
     -- the member goes to the leader, except right after a flight: the leader inside is about to leave too
     -- (party.regrouping).
+    -- The member crosses once the one it follows, the vanguard, is over: crossing in the decision it set off in, the
+    -- crew landed with it in any order (online trio 085344).
     local regate = party.entry_gate(snap, facts, plan)
     if ground.floor_at(lead.world.map) == nil or party.regrouping(snap) or party.outbound(snap, regate) then
-        local entering = false
-        for _, map in ipairs(lead.heading or {}) do
-            entering = entering or map == plan.floors[1].map
+        if snap.world.map ~= regate then
+            return { kind = ACTION.MOVE, dest = { maps = { regate } } }
         end
-        local crossing = snap.world.map == regate and lead.world.map == regate and entering
-        if crossing == false then
-            if snap.world.map ~= regate then
-                return { kind = ACTION.MOVE, dest = { maps = { regate } } }
-            end
-            local from = lead.world.map == regate and
-                { map = lead.world.map, x = lead.world.x, y = lead.world.y, level = lead.self.level } or nil
-            local door = doorway(facts, plan.floors[1].map, regate, from)
-            if door == nil then
-                if lead.world.map ~= regate or
-                    math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
-                    return { kind = ACTION.HOLD }
-                end
-                return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
-            end
-            -- The entrance is reached in walking steps, as the leader reaches it (stage): four tiles south of the
-            -- entrance and 62 steps round a wall from it, a poet waited there for a warrior that waited four steps
-            -- north of the entrance for the poet, each for good (offline WA+PO 세작 seed 0 from 729s and WA+PO 흉가
-            -- seed 2 from 754s, run 22:46).
-            local far = together.walk(snap, facts, snap, door)
-            if far <= data.adjacent then
+        local from = lead.world.map == regate and
+            { map = lead.world.map, x = lead.world.x, y = lead.world.y, level = lead.self.level } or nil
+        local door = doorway(facts, plan.floors[1].map, regate, from)
+        if door == nil then
+            if lead.world.map ~= regate or
+                math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
                 return { kind = ACTION.HOLD }
             end
-            return {
-                kind = ACTION.MOVE,
-                dest = { map = regate, x = door.x, y = door.y, range = 1, steps = far - data.adjacent }
-            }
+            return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
         end
+        -- The entrance is reached in walking steps, as the leader reaches it (stage): four tiles south of the
+        -- entrance and 62 steps round a wall from it, a poet waited there for a warrior that waited four steps
+        -- north of the entrance for the poet, each for good (offline WA+PO 세작 seed 0 from 729s and WA+PO 흉가
+        -- seed 2 from 754s, run 22:46).
+        local far = together.walk(snap, facts, snap, door)
+        if far <= data.adjacent then
+            return { kind = ACTION.HOLD }
+        end
+        return {
+            kind = ACTION.MOVE,
+            dest = { map = regate, x = door.x, y = door.y, range = 1, steps = far - data.adjacent }
+        }
     else
         -- While the group is scattered the member goes where the leader's rally point says, not to wherever
         -- the leader happens to be: walking to the leader crossed the leader coming to fetch it.
@@ -283,7 +285,7 @@ local enter = choose({
     when(function(snap)
         return together.grouped(snap) == false
     end, act("FIELD", claimed(solo_entry), "solo_entry")),
-    when(leader, act("FIELD", claimed(lead_gate), "lead_gate")),
+    when(leads_entry, act("FIELD", claimed(lead_gate), "lead_gate")),
     act("FIELD", claimed(follow_entry), "follow_entry"),
 }, "enter_ground")
 

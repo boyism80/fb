@@ -1,6 +1,7 @@
 local combat   = require("brain.data.combat")
 local battle   = require("brain.policies.battle")
 local danger   = require("brain.policies.danger")
+local dialog   = require("brain.policies.dialog")
 local go       = require("brain.trees.go")
 local party    = require("brain.policies.party")
 local snapshot = require("brain.snapshot")
@@ -28,6 +29,19 @@ local function remember_block(brain, bot, event, destination, walls)
     local by = event.detail == "CHARACTER" and event.x ~= nil and { x = event.x, y = event.y } or nil
     brain:remember(bot, "blocked",
         { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest, by = by })
+end
+
+local function vaulted(brain, bot, destination, event)
+    local x, y = destination.x, destination.y
+    if x == nil then
+        local route = query.bind(brain, bot, snapshot.take(brain, bot)).route(destination.maps or { destination.map })
+        local exit  = route ~= nil and route.path ~= nil and route.path[1] or nil
+        if exit == nil or exit.x == nil or exit.map ~= event.map then
+            return false
+        end
+        x, y = exit.x, exit.y
+    end
+    return battle.vault_past(brain, bot, event, x, y)
 end
 
 local function patience(brain, bot, destination, detour, event)
@@ -146,6 +160,11 @@ local function journey(brain, bot, destination, detour)
         vacated(brain, bot, detour)
         local snap = snapshot.take(brain, bot)
         go.choose(snap, query.bind(brain, bot, snap), destination, detour)
+        local jump = detour.leap ~= nil and detour.jumps[detour.leap] or nil
+        if jump ~= nil and jump.fuel ~= nil and dialog.consume(bot, jump.fuel) == false then
+            detour.spent[jump.spell] = true
+            go.choose(snap, query.bind(brain, bot, snap), destination, detour)
+        end
         destination.pace = combat.walk
         local event = brain:walk(bot, destination, detour)
         local final = destination.x == event.x and destination.y == event.y
@@ -171,6 +190,8 @@ local function journey(brain, bot, destination, detour)
                 log("debug", string.format("[brain:travel] bot=%s clearing ended %s", bot:name(), fought.type))
                 return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
             end
+        elseif event.type == "OCCUPIED" and vaulted(brain, bot, destination, event) then
+            detour.avoid = {}
         elseif event.type == "OCCUPIED" then
             local wait = patience(brain, bot, destination, detour, event)
             remember_block(brain, bot, event, destination)

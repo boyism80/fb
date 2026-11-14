@@ -97,7 +97,7 @@ local function sought(snap, query, names)
     -- spot while the warrior walked on to the next floor, and was left alone among skeletons (offline profile pair
     -- rooted healer seed 1, 687-697s, run 08:08).
     local healer = #party.members(snap) > 0 and party.vanguard_name(snap, query) ~= snap.self.name and
-        score.capability(snap, query).hps.others > 0
+        score.healer(snap, query)
     -- Whether I would walk to the mob is my best move at it, so it is asked last and only where a crewmate's reach
     -- hangs on it (escort.tethered). Asked first of every mob in sight, it was weighed for bots with no crew at all:
     -- 107,047 asks, a fifth of the time spent deciding (offline 8 teams, run 19:36).

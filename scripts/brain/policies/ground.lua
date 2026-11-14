@@ -1224,6 +1224,7 @@ function M.hold(members, query, name)
         loot   = last.loot,
         yields = last.yields,
         deaths = last.deaths,
+        crowd  = last.crowd,
     }
 end
 

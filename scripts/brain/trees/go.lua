@@ -1,9 +1,28 @@
 local castable = require("brain.policies.combat")
+local recovery = require("brain.policies.recovery")
 local combat   = require("brain.data.combat")
 local teleport = require("brain.data.teleport")
 local tree     = require("brain.tree")
 
 local M = {}
+
+-- A jump short of mana is drunk for as a spell is: the least dose that makes the mana up is drunk and the jump cast
+-- next. Cast only with the mana already there, a rogue whose 필살검무 spends all of it never had the 30 for 비영사천문 when
+-- its crew jumped out for servicing, walked into a poet standing in the way out and died among skeletons (online trio
+-- 100815).
+local function fuel(entry, ctx)
+    local mp    = ctx.self.mp or 0
+    local short = (entry.mp or 0) - mp
+    if short <= 0 or ctx.self.ghost then
+        return nil
+    end
+    for _, dose in ipairs(recovery.doses(ctx, "mp")) do
+        if math.min(dose.amount, (ctx.self.max_mp or 0) - mp) >= short then
+            return dose.name
+        end
+    end
+    return nil
+end
 
 local function jump_of(entry, snap, urgent, leaving)
     local cost = leaving and 0 or (urgent or snap.self.ghost) and 1 or
@@ -15,6 +34,7 @@ local function jump_of(entry, snap, urgent, leaving)
         to     = entry.returns and teleport.returns[snap.self.nation] or entry.to,
         inputs = entry.inputs,
         cost   = cost,
+        fuel   = entry.spell ~= nil and fuel(entry, snap) or nil,
     }
 end
 
@@ -48,7 +68,7 @@ end
 
 local function enough_mp(entry)
     return function(ctx)
-        return (ctx.self.mp or 0) >= (entry.mp or 0)
+        return (ctx.self.mp or 0) >= (entry.mp or 0) or fuel(entry, ctx) ~= nil
     end
 end
 
@@ -171,10 +191,17 @@ function M.jumps(snap, urgent, leaving)
 end
 
 -- A walk of a few steps is never a trip: a jump lands at its own spot, not the steps closer. Taken for the
--- one step a poet closed in between casts, it cast 비영사천문 twice (online group, 16:22).
+-- one step a poet closed in between casts, it cast 비영사천문 twice (online group, 16:22). A walk counted in more steps
+-- than a jump takes is one all the same: barred from jumps, every walk to the entrance of a ground went on foot, 136-281
+-- steps across 졸본 and its fields that a 비영사천문 might have cut (online trio 100815; user 11-14).
+local function trip(snap, destination)
+    return destination.steps == nil or
+        destination.steps > math.ceil(combat.transfer / ((snap.pace or {}).step or combat.walk))
+end
+
 function M.choose(snap, facts, destination, detour)
     detour.leaving = leaving(snap, facts, destination)
-    detour.jumps   = destination.steps == nil and M.jumps(snap, destination.urgent, detour.leaving) or {}
+    detour.jumps   = trip(snap, destination) and M.jumps(snap, destination.urgent, detour.leaving) or {}
     detour.spent   = detour.spent or {}
     detour.leap    = nil
     detour.side    = nil

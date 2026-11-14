@@ -15,6 +15,8 @@ local learn = require("brain.tasks.learn")
 
 local M = {}
 
+local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
+
 local trips = {}
 local needs = {}
 
@@ -35,6 +37,8 @@ local function offers(snap, kind)
             local each = amount * (shop.uses or 1)
             table.insert(found, {
                 name = name,
+                amount = amount,
+                uses = shop.uses or 1,
                 each = each,
                 price = shop.price,
                 capacity = shop.capacity,
@@ -48,6 +52,54 @@ local function offers(snap, kind)
         return left.name < right.name
     end)
     return found
+end
+
+-- The mana one refill is drunk for: the 공력증강 a bot casts again, which refills the rest, the least a strike that
+-- spends all the mana is cast with, as more is spent on it anyway, else the dearest spell the bot casts (user 11-14).
+local function refilled(snap, kind)
+    if kind ~= "mp" then
+        return nil
+    end
+    local charge = recovery.spells(snap).charge
+    if charge ~= nil then
+        return charge.mp
+    end
+    if recovery.draining(snap) then
+        return recovery.opening(snap)
+    end
+    local options = combat.options(snap, NEUTRAL)
+    local most    = 0
+    for _, group in ipairs({ options.offense, options.strike, options.heal }) do
+        for _, choice in ipairs(group or {}) do
+            most = math.max(most, type(choice.mp) == "number" and choice.mp or 0)
+        end
+    end
+    return most > 0 and most or nil
+end
+
+-- A refill costs the price of its drinks and the time they take past the skill cooldown the bot waits out anyway. A
+-- drink is one round trip (the cast pace measures one), so the two 동동주 a rogue drinks for its 필살검무 cost no time
+-- and the cheapest dose wins, while twenty for a 600 mana spell keep the bot off its fight for a second and the
+-- dearer 홍주 at 300 a drink does better (user 11-14). Priced by the point alone, 동동주 always won.
+local function refill_cost(snap, offer, need, worth)
+    local drinks = math.ceil(need / offer.amount)
+    local wait   = math.max(0, drinks * ((snap.pace or {}).cast or 0) - combat.interval())
+    return drinks * offer.price / offer.uses * worth.exchange + wait / 1000 * worth.value
+end
+
+-- A dose the money buys the whole stock of comes before one it does not, and short of money for any, the one that
+-- buys the most mana: a bot short of money buys the cheaper dose (user 11-14).
+local function better(found, best)
+    if best == nil then
+        return true
+    elseif found.covers ~= best.covers then
+        return found.covers
+    elseif found.covers == false and found.mana ~= best.mana then
+        return found.mana > best.mana
+    elseif found.cost ~= best.cost then
+        return found.cost < best.cost
+    end
+    return found.unit < best.unit
 end
 
 local function nearest(snap, query, kind, found)
@@ -112,7 +164,8 @@ local function evaluate(snap, query, kind)
         local refill = ground.choose(snap, query, "REFILL")
         local dry    = ground.choose(snap, query, "DRY")
         local income = recovery.rates(snap).mp
-        if income >= (refill ~= nil and ground.drain(refill, snap) or 0) and income > 0 then
+        local drains = recovery.draining(snap)
+        if drains == false and income >= (refill ~= nil and ground.drain(refill, snap) or 0) and income > 0 then
             local spare = recovery.ignition(snap)
             return spare > 0 and { crisis = spare, stock = recovery.spare(snap), loot = 0 } or nil
         end
@@ -125,6 +178,20 @@ local function evaluate(snap, query, kind)
             refill = ground.party(members, query, "REFILL") or refill
             dry    = ground.party(members, query, "DRY") or dry
         end
+        -- A strike that spends all the mana keeps none of the income, and every strike is drunk for at its least mana:
+        -- the stock is counted at a strike each dose and cast (battle.candidates) all the hunt long, more than is ever
+        -- drunk. Weighed against its 운기, a rogue carried one 동동주, drank its 200 in 4 minutes, walked out of 흑해골굴
+        -- with 15 mana, short of 비영사천문, and died there (online trio 100815; user 11-14).
+        if drains then
+            local opening = recovery.opening(snap) or 0
+            return opening > 0 and {
+                crisis = opening,
+                usage = opening * 1000 / (2 * combat.cast(snap)),
+                loot = 0,
+                yields = refill ~= nil and refill.yields or nil,
+                level = refill ~= nil and ground.lifetime(snap, refill.rate) or nil
+            } or nil
+        end
         if refill == nil or ground.drain(refill, snap) <= 0 then
             return nil
         end
@@ -133,6 +200,7 @@ local function evaluate(snap, query, kind)
             base = dry ~= nil and dry.rate or 0,
             usage = ground.drain(refill, snap),
             loot = refill.loot,
+            yields = refill.yields,
             level = ground.lifetime(snap, refill.rate)
         }
     end
@@ -154,6 +222,7 @@ local function evaluate(snap, query, kind)
         base = bare ~= nil and bare.rate or 0,
         usage = best.wear,
         loot = best.loot,
+        yields = best.yields,
         level = ground.horizon(snap, best.rate)
     }
 end
@@ -219,18 +288,26 @@ local function plan(snap, query, kind)
     local held   = carried(snap, kind)
     local best   = nil
     local lesson = learn.pending(snap, query)
+    local worth  = value.baseline(snap, query)
+    local refill = refilled(snap, kind)
+    -- The bag holds the stock and the loot of the hunt together, and the stock is sized to run out when the loot fills
+    -- the rest: sized to the whole free bag, a stock left the loot no room (user 11-14).
+    local litter = 0
+    for _, entry in pairs(need.yields or {}) do
+        litter = litter + entry.rate / math.max(entry.capacity or 1, 1)
+    end
     for _, offer in ipairs(found) do
         if sold(query, offer, route.dest) then
             local amount = 0
-            local length = 0
-            if need.crisis ~= nil then
+            local length = math.huge
+            if need.usage ~= nil and need.usage > 0 then
+                local slots = need.usage / offer.slot + litter
+                length      = math.min(slots > 0 and free / slots or 0, need.level or math.huge)
+            end
+            if need.crisis ~= nil and need.usage == nil then
                 amount = math.max(0, (need.stock or need.crisis) - held)
-                length = math.huge
             else
-                local slots = need.usage / offer.slot
-                local bag   = slots > 0 and free / slots or 0
-                length      = math.min(bag, need.level or math.huge)
-                amount      = math.max(0, need.usage * length - held)
+                amount = math.max(0, need.usage * length - held)
             end
             local owned = 0
             for _, item in ipairs(snap.bag.items) do
@@ -243,19 +320,24 @@ local function plan(snap, query, kind)
                     held + (money - lesson.price) / offer.price * offer.each >= (need.crisis or 0)) then
                 budget = money - lesson.price
             end
-            local count = math.min(math.ceil(amount / offer.each),
+            local count   = math.min(math.ceil(amount / offer.each),
                 offer.capacity > 1 and offer.capacity - owned or offer.capacity,
                 math.floor(budget / offer.price), free * offer.capacity)
-            if count > 0 and (best == nil or offer.unit < best.unit) then
-                local span = need.usage ~= nil and need.usage > 0 and (held + count * offer.each) / need.usage or length
-                best = {
-                    offer = offer,
-                    count = count,
-                    length = math.min(length, span),
-                    amount = amount,
-                    unit = offer
-                        .unit
-                }
+            local affords = math.floor(budget / offer.price) * offer.each
+            local option  = count > 0 and {
+                offer = offer,
+                count = count,
+                amount = amount,
+                unit = offer.unit,
+                covers = affords >= amount,
+                mana = affords,
+                cost = refill ~= nil and refill_cost(snap, offer, refill, worth) or offer.unit,
+            } or nil
+            if option ~= nil and better(option, best) then
+                local span    = need.usage ~= nil and need.usage > 0 and (held + count * offer.each) / need.usage or
+                    length
+                option.length = math.min(length, span)
+                best          = option
             end
         end
     end
@@ -270,7 +352,6 @@ local function plan(snap, query, kind)
     if best == nil then
         return nil
     end
-    local worth = value.baseline(snap, query)
     local spend = best.count * best.offer.price * worth.exchange
     local path  = value.detour(snap, query, { maps = { route.dest } }, worth)
     local risk  = path ~= nil and path.risk or 0
@@ -293,7 +374,8 @@ local function plan(snap, query, kind)
         delta          = gain * best.length * math.min(1, shortage) * urgency * reach - need.base * spent - spend - risk
     else
         local loss   = stake
-        local target = route.dest == snap.world.map and (need.stock or need.crisis) or need.crisis
+        local stock  = need.stock or (need.usage ~= nil and held + best.amount) or need.crisis
+        local target = route.dest == snap.world.map and stock or need.crisis
         local charge = recovery.spells(snap).charge
         local onhand = (charge == nil and kind == "mp" and route.dest ~= snap.world.map) and held + (snap.self.mp or 0) or
             held
@@ -332,7 +414,21 @@ local function plan(snap, query, kind)
         stake = stake,
         gain =
             gain,
-        kind = kind
+        kind = kind,
+        detail = {
+            item = best.offer.name,
+            count = best.count,
+            amount = best.amount,
+            length = best.length,
+            usage = need.usage,
+            level = need.level,
+            crisis = need.crisis,
+            stock = need.stock,
+            held = held,
+            free = free,
+            litter = litter,
+            delta = delta
+        }
     }
 end
 
@@ -388,7 +484,8 @@ local function order(snap, query)
     if best == nil then
         return nil
     end
-    return best.choice, best.count, best.delta, best.dest, rivals, best.spent, best.stake, best.gain, best.kind
+    return best.choice, best.count, best.delta, best.dest, rivals, best.spent, best.stake, best.gain, best.kind,
+        best.detail
 end
 
 M.order = order
@@ -415,24 +512,26 @@ function M.value(snap, query)
 end
 
 function M.buy(snap, query)
-    local choice, amount, delta, _, rivals = order(snap, query)
+    local choice, amount, delta, _, rivals, _, _, _, _, detail = order(snap, query)
     return {
         kind = ACTION.SAY,
         text = string.format("%s %d개 줘", choice.name, amount),
         gain = choice.name,
         rivals = rivals,
-        scale = delta
+        scale = delta,
+        supply = detail
     }
 end
 
 function M.walk(snap, query)
-    local choice, _, delta, dest, rivals, spent, stake, gain, kind = order(snap, query)
+    local choice, _, delta, dest, rivals, spent, stake, gain, kind, detail = order(snap, query)
     local _, move = near.approach(snap, query, choice.npcs)
     if move ~= nil and move.dest.maps ~= nil then
         move.dest.maps = { dest }
         move.shop      = { map = dest, at = snap.now or 0, spent = spent, stake = stake, gain = gain, kind = kind }
         move.rivals    = rivals
         move.scale     = delta
+        move.supply    = detail
     end
     return move or { kind = ACTION.HOLD }
 end

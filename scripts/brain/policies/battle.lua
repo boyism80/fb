@@ -12,6 +12,7 @@ local score    = require("brain.policies.score")
 local spacing  = require("brain.policies.spacing")
 local survival = require("brain.policies.survival")
 local value    = require("brain.policies.value")
+local query    = require("brain.query")
 local snapshot = require("brain.snapshot")
 local trace    = require("brain.trace")
 
@@ -203,28 +204,72 @@ function M.closing(snap)
     return #attackers > 0 and combat.imminent(snap, attackers) or 0
 end
 
-local function mends(snap, facts, mp, hp)
-    local crew   = escort.present(snap, facts)
-    local cohort = escort.gathering(snap, facts)
-    if cohort ~= nil and (crew == nil or #cohort.members > #crew.members) then
-        return false
+-- How long the hp a strike spends stays off me. A crewmate that heals the others heals one of us a cast, the hurt by
+-- turns, so the hp is back after as many of its rounds as heals it takes, while its mana pays for them; else my own
+-- doses or heal bring it back a cast at a time, and with neither it stays off for the rest of the fight. Counted as
+-- the crew's whole heal on me, the hp was back within a cast and a warrior at a third of its hp struck again (online
+-- trio 113100); counted for a poet out of mana, a warrior under blows struck down to 471 (fighter_awaits_dry_healer).
+local function restored(snap, facts, mob, cost)
+    local crew = escort.present(snap, facts)
+    local rate = 0
+    local most = 0
+    local hurt = 1
+    for _, member in ipairs(crew ~= nil and crew.members or {}) do
+        if score.healer(member, facts) then
+            rate = rate + 1 / combat.cast(member)
+            most = math.max(most, score.capability(member, facts).blow.heal)
+        end
+        if member.self.hp < member.self.max_hp then
+            hurt = hurt + 1
+        end
     end
-    local missing = snap.self.max_hp - snap.self.hp
-    local heal    = recovery.heal(snap)
-    if crew ~= nil and crew.heal > 0 then
-        return missing <= escort.ready(crew, combat.cast(snap))
+    if rate > 0 and most > 0 and crew.stock >= cost then
+        return math.ceil(cost / most) * hurt / rate
     end
-    local stock = 0
-    local dose  = 0
+    local own  = recovery.heal(snap)
+    local dose = 0
     for _, entry in ipairs(recovery.doses(snap, "hp")) do
-        stock = stock + entry.amount * entry.count
-        dose  = math.max(dose, entry.amount)
+        dose = math.max(dose, entry.amount)
     end
-    if heal ~= nil and heal.hp > 0 and heal.mp > 0 then
-        stock = stock + heal.hp * mp // heal.mp
-        dose  = math.max(dose, heal.hp)
+    local each = math.max(dose, own ~= nil and own.mp <= (snap.self.mp or 0) and own.hp or 0)
+    if each > 0 then
+        return math.ceil(cost / each) * combat.cast(snap)
     end
-    return stock >= hp and missing <= dose
+    return combat.outcome(snap, facts, mob).time
+end
+
+-- A strike that spends my hp is cast when the share of the mob's life it takes is more than the share of my own life it
+-- puts at stake (user 11-14: both scored, no line between safe and not). At stake is what the mobs on me deal before the
+-- hp is back (restored), against the hp the strike leaves me, net of what it is against the hp I have: from a third of
+-- its hp the strike deals a third of the damage and leaves the blows a third of the room. Weighed by the chance to die
+-- alone, that chance was nil beside one skeleton and a warrior struck again from a third of its hp 22 times, left at
+-- 700-780 each time, and once fled at 522 with its poet beset five tiles off (online trio 123340). The mob's share is of
+-- its whole life: of what its crew had left of it, a blow from a third of the hp came out a big share and the warrior
+-- struck again from there 68 times (online trio 130022; user 11-14).
+local function pays(snap, facts, mob, choice)
+    if choice.hp <= 0 then
+        return true
+    end
+    local wait  = combat.cast(snap) + restored(snap, facts, mob, choice.hp)
+    local blows = 0
+    local crit  = 1 + data.critical.chance * (data.critical.factor - 1)
+    for _, other in ipairs(snap.world.mobs or {}) do
+        if other.x ~= nil and combat.hits(other) and (other.speed or 0) > 0 and
+            (other.oid == mob.oid or M.attacking(snap, other)) then
+            local least, most = combat.spread(snap, other)
+            blows             = blows + (least + most) / 2 * crit / other.speed
+        end
+    end
+    local stake = 0
+    if blows > 0 and wait == math.huge then
+        stake = math.huge
+    elseif blows > 0 then
+        local taken = blows * wait
+        stake       = taken / math.max(snap.self.hp - choice.hp, 1) - taken / math.max(snap.self.hp, 1)
+    end
+    local left = (mob.hp or 0) * (mob.ratio or 1)
+    local take = (mob.hp or 0) > 0 and math.min(choice.damage, left) / mob.hp or 0
+    return take > stake
 end
 
 local function gated(snap, facts, mob)
@@ -296,6 +341,80 @@ local function lands(snap, facts, mob)
         end
     end
     return nil
+end
+
+-- Sides of a tile in the server's direction order: top, right, bottom, left.
+local SIDES = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }
+
+-- The ambush sets me past the object on the tile in front of me, mob or character: the server lands me behind it,
+-- else on its left, else on its right, on the first of them that is floor and free (spell 비영승보), and casts nothing
+-- when none is. A crewmate standing in a one-tile way is so jumped instead of waited on: a poet in the neck of
+-- 흑해골굴1 kept its rogue off the skeletons beyond it (online trio 095311; user 11-14). A landing on a warp would end
+-- on another floor, so there is no jump then.
+function M.vault(snap, facts, x, y)
+    local dx, dy = x - snap.world.x, y - snap.world.y
+    if math.abs(dx) + math.abs(dy) ~= 1 then
+        return nil
+    end
+    local found = nil
+    for name, slot in pairs(slots(snap)) do
+        local spell = magic.spells[name]
+        if found == nil and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) then
+            found = { key = name, maneuver = { kind = MANEUVER.CAST, slot = slot, self = false, cost = spell.mp or 0 } }
+        end
+    end
+    if found == nil then
+        return nil
+    end
+    local taken = {}
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil then
+            taken[mob.x .. "," .. mob.y] = true
+        end
+    end
+    for _, tile in ipairs(snap.world.occupied or {}) do
+        taken[tile.x .. "," .. tile.y] = true
+    end
+    for _, profile in ipairs(snap.party or {}) do
+        local member = escort.member(profile)
+        if member.world.map == snap.world.map and member.world.x ~= nil then
+            taken[member.world.x .. "," .. member.world.y] = true
+        end
+    end
+    local facing = dx > 0 and 2 or dx < 0 and 4 or dy < 0 and 1 or 3
+    for _, turn in ipairs({ 0, 3, 1 }) do
+        local side   = SIDES[(facing - 1 + turn) % 4 + 1]
+        local tx, ty = x + side[1], y + side[2]
+        if tx >= 0 and ty >= 0 and taken[tx .. "," .. ty] == nil and
+            (facts.floor == nil or facts.floor(snap.world.map, tx, ty)) then
+            if facts.warp ~= nil and facts.warp(snap.world.map, tx, ty) then
+                return nil
+            end
+            found.x, found.y = tx, ty
+            return found
+        end
+    end
+    return nil
+end
+
+-- A walk stopped at a character in front of me goes on past it by the ambush when the landing is nearer the place
+-- the walk is for than I stand (vault). Returns whether I moved.
+function M.vault_past(brain, bot, event, x, y)
+    if event.type ~= "OCCUPIED" or event.detail ~= "CHARACTER" or event.x == nil or event.oid == nil then
+        return false
+    end
+    local snap = snapshot.take(brain, bot)
+    local over = M.vault(snap, query.bind(brain, bot, snap), event.x, event.y)
+    local here = math.abs(x - snap.world.x) + math.abs(y - snap.world.y)
+    if over == nil or math.abs(x - over.x) + math.abs(y - over.y) >= here then
+        return false
+    end
+    local before = bot:position()
+    local leapt  = brain:engage(bot, event.oid, over.maneuver)
+    local after  = bot:position()
+    log("debug", string.format("[brain:vault] bot=%s over %d to %d,%d %s", bot:name(), event.oid, over.x, over.y,
+        leapt.type))
+    return before[1] ~= after[1] or before[2] ~= after[2]
 end
 
 local function sighted(snap, mob)
@@ -396,8 +515,7 @@ local function candidates(snap, facts, mob, state, reachable)
         end
         local drunk = dose ~= nil and math.min(dose.amount, (snap.self.max_mp or 0) - mp) or 0
         if known[choice.name] ~= nil and (choice.mp <= mp or dose ~= nil) and adjacent and
-            snap.self.hp - choice.hp > burst and mends(snap, facts, mp + drunk - choice.mp, choice.hp) and
-            bears(snap, facts, mob, choice) then
+            pays(snap, facts, mob, choice) and bears(snap, facts, mob, choice) then
             local spell = magic.spells[choice.name]
             local model = dose ~= nil and facts.item(dose.name) or nil
             add({
@@ -1310,9 +1428,30 @@ function M.step(brain, bot, oid, action)
     if pause > 0 and brain:active(bot) then
         brain:watch(bot, oid, pause // 1 | 0)
     end
-    local seen    = brain:observe(bot)
-    local before  = bot:position()
-    local event   = brain:engage(bot, oid, setmetatable({ pace = data.walk }, { __index = action.maneuver }))
+    local seen   = brain:observe(bot)
+    local before = bot:position()
+    local struck = nil
+    for _, mob in ipairs(brain:mobs(bot)) do
+        struck = mob.oid == oid and mob or struck
+    end
+    local event  = brain:engage(bot, oid, setmetatable({ pace = data.walk }, { __index = action.maneuver }))
+    local target = nil
+    for _, mob in ipairs(brain:mobs(bot)) do
+        target = mob.oid == oid and mob or target
+    end
+    -- A spell at a mob that took none of its damage was cast at no one: the server takes the mana and strikes only
+    -- what stands in front, and the mob's hp bar, sent before the cast is answered, stays where it was. Taken as cast,
+    -- a warrior whose skeleton had stepped off cast 건곤대나이 three times in 0.9s at full hp (online trio 113100). It is
+    -- refused then, as a cast the server turned down is. Only a blow the bar would show is told so: the bar counts
+    -- whole percents.
+    if event.type == "DONE" and action.maneuver.kind == MANEUVER.CAST and action.maneuver.self ~= true and
+        struck ~= nil and target ~= nil and (target.ratio or 1) >= (struck.ratio or 1) and
+        (action.damage or 0) >= (target.hp or math.huge) / 100 then
+        event = { type = "REFUSED" }
+    end
+    if target ~= nil and target.x ~= nil and M.vault_past(brain, bot, event, target.x, target.y) then
+        event = brain:engage(bot, oid, setmetatable({ pace = data.walk }, { __index = action.maneuver }))
+    end
     local after   = bot:position()
     local visible = {}
     for _, mob in ipairs(brain:mobs(bot)) do

@@ -209,8 +209,9 @@ function M.choose(snap, facts, current, sink)
     if result == nil or (current ~= nil and result.task == current) then
         return nil, revisit
     end
-    if sink ~= nil and picks[owner] ~= result.task then
-        picks[owner] = result.task
+    local picked = result.task .. ":" .. tostring(result.buff or result.text or "")
+    if sink ~= nil and picks[owner] ~= picked then
+        picks[owner] = picked
         trace.decide(sink.brain, sink.bot, snap, result, route, current)
     end
     if data.journal or data.trace then

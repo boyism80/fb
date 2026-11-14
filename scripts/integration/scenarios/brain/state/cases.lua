@@ -1034,7 +1034,7 @@ function M.swarm(ctx, names, count, watch)
     return true
 end
 
-function M.group(ctx, names, arrivals, watch, base, form)
+function M.group(ctx, names, arrivals, watch, base, form, invited)
     base = base or 0
     local minds = {}
     for index, name in ipairs(names) do
@@ -1044,6 +1044,12 @@ function M.group(ctx, names, arrivals, watch, base, form)
         end
         dress(ctx, slot, profiled(name))
         option.set_option(ctx:bot(slot), "GROUP", true, "그룹허가")
+    end
+    for index = 2, invited and #names or 1 do
+        if ctx:bot(base):invite_group(ctx:bot(base + index - 1)) == false then
+            log("fatal", string.format("[brain:group] %s FAILED invite %s", table.concat(names, "+"), names[index]))
+            return false
+        end
     end
     local plan = (arrivals or 0) > 0 and gather(ctx, #names, arrivals) or nil
     if (arrivals or 0) > 0 and plan == nil then

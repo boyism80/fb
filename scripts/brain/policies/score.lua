@@ -296,4 +296,12 @@ function M.melee(snap, query)
     return blow.adjacent >= math.max(blow.ranged, blow.heal) or strong.dps.melee >= math.max(afar, strong.hps.others)
 end
 
+-- A crewmate that heals the others is one whose heals on them outdo its own damage, told rested as its kind does not
+-- turn with its hp. Told by any heal for the others, a rogue that healed 457 a second and dealt 9,551 counted as one,
+-- left the prey it would walk to alone and stood four tiles behind its warrior for 28s (online trio 113100, 흑해골굴2).
+function M.healer(snap, query)
+    local strong = M.capability(M.rested(snap), query)
+    return strong.hps.others > strong.dps.single
+end
+
 return M

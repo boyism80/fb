@@ -41,7 +41,8 @@ function M.best(snap, query)
     for _, spell in ipairs(snap.spells or {}) do
         learned[spell.name] = spell.slot
     end
-    local best = nil
+    local best    = nil
+    local weighed = {}
     for name, slot in pairs(learned) do
         local data = magic.spells[name]
         if data ~= nil and data.role == "BUFF" and data.self ~= false and data.trigger == nil and combat.valued(name) and active[name] == nil and
@@ -53,11 +54,10 @@ function M.best(snap, query)
                 blocked     = blocked or active[other] ~= nil or
                     (learned[other] ~= nil and rival ~= nil and ((rival.boost or {}).damage_rate or 0) > rate)
             end
-            if blocked == false then
-                local gain = worth(snap, query, name, data)
-                if best == nil or gain > best.value or (gain == best.value and name < best.name) then
-                    best = { name = name, slot = slot, value = gain }
-                end
+            local gain = blocked == false and worth(snap, query, name, data) or nil
+            weighed[name] = gain ~= nil and math.floor(gain) or "blocked"
+            if gain ~= nil and (best == nil or gain > best.value or (gain == best.value and name < best.name)) then
+                best = { name = name, slot = slot, value = gain }
             end
         end
     end
@@ -72,6 +72,9 @@ function M.best(snap, query)
             end
         end
     end
+    if best ~= nil then
+        best.weighed = weighed
+    end
     return best
 end
 
@@ -81,7 +84,7 @@ end
 
 function M.cast(snap, query)
     local choice = M.best(snap, query)
-    return { kind = ACTION.CAST, slot = choice.slot, buff = choice.name }
+    return { kind = ACTION.CAST, slot = choice.slot, buff = choice.name, weighed = choice.weighed }
 end
 
 return M
