@@ -78,7 +78,7 @@ public:
     // clang-format off
     async::task<std::optional<uint64_t>> create_or_replace(fb::game::map& map, std::string name, uint32_t interval_ms, std::string path, std::string func, bool repeat);
     bool                                 cancel(uint32_t map_id, std::string_view name);
-    bool                                 cancel(uint64_t id);
+    bool                                 cancel(uint32_t map_id, uint64_t id);
     void                                 cancel_all(uint32_t map_id);
     // clang-format on
 

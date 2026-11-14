@@ -991,7 +991,7 @@ int builtin::map::builtin_cancel_timer(lua_State* L)
     {
         auto id       = static_cast<uint64_t>(lua->touint64(2));
         builder.yield = [=]() -> async::task<void> {
-            *success = server->script_timers.cancel(id);
+            *success = server->script_timers.cancel(map->id, id);
             co_return;
         };
     }

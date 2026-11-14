@@ -40,13 +40,13 @@ void service::script_timer::erase(uint64_t id)
     this->erase_unlocked(id);
 }
 
-bool service::script_timer::cancel(uint64_t id)
+bool service::script_timer::cancel(uint32_t map_id, uint64_t id)
 {
     std::shared_ptr<fb::timer> timer;
     {
         auto _  = std::lock_guard(this->_mutex);
         auto it = this->_by_id.find(id);
-        if (it == this->_by_id.end())
+        if (it == this->_by_id.end() || it->second.map_id != map_id)
             return false;
 
         timer = it->second.timer;
@@ -179,7 +179,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
                 auto current = target.lock();
                 if (current == nullptr || current->closing() || srv->maps.find(mid) != current)
                 {
-                    timers.cancel(timer_id);
+                    timers.cancel(mid, timer_id);
                     co_return;
                 }
             }
@@ -189,7 +189,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
                 std::ignore = co_await lua->call(0);
 
             if (once)
-                timers.cancel(timer_id);
+                timers.cancel(mid, timer_id);
 
             co_return;
         },
