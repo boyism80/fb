@@ -126,9 +126,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
 
         if (m->type() == mob::spawn_type::SUMMONED)
         {
-            m->detach_owner();
-            m->kill(DESTROY_TYPE::DEAD);
-            co_await m->destroy(DESTROY_TYPE::DEAD);
+            co_await m->die();
             continue;
         }
 
@@ -160,16 +158,20 @@ async::task<void> life::settle_deaths(mob_vector dead)
             }
         }
 
+        co_await this->reward_kill(id, mobs);
         for (auto& m : mobs)
         {
-            this->listener.on_dead(*m, nullptr);
-            co_await m->drop_items();
-            m->kill(DESTROY_TYPE::DEAD);
-            co_await m->destroy(DESTROY_TYPE::DEAD);
+            co_await this->server.threads.follow(m->weak_from_this_as<mob>());
+            co_await m->die();
         }
     }
 
     co_await this->server.threads.follow(self);
+}
+
+async::task<void> life::reward_kill(uint32_t, const mob_vector&)
+{
+    co_return;
 }
 
 async::task<void> life::damage_to(const damage_list& targets)

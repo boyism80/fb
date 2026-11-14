@@ -475,7 +475,7 @@ private:
     void                            award_exp(uint64_t exp);
     async::task<void>               death_penalty();
     async::task<void>               death_loss();
-    async::task<void>               settle_kills(mob_vector dead);
+    async::task<void>               reward_kill(uint32_t id, const mob_vector& mobs) override;
     void                            enqueue_death_warp();
     [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
     // clang-format on
@@ -521,8 +521,6 @@ public:
     [[nodiscard]] async::task<void>          settle_death(std::shared_ptr<fb::game::object> killer = nullptr);
     bool                                     settling_death() const;
     void                                     handle_death(std::shared_ptr<fb::game::object> killer = nullptr) override final;
-    async::task<void>                        damage_to(const damage_list& targets) override final;
-    async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;
     void                                     update_id() override final;
     bool                                     super_hide() const override final;
     bool                                     hidden() const override final;

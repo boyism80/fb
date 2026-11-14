@@ -2202,84 +2202,48 @@ async::task<void> character::death_warp()
     co_return;
 }
 
-async::task<void> character::settle_kills(mob_vector dead)
+async::task<void> character::reward_kill(uint32_t id, const mob_vector& mobs)
 {
-    this->assert_thread();
-
-    auto groups = std::unordered_map<uint32_t, mob_vector>{};
-    for (auto& m : dead)
-    {
-        if (m == nullptr)
-            continue;
-
-        if (m->type() == mob::spawn_type::SUMMONED)
-        {
-            m->detach_owner();
-            m->kill(DESTROY_TYPE::DEAD);
-            co_await m->destroy(DESTROY_TYPE::DEAD);
-            continue;
-        }
-
-        groups[m->model().id].push_back(m);
-    }
-
     auto self       = this->shared_from_this_as<character>();
     auto self_pivot = this->weak_from_this_as<character>();
-    for (auto& [id, mobs] : groups)
+    co_await this->server.threads.follow(self_pivot);
+    co_await this->collections.try_unlock(id);
+
+    for (auto& m : mobs)
     {
+        co_await this->server.threads.follow(m->weak_from_this_as<mob>());
+        auto exp = m->total_exp();
+
         co_await this->server.threads.follow(self_pivot);
-        co_await this->collections.try_unlock(id);
-
-        for (auto& m : mobs)
-        {
-            co_await this->server.threads.follow(m->weak_from_this_as<mob>());
-            auto exp = m->total_exp();
-
-            co_await this->server.threads.follow(self_pivot);
-            this->award_exp(exp);
-        }
-
-        {
-            auto path = std::format("scripts/mob/{}.lua", id);
-            auto func = "on_mob_kill";
-            auto lua  = this->server.lua.open(path, func);
-            if (lua)
-            {
-                lua->pushobject(*self);
-                lua->new_table();
-                for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
-                {
-                    lua->pushobject(*mobs[i]);
-                    lua->rawseti(-2, i + 1);
-                }
-
-                try
-                {
-                    std::ignore = co_await fb::lua::call(std::move(lua), self_pivot, 2);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
-                }
-                catch (...)
-                {
-                    fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
-                }
-            }
-        }
-
-        for (auto& m : mobs)
-        {
-            auto mob_pivot = m->weak_from_this_as<mob>();
-            co_await this->server.threads.follow(mob_pivot);
-            this->listener.on_dead(*m, self);
-            co_await m->drop_items();
-            m->kill(DESTROY_TYPE::DEAD);
-            co_await m->destroy(DESTROY_TYPE::DEAD);
-        }
+        this->award_exp(exp);
     }
 
-    co_await this->server.threads.follow(self_pivot);
+    auto path = std::format("scripts/mob/{}.lua", id);
+    auto func = "on_mob_kill";
+    auto lua  = this->server.lua.open(path, func);
+    if (!lua)
+        co_return;
+
+    lua->pushobject(*self);
+    lua->new_table();
+    for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
+    {
+        lua->pushobject(*mobs[i]);
+        lua->rawseti(-2, i + 1);
+    }
+
+    try
+    {
+        std::ignore = co_await fb::lua::call(std::move(lua), self_pivot, 2);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
+    }
+    catch (...)
+    {
+        fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
+    }
 }
 
 void character::award_exp(uint64_t exp)
@@ -2330,12 +2294,6 @@ void character::award_exp(uint64_t exp)
     }
 }
 
-async::task<void> character::damage_to(const damage_list& targets)
-{
-    co_await this->damage_to(targets, damage_opts{});
-    co_return;
-}
-
 void character::hit(uint64_t                     value,
                     const std::shared_ptr<life>& attacker,
                     const damage_opts&           opts,
@@ -2347,18 +2305,6 @@ void character::hit(uint64_t                     value,
     // checks still see a stable thread affinity for this attack frame.
     if (this->stat.hp() == 0 && this->state() != STATE::GHOST && this->settling_death() == false)
         settle.dead_characters.push_back(this->shared_from_this_as<character>());
-}
-
-async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
-{
-    this->assert_thread();
-    auto settle = this->damage_targets(targets, opts, this->shared_from_this_as<life>());
-    co_await this->invoke_on_mob_damaged(targets);
-    co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
-    if (settle.dead_mobs.empty() == false)
-        co_await this->settle_kills(std::move(settle.dead_mobs));
-
-    co_return;
 }
 
 fb::protocol::internal::Character character::to_protocol() const

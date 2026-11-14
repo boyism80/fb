@@ -549,7 +549,7 @@ uint64_t mob::normal_attack_damage(MOB_SIZE size) const
 void mob::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    // Destroy must be awaited by the caller (settle_deaths / settle_kills / ride).
+    // Destroy must be awaited by the caller (die / ride).
     life::kill(destroy_type);
 }
 
@@ -573,7 +573,7 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     if (this->_spawn_type == spawn_type::SUMMONED && owner != nullptr)
     {
         auto self = this->weak_from_this_as<mob>();
-        co_await owner->settle_kills(std::move(settle.dead_mobs));
+        co_await owner->settle_deaths(std::move(settle.dead_mobs));
         co_await this->server.threads.follow(self);
         co_return;
     }
@@ -672,6 +672,24 @@ async::task<void> mob::drop_items()
 
     if (!oids.empty() && this->map() != nullptr)
         this->map()->bulk_update(oids);
+}
+
+async::task<void> mob::die()
+{
+    this->assert_thread();
+
+    if (this->_spawn_type == spawn_type::SUMMONED)
+    {
+        this->detach_owner();
+    }
+    else
+    {
+        this->listener.on_dead(*this, nullptr);
+        co_await this->drop_items();
+    }
+
+    this->kill(DESTROY_TYPE::DEAD);
+    co_await this->destroy(DESTROY_TYPE::DEAD);
 }
 
 async::task<void> mob::destroy(DESTROY_TYPE destroy_type)

@@ -117,10 +117,11 @@ public:
 public:
     const fb::model::mob& model() const override;
     spawn_type            type() const;
-    void                  detach_owner();
 
 private:
     // clang-format off
+    void                            detach_owner();
+    async::task<void>               drop_items();
     [[nodiscard]] async::task<void> AI(const fb::model::datetime& now);
     static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
@@ -157,7 +158,7 @@ public:
     void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     async::task<void>               damage_to(const damage_list& targets) override final;
     async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts) override final;
-    async::task<void>               drop_items();
+    [[nodiscard]] async::task<void> die();
     async::task<void>               destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            assert_thread() const override final;
     [[nodiscard]] async::task<bool> move(DIRECTION direction) override final;
