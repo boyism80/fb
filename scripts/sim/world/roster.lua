@@ -282,6 +282,51 @@ return {
                     { class = "POET", low = 40, high = 49, spells = { "공력증강", "구름의기원" } },
                 }
             },
+            {
+                name = "watch 63+65",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "WARRIOR", profile = "warrior63" },
+                    { class = "POET", profile = "poet65" },
+                },
+            },
+            {
+                name = "watch 50+65",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "ROGUE", profile = "rogue50" },
+                    { class = "POET", profile = "poet65" },
+                },
+            },
+            {
+                name = "watch mage60",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "MAGE", profile = "mage60" },
+                },
+            },
+            {
+                name = "watch trio",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "WARRIOR", profile = "warrior93" },
+                    { class = "ROGUE", profile = "rogue92" },
+                    { class = "POET", profile = "poet94" },
+                },
+            },
+            {
+                name = "watch mages",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "MAGE", profile = "mage95" },
+                    { class = "MAGE", profile = "mage91" },
+                },
+            },
         },
     },
 }

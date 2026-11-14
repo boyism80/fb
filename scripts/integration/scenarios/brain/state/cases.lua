@@ -1034,7 +1034,7 @@ function M.swarm(ctx, names, count, watch)
     return true
 end
 
-function M.group(ctx, names, arrivals, watch, base)
+function M.group(ctx, names, arrivals, watch, base, form)
     base = base or 0
     local minds = {}
     for index, name in ipairs(names) do
@@ -1070,7 +1070,7 @@ function M.group(ctx, names, arrivals, watch, base)
         end
         return true
     end
-    local formed   = expect.within(ctx, TIMEOUT, linked)
+    local formed   = expect.within(ctx, form or TIMEOUT, linked)
     local together = false
     local split    = 0
     local died     = 0
