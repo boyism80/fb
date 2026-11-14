@@ -360,6 +360,16 @@ public:                                                                         
     bool             name2class(std::string_view name, enum_value::CLASS& cls, uint8_t& promotion) const; \
     bool             class2name(enum_value::CLASS cls, uint8_t promotion, std::string& name) const;
 
+#define DECLARE_SELL_EXTENSION \
+                               \
+public:                        \
+    uint64_t calculate_price() const;
+
+#define DECLARE_BUY_EXTENSION \
+                              \
+public:                       \
+    uint64_t calculate_price() const;
+
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
                                                                                       \
 public:                                                                               \

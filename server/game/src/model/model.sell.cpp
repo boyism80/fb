@@ -2,6 +2,11 @@
 
 #include <cstdint>
 
+uint64_t fb::model::sell::calculate_price() const
+{
+    return this->price.value_or(fb::model::table::item[this->item].price);
+}
+
 const fb::model::sell* fb::model::___sell::find(uint32_t pursuit, const fb::model::item& item) const
 {
     if (this->contains(pursuit) == false)

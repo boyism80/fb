@@ -866,7 +866,7 @@ int builtin::server::builtin_pursuit_sell(lua_State* L)
         {
             auto  item_table = table::item;
             auto& item       = item_table[v.item];
-            auto  price      = v.price.value_or(item.price);
+            auto  price      = v.calculate_price();
 
             lua->pushinteger(++i);
             lua->new_table();
@@ -894,23 +894,16 @@ int builtin::server::builtin_pursuit_sell_price(lua_State* L)
         return 0;
 
     auto pursuit = lua->tointeger(1);
-    auto name    = lua->tostring(2);
-
-    if (table::sell->contains(pursuit) == false)
+    auto item    = table::item->name2item(lua->tostring(2));
+    if (item == nullptr)
         return 0;
 
-    for (auto& x : table::sell[pursuit])
-    {
-        auto  item_table2 = table::item;
-        auto& model       = item_table2[x.item];
-        if (model.name != name)
-            continue;
+    auto sell = table::sell->find(pursuit, *item);
+    if (sell == nullptr)
+        return 0;
 
-        lua->pushinteger(x.price.value_or(model.price));
-        return 1;
-    }
-
-    return 0;
+    lua->pushinteger(sell->calculate_price());
+    return 1;
 }
 
 int builtin::server::builtin_pursuit_buy(lua_State* L)
@@ -930,7 +923,7 @@ int builtin::server::builtin_pursuit_buy(lua_State* L)
         {
             auto  item_table3 = table::item;
             auto& item        = item_table3[k];
-            auto  price       = v.price.value_or(item.price / 2);
+            auto  price       = v.calculate_price();
 
             lua->pushinteger(++i);
             lua->new_table();

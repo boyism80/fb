@@ -47,25 +47,16 @@ int builtin::model::npc::builtin_sell_price(lua_State* L)
     if (npc == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-    for (auto sell : npc->sell)
-    {
-        if (table::sell->contains(sell) == false)
-            continue;
+    auto item = table::item->name2item(lua->tostring(2));
+    if (item == nullptr)
+        return 0;
 
-        for (auto& x : table::sell[sell])
-        {
-            auto  item_table = table::item;
-            auto& item       = item_table[x.item];
-            if (item.name != name)
-                continue;
+    auto sell = table::sell->find(*npc, *item);
+    if (sell == nullptr)
+        return 0;
 
-            lua->pushinteger(x.price.value_or(item.price));
-            return 1;
-        }
-    }
-
-    return 0;
+    lua->pushinteger(sell->calculate_price());
+    return 1;
 }
 
 int builtin::model::npc::builtin_buy_price(lua_State* L)
@@ -78,25 +69,16 @@ int builtin::model::npc::builtin_buy_price(lua_State* L)
     if (npc == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-    if (npc->buy.has_value() == false)
+    auto item = table::item->name2item(lua->tostring(2));
+    if (item == nullptr)
         return 0;
 
-    if (table::buy->contains(npc->buy.value()) == false)
+    auto buy = table::buy->find(*npc, *item);
+    if (buy == nullptr)
         return 0;
 
-    for (auto& [_, x] : table::buy[npc->buy.value()])
-    {
-        auto  item_table2 = table::item;
-        auto& item        = item_table2[x.item];
-        if (item.name != name)
-            continue;
-
-        lua->pushinteger(x.price.value_or(item.price / 2));
-        return 1;
-    }
-
-    return 0;
+    lua->pushinteger(buy->calculate_price());
+    return 1;
 }
 
 int builtin::model::npc::builtin_buy(lua_State* L)
