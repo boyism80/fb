@@ -2224,5 +2224,103 @@ return {
             end
         end
         report(me, true, step or 'cleanup')
+    end,
+
+    verify_title_rules = function(me, step)
+        local before = me:title() or ''
+        local blocked = me:title('씨발타이틀')
+        local after_blocked = me:title() or ''
+        local cleared = me:title('')
+        local after_clear = me:title() or ''
+        local restored = me:title(before)
+        if blocked ~= false or after_blocked ~= before then
+            me:title(before)
+            return report(me, false, step, 'blocked title was accepted')
+        end
+        if cleared ~= true or after_clear ~= '' then
+            me:title(before)
+            return report(me, false, step, 'empty title was rejected')
+        end
+        report(me, restored == true and (me:title() or '') == before, step)
+    end,
+
+    verify_timer_cancel_other_map = function(me, step)
+        local map_a = me:map()
+        if map_a == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local map_a_id = map_a:model():id()
+        local map_b = nil
+        for _, id in ipairs({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }) do
+            if id ~= map_a_id then
+                local candidate = id2map(id)
+                if candidate ~= nil then
+                    map_b = candidate
+                    break
+                end
+            end
+        end
+        if map_b == nil then
+            return report(me, false, step, 'no other map')
+        end
+
+        local name = 'it_timer_map_guard'
+        local path = 'scripts/lib/script_timer_smoke.lua'
+        map_a:cancel_timer(name)
+        local id = map_a:set_timer(60000, path, 'on_once', { name = name, once = true })
+        if id == nil then
+            return report(me, false, step, 'set_timer failed')
+        end
+
+        local wrong = map_b:cancel_timer(id)
+        local right = map_a:cancel_timer(id)
+        if right ~= true then
+            map_a:cancel_timer(name)
+        end
+        report(me, wrong == false and right == true, step,
+            string.format('wrong=%s right=%s', tostring(wrong), tostring(right)))
+    end,
+
+    verify_festival_payload = function(me, step)
+        local festival = require('lib.festival')
+        local quest = require('lib.quest')
+        local id = quest.QUEST_SEOTDAL_GIFTS
+        me:remove_quest(id)
+        local q = me:start_quest(id)
+        if q == nil then
+            return report(me, false, step, 'start_quest failed')
+        end
+
+        festival.save_payload(q, '1:0:0')
+        local w, d, b = festival.seotdal_flags(q)
+        local payload = festival.payload(q)
+        festival.set_seotdal_flags(q, 0, 1, 0)
+        local w2, d2, b2 = festival.seotdal_flags(q)
+
+        q:param('1:0:1')
+        local lw, ld, lb = festival.seotdal_flags(q)
+
+        festival.save_payload(q, string.format('%d:%d', 20261115, 3))
+        local chrys = festival.payload(q)
+        local year = festival.lunar_year()
+        festival.reset(q)
+        local kept = festival.payload(q)
+
+        me:remove_quest(id)
+        if w ~= 1 or d ~= 0 or b ~= 0 or payload ~= '1:0:0' then
+            return report(me, false, step, 'save_payload roundtrip failed')
+        end
+        if w2 ~= 0 or d2 ~= 1 or b2 ~= 0 then
+            return report(me, false, step, 'set_seotdal_flags failed')
+        end
+        if lw ~= 1 or ld ~= 0 or lb ~= 1 then
+            return report(me, false, step, 'legacy seotdal flags failed')
+        end
+        if chrys ~= '20261115:3' then
+            return report(me, false, step, 'chrysanthemum payload failed')
+        end
+        report(me, kept == '20261115:3' and year > 0, step,
+            string.format('kept=%s year=%s', tostring(kept), tostring(year)))
     end
 }

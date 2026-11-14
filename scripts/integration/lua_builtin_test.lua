@@ -24,6 +24,9 @@ test_suite {
             if script_step.run_script(bot, "test/integration", "verify_script_return", "script_return") ~= true then
                 return fail("obj:script lost the values of a script that waited")
             end
+            if script_step.run_script(bot, "test/integration", "verify_timer_cancel_other_map", "timer_cancel_other_map") ~= true then
+                return fail("cancel_timer by id succeeded for a timer on another map")
+            end
             return true
         end,
     },

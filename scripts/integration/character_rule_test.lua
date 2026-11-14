@@ -135,5 +135,21 @@ test_suite {
             end
             return true
         end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            if run_step(bot, "verify_title_rules", "title_rules") == false then
+                return fail("a blocked title was accepted or an empty title was rejected")
+            end
+            return true
+        end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            if run_step(bot, "verify_festival_payload", "festival_payload") == false then
+                return fail("festival payload roundtrip or annual reset lost the quest param")
+            end
+            return true
+        end,
     },
 }
