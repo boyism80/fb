@@ -33,7 +33,7 @@ local function scale(snap, query, member)
             local exposed = ground.evaluate(rested, query, floor, score.capability(rested, query), nil)
             local worth   = require("brain.policies.value").baseline(snap, query)
             total         = worth.value +
-            (exposed.deaths or 0) * require("brain.policies.party").death(snap, query, member, worth)
+                (exposed.deaths or 0) * require("brain.policies.party").death(snap, query, member, worth)
         end
         known[name] = total
     end

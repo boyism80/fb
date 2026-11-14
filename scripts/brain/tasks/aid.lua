@@ -46,7 +46,7 @@ local function rescue(snap, query, member, current, restored, heal, worth)
         return 0
     end
     return (math.exp(-current / blows) - math.exp(-(current + restored) / blows)) *
-    party.death(snap, query, member, worth)
+        party.death(snap, query, member, worth)
 end
 
 local function volley(snap, member)
