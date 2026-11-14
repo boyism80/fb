@@ -1,5 +1,6 @@
 local data     = require("brain.data.combat")
 local alert    = require("brain.policies.alert")
+local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
@@ -17,6 +18,13 @@ local tree     = require("brain.tree")
 local main     = require("brain.trees.main")
 local spare    = require("brain.trees.idle")
 local together = require("brain.trees.together")
+
+for _, entry in ipairs({
+    { value, "baseline" }, { ground, "ranked" }, { ground, "party" }, { party, "plan" }, { party, "offer" },
+    { battle, "choose" }, { battle, "target" },
+}) do
+    entry[1][entry[2]] = profile.part(entry[2], entry[1][entry[2]])
+end
 
 local M = {}
 

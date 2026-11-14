@@ -1,3 +1,5 @@
+local profile = require("brain.profile")
+
 local M = {}
 
 local LIMIT = 80
@@ -207,12 +209,14 @@ local function situation(snap, kind, current, path)
 end
 
 function M.decide(brain, bot, snap, decision, path, current)
-    local entry  = situation(snap, "decide", current, path)
-    entry.picked = decision.task
-    entry.action = decision.kind
-    entry.key    = decision.key
-    entry.item   = decision.item
-    entry.dest   = decision.dest
+    local entry           = situation(snap, "decide", current, path)
+    entry.picked          = decision.task
+    entry.action          = decision.kind
+    entry.key             = decision.key
+    entry.item            = decision.item
+    entry.dest            = decision.dest
+    entry.cpu, entry.wait = profile.spent(bot:name())
+    entry.parts           = profile.parts(bot:name())
     brain:trace(bot, entry)
 end
 
