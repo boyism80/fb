@@ -1619,29 +1619,42 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     if (owner->money_free_space() < money)
         return false;
 
-    auto required_size = items::required_slots(items);
-    if (required_size.has_value() == false)
-        return false;
+    return this->fits({}, items);
+}
 
-    auto free_size = this->free_size();
-    for (auto& [id, count] : items)
+bool items::fits(const std::map<uint8_t, uint16_t>& costs, const std::unordered_map<uint32_t, uint16_t>& rewards) const
+{
+    auto available = static_cast<int>(this->free_size());
+    for (auto& [index, count] : costs)
     {
-        auto  item_table = table::item;
-        auto& model      = item_table[id];
+        if (this->stacked(index) == count)
+            available++;
+    }
+
+    auto required = 0;
+    for (auto& [id, count] : rewards)
+    {
+        auto  item_table  = table::item;
+        auto& model       = item_table[id];
+        auto  capacity    = std::max<uint32_t>(model.capacity, 1);
+        required         += static_cast<int>((count + capacity - 1) / capacity);
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
         auto slot = this->stack(model);
-        if (slot == 0xFF)
-            continue;
+        auto left = uint32_t{0};
+        if (slot != 0xFF)
+            left = this->stacked(slot) - (costs.contains(slot) ? costs.at(slot) : uint16_t{0});
 
-        if (model.capacity < this->stacked(slot) + count)
+        // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
+        if (model.capacity < left + count)
             return false;
 
-        free_size++;
+        if (left > 0)
+            available++;
     }
 
-    return free_size >= required_size.value();
+    return available >= required;
 }
 
 bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
@@ -1698,63 +1711,10 @@ async::task<exchange_result> items::exchange(const std::map<uint8_t, uint16_t>& 
             co_return exchange_result::lack_cost;
     }
 
-    auto effective_free_slots = static_cast<int>(this->free_size());
-    for (auto& [index, count] : costs)
-    {
-        if (this->stacked(index) == count)
-            effective_free_slots++;
-    }
-
     if (owner->money_free_space() + cost_money < reward_money)
         co_return exchange_result::lack_capacity;
 
-    auto fits = [&](const std::unordered_map<uint32_t, uint16_t>& rewards) {
-        int required_size = 0;
-        for (auto& [id, count] : rewards)
-        {
-            auto  item_table3  = table::item;
-            auto& model        = item_table3[id];
-            auto  capacity     = std::max<uint32_t>(model.capacity, 1);
-            required_size     += static_cast<int>((count + capacity - 1) / capacity);
-        }
-
-        int available_slots = effective_free_slots;
-        for (auto& [id, count] : rewards)
-        {
-            auto  item_table4 = table::item;
-            auto& model       = item_table4[id];
-            if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-                continue;
-
-            auto existing = std::optional<uint32_t>{};
-            auto slot     = this->stack(model);
-            if (slot != 0xFF)
-            {
-                auto planned = costs.contains(slot) ? costs.at(slot) : uint16_t{0};
-                auto left    = static_cast<uint32_t>(this->stacked(slot) - planned);
-                if (left > 0)
-                    existing = left;
-            }
-
-            // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
-            if (existing.has_value() == false)
-            {
-                if (model.capacity < count)
-                    return false;
-
-                continue;
-            }
-
-            if (model.capacity < existing.value() + count)
-                return false;
-
-            available_slots++;
-        }
-
-        return available_slots >= required_size;
-    };
-
-    if (fits(reward_items) == false)
+    if (this->fits(costs, reward_items) == false)
         co_return exchange_result::lack_capacity;
 
     owner->money_reduce(cost_money);
@@ -1868,77 +1828,33 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
         }
     }
 
-    // A material stack that keeps some count after consumption still occupies its slot.
-    auto free_slots = static_cast<int>(this->free_size());
-    for (auto& [index, count] : consume)
-    {
-        if (this->at(index)->count() == count && this->reserved(index) == false)
-            free_slots++;
-    }
-
-    // items::add merges a bundle into its existing stack and drops what does not fit, so a bundle result must fit
-    // in one stack: the remaining material stack of the same model, the slot whose whole stack is listed, or a new
-    // slot.
-    auto fits = [&](const auto& results) {
-        auto totals = std::map<uint32_t, uint32_t>();
+    auto totals = [](const std::vector<fb::model::dsl>& results) {
+        auto rewards = std::unordered_map<uint32_t, uint16_t>();
         for (auto& x : results)
         {
-            auto params        = fb::model::dsl::item(x.params);
-            totals[params.id] += params.count;
+            auto params         = fb::model::dsl::item(x.params);
+            rewards[params.id] += static_cast<uint16_t>(params.count);
         }
 
-        auto required = 0;
-        for (auto& [id, total] : totals)
-        {
-            auto  item_table = table::item;
-            auto& model      = item_table[id];
-            if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-            {
-                required += static_cast<int>(total);
-                continue;
-            }
-
-            auto slot = this->stack(model);
-            auto left = static_cast<uint32_t>(this->stacked(slot)) - (consume.contains(slot) ? consume[slot] : 0);
-            if (left + total > model.capacity)
-                return false;
-
-            if (left == 0)
-                required++;
-        }
-
-        return required <= free_slots;
+        return rewards;
     };
 
-    if (fits(found->success) == false || fits(found->failed) == false)
+    auto success_items = totals(found->success);
+    auto failed_items  = totals(found->failed);
+    if (this->fits(consume, success_items) == false || this->fits(consume, failed_items) == false)
     {
         owner->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return false;
     }
 
     // Source items are consumed regardless of success or failure.
-    for (auto& [index, count] : consume)
-    {
-        auto removed = this->remove(index, count);
-        if (removed != nullptr)
-            co_await removed->destroy();
-    }
-
     auto  success = random(0, 99) < found->percent;
     auto& result  = success ? found->success : found->failed;
-    for (auto& x : result)
+    if (co_await this->exchange(consume, 0, success ? success_items : failed_items, 0, ITEM_DELETE_TYPE::NONE) !=
+        exchange_result::ok)
     {
-        auto  params     = fb::model::dsl::item(x.params);
-        auto  item_table = table::item;
-        auto& model      = item_table[params.id];
-        auto  remain     = params.count;
-        while (remain > 0)
-        {
-            auto count   = std::min<uint16_t>(model.capacity, remain);
-            auto made    = model.make(owner->server, count);
-            std::ignore  = co_await this->add(made);
-            remain      -= count;
-        }
+        owner->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        co_return false;
     }
 
     owner->message(success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED));

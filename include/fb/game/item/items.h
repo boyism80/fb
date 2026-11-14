@@ -134,6 +134,7 @@ public:
 private:
     equipment_ptr                                   put(EQUIPMENT_PARTS parts, equipment_ptr equipment);
     void                                            deactivate(EQUIPMENT_PARTS parts, const equipment_ptr& equipment);
+    bool                                            fits(const std::map<uint8_t, uint16_t>& costs, const std::unordered_map<uint32_t, uint16_t>& rewards) const;
     void                                            notify_equipment_swap(EQUIPMENT_PARTS parts, const equipment_ptr& before, const equipment_ptr& after);
     void                                            write_item_log(std::string_view event, const fb::game::item& item, uint16_t count, uint8_t index, std::optional<ITEM_DELETE_TYPE> attr = std::nullopt) const;
     bool                                            warm(const fb::game::item& item) const;
