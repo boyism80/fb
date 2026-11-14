@@ -4,6 +4,7 @@
 #include <fb/bot/brain/atlas.h>
 #include <fb/bot/game_bot.h>
 #include <fb/lua.h>
+#include <json/json.h>
 #include <fb/model/model.h>
 
 #include <async/task.h>
@@ -154,6 +155,23 @@ public:
         atlas::CARDINAL              side = atlas::CARDINAL::EAST;
     };
 
+    struct direction
+    {
+        std::string                  id;
+        uint16_t                     map  = 0;
+        uint32_t                     done = 1;
+        uint64_t                     made = 0;
+        std::vector<std::string>     members;
+        std::vector<atlas::position> steps;
+    };
+
+    struct presence
+    {
+        uint16_t                       map = 0;
+        atlas::position                at;
+        std::optional<atlas::position> going;
+    };
+
     struct listing
     {
         uint16_t       map = 0;
@@ -267,6 +285,9 @@ private:
     inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>> _occupants;
     inline static std::unordered_map<uint32_t, std::unordered_map<uint16_t, double>>    _foreign_occupants;
     inline static std::unordered_map<std::string, listing>                              _roster;
+    inline static std::unordered_map<std::string, direction>                            _directions;
+    inline static std::unordered_map<std::string, presence>                             _presences;
+    inline static std::function<void(const Json::Value&)>                               _publish;
 
 public:
     explicit brain(bool recording = true);
@@ -339,7 +360,13 @@ public:
     static void occupied_elsewhere(uint32_t source, std::unordered_map<uint16_t, double> maps);
     static void post(const std::string& name, uint16_t map, fb::lua::value profile);
     static std::vector<std::pair<std::string, listing>> roster(const std::string& except);
-    static std::unordered_map<std::string, uint32_t>    reservations(const std::string& except);
+    static void                     direct(const std::string& name, std::optional<direction> moves, bool told = false);
+    static std::optional<direction> directed(const std::string& name);
+    static void                     present(const std::string& name, std::optional<presence> at, bool told = false);
+    static std::vector<std::pair<std::string, presence>> presences(const std::string& except);
+    static void                                          publish(std::function<void(const Json::Value&)> send);
+    static void                                          hear(const Json::Value& message);
+    static std::unordered_map<std::string, uint32_t>     reservations(const std::string& except);
     void measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
     void remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
     std::optional<fb::lua::value>                recall(uint32_t bot, const std::string& key) const;

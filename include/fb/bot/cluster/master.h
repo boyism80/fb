@@ -153,6 +153,7 @@ private:
     void        handle(agent_entry& agent, const Json::Value& message);
     void        drop(agent_entry& agent);
     void        relay_occupied(const agent_entry& agent, const Json::Value& maps);
+    void        relay(const agent_entry& agent, Json::Value message);
     void        broadcast();
     void        save_leases() const;
     void        load_leases();

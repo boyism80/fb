@@ -18,7 +18,7 @@ local function summary(plan)
     end
     local floors = {}
     for _, floor in ipairs(plan.floors) do
-        table.insert(floors, { map = floor.map, targets = floor.targets })
+        table.insert(floors, { map = floor.map, targets = floor.targets, kills = floor.kills, supply = floor.supply })
     end
     return {
         name = plan.name,
@@ -74,10 +74,14 @@ end
 -- Pinned: my last walk failed and I have not moved since, though not for want of a way or for a character in it:
 -- a destination no path reaches leaves me free to walk anywhere else, and a character walks on or, if a crewmate,
 -- steps aside (together.make_way). Counted pinned, a rogue and a warrior that had bumped into each other held
--- their crew at the rally for good (offline profile trio seed 12, 125-300s, run 13:15).
+-- their crew at the rally for good (offline profile trio seed 12, 125-300s, run 13:15). An NPC never moves, so a walk it
+-- stops is a way that is not there, as a wall's: counted pinned, a mage stopped at the NPC by the gate of 평양성 held its
+-- warrior at the door, and the warrior on the only tile to the door held the mage, both for minutes (online WA+MA
+-- 162427, 16:28-16:36).
 function M.pinned(snap)
     local blocked = snap.record.memory.blocked
-    return M.stuck(snap, snap.pace.swing or combat.swing) and blocked.walls ~= true and blocked.detail ~= "CHARACTER"
+    return M.stuck(snap, snap.pace.swing or combat.swing) and blocked.walls ~= true and blocked.detail ~= "CHARACTER" and
+        blocked.detail ~= "NPC"
 end
 
 -- The tile of the crewmate my last walk stopped at, while I have not moved since: my walker found no way round it.
@@ -95,13 +99,20 @@ end
 -- (offline profile trio rooted seed 6, 320-740s, run 22:38, walker held to the judged way). A walk stopped at its
 -- own goal tile was not passing the crewmate on it and keeps no goal: kept, a poet whose place beside its warrior
 -- the warrior had stepped onto sent the warrior off that tile at each of its tries for the stairs of 흉가 97, 26s
--- (offline profile trio seed 4, 820-846s, run 23:51, same walker).
+-- (offline profile trio seed 4, 820-846s, run 23:51, same walker). A walk to a map has no tile of its own, so the
+-- tile its walker was heading for stands for it: without one, a poet standing where 흑해골굴 lets out beside its stairs
+-- never made way for its warrior walking in, and the three stood at the entrance of 국내성 (online WA+PO+MA
+-- 150824, 15:15:46-15:16:49).
 local function going(snap, decision)
     if decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and decision.dest.x ~= nil then
         return { map = decision.dest.map, x = decision.dest.x, y = decision.dest.y }
     end
-    local by   = M.blocker(snap)
-    local dest = by ~= nil and snap.record.memory.blocked.dest or nil
+    local by      = M.blocker(snap)
+    local blocked = snap.record.memory.blocked
+    local dest    = by ~= nil and blocked.dest or nil
+    if dest ~= nil and dest.x == nil then
+        dest = blocked.goal
+    end
     if dest == nil or dest.x == nil or (dest.x == by.x and dest.y == by.y) then
         return nil
     end
@@ -384,6 +395,15 @@ function M.plan(snap, query)
             plan = commit ~= nil and ground.hold(team, query, commit) or nil
             plan = plan or ground.party(team, query, "SUPPLY")
             held[snap.self.name] = { key = key, plan = plan }
+            if plan ~= nil and plan.floors[1] ~= nil and query.demand ~= nil then
+                local names = {}
+                for _, member in ipairs(team) do
+                    table.insert(names, member.self.name)
+                end
+                log("debug", string.format("[brain:plan] bot=%s ground=%s first=%d others=%.3f committed=%s",
+                    snap.self.name, tostring(plan.name), plan.floors[1].map, query.demand(plan.floors[1].map, names),
+                    tostring(commit ~= nil)))
+            end
         end
         if plan ~= nil then
             local copy = {}

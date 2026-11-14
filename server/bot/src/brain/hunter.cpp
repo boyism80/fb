@@ -86,10 +86,12 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
         if (bot->has_item(slot) == false)
             co_return event{"REFUSED", map, here};
 
+        auto drinking = clock::now();
         bot->send(*bot->make<game_reqs::item_active>(slot));
         this->act(bot->id, "potion");
         this->progress(bot->id);
         std::ignore = co_await this->synced(bot);
+        this->measure(bot->id, "use", std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - drinking));
         if (auto ended = check(); ended.has_value())
             co_return ended.value();
         co_return event{"DONE", map, here};

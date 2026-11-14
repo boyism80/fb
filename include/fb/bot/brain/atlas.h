@@ -117,6 +117,14 @@ public:
         std::vector<leap>       options;
     };
 
+    struct mover
+    {
+        position                start;
+        std::optional<position> goal;
+        uint16_t                range    = 0;
+        double                  priority = 0;
+    };
+
     using blocked_func = std::function<bool(const position&)>;
 
 private:
@@ -127,6 +135,8 @@ private:
     mutable std::mutex                                                                _mutex;
     mutable std::mutex                                                                _arrivals_mutex;
     mutable std::mutex                                                                _footings_mutex;
+    mutable std::mutex                                                                _lanes_mutex;
+    mutable std::unordered_map<uint16_t, std::unique_ptr<std::vector<bool>>>          _lanes;
     mutable std::unordered_map<std::string, std::optional<uint32_t>>                  _arrivals;
     mutable std::unordered_map<uint16_t, std::unique_ptr<grid>>                       _grids;
     mutable std::unordered_map<uint16_t, std::unique_ptr<std::vector<grid::footing>>> _footings;
@@ -143,6 +153,7 @@ private:
     static uint64_t place(uint16_t map, uint32_t region);
 
     const std::vector<grid::footing>& footings(uint16_t map) const;
+    const std::vector<bool>&          lanes(uint16_t map) const;
 
 public:
     static const atlas& get();
@@ -155,6 +166,7 @@ public:
     const grid*                                             find_grid(uint16_t map) const;
     const std::vector<warp>&                                warps(uint16_t map) const;
     bool                                                    warp_at(uint16_t map, const position& at) const;
+    bool                                                    lane(uint16_t map, const position& at) const;
     const std::vector<spawn>&                               spawns(uint16_t map) const;
     const std::unordered_map<uint16_t, std::vector<spawn>>& spawns() const;
     std::optional<uint32_t>                                 mob(uint16_t map, uint16_t look, uint8_t color) const;
@@ -162,8 +174,10 @@ public:
     std::vector<dweller>                                    dwellers(const std::unordered_set<std::string>& names) const;
     std::optional<plan>                                     route(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
     std::unordered_set<uint16_t>                            reach(uint16_t from, const position& at, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned) const;
+    std::unordered_map<uint16_t, uint32_t>                  distances(uint16_t from, const position& at, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned, const std::vector<teleport>& teleports) const;
     leap_options                                            leaps(uint16_t from, const position& at, const std::unordered_set<uint16_t>& targets, const std::optional<position>& goal, uint8_t level, const std::unordered_set<uint64_t>& closed, const std::unordered_set<uint32_t>& perilous, const std::unordered_set<uint16_t>& shunned, const std::vector<teleport>& teleports) const;
     std::optional<std::vector<DIRECTION>>                   path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
+    std::optional<std::vector<std::vector<position>>>       untangle(uint16_t map, const std::vector<mover>& movers, const std::unordered_set<uint32_t>& blocked, uint32_t limit) const;
     // clang-format on
 };
 

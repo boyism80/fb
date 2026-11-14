@@ -59,11 +59,32 @@ function M.bind(mind, snap, world)
         detour = function(map, from, to, avoided)
             return terrain.detour(mind, map, from, to, avoided)
         end,
+        walled = function(map, x, y, goals, walls)
+            return mind:steps(map, x, y, goals, walls)
+        end,
         floor = function(map, x, y)
             return terrain.floor(mind, map, x, y)
         end,
         warp = function(map, x, y)
             return mind:warp_at(map, x, y)
+        end,
+        lane = function(map, x, y)
+            return mind:lane(map, x, y)
+        end,
+        untangle = function(map, movers, blocked, limit)
+            return mind:untangle(nil, map, movers, blocked, limit)
+        end,
+        direct = function(name, plan)
+            return mind:direct(name, plan)
+        end,
+        directed = function(name)
+            return mind:directed(name)
+        end,
+        present = function(name, at)
+            return mind:present(name, at)
+        end,
+        presences = function(except)
+            return mind:presences(except)
         end,
         region = function(map, x, y)
             return mind:region(map, x, y)
@@ -76,6 +97,9 @@ function M.bind(mind, snap, world)
         end,
         leaps = function(destination, detour, from)
             return mind:leaps(nil, destination, detour, from)
+        end,
+        distances = function(detour, from)
+            return mind:distances(nil, detour, from or origin(snap))
         end,
         route = function(maps, perilous, shunned)
             return mind:route(nil, { maps = maps }, { perilous = perilous or {}, shunned = shunned or {} },

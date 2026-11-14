@@ -1667,7 +1667,16 @@ function Actor:perform(action)
     if action.kind == ACTION.ATTACK then
         return self:attack(action)
     elseif action.kind == ACTION.MOVE then
-        return self:travel(action.dest)
+        local arrived, reason = self:travel(action.dest)
+        if arrived == false and action.dest.mob ~= nil and (reason == "BLOCKED" or reason == "NO_ROUTE") then
+            local visible = {}
+            for _, mob in ipairs(self:visible()) do
+                visible[tostring(mob.oid)] = mob
+            end
+            self.memory.unreachable = battle.unreached(self.memory.unreachable, action.dest.mob, self.active.map.id,
+                self.clock, visible)
+        end
+        return arrived, reason
     elseif action.kind == ACTION.USE then
         return self:consume(action.item, action.count), "NO_ITEM"
     elseif action.kind == ACTION.CAST then

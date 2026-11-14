@@ -112,7 +112,7 @@ return {
         ["자천무주'첨"] = { role = "AREA", type = "NORMAL", mp = 330, damage = 720 },
         ["저주"] = { role = "DEBUFF", type = "TARGET", mp = 30, buff_time = 185, stats = { buff_phydef = 30 }, paralysis = false, blind = false, resists = { "CURSE" } },
         ["절망"] = { role = "DEBUFF", type = "TARGET", mp = 80, buff_time = 10, paralysis = false, blind = true, resists = { "DESPAIR", "BLIND" } },
-        ["중독"] = { role = "DEBUFF", type = "TARGET", mp = 30, buff_time = 30, dot = 0.05, paralysis = false, blind = false, resists = { "POISON" } },
+        ["중독"] = { role = "DEBUFF", type = "TARGET", mp = 30, buff_time = 30, dot = 0.05, dot_floor = 100, paralysis = false, blind = false, resists = { "POISON" } },
         ["지진"] = { role = "AREA", type = "TARGET", mp = 580, damage = 1500 },
         ["진뢰격참주"] = { role = "ATTACK", type = "TARGET", mp = 330, damage = 1950 },
         ["진뢰격참주'첨"] = { role = "AREA", type = "NORMAL", mp = 400, damage = 1930 },

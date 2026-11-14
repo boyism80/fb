@@ -7,6 +7,7 @@
 #include <fb/encoding.h>
 #include <fb/game/inventory.h>
 #include <fb/lua.h>
+#include <algorithm>
 #include <json/json.h>
 
 #include <algorithm>
@@ -55,7 +56,14 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"observe",  builtin::brain::builtin_observe},
     {"route",    builtin::brain::builtin_route},
     {"reach",    builtin::brain::builtin_reach},
+    {"distances", builtin::brain::builtin_distances},
     {"warp_at",  builtin::brain::builtin_warp_at},
+    {"lane",     builtin::brain::builtin_lane},
+    {"untangle", builtin::brain::builtin_untangle},
+    {"direct",   builtin::brain::builtin_direct},
+    {"directed", builtin::brain::builtin_directed},
+    {"present",  builtin::brain::builtin_present},
+    {"presences", builtin::brain::builtin_presences},
     {"region",   builtin::brain::builtin_region},
     {"walk",     builtin::brain::builtin_walk},
     {"leaps",    builtin::brain::builtin_leaps},
@@ -1087,6 +1095,83 @@ int builtin::brain::builtin_reach(lua_State* L)
     return builder.run();
 }
 
+int builtin::brain::builtin_distances(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot    = lua->touserdata<fb::bot::game_bot>(2);
+    auto detour = builtin::brain::read_detour(L, 3);
+    auto origin = std::optional<std::pair<uint16_t, atlas::position>>{};
+    auto level  = std::optional<uint8_t>{};
+    if (lua_istable(L, 4))
+    {
+        lua_getfield(L, 4, "map");
+        lua_getfield(L, 4, "x");
+        lua_getfield(L, 4, "y");
+        origin = std::pair{
+            static_cast<uint16_t>(lua_tointeger(L, -3)),
+            atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)))};
+        lua_pop(L, 3);
+        if (lua_getfield(L, 4, "level"); lua_isinteger(L, -1))
+            level = static_cast<uint8_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+    }
+    if (bot == nullptr && (origin.has_value() == false || level.has_value() == false))
+        return 0;
+
+    auto teleports = std::vector<atlas::teleport>{};
+    for (auto& jump : detour.jumps)
+    {
+        teleports.push_back(jump.teleport);
+    }
+
+    auto result = std::make_shared<std::unordered_map<uint16_t, uint32_t>>();
+    auto push   = [lua, result]() -> int {
+        lua->new_table();
+        for (auto& [map, cost] : *result)
+        {
+            lua->pushinteger(map);
+            lua->pushinteger(cost);
+            lua->settable(-3);
+        }
+        return 1;
+    };
+    if (bot == nullptr)
+    {
+        *result = atlas::get().distances(origin->first,
+                                         origin->second,
+                                         level.value(),
+                                         detour.closed,
+                                         detour.perilous,
+                                         detour.shunned,
+                                         teleports);
+        return push();
+    }
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, bot, detour, origin, level, teleports, result]() -> async::task<void> {
+        auto map  = origin.has_value() ? origin->first : bot->map();
+        auto here = origin.has_value() ? origin->second : atlas::position(bot->position());
+        auto rank = level.has_value() ? level.value() : bot->level();
+        *result   = co_await brain->offload<std::unordered_map<uint16_t, uint32_t>>(
+            bot,
+            [map, here, rank, detour, teleports]() {
+                return atlas::get()
+                    .distances(map, here, rank, detour.closed, detour.perilous, detour.shunned, teleports);
+            });
+    };
+    builder.resume = [push]() -> async::task<int> {
+        co_return push();
+    };
+    return builder.run();
+}
+
 int builtin::brain::builtin_leaps(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1773,6 +1858,18 @@ int builtin::brain::builtin_warp_at(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_lane(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = static_cast<uint16_t>(lua_tointeger(L, 2));
+    auto at  = atlas::position(static_cast<uint16_t>(lua_tointeger(L, 3)), static_cast<uint16_t>(lua_tointeger(L, 4)));
+    lua_pushboolean(L, atlas::get().lane(map, at));
+    return 1;
+}
+
 int builtin::brain::builtin_region(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -2156,6 +2253,258 @@ int builtin::brain::builtin_roster(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_untangle(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr || lua_istable(L, 4) == false)
+        return 0;
+
+    auto map    = static_cast<uint16_t>(lua_tointeger(L, 3));
+    auto limit  = static_cast<uint32_t>(lua_isinteger(L, 6) ? lua_tointeger(L, 6) : 0);
+    auto movers = std::vector<atlas::mover>{};
+    auto count  = lua_rawlen(L, 4);
+    for (auto index = lua_Integer{1}; index <= static_cast<lua_Integer>(count); index++)
+    {
+        lua_rawgeti(L, 4, index);
+        auto mover = atlas::mover{};
+        lua_getfield(L, -1, "x");
+        lua_getfield(L, -2, "y");
+        mover.start =
+            atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)));
+        lua_pop(L, 2);
+        lua_getfield(L, -1, "gx");
+        lua_getfield(L, -2, "gy");
+        if (lua_isinteger(L, -2) && lua_isinteger(L, -1))
+            mover.goal = atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)),
+                                         static_cast<uint16_t>(lua_tointeger(L, -1)));
+        lua_pop(L, 2);
+        lua_getfield(L, -1, "range");
+        mover.range = static_cast<uint16_t>(lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0);
+        lua_pop(L, 1);
+        lua_getfield(L, -1, "priority");
+        mover.priority = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0;
+        lua_pop(L, 2);
+        movers.push_back(mover);
+    }
+
+    auto blocked = std::unordered_set<uint32_t>{};
+    if (lua_istable(L, 5))
+    {
+        auto size = lua_rawlen(L, 5);
+        for (auto index = lua_Integer{1}; index <= static_cast<lua_Integer>(size); index++)
+        {
+            lua_rawgeti(L, 5, index);
+            lua_getfield(L, -1, "x");
+            lua_getfield(L, -2, "y");
+            blocked.insert((static_cast<uint32_t>(lua_tointeger(L, -1)) << 16) |
+                           static_cast<uint32_t>(lua_tointeger(L, -2)));
+            lua_pop(L, 3);
+        }
+    }
+
+    auto paths = atlas::get().untangle(map, movers, blocked, limit);
+    if (paths.has_value() == false)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua->new_table();
+    for (auto index = size_t{0}; index < paths->size(); index++)
+    {
+        lua->new_table();
+        auto& path = paths->at(index);
+        for (auto step = size_t{0}; step < path.size(); step++)
+        {
+            lua->new_table();
+            lua->pushstring("x");
+            lua->pushinteger(path[step].x);
+            lua->settable(-3);
+            lua->pushstring("y");
+            lua->pushinteger(path[step].y);
+            lua->settable(-3);
+            lua_rawseti(L, -2, static_cast<lua_Integer>(step + 1));
+        }
+        lua_rawseti(L, -2, static_cast<lua_Integer>(index + 1));
+    }
+    return 1;
+}
+
+int builtin::brain::builtin_direct(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto name = lua->tostring(2);
+    if (lua_istable(L, 3) == false)
+    {
+        fb::bot::brain::direct(name, std::nullopt);
+        return 0;
+    }
+
+    auto moves = fb::bot::brain::direction{};
+    lua_getfield(L, 3, "id");
+    moves.id = lua_isstring(L, -1) ? lua->tostring(-1) : std::string{};
+    lua_pop(L, 1);
+    lua_getfield(L, 3, "map");
+    moves.map = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+    lua_getfield(L, 3, "done");
+    moves.done = static_cast<uint32_t>(lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 1);
+    lua_pop(L, 1);
+    lua_getfield(L, 3, "made");
+    moves.made = static_cast<uint64_t>(lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0);
+    lua_pop(L, 1);
+    lua_getfield(L, 3, "members");
+    if (lua_istable(L, -1))
+    {
+        auto count = lua_rawlen(L, -1);
+        for (auto index = lua_Integer{1}; index <= static_cast<lua_Integer>(count); index++)
+        {
+            lua_rawgeti(L, -1, index);
+            moves.members.push_back(lua->tostring(-1));
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+    lua_getfield(L, 3, "steps");
+    if (lua_istable(L, -1))
+    {
+        auto count = lua_rawlen(L, -1);
+        for (auto index = lua_Integer{1}; index <= static_cast<lua_Integer>(count); index++)
+        {
+            lua_rawgeti(L, -1, index);
+            lua_getfield(L, -1, "x");
+            lua_getfield(L, -2, "y");
+            moves.steps.emplace_back(static_cast<uint16_t>(lua_tointeger(L, -2)),
+                                     static_cast<uint16_t>(lua_tointeger(L, -1)));
+            lua_pop(L, 3);
+        }
+    }
+    lua_pop(L, 1);
+    fb::bot::brain::direct(name, std::move(moves));
+    return 0;
+}
+
+int builtin::brain::builtin_directed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto found = fb::bot::brain::directed(lua->tostring(2));
+    if (found.has_value() == false)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua->new_table();
+    lua->pushstring("id");
+    lua->pushstring(found->id);
+    lua->settable(-3);
+    lua->pushstring("map");
+    lua->pushinteger(found->map);
+    lua->settable(-3);
+    lua->pushstring("done");
+    lua->pushinteger(found->done);
+    lua->settable(-3);
+    lua->pushstring("made");
+    lua->pushinteger(static_cast<lua_Integer>(found->made));
+    lua->settable(-3);
+    lua->pushstring("members");
+    lua->new_table();
+    for (auto index = size_t{0}; index < found->members.size(); index++)
+    {
+        lua->pushstring(found->members[index]);
+        lua_rawseti(L, -2, static_cast<lua_Integer>(index + 1));
+    }
+    lua->settable(-3);
+    lua->pushstring("steps");
+    lua->new_table();
+    for (auto index = size_t{0}; index < found->steps.size(); index++)
+    {
+        lua->new_table();
+        lua->pushstring("x");
+        lua->pushinteger(found->steps[index].x);
+        lua->settable(-3);
+        lua->pushstring("y");
+        lua->pushinteger(found->steps[index].y);
+        lua->settable(-3);
+        lua_rawseti(L, -2, static_cast<lua_Integer>(index + 1));
+    }
+    lua->settable(-3);
+    return 1;
+}
+
+int builtin::brain::builtin_present(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto name = lua->tostring(2);
+    if (lua_istable(L, 3) == false)
+    {
+        fb::bot::brain::present(name, std::nullopt);
+        return 0;
+    }
+
+    auto at = fb::bot::brain::presence{};
+    lua_getfield(L, 3, "map");
+    lua_getfield(L, 3, "x");
+    lua_getfield(L, 3, "y");
+    at.map = static_cast<uint16_t>(lua_tointeger(L, -3));
+    at.at  = atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)));
+    lua_pop(L, 3);
+    lua_getfield(L, 3, "gx");
+    lua_getfield(L, 3, "gy");
+    if (lua_isinteger(L, -2) && lua_isinteger(L, -1))
+        at.going =
+            atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)));
+    lua_pop(L, 2);
+    fb::bot::brain::present(name, at);
+    return 0;
+}
+
+int builtin::brain::builtin_presences(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    lua->new_table();
+    auto index = lua_Integer{1};
+    for (auto& [name, entry] : fb::bot::brain::presences(lua_isstring(L, 2) ? lua->tostring(2) : std::string{}))
+    {
+        lua->new_table();
+        lua->pushstring("name");
+        lua->pushstring(name);
+        lua->settable(-3);
+        lua->pushstring("map");
+        lua->pushinteger(entry.map);
+        lua->settable(-3);
+        lua->pushstring("x");
+        lua->pushinteger(entry.at.x);
+        lua->settable(-3);
+        lua->pushstring("y");
+        lua->pushinteger(entry.at.y);
+        lua->settable(-3);
+        if (entry.going.has_value())
+        {
+            lua->pushstring("gx");
+            lua->pushinteger(entry.going->x);
+            lua->settable(-3);
+            lua->pushstring("gy");
+            lua->pushinteger(entry.going->y);
+            lua->settable(-3);
+        }
+        lua_rawseti(L, -2, index++);
+    }
+    return 1;
+}
+
 int builtin::brain::builtin_demand(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -2530,7 +2879,8 @@ int builtin::brain::builtin_steps(lua_State* L)
     if (lua == nullptr || lua_isinteger(L, 2) == false || lua_istable(L, 5) == false)
         return 0;
 
-    auto grid = atlas::get().find_grid(static_cast<uint16_t>(lua_tointeger(L, 2)));
+    auto map  = static_cast<uint16_t>(lua_tointeger(L, 2));
+    auto grid = atlas::get().find_grid(map);
     if (grid == nullptr)
         return 0;
 
@@ -2561,7 +2911,14 @@ int builtin::brain::builtin_steps(lua_State* L)
     auto size    = static_cast<size_t>(grid->width) * grid->height;
     auto steps   = std::vector<int32_t>(size, -1);
     auto avoided = std::vector<bool>(size, false);
+    auto warped  = std::vector<bool>(size, false);
     auto queue   = std::vector<atlas::position>{};
+    for (const auto& warp : atlas::get().warps(map))
+    {
+        if (warp.before.x < grid->width && warp.before.y < grid->height)
+            warped[static_cast<size_t>(warp.before.y) * grid->width + warp.before.x] = true;
+    }
+
     if (lua_istable(L, 6))
     {
         for (auto i = lua_Integer{1}; lua_rawgeti(L, 6, i) == LUA_TTABLE; i++)
@@ -2612,10 +2969,18 @@ int builtin::brain::builtin_steps(lua_State* L)
             auto index = static_cast<size_t>(next.y) * grid->width + next.x;
             if (steps[index] >= 0 || avoided[index])
                 continue;
+
+            if (warped[index] && std::none_of(goals.begin(), goals.end(), [&next](const goal& entry) {
+                    return entry.x == next.x && entry.y == next.y;
+                }))
+                continue;
+
             steps[index] = distance + 1;
             if (traced)
                 parents[index] = static_cast<int64_t>(at.y) * grid->width + at.x;
-            queue.push_back(next);
+            if (warped[index] == false)
+                queue.push_back(next);
+
             settle(next, distance + 1);
         }
     }

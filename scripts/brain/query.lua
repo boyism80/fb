@@ -39,6 +39,9 @@ function M.bind(brain, bot, snap)
         detour = function(map, from, to, avoided)
             return terrain.detour(brain, map, from, to, avoided)
         end,
+        walled = function(map, x, y, goals, walls)
+            return brain:steps(map, x, y, goals, walls)
+        end,
         floor = function(map, x, y)
             return terrain.floor(brain, map, x, y)
         end,
@@ -47,6 +50,24 @@ function M.bind(brain, bot, snap)
         end,
         warp = function(map, x, y)
             return brain:warp_at(map, x, y)
+        end,
+        lane = function(map, x, y)
+            return brain:lane(map, x, y)
+        end,
+        untangle = function(map, movers, blocked, limit)
+            return brain:untangle(bot, map, movers, blocked, limit)
+        end,
+        direct = function(name, plan)
+            return brain:direct(name, plan)
+        end,
+        directed = function(name)
+            return brain:directed(name)
+        end,
+        present = function(name, at)
+            return brain:present(name, at)
+        end,
+        presences = function(except)
+            return brain:presences(except)
         end,
         region = function(map, x, y)
             return brain:region(map, x, y)
@@ -57,6 +78,9 @@ function M.bind(brain, bot, snap)
         end,
         leaps = function(destination, detour, origin)
             return profile.wait(bot:name(), brain.leaps, brain, bot, destination, detour, origin)
+        end,
+        distances = function(detour, origin)
+            return profile.wait(bot:name(), brain.distances, brain, bot, detour, origin)
         end,
         route = function(maps, perilous, shunned)
             return profile.wait(bot:name(), brain.route, brain, bot, { maps = maps },

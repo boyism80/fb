@@ -228,7 +228,7 @@ void agent::handle(const Json::Value& message)
         }
         this->spawn(message, arguments);
     }
-    else if (type == "scale" || type == "sync" || type == "occupied")
+    else if (type == "scale" || type == "sync" || type == "occupied" || type == "traffic")
     {
         this->write(message);
     }

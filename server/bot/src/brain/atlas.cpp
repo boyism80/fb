@@ -6,9 +6,11 @@
 #include <algorithm>
 #include <array>
 #include <cstdlib>
+#include <deque>
 #include <format>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <mutex>
 #include <queue>
 #include <tuple>
@@ -521,6 +523,119 @@ const std::vector<atlas::grid::footing>& atlas::footings(uint16_t map) const
     return *this->_footings.try_emplace(map, std::move(built)).first->second;
 }
 
+const std::vector<bool>& atlas::lanes(uint16_t map) const
+{
+    {
+        auto lock  = std::lock_guard(this->_lanes_mutex);
+        auto found = this->_lanes.find(map);
+        if (found != this->_lanes.end())
+            return *found->second;
+    }
+
+    auto built = std::make_unique<std::vector<bool>>();
+    auto grid  = this->find_grid(map);
+    if (grid != nullptr)
+    {
+        auto width = static_cast<uint32_t>(grid->width);
+        auto size  = width * grid->height;
+        auto sides = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+        auto backs = std::array{DIRECTION::RIGHT, DIRECTION::BOTTOM, DIRECTION::LEFT, DIRECTION::TOP};
+        auto spot  = [width](uint32_t index) {
+            return position(static_cast<uint16_t>(index % width), static_cast<uint16_t>(index / width));
+        };
+        auto node = [this, grid, map](const position& at) {
+            return grid->movable(at) && this->warp_at(map, at) == false;
+        };
+        auto linked = [grid, &sides, &backs](const position& from, const position& to, size_t side) {
+            return grid->passable(from, sides[side]) || grid->passable(to, backs[side]);
+        };
+
+        built->assign(size, false);
+        auto order  = std::vector<int32_t>(size, -1);
+        auto low    = std::vector<int32_t>(size, 0);
+        auto parent = std::vector<int32_t>(size, -1);
+        auto next   = std::vector<uint8_t>(size, 0);
+        auto count  = int32_t{0};
+        auto stack  = std::vector<uint32_t>{};
+        for (auto root = uint32_t{0}; root < size; root++)
+        {
+            if (order[root] != -1 || node(spot(root)) == false)
+                continue;
+
+            auto children = 0;
+            order[root]   = count;
+            low[root]     = count;
+            count++;
+            stack.push_back(root);
+            while (stack.empty() == false)
+            {
+                auto current = stack.back();
+                if (next[current] < sides.size())
+                {
+                    auto side = next[current]++;
+                    auto from = spot(current);
+                    auto to   = atlas::forward(from, sides[side]);
+                    if (to.x >= grid->width || to.y >= grid->height || node(to) == false ||
+                        linked(from, to, side) == false)
+                        continue;
+
+                    auto index = static_cast<uint32_t>(to.y) * width + to.x;
+                    if (order[index] == -1)
+                    {
+                        parent[index] = static_cast<int32_t>(current);
+                        order[index]  = count;
+                        low[index]    = count;
+                        count++;
+                        stack.push_back(index);
+                        if (current == root)
+                            children++;
+                    }
+                    else if (static_cast<int32_t>(index) != parent[current])
+                    {
+                        low[current] = std::min(low[current], order[index]);
+                    }
+                }
+                else
+                {
+                    stack.pop_back();
+                    auto above = parent[current];
+                    if (above != -1)
+                    {
+                        low[above] = std::min(low[above], low[current]);
+                        if (above != static_cast<int32_t>(root) && low[current] >= order[above])
+                            (*built)[above] = true;
+                    }
+                }
+            }
+            if (children > 1)
+                (*built)[root] = true;
+        }
+
+        for (auto& hop : this->warps(map))
+        {
+            for (auto side = size_t{0}; side < sides.size(); side++)
+            {
+                auto beside = atlas::forward(hop.before, sides[side]);
+                if (beside.x < grid->width && beside.y < grid->height && node(beside))
+                    (*built)[static_cast<uint32_t>(beside.y) * width + beside.x] = true;
+            }
+        }
+    }
+
+    auto lock = std::lock_guard(this->_lanes_mutex);
+    return *this->_lanes.try_emplace(map, std::move(built)).first->second;
+}
+
+bool atlas::lane(uint16_t map, const position& at) const
+{
+    auto& found = this->lanes(map);
+    auto  grid  = this->find_grid(map);
+    if (grid == nullptr || at.x >= grid->width || at.y >= grid->height)
+        return false;
+
+    return found[static_cast<uint32_t>(at.y) * grid->width + at.x];
+}
+
 std::optional<atlas::plan> atlas::route(uint16_t                            from,
                                         const position&                     at,
                                         const std::unordered_set<uint16_t>& targets,
@@ -685,6 +800,136 @@ std::unordered_set<uint16_t> atlas::reach(uint16_t                            fr
             {
                 if (seen.insert(atlas::place(hop.dest, after.regions[i])).second)
                     open.push_back({hop.dest, after.regions[i]});
+            }
+        }
+    }
+    return result;
+}
+
+std::unordered_map<uint16_t, uint32_t> atlas::distances(uint16_t                            from,
+                                                        const position&                     at,
+                                                        uint8_t                             level,
+                                                        const std::unordered_set<uint64_t>& closed,
+                                                        const std::unordered_set<uint32_t>& perilous,
+                                                        const std::unordered_set<uint16_t>& shunned,
+                                                        const std::vector<teleport>&        teleports) const
+{
+    auto fatal  = std::unordered_map<uint16_t, bool>{};
+    auto deadly = [this, &perilous, &fatal](uint16_t map) {
+        auto known = fatal.find(map);
+        if (known != fatal.end())
+            return known->second;
+
+        auto& spawns = this->spawns(map);
+        auto  found  = std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
+            return perilous.contains(spawn.mob);
+        });
+        fatal.emplace(map, found);
+        return found;
+    };
+
+    struct visit
+    {
+        uint32_t cost;
+        uint16_t map;
+        uint32_t region;
+        position at;
+    };
+
+    using node  = std::pair<uint32_t, uint64_t>;
+    auto visits = std::unordered_map<uint64_t, visit>{};
+    auto open   = std::priority_queue<node, std::vector<node>, std::greater<node>>{};
+    auto start  = [this, &visits, &open](uint16_t map, const position& spot, uint32_t cost) {
+        auto ground = this->find_grid(map);
+        auto begin  = ground != nullptr ? ground->standing(spot) : grid::footing{{grid::ANYWHERE}, 1};
+        for (auto i = uint8_t{0}; i < begin.count; i++)
+        {
+            auto key   = atlas::place(map, begin.regions[i]);
+            auto known = visits.find(key);
+            if (known != visits.end() && known->second.cost <= cost)
+                continue;
+
+            visits.insert_or_assign(key, visit{cost, map, begin.regions[i], spot});
+            open.push({cost, key});
+        }
+    };
+
+    start(from, at, 0);
+    auto maps  = fb::model::table::map;
+    auto model = maps->find(from);
+    auto root  = model != nullptr ? maps->find(model->root) : nullptr;
+    for (auto& teleport : teleports)
+    {
+        if (teleport.via == VIA::CARDINAL && root != nullptr)
+        {
+            for (auto& [side, dsl] : root->cardinal)
+            {
+                if (dsl.header != DSL::map)
+                    continue;
+
+                auto params = fb::model::dsl::map(dsl.params);
+                auto right  = std::max<uint16_t>(params.right, params.x);
+                auto bottom = std::max<uint16_t>(params.bottom, params.y);
+                start(static_cast<uint16_t>(params.id),
+                      position((params.x + right) / 2, (params.y + bottom) / 2),
+                      teleport.cost);
+            }
+        }
+        else if (teleport.via == VIA::REVIVE && root != nullptr)
+        {
+            for (auto& [side, map] : root->revive)
+            {
+                start(static_cast<uint16_t>(map), atlas::landing(static_cast<uint16_t>(map)), teleport.cost);
+            }
+        }
+        else if (teleport.via != VIA::CARDINAL && teleport.via != VIA::REVIVE)
+        {
+            for (auto dest : teleport.to)
+            {
+                start(dest, atlas::landing(dest), teleport.cost);
+            }
+        }
+    }
+
+    auto result = std::unordered_map<uint16_t, uint32_t>{};
+    while (open.empty() == false)
+    {
+        auto [cost, current] = open.top();
+        open.pop();
+
+        auto here = visits.at(current);
+        if (cost > here.cost)
+            continue;
+
+        if (shunned.contains(here.map) == false)
+            result.try_emplace(here.map, cost);
+
+        if (here.map != from && deadly(here.map))
+            continue;
+
+        auto  around = this->find_grid(here.map);
+        auto& hops   = this->warps(here.map);
+        auto& lands  = this->footings(here.map);
+        for (auto index = size_t{0}; index < hops.size(); index++)
+        {
+            auto& hop   = hops[index];
+            auto& after = lands[index];
+            if (after.count == 0 || level < hop.min_level || level > hop.max_level ||
+                closed.contains(atlas::gate(here.map, hop.before)) || shunned.contains(hop.dest) ||
+                (around != nullptr && around->enters(here.region, hop.before) == false))
+                continue;
+
+            auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
+            auto next  = cost + steps + 1;
+            for (auto i = uint8_t{0}; i < after.count; i++)
+            {
+                auto spot  = atlas::place(hop.dest, after.regions[i]);
+                auto known = visits.find(spot);
+                if (known != visits.end() && known->second.cost <= next)
+                    continue;
+
+                visits.insert_or_assign(spot, visit{next, hop.dest, after.regions[i], hop.after});
+                open.push({next, spot});
             }
         }
     }
@@ -937,4 +1182,207 @@ atlas::path(uint16_t map, const position& from, const position& to, uint16_t ran
     }
     std::reverse(directions.begin(), directions.end());
     return directions;
+}
+
+std::optional<std::vector<std::vector<atlas::position>>> atlas::untangle(uint16_t                            map,
+                                                                         const std::vector<mover>&           movers,
+                                                                         const std::unordered_set<uint32_t>& blocked,
+                                                                         uint32_t limit) const
+{
+    auto grid = this->find_grid(map);
+    if (grid == nullptr || movers.empty())
+        return std::nullopt;
+
+    auto width = static_cast<uint32_t>(grid->width);
+    auto sides = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+    auto backs = std::array{DIRECTION::RIGHT, DIRECTION::BOTTOM, DIRECTION::LEFT, DIRECTION::TOP};
+    auto far   = std::numeric_limits<uint32_t>::max();
+    auto key   = [](const position& at) {
+        return (static_cast<uint32_t>(at.y) << 16) | at.x;
+    };
+    auto inside = [grid](const position& at) {
+        return at.x < grid->width && at.y < grid->height;
+    };
+    auto open = [&](const position& at, size_t index) {
+        if (inside(at) == false || grid->movable(at) == false || blocked.contains(key(at)))
+            return false;
+
+        if (this->warp_at(map, at))
+            return movers[index].goal.has_value() && movers[index].goal.value() == at;
+
+        return true;
+    };
+
+    auto settled = std::unordered_set<uint32_t>{};
+    for (const auto& mover : movers)
+    {
+        if (mover.goal.has_value() && mover.range == 0 && this->warp_at(map, mover.goal.value()) == false)
+            settled.insert(key(mover.goal.value()));
+    }
+
+    auto distances = std::vector<std::vector<uint32_t>>(movers.size());
+    auto fill      = [&](size_t index, bool aside) {
+        auto& goal  = movers[index].goal.value();
+        auto& found = distances[index];
+        found.assign(width * grid->height, far);
+        found[goal.y * width + goal.x] = 0;
+        auto queue                     = std::deque<position>{goal};
+        while (queue.empty() == false)
+        {
+            auto at   = queue.front();
+            auto cost = found[at.y * width + at.x];
+            queue.pop_front();
+            for (auto side = size_t{0}; side < sides.size(); side++)
+            {
+                auto next = atlas::forward(at, sides[side]);
+                if (inside(next) == false || grid->movable(next) == false || blocked.contains(key(next)) ||
+                    this->warp_at(map, next) || found[next.y * width + next.x] != far ||
+                    (grid->passable(next, backs[side]) == false && grid->passable(at, sides[side]) == false))
+                    continue;
+
+                auto held = aside && settled.contains(key(next));
+                if (held && next != movers[index].start)
+                    continue;
+
+                found[next.y * width + next.x] = cost + 1;
+                if (held == false)
+                    queue.push_back(next);
+            }
+        }
+    };
+    for (auto index = size_t{0}; index < movers.size(); index++)
+    {
+        auto& goal = movers[index].goal;
+        if (goal.has_value() == false || inside(goal.value()) == false)
+            continue;
+
+        fill(index, true);
+        auto& start = movers[index].start;
+        if (inside(start) && distances[index][start.y * width + start.x] == far)
+            fill(index, false);
+    }
+
+    auto count    = movers.size();
+    auto current  = std::vector<position>{};
+    auto paths    = std::vector<std::vector<position>>(count);
+    auto gone     = std::vector<bool>(count, false);
+    auto distance = [&](size_t index, const position& at) {
+        auto& found = distances[index];
+        return found.empty() || inside(at) == false ? far : found[at.y * width + at.x];
+    };
+    auto arrived = [&](size_t index) {
+        return movers[index].goal.has_value() == false || gone[index] ||
+               distance(index, current[index]) <= movers[index].range;
+    };
+    for (auto index = size_t{0}; index < count; index++)
+    {
+        current.push_back(movers[index].start);
+        paths[index].push_back(movers[index].start);
+    }
+
+    for (auto step = uint32_t{0}; step < limit; step++)
+    {
+        auto finished = true;
+        for (auto index = size_t{0}; index < count; index++)
+        {
+            finished = finished && arrived(index);
+        }
+        if (finished)
+            return paths;
+
+        auto next     = std::vector<std::optional<position>>(count);
+        auto reserved = std::unordered_map<uint32_t, size_t>{};
+        auto standing = std::unordered_map<uint32_t, size_t>{};
+        auto order    = std::vector<size_t>{};
+        for (auto index = size_t{0}; index < count; index++)
+        {
+            if (gone[index])
+                continue;
+
+            standing.insert_or_assign(key(current[index]), index);
+            order.push_back(index);
+        }
+        auto weight = [&](size_t index) {
+            return movers[index].priority + (arrived(index) ? 0.0 : static_cast<double>(step) + 1.0);
+        };
+        std::stable_sort(order.begin(), order.end(), [&](size_t left, size_t right) {
+            return weight(left) > weight(right);
+        });
+
+        auto push = std::function<bool(size_t, std::optional<position>)>{};
+        push      = [&](size_t index, std::optional<position> forbid) -> bool {
+            auto here       = current[index];
+            auto candidates = std::vector<position>{here};
+            for (auto side = size_t{0}; side < sides.size(); side++)
+            {
+                auto beside = atlas::forward(here, sides[side]);
+                if (open(beside, index) && grid->passable(here, sides[side]))
+                    candidates.push_back(beside);
+            }
+
+            auto heading = arrived(index) == false;
+            auto gap     = [&forbid](const position& at) {
+                return forbid.has_value() ? std::abs(at.x - forbid->x) + std::abs(at.y - forbid->y) : 0;
+            };
+            auto taken = [&](const position& at) {
+                auto found = standing.find(key(at));
+                return found != standing.end() && found->second != index;
+            };
+            std::stable_sort(candidates.begin(), candidates.end(), [&](const position& left, const position& right) {
+                if (heading && distance(index, left) != distance(index, right))
+                    return distance(index, left) < distance(index, right);
+
+                if (heading)
+                    return taken(left) == false && taken(right);
+
+                if ((left == here) != (right == here))
+                    return left == here;
+
+                if (this->lane(map, left) != this->lane(map, right))
+                    return this->lane(map, right);
+
+                return gap(left) > gap(right);
+            });
+
+            for (auto& candidate : candidates)
+            {
+                if ((forbid.has_value() && candidate == forbid.value()) || reserved.contains(key(candidate)))
+                    continue;
+
+                reserved.insert_or_assign(key(candidate), index);
+                next[index] = candidate;
+                auto other  = standing.find(key(candidate));
+                if (other != standing.end() && other->second != index && next[other->second].has_value() == false &&
+                    push(other->second, here) == false)
+                {
+                    auto held = reserved.find(key(candidate));
+                    if (held != reserved.end() && held->second == index)
+                        reserved.erase(held);
+
+                    next[index].reset();
+                    continue;
+                }
+                return true;
+            }
+
+            next[index] = here;
+            reserved.insert_or_assign(key(here), index);
+            return false;
+        };
+
+        for (auto index : order)
+        {
+            if (next[index].has_value() == false)
+                push(index, std::nullopt);
+        }
+
+        for (auto index : order)
+        {
+            current[index] = next[index].value_or(current[index]);
+            paths[index].push_back(current[index]);
+            if (this->warp_at(map, current[index]))
+                gone[index] = true;
+        }
+    }
+    return std::nullopt;
 }

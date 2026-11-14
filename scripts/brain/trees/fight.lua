@@ -21,7 +21,7 @@ return when(defend.attacked, when(defend.holds_ground, choose({
         survive.flee,
         restore.recover,
         support.care,
-        act("FIELD", together.step_off, "step_off", together.close_worth),
+        act("FIELD", together.step_off, "step_off", together.step_worth),
         act("DEFEND", defend.strike_back, "attack", defend.value),
     }, tree.compared, "weigh"),
     -- With nothing above worth doing, what is left for a hurt bot beside its healer is the wait for a heal, and the

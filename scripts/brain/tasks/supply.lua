@@ -78,12 +78,14 @@ local function refilled(snap, kind)
 end
 
 -- A refill costs the price of its drinks and the time they take past the skill cooldown the bot waits out anyway. A
--- drink is one round trip (the cast pace measures one), so the two 동동주 a rogue drinks for its 필살검무 cost no time
+-- drink takes the time the bot measures for its drinks, so the two 동동주 a rogue drinks for its 필살검무 cost no time
 -- and the cheapest dose wins, while twenty for a 600 mana spell keep the bot off its fight for a second and the
--- dearer 홍주 at 300 a drink does better (user 11-14). Priced by the point alone, 동동주 always won.
+-- dearer 홍주 at 300 a drink does better (user 11-14). Priced by the point alone, 동동주 always won; timed by its casts,
+-- which the server runs a spell script for, a drink took longer than the cooldown and a rogue drank 홍주 and 백세주
+-- 450 times in ten minutes (online trio 135922).
 local function refill_cost(snap, offer, need, worth)
     local drinks = math.ceil(need / offer.amount)
-    local wait   = math.max(0, drinks * ((snap.pace or {}).cast or 0) - combat.interval())
+    local wait   = math.max(0, drinks * ((snap.pace or {}).use or 0) - combat.interval())
     return drinks * offer.price / offer.uses * worth.exchange + wait / 1000 * worth.value
 end
 

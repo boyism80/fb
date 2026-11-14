@@ -3,6 +3,7 @@
 #include <fb/bot/builtin/brain.h>
 #include <fb/bot/builtin/integration_test.h>
 #include <fb/bot/game_controller.h>
+#include <fb/encoding.h>
 #include <fb/bot/integration/lua_integration_model.h>
 #include <fb/bot/integration/lua_integration_protocol.h>
 #include <fb/logger.h>
@@ -604,12 +605,179 @@ void brain::vacate(const std::string& name)
     auto lock = std::lock_guard(_ledger_mutex);
     brain::evict(name);
     _roster.erase(name);
+    _directions.erase(name);
+    _presences.erase(name);
 }
 
 void brain::post(const std::string& name, uint16_t map, fb::lua::value profile)
 {
     auto lock = std::lock_guard(_ledger_mutex);
     _roster.insert_or_assign(name, listing{map, std::move(profile)});
+}
+
+void brain::direct(const std::string& name, std::optional<direction> moves, bool told)
+{
+    auto message = Json::Value{};
+    {
+        auto lock = std::lock_guard(_ledger_mutex);
+        if (moves.has_value())
+        {
+            auto found   = _directions.find(name);
+            auto earlier = found != _directions.end() && found->second.id != moves->id &&
+                           (found->second.made < moves->made ||
+                            (found->second.made == moves->made && found->second.id < moves->id));
+            if (earlier)
+                return;
+
+            _directions.insert_or_assign(name, moves.value());
+        }
+        else
+        {
+            _directions.erase(name);
+        }
+
+        if (told || _publish == nullptr)
+            return;
+
+        message["type"] = "traffic";
+        message["kind"] = "direct";
+        message["name"] = UTF8(name, PLATFORM::WINDOWS);
+        if (moves.has_value())
+        {
+            auto& plan      = message["plan"];
+            plan["id"]      = UTF8(moves->id, PLATFORM::WINDOWS);
+            plan["map"]     = moves->map;
+            plan["done"]    = moves->done;
+            plan["made"]    = static_cast<Json::UInt64>(moves->made);
+            plan["members"] = Json::arrayValue;
+            plan["steps"]   = Json::arrayValue;
+            for (auto& member : moves->members)
+            {
+                plan["members"].append(UTF8(member, PLATFORM::WINDOWS));
+            }
+            for (auto& step : moves->steps)
+            {
+                auto at = Json::Value{};
+                at["x"] = step.x;
+                at["y"] = step.y;
+                plan["steps"].append(at);
+            }
+        }
+    }
+    _publish(message);
+}
+
+std::optional<brain::direction> brain::directed(const std::string& name)
+{
+    auto lock  = std::lock_guard(_ledger_mutex);
+    auto found = _directions.find(name);
+    if (found == _directions.end())
+        return std::nullopt;
+
+    return found->second;
+}
+
+void brain::present(const std::string& name, std::optional<presence> at, bool told)
+{
+    auto message = Json::Value{};
+    {
+        auto lock  = std::lock_guard(_ledger_mutex);
+        auto found = _presences.find(name);
+        auto same  = at.has_value() ? found != _presences.end() && found->second.map == at->map &&
+                                         found->second.at == at->at && found->second.going == at->going
+                                    : found == _presences.end();
+        if (same)
+            return;
+
+        if (at.has_value())
+            _presences.insert_or_assign(name, at.value());
+        else
+            _presences.erase(name);
+
+        if (told || _publish == nullptr)
+            return;
+
+        message["type"] = "traffic";
+        message["kind"] = "presence";
+        message["name"] = UTF8(name, PLATFORM::WINDOWS);
+        if (at.has_value())
+        {
+            message["map"] = at->map;
+            message["x"]   = at->at.x;
+            message["y"]   = at->at.y;
+            if (at->going.has_value())
+            {
+                message["gx"] = at->going->x;
+                message["gy"] = at->going->y;
+            }
+        }
+    }
+    _publish(message);
+}
+
+std::vector<std::pair<std::string, brain::presence>> brain::presences(const std::string& except)
+{
+    auto lock   = std::lock_guard(_ledger_mutex);
+    auto result = std::vector<std::pair<std::string, presence>>{};
+    for (auto& [name, entry] : _presences)
+    {
+        if (name != except)
+            result.emplace_back(name, entry);
+    }
+    return result;
+}
+
+void brain::publish(std::function<void(const Json::Value&)> send)
+{
+    auto lock = std::lock_guard(_ledger_mutex);
+    _publish  = std::move(send);
+}
+
+void brain::hear(const Json::Value& message)
+{
+    auto name = CP949(message["name"].asString(), PLATFORM::WINDOWS);
+    if (message["kind"].asString() == "direct")
+    {
+        if (message.isMember("plan") == false)
+        {
+            brain::direct(name, std::nullopt, true);
+            return;
+        }
+
+        auto& plan  = message["plan"];
+        auto  moves = direction{};
+        moves.id    = CP949(plan["id"].asString(), PLATFORM::WINDOWS);
+        moves.map   = static_cast<uint16_t>(plan["map"].asUInt());
+        moves.done  = plan["done"].asUInt();
+        moves.made  = plan["made"].asUInt64();
+        for (auto& member : plan["members"])
+        {
+            moves.members.push_back(CP949(member.asString(), PLATFORM::WINDOWS));
+        }
+        for (auto& step : plan["steps"])
+        {
+            moves.steps.emplace_back(static_cast<uint16_t>(step["x"].asUInt()),
+                                     static_cast<uint16_t>(step["y"].asUInt()));
+        }
+        brain::direct(name, std::move(moves), true);
+    }
+    else if (message["kind"].asString() == "presence")
+    {
+        if (message.isMember("map") == false)
+        {
+            brain::present(name, std::nullopt, true);
+            return;
+        }
+
+        auto at = presence{
+            static_cast<uint16_t>(message["map"].asUInt()),
+            atlas::position(static_cast<uint16_t>(message["x"].asUInt()), static_cast<uint16_t>(message["y"].asUInt())),
+            std::nullopt};
+        if (message.isMember("gx"))
+            at.going = atlas::position(static_cast<uint16_t>(message["gx"].asUInt()),
+                                       static_cast<uint16_t>(message["gy"].asUInt()));
+        brain::present(name, at, true);
+    }
 }
 
 std::vector<std::pair<std::string, brain::listing>> brain::roster(const std::string& except)

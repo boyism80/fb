@@ -7,6 +7,7 @@ local party    = require("brain.policies.party")
 local snapshot = require("brain.snapshot")
 local query    = require("brain.query")
 local trace    = require("brain.trace")
+local traffic  = require("brain.policies.traffic")
 local value    = require("brain.policies.value")
 
 local M = {}
@@ -26,9 +27,11 @@ local function remember_block(brain, bot, event, destination, walls)
         y = destination.y,
         range = destination.range
     }
-    local by = event.detail == "CHARACTER" and event.x ~= nil and { x = event.x, y = event.y } or nil
+    local by   = event.detail == "CHARACTER" and event.x ~= nil and { x = event.x, y = event.y } or nil
+    local goal = event.gx ~= nil and { map = event.map, x = event.gx, y = event.gy } or nil
     brain:remember(bot, "blocked",
-        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest, by = by })
+        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest, by = by, goal =
+        goal })
 end
 
 local function vaulted(brain, bot, destination, event)
@@ -122,6 +125,40 @@ local function passable(brain, bot, destination, detour, event)
     return round ~= nil and (bare == nil or round.cost <= bare.cost + destination.leeway)
 end
 
+-- A character standing on the way to the warp my walk heads for is gone round by another warp to the same place when
+-- one lies within the walk's leeway: held to the one warp, a warrior waited three minutes before 졸본흑해골굴 while the
+-- other entrance tile beside it stood free (online 192906, 19:32:15-19:35:21). Only a walk to a map picks its warp by
+-- route, and a warp is closed once: turned on a walk to the warp tile itself, the walk kept its tile and asked again
+-- sixty times a second for six minutes (online 195236, 19:54:38-20:00).
+local function rerouted(brain, bot, destination, detour, event)
+    if destination.x ~= nil or event.gx == nil or brain:warp_at(event.map, event.gx, event.gy) ~= true then
+        return false
+    end
+    for _, closed in ipairs(detour.closed) do
+        if closed.map == event.map and closed.x == event.gx and closed.y == event.gy then
+            return false
+        end
+    end
+    local gate  = { map = event.map, x = event.gx, y = event.gy }
+    local trial = {
+        closed = { gate },
+        perilous = detour.perilous,
+        shunned = detour.shunned,
+        bounced = detour.bounced,
+        avoid = detour.avoid
+    }
+    for _, closed in ipairs(detour.closed) do
+        table.insert(trial.closed, closed)
+    end
+    local round = brain:route(bot, destination, trial)
+    local bare  = round ~= nil and destination.leeway ~= nil and brain:route(bot, destination, detour) or nil
+    if round == nil or (bare ~= nil and round.cost > bare.cost + destination.leeway) then
+        return false
+    end
+    table.insert(detour.closed, gate)
+    return true
+end
+
 function M.yielded(event)
     return event ~= nil and event.type == "ENGAGED"
 end
@@ -190,6 +227,14 @@ local function journey(brain, bot, destination, detour)
                 log("debug", string.format("[brain:travel] bot=%s clearing ended %s", bot:name(), fought.type))
                 return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
             end
+        elseif event.type == "OCCUPIED" and event.detail == "CHARACTER" and
+            rerouted(brain, bot, destination, detour, event) then
+            log("debug", string.format("[brain:travel] bot=%s turns from warp %d,%d at map=%d", bot:name(), event.gx,
+                event.gy, event.map))
+        elseif event.type == "OCCUPIED" and event.detail == "CHARACTER" and destination.traffic == nil and
+            traffic.untangle(brain, bot, snapshot.take(brain, bot), query.bind(brain, bot, snapshot.take(brain, bot)),
+                destination, event) then
+            return false, { type = "UNTANGLED", map = event.map, x = event.x, y = event.y }
         elseif event.type == "OCCUPIED" and vaulted(brain, bot, destination, event) then
             detour.avoid = {}
         elseif event.type == "OCCUPIED" then

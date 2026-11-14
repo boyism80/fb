@@ -37,6 +37,11 @@ local function pressure(snap, member, window)
     return total
 end
 
+function M.risk(snap, member, current)
+    local blows = pressure(snap, member, 2 * combat.cast(snap))
+    return blows > 0 and math.exp(-current / blows) or 0
+end
+
 local function rescue(snap, query, member, current, restored, heal, worth)
     if heal.hp <= 0 then
         return 0
@@ -58,6 +63,42 @@ local function volley(snap, member)
         end
     end
     return #attackers > 0 and combat.imminent(member, attackers) or 0
+end
+
+-- A crewmate, or I, falls short when the mobs on it drain more hp before it ends them itself than it can spare above
+-- two of their volleys, and then does not live through the fight, so each hp of that shortfall a heal restores or a
+-- held mob spares is worth its share of that death, as the death within two casts is (rescue). Weighed by those two
+-- casts alone, a warrior at 1,933 hp with no mana for 건곤대나이 under weak blows looked safe, its mage poisoned twenty
+-- mobs in 11s instead of healing it, and both left (online WA+MA 160559, 16:14:09-20; user 11-15: keep the crew alive
+-- first, the poison can wait).
+local function leaving(snap, query, member, current, worth)
+    local peril = member == snap and party.peril(snap, query) or member.peril
+    if type(peril) ~= "table" or (peril.drain or 0) <= 0 or (peril.hp or 0) <= 0 then
+        return nil
+    end
+    local clear = peril.hp / math.max(peril.dps or 0, 1e-9)
+    local short = peril.drain * clear - (current - 2 * volley(snap, member))
+    if short <= 0 then
+        return nil
+    end
+    return {
+        short  = short,
+        clear  = clear,
+        drains = peril.drains or {},
+        cost   = party.death(snap, query, member, worth),
+    }
+end
+
+-- A crewmate in sight has the lower of the bar over its head and the hp it posts of itself: the server sends no bar
+-- for hp a spell spends, and read from the bar alone a mage that 공력증강 left at 100 looked whole to its poet, which
+-- healed only the warrior for 17s until the mage died (online WA+PO+MA 150824, 15:12:10-27). The posted hp in turn
+-- lags a blow the bar already shows.
+local function standing(member, ally)
+    local bar = ally ~= nil and ally.percent ~= nil and (member.self.max_hp or 0) * ally.percent / 100 or nil
+    if bar == nil then
+        return member.self.hp or 0
+    end
+    return math.min(bar, member.self.hp or bar)
 end
 
 local function heals(snap, query, slots, worth)
@@ -88,8 +129,7 @@ local function heals(snap, query, slots, worth)
                 })
             end
         end
-        local current = ally ~= nil and ally.percent ~= nil and (member.self.max_hp or 0) * ally.percent / 100 or
-            (member.self.hp or 0)
+        local current = standing(member, ally)
         local deficit = (member.self.max_hp or 0) - current
         local memory  = snap.record.memory.battle
         local dying   = 2 * volley(snap, member) >= current
@@ -103,6 +143,10 @@ local function heals(snap, query, slots, worth)
                     local saved    = math.max(restored * fuel,
                         recovery.useful(heal.hp, deficit, member.self.max_hp or 0) *
                         value.vigor(member, query, worth, mana))
+                    local leave    = leaving(snap, query, member, current, worth)
+                    if leave ~= nil then
+                        saved = saved + math.min(restored, leave.short) / leave.short * leave.cost
+                    end
                     table.insert(found, {
                         urgent = dying,
                         dies = current / math.max(pressure(snap, member, 1000), 1e-9),
@@ -199,15 +243,84 @@ local function applied(snap, oid)
     return names
 end
 
+local function mending(snap, query, mob, worth)
+    local mana  = value.spend(snap, query, mob)
+    local price = nil
+    for _, heal in ipairs(combat.options(snap, {}).heal) do
+        if heal.others and heal.hp > 0 then
+            local each = ((heal.mp or 0) * mana + combat.cast(snap) / 1000 * worth.value) / heal.hp
+            price      = price == nil and each or math.min(price, each)
+        end
+    end
+    if price == nil then
+        local regen = recovery.rates(snap).hp
+        price       = regen > 0 and worth.value / regen or 0
+    end
+    return price
+end
+
+-- Holding a mob off a crewmate, or off me, is worth the death it spares within the window a heal is weighed in
+-- (rescue) and the healing its blows would have needed while it is held. Weighed only by the time it takes off the
+-- fight, 마비 was worth nothing: a mage beside four skeletons never held one off its warrior, which fell under a quarter
+-- of its hp 152 times in 11 minutes (online WA+MA 152615).
+local function guard(snap, query, member, mob, current, chance, held, before, worth)
+    if held <= 0 or mob.x == nil or combat.hits(mob) == false or (mob.speed or 0) <= 0 or
+        math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) ~= 1 then
+        return 0
+    end
+    local window  = 2 * combat.cast(snap)
+    local blows   = pressure(snap, member, window)
+    local _, high = combat.spread(member, mob)
+    local rest    = blows - high * window / mob.speed
+    local spared  = blows > 0 and math.exp(-current / blows) - (rest > 0 and math.exp(-current / rest) or 0) or 0
+    local kept    = combat.blow(member, mob) * math.min(held, before.time) / mob.speed
+    local leave   = leaving(snap, query, member, current, worth)
+    local stays   = 0
+    if leave ~= nil and leave.drains[tostring(mob.oid)] ~= nil then
+        local spared_hp = leave.drains[tostring(mob.oid)] * math.min(held / 1000, leave.clear)
+        stays           = math.min(spared_hp, leave.short) / leave.short * leave.cost
+    end
+    return chance * math.max(0, spared) * party.death(snap, query, member, worth) +
+        kept * mending(snap, query, mob, worth) +
+        stays
+end
+
+-- A debuff of a group only one of which a mob bears (저주, 혼마술) is worth what it adds over the strongest one a
+-- crewmate here can cast: cast first, the weaker one barred the stronger, and a mage cursed ten mobs its poet was
+-- casting 혼마술 at (online WA+PO+MA 150824).
+local function exclusive(snap, query, name)
+    local crew  = escort.present(snap, query)
+    local found = {}
+    for _, group in ipairs(data.debuffs or {}) do
+        local inside = false
+        for _, member in ipairs(group) do
+            inside = inside or member == name
+        end
+        for _, member in ipairs(inside and group or {}) do
+            if member ~= name and crew ~= nil and crew.assist[member] then
+                found[member] = true
+            end
+        end
+    end
+    return found
+end
+
 local function debuffs(snap, query, slots, worth)
-    local found  = {}
-    local mana   = value.mana(snap, query)
-    local seen   = value.targets(snap)
-    local helper = escort.crew({ snap }, query)
+    local found   = {}
+    local seen    = value.targets(snap)
+    local helper  = escort.crew({ snap }, query)
+    local guarded = { snap }
+    local engaged = {}
     for _, member in ipairs(party.members(snap)) do
-        local shared = member.battle
-        local list   = {}
-        local chosen = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] or nil
+        table.insert(guarded, member)
+    end
+    for _, member in ipairs(guarded) do
+        local own     = member == snap
+        local shared  = own == false and member.battle or nil
+        local list    = {}
+        local chosen  = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] or nil
+        local ally    = own == false and query.ally(member.self.name) or nil
+        local current = own and snap.self.hp or standing(member, ally)
         if chosen ~= nil then
             table.insert(list, chosen)
         end
@@ -227,20 +340,65 @@ local function debuffs(snap, query, slots, worth)
                 local spell = magic.spells[name]
                 local cost  = spell ~= nil and spell.mp or nil
                 if spell ~= nil and spell.role == "DEBUFF" and names[name] == nil and type(cost or 0) == "number" and
-                    (cost or 0) <= recovery.free(snap) then
-                    local after = combat.outcome(member, query, copy(mob, { applied = copy(names, { [name] = true }) }),
+                    (cost or 0) <= recovery.free(snap) and (own == false or spell.paralysis or spell.blind) then
+                    local rivals = exclusive(snap, query, name)
+                    local base   = next(rivals) ~= nil and copy(names, rivals) or names
+                    local from   = base == names and before or
+                        combat.outcome(member, query, copy(mob, { applied = base }), nil, context.aid)
+                    local after  = combat.outcome(member, query, copy(mob, { applied = copy(base, { [name] = true }) }),
                         nil, context.aid)
-                    local saved = before.time < math.huge and
-                        math.max(0, before.time - after.time) / math.max(before.time, 1) or 0
-                    if saved > 0 then
+                    local saved  = own == false and from.time < math.huge and
+                        math.max(0, from.time - after.time) / math.max(from.time, 1) or 0
+                    local held   = combat.debuffs(member, copy(mob, { applied = { [name] = true } })).disable
+                    local chance = held / math.max((spell.buff_time or 0) * 1000, 1)
+                    local kept   = (spell.paralysis or spell.blind) and next(rivals) == nil and
+                        guard(snap, query, member, mob, current, chance, held, before, worth) or 0
+                    if saved > 0 or kept > 0 then
                         table.insert(found, {
                             oid = mob.oid,
                             slot = slot,
                             key = name,
                             debuff = name,
                             cost = cost or 0,
-                            value = saved * combat.gain(mob, member) * (mob.ratio or 1) -
+                            value = saved * combat.gain(mob, member) * (mob.ratio or 1) + kept -
                                 (cost or 0) * value.spend(snap, query, mob),
+                        })
+                    end
+                end
+            end
+            engaged[mob.oid] = true
+        end
+    end
+    -- A mob in sight that nobody fights yet takes the ticks of a poison until it is reached, so poisoned first it is
+    -- that much of its kill done meanwhile, short of the hp the poison never takes (dot_floor). Poisoned only once it
+    -- was fought, five skeletons in sight were fought one after another at full hp (user 11-14, online WA+MA 152615).
+    -- A mob that would not come by itself is drawn by the ticks, and its blows on me while poisoned are the cost.
+    local fought = snap.record.memory.battle
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.oid ~= nil and engaged[mob.oid] == nil and mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
+            (fought == nil or fought.oid ~= mob.oid) and math.abs(mob.x - snap.world.x) <= data.sight.x and
+            math.abs(mob.y - snap.world.y) <= data.sight.y then
+            local names     = applied(snap, mob.oid)
+            local remaining = (mob.hp or 0) * (mob.ratio or 1)
+            for name, slot in pairs(slots) do
+                local spell = magic.spells[name]
+                local cost  = spell ~= nil and spell.mp or nil
+                if spell ~= nil and spell.role == "DEBUFF" and (spell.dot or 0) > 0 and names[name] == nil and
+                    type(cost or 0) == "number" and (cost or 0) <= recovery.free(snap) and remaining > 0 then
+                    local weak     = combat.debuffs(snap, copy(mob, { applied = { [name] = true } }))
+                    local dealt    = weak.dot * (mob.hp or 0) * weak.dot_time / ((magic.buff_tick or 1) * 1000)
+                    local done     = math.max(0, math.min(dealt, remaining - (spell.dot_floor or 0))) / remaining
+                    local drawn    = mob.attack ~= "AGGRESSIVE" and
+                        combat.blow(snap, mob) * weak.dot_time / mob.speed * mending(snap, query, mob, worth) or 0
+                    local worth_of = done * combat.gain(mob, snap) - drawn - (cost or 0) * value.spend(snap, query, mob)
+                    if done > 0 then
+                        table.insert(found, {
+                            oid = mob.oid,
+                            slot = slot,
+                            key = name,
+                            debuff = name,
+                            cost = cost or 0,
+                            value = worth_of,
                         })
                     end
                 end
@@ -286,8 +444,7 @@ local function wards(snap, query, slots, worth)
     for _, member in ipairs(party.members(snap)) do
         local ally = query.ally(member.self.name)
         if ally ~= nil and member.self.ghost == false then
-            table.insert(targets,
-                { member = member, oid = ally.oid, hp = (member.self.max_hp or 0) * (ally.percent or 100) / 100 })
+            table.insert(targets, { member = member, oid = ally.oid, hp = standing(member, ally) })
         end
     end
     for _, target in ipairs(targets) do
@@ -317,14 +474,15 @@ local function listed(snap, query)
         return plans[snap]
     end
     local all = {}
-    if snap.self.ghost == false and #party.members(snap) > 0 then
-        local slots = {}
+    if snap.self.ghost == false then
+        local slots   = {}
+        local grouped = #party.members(snap) > 0
         for _, learned in ipairs(snap.spells or {}) do
             slots[learned.name] = learned.slot
         end
         local worth = value.baseline(snap, query)
-        for group, candidates in pairs({ heal = heals(snap, query, slots, worth), debuff = debuffs(snap, query, slots, worth),
-            ward = wards(snap, query, slots, worth) }) do
+        for group, candidates in pairs({ heal = grouped and heals(snap, query, slots, worth) or {},
+            debuff = debuffs(snap, query, slots, worth), ward = grouped and wards(snap, query, slots, worth) or {} }) do
             for _, candidate in ipairs(candidates) do
                 candidate.group = group
                 table.insert(all, candidate)

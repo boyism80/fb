@@ -30,6 +30,7 @@ GATE = re.compile(r"me:level\(\)\s*<\s*(\d+)")
 STAT = re.compile(r"me:(\w+)\(me:\1\(\)\s*([+-])\s*(\d+)\)")
 UNBUFF = re.compile(r"me:unbuff\('([^']+)'\)")
 DOT = re.compile(r"maxhp\(\)\s*\*\s*(\d+)\)\s*//\s*(\d+)")
+DOT_FLOOR = re.compile(r"damage\s*>\s*me:hp\(\)\s*-\s*(\d+)")
 HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'handler.h'
 SPELL_HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'game' / 'handler' / 'protocol' / 'spell_cast.h'
 ACCEPTOR = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'acceptor.h'
@@ -203,6 +204,9 @@ def effect(text):
         dot = DOT.search(text)
         if dot is not None:
             info['dot'] = int(dot.group(1)) / int(dot.group(2))
+            floor = DOT_FLOOR.search(text)
+            if floor is not None:
+                info['dot_floor'] = int(floor.group(1))
     elif cure is not None:
         info['role'] = 'CURE'
         info['cure'] = cure.group(1)
@@ -323,7 +327,7 @@ def brain_data(catalog):
         info = catalog['spells'][name]
         fields = {key: info[key] for key in ('role', 'type', 'mp', 'damage', 'hp', 'self', 'others', 'group', 'hp_cost',
                                             'damage_hp', 'damage_mp', 'drain', 'buff_time', 'boost', 'chance', 'chance_int',
-                                            'excludes', 'trigger', 'surge', 'stats', 'dot', 'paralysis', 'blind', 'resists', 'front',
+                                            'excludes', 'trigger', 'surge', 'stats', 'dot', 'dot_floor', 'paralysis', 'blind', 'resists', 'front',
                                             'hp_spend', 'limit')
                   if key in info and info[key] not in ({}, [])}
         formula = info.get('formula', {})

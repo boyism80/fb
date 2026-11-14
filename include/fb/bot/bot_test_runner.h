@@ -92,6 +92,13 @@ int run_bot_test(std::string_view config_path, const std::vector<std::string>& o
             fb::bot::brain::occupied_elsewhere(message["from"].asUInt(), std::move(maps));
         });
 
+        fb::bot::brain::publish([container](const Json::Value& message) {
+            container->link.send(message);
+        });
+        container->link.on("traffic", [](const Json::Value& message) {
+            fb::bot::brain::hear(message);
+        });
+
         container->link.on("stop", [container, &io_context](const Json::Value&) {
             boost::asio::post(io_context, [container]() {
                 container->exit();

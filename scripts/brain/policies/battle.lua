@@ -94,6 +94,17 @@ local function splashed(snap, mob, damage)
     return found
 end
 
+local function aside_gain(snap, extra)
+    local total = 0
+    for _, hit in ipairs(extra or {}) do
+        local remaining = (hit.mob.hp or 0) * (hit.mob.ratio or 1)
+        if remaining > 0 then
+            total = total + combat.gain(hit.mob, snap) * math.min(1, hit.damage / remaining)
+        end
+    end
+    return total
+end
+
 local RECENT = 2
 
 local function beside(snap, mob)
@@ -772,15 +783,9 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         local refill = recovery.rates(snap).mp + recovery.refilling(snap, "mp")
         time         = refill > 0 and time + entry.wasted / refill or time
     end
-    local bonus = 0
-    for _, hit in ipairs(entry.extra or {}) do
-        local remaining = (hit.mob.hp or 0) * (hit.mob.ratio or 1)
-        if remaining > 0 then
-            bonus = bonus + combat.gain(hit.mob, snap) * math.min(1, hit.damage / remaining)
-        end
-    end
-    local risk = (1 - p_die) * (combat.gain(mob, snap) + bonus) - (p_die + near) * loss
-    local plan = {
+    local bonus = aside_gain(snap, entry.extra)
+    local risk  = (1 - p_die) * (combat.gain(mob, snap) + bonus) - (p_die + near) * loss
+    local plan  = {
         time = time * 1000,
         p_die = p_die,
         ending = ending,
@@ -1081,8 +1086,11 @@ function evaluate(snap, facts, mob, reachable)
         -- warrior's 건곤대나이 needed (online group, 12:28). Without such a strike it stays free, as before. One
         -- that hits no harder is worth the swing less the more of that and its refill: priced by the refill alone,
         -- which a full bar makes nothing, 백열장 tied the swing of a solo warrior whose 건곤대나이 needed the mana.
+        -- Both count every mob they hit: counted on the mob aimed at alone, 극진화열참주'첨 among four skeletons was
+        -- worth 133 less than 극진화열참주 and was never cast (online WA+MA 152615, 127 casts among four).
         if entry.kind == "CAST" and melee ~= nil and hemmed == false and (entry.mp or 0) > 0 then
-            local direct = math.max(0, (entry.damage or 0) - (melee.damage or 0)) * share
+            local direct = math.max(0, (entry.damage or 0) * share + aside_gain(snap, entry.extra) -
+                (melee.damage or 0) * share - aside_gain(snap, melee.extra))
             local empty  = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
             local held   = value.held(snap, facts, mob)
             entry.value  = direct > 0 and melee.value + direct - entry.mp * held or
@@ -1372,6 +1380,19 @@ function M.blocked(snap, mob)
         (entry.at == nil or snap.now - entry.at < data.rerank) and entry or nil
 end
 
+local function standing(blocked, visible, map)
+    local kept  = {}
+    local count = 0
+    for key, entry in pairs(blocked or {}) do
+        local mob = visible[key]
+        if mob ~= nil and entry.map == map and mob.x == entry.x and mob.y == entry.y then
+            kept[key] = entry
+            count     = count + 1
+        end
+    end
+    return kept, count
+end
+
 function M.settle(memory, blocked, oid, map, action, event, now, visible, moved, spot)
     if action.moves and event.type == "DONE" and moved == false then
         event = { type = "REFUSED" }
@@ -1394,25 +1415,31 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved,
         memory.denied      = denied
         memory.spot        = spot
     end
-    local kept  = {}
-    local count = 0
-    for key, entry in pairs(blocked or {}) do
-        local mob = visible[key]
-        if mob ~= nil and entry.map == map and mob.x == entry.x and mob.y == entry.y then
-            kept[key] = entry
-            count     = count + 1
-        end
-    end
-    local seen   = visible[tostring(oid)]
-    local aimed  = event.type == "REFUSED" and action.maneuver.kind == MANEUVER.CAST and action.maneuver.self ~= true and
+    local kept, count = standing(blocked, visible, map)
+    local seen        = visible[tostring(oid)]
+    local aimed       = event.type == "REFUSED" and action.maneuver.kind == MANEUVER.CAST and
+        action.maneuver.self ~= true and
         action.moves ~= true
-    local missed = aimed and seen ~= nil and math.abs(seen.x - spot.x) + math.abs(seen.y - spot.y) > 1
+    local missed      = aimed and seen ~= nil and math.abs(seen.x - spot.x) + math.abs(seen.y - spot.y) > 1
     if (event.type == "UNREACHABLE" or event.type == "OCCUPIED" or missed) and seen ~= nil then
         local mob           = seen
         kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y, at = now, cast = missed }
         count               = count + 1
     end
     return GOING[event.type] and memory or nil, count > 0 and kept or nil
+end
+
+-- A walk to a mob that found no way there is the hunter's UNREACHABLE: left unknown, the walk was chosen again every
+-- period, and a warrior and its rogue stood 8 minutes by the warp of 동부여물망동 the mob lay beyond (online 183732,
+-- 18:40:23-18:48:56).
+function M.unreached(blocked, oid, map, now, visible)
+    local kept, count = standing(blocked, visible, map)
+    local mob         = visible[tostring(oid)]
+    if mob ~= nil and mob.x ~= nil then
+        kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y, at = now }
+        count               = count + 1
+    end
+    return count > 0 and kept or nil
 end
 
 -- Every swing waits out the previous one here, where it happens: a decision never picks a swing inside the

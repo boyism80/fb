@@ -13,6 +13,7 @@ local profile  = require("brain.profile")
 local query    = require("brain.query")
 local snapshot = require("brain.snapshot")
 local trace    = require("brain.trace")
+local traffic  = require("brain.policies.traffic")
 local value    = require("brain.policies.value")
 local tree     = require("brain.tree")
 local main     = require("brain.trees.main")
@@ -30,7 +31,8 @@ local M = {}
 
 M.offers = {}
 
-local picks = {}
+local picks  = {}
+local claims = {}
 
 local ERRANDS = { SUPPLY = true, SELL = true, OUTFIT = true, LEARN = true }
 
@@ -160,7 +162,8 @@ local function decision(snap, facts, found, revisit)
     -- poet walked the 72 steps round the floor while their warrior fought at the neck, and the three were apart
     -- 148s of 720 over six 2-minute seeds (offline scene profile trio on 흉가 93, run 00:44). Held to two steps, a
     -- warrior stopped at a doorway its crew stood in that it passes in four (offline profile trio rooted seed 6,
-    -- 320-740s, run 22:38).
+    -- 320-740s, run 22:38). A step of an untangling plan takes no way round: taken round the bot it waited on, a mage
+    -- left its part of the plan and the way to 흑해골굴 from 국내성 was untangled again and again (online 174502).
     if result.kind == ACTION.MOVE and result.dest ~= nil then
         local blocked = snap.record.memory.blocked
         local waited  = party.stuck(snap, 0) and
@@ -170,7 +173,7 @@ local function decision(snap, facts, found, revisit)
         for key, entry in pairs(result.dest) do
             dest[key] = entry
         end
-        dest.leeway = escort.reach() + waited
+        dest.leeway = dest.traffic ~= nil and 0 or escort.reach() + waited
         result.dest = dest
     end
     result.rivals = nil
@@ -551,7 +554,26 @@ function M.first(brain, bot, current, alarm)
         }
     end
     M.lap(brain, bot, snap, decision, facts)
-    brain:post(bot, party.profile(snap, facts, decision))
+    local posted = party.profile(snap, facts, decision)
+    brain:post(bot, posted)
+    traffic.present(snap, facts, decision, posted)
+    -- A ground is claimed from when it is chosen, not from when the walk to it starts: claimed then, three crews that
+    -- chose within seconds of each other all saw 흑해골굴 free and went there together (online 170334, 174502). On a
+    -- floor of the ground the floor hunted is claimed instead (hunt occupied).
+    local chosen = snap.self.ghost == false and party.plan(snap, facts) or nil
+    local first  = chosen ~= nil and chosen.floors ~= nil and chosen.floors[1] or nil
+    local inside = false
+    for _, floor in ipairs(chosen ~= nil and chosen.floors or {}) do
+        inside = inside or floor.map == snap.world.map
+    end
+    if first ~= nil and (first.kills or 0) > 0 and inside == false then
+        brain:occupy(bot, first.map, first.kills / (#(snap.party or {}) + 1))
+        if claims[snap.self.name] ~= first.map then
+            claims[snap.self.name] = first.map
+            log("debug", string.format("[brain:claim] bot=%s map=%d rate=%.3f", snap.self.name, first.map,
+                first.kills / (#(snap.party or {}) + 1)))
+        end
+    end
     local moved, entry = M.entered(snap, facts)
     if moved then
         snap.record.memory.entry = entry

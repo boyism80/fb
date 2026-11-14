@@ -36,6 +36,123 @@ function M.walk(snap, facts, member, spot)
     return type(walk) == "number" and walk or math.abs(spot.x - world.x) + math.abs(spot.y - world.y)
 end
 
+-- Waiting at an exit is done in front of it, on the tile that lengthens the ways into it least once the crewmates
+-- already standing there keep theirs, and among tiles as good on the nearest: within the steps I wait in (four, so
+-- the crew and its vanguard stand within the eight it gathers in), off the tiles whose loss cuts the way (atlas lanes)
+-- and off the tiles beside a warp. The ways in are the walks to the exit from the tiles just past those steps.
+-- Waiting on any tile within four steps, two crews stood in the way down to 흑해골굴 from 국내성, each holding its own
+-- vanguard and the other crew's rogue, for ten minutes (online 170334, 17:05-17:15; user 11-15). Kept off the lanes
+-- alone, a rogue and a poet stood side by side across the two-wide way there and held their own vanguard 45s (online
+-- 180725, 18:09:36-18:10:21). Far off I walk toward the exit first, as before: picked from anywhere, the tile sent a
+-- member walking past its leader to the far side of the door (brain unit test).
+function M.waiting(snap, facts, exit)
+    local map    = snap.world.map
+    local radius = data.adjacent
+    if facts.lane == nil or facts.walled == nil or facts.steps == nil or snap.world.x == nil then
+        return nil
+    end
+    local here = M.walk(snap, facts, snap, exit)
+    if here > 2 * radius then
+        return nil
+    end
+    local mine  = snap.world.x .. "," .. snap.world.y
+    local taken = {}
+    local walls = {}
+    local function stand(x, y, wall)
+        local key = x .. "," .. y
+        if key ~= mine and taken[key] == nil then
+            taken[key] = true
+            if wall then
+                table.insert(walls, { x = x, y = y })
+            end
+        end
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil then
+            stand(mob.x, mob.y, false)
+        end
+    end
+    local walking = {}
+    for _, member in ipairs(party.members(snap)) do
+        local world = member.world
+        local going = member.going
+        if world.map == map and world.x ~= nil and type(going) == "table" and going.map == map and
+            (going.x ~= world.x or going.y ~= world.y) then
+            walking[world.x .. "," .. world.y] = true
+        end
+    end
+    for _, tile in ipairs(snap.world.occupied or {}) do
+        stand(tile.x, tile.y, walking[tile.x .. "," .. tile.y] == nil)
+    end
+    for _, member in ipairs(party.members(snap)) do
+        if member.world.map == map and member.world.x ~= nil then
+            stand(member.world.x, member.world.y, walking[member.world.x .. "," .. member.world.y] == nil)
+        end
+    end
+    local goals = {}
+    local ring  = {}
+    for dx = -(radius + 1), radius + 1 do
+        for dy = -(radius + 1 - math.abs(dx)), radius + 1 - math.abs(dx) do
+            local x, y  = exit.x + dx, exit.y + dy
+            local open  = x >= 0 and y >= 0 and (facts.floor == nil or facts.floor(map, x, y)) and
+                (facts.warp == nil or facts.warp(map, x, y) ~= true)
+            local outer = math.abs(dx) + math.abs(dy) == radius + 1
+            if open and outer then
+                table.insert(ring, { x = x, y = y, range = 0 })
+            elseif open and taken[x .. "," .. y] == nil and facts.lane(map, x, y) == false then
+                table.insert(goals, { x = x, y = y, range = 0 })
+            end
+        end
+    end
+    if #goals == 0 then
+        return nil
+    end
+    local near    = facts.steps(map, exit.x, exit.y, goals)
+    local walks   = facts.steps(map, snap.world.x, snap.world.y, goals)
+    local choices = {}
+    for index, goal in ipairs(goals) do
+        local from = near[index]
+        local walk = walks[index]
+        if type(from) == "number" and from <= radius and type(walk) == "number" then
+            table.insert(choices, { x = goal.x, y = goal.y, walk = walk, from = from })
+        end
+    end
+    table.sort(choices, function(a, b)
+        return a.walk < b.walk or (a.walk == b.walk and a.from < b.from)
+    end)
+    local ways = {}
+    local base = {}
+    for index, steps in ipairs(#ring > 0 and facts.walled(map, exit.x, exit.y, ring, walls) or {}) do
+        if type(steps) == "number" then
+            table.insert(ways, ring[index])
+            table.insert(base, steps)
+        end
+    end
+    local best = nil
+    for _, choice in ipairs(choices) do
+        local blocked = { { x = choice.x, y = choice.y } }
+        for _, wall in ipairs(walls) do
+            table.insert(blocked, wall)
+        end
+        local found = #ways > 0 and facts.walled(map, exit.x, exit.y, ways, blocked) or {}
+        local lost  = 0
+        for index, steps in ipairs(base) do
+            lost = lost + (type(found[index]) == "number" and found[index] - steps or math.huge)
+        end
+        if best == nil or lost < best.lost then
+            best      = choice
+            best.lost = lost
+        end
+        if lost == 0 then
+            break
+        end
+    end
+    if best == nil or (best.x == snap.world.x and best.y == snap.world.y) then
+        return nil
+    end
+    return { kind = ACTION.MOVE, dest = { map = map, x = best.x, y = best.y, range = 0 } }
+end
+
 -- A member on another floor comes to mine when its way to the floor it heads for ends here or runs through here.
 -- Counting only where it heads, a healer that crossed ahead to the floor between saw its vanguard heading past
 -- it, walked back to the floor the vanguard was leaving and bounced between the two (offline profile swap seed 1,
@@ -219,7 +336,11 @@ end
 -- No tile aside takes me farther by walk from where the member goes than I stand: the nearest was a pocket beside a
 -- one-tile neck, farther from the entrance we both walked to, so my own walk to the entrance took me back into the
 -- neck at once and its leader turned back from it, both for 470s (offline watch mages seed 0, map 3176, 244-720s,
--- run 18:31).
+-- run 18:31). Within the steps a member waits at from where it goes, my walk keeps me where I stepped, so a tile
+-- there is no farther: counted so, a poet beside the stairs of 국내성, every tile off them a step farther, never made
+-- way for its warrior (brain unit test, online WA+PO+MA 150824).
+-- A warp is no tile to stand aside on: it takes me off the map, and a poet making way at the stairs of 국내성 chose
+-- the second tile into 흑해골굴 and would have gone in ahead of its warrior (brain unit test, online WA+PO+MA 150824).
 local function aside(snap, facts, member, going)
     local mine  = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
     local goals = {}
@@ -242,7 +363,8 @@ local function aside(snap, facts, member, going)
             local on   = far == 1 and math.abs(going.x - x) + math.abs(going.y - y) < mine and
                 (x ~= going.x or y ~= going.y)
             if far > 0 and far <= 2 and taken[x .. "," .. y] == nil and (side or on) and
-                (facts.floor == nil or facts.floor(snap.world.map, x, y)) then
+                (facts.floor == nil or facts.floor(snap.world.map, x, y)) and
+                (facts.warp == nil or facts.warp(snap.world.map, x, y) ~= true) then
                 table.insert(goals, { x = x, y = y, range = 0, far = far, side = side, on = on })
             end
         end
@@ -262,7 +384,7 @@ local function aside(snap, facts, member, going)
         local near  = type(walk) == "number" and walk <= goal.far
         local off   = near and goal.side and facts.detour(snap.world.map, member.world, going, goal) == 0
         local ahead = type(toward[index]) == "number" and toward[index] or math.huge
-        if near and (off or goal.on) and ahead <= here and (best == nil or (off and best.off == false) or
+        if near and (off or goal.on) and ahead <= math.max(here, data.adjacent) and (best == nil or (off and best.off == false) or
                 (off == best.off and walk < best.steps)) then
             best = { x = goal.x, y = goal.y, steps = walk, off = off }
         end
@@ -514,6 +636,28 @@ end
 function M.close_worth(snap, facts)
     local place = spacing.place(snap, facts, stride(snap))
     return place ~= nil and place.gain or nil
+end
+
+-- Under blows a bot that strikes from afar steps off and strikes from the new tile, so the step is worth the strike it
+-- puts off by its walk, the blows it spares and the death those blows risk, as a heal or a 마비 weighs that death
+-- (aid.risk): weighed by the blows alone beside the whole strike, a mage cast half its spells beside the mobs, 137 of
+-- 279 (online WA+PO+MA 150824; user 11-15: mages fight keeping their distance first). A bot that strikes beside the
+-- mob gives up its strike by stepping, and weighs the step as before.
+function M.step_worth(snap, facts)
+    local place = spacing.place(snap, facts, stride(snap))
+    if place == nil then
+        return nil
+    end
+    if require("brain.policies.score").melee(snap, facts) then
+        return place.gain
+    end
+    local aid    = require("brain.tasks.aid")
+    local worth  = require("brain.policies.value").baseline(snap, facts)
+    local strike = require("brain.tasks.defend").value(snap, facts)
+    local moved  = setmetatable({ world = { map = snap.world.map, x = place.x, y = place.y } }, { __index = snap })
+    local spared = aid.risk(snap, snap, snap.self.hp) - aid.risk(snap, moved, snap.self.hp)
+    return strike + place.gain + math.max(0, spared) * party.death(snap, facts, snap, worth) -
+        place.steps * (snap.pace.step or data.walk) / 1000 * worth.value
 end
 
 -- Under blows a step to a better tile is one more answer beside heals and strikes, for any crewmate whose place

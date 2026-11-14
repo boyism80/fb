@@ -36,6 +36,15 @@ end
 local SKILLS = {
     [ACTION.MOVE]   = function(brain, bot, action)
         local arrived, event = travel.go(brain, bot, action.dest)
+        if arrived == false and action.dest.mob ~= nil and event ~= nil and
+            (event.type == "BLOCKED" or event.type == "NO_ROUTE") then
+            local visible = {}
+            for _, mob in ipairs(brain:mobs(bot)) do
+                visible[tostring(mob.oid)] = mob
+            end
+            brain:remember(bot, "unreachable", battle.unreached(brain:recall(bot, "unreachable"), action.dest.mob,
+                bot:map(), brain:observe(bot).now, visible))
+        end
         return arrived or travel.yielded(event), event and event.type
     end,
     [ACTION.ATTACK] = function(brain, bot, action)

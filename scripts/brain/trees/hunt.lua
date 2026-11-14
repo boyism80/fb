@@ -128,7 +128,8 @@ local function stage(snap, facts, maps, hunting)
         if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
                 party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
                 together.walk(snap, facts, member, snap.world) > 2 * data.adjacent) then
-            return (hunting == true and together.to_rally(snap, facts)) or { kind = ACTION.HOLD }
+            return (hunting == true and together.to_rally(snap, facts)) or together.waiting(snap, facts, exit) or
+                { kind = ACTION.HOLD }
         end
     end
     return { kind = ACTION.MOVE, dest = { maps = maps } }
@@ -212,7 +213,11 @@ local function follow_entry(snap, facts)
         -- The entrance is reached in walking steps, as the leader reaches it (stage): four tiles south of the
         -- entrance and 62 steps round a wall from it, a poet waited there for a warrior that waited four steps
         -- north of the entrance for the poet, each for good (offline WA+PO 세작 seed 0 from 729s and WA+PO 흉가
-        -- seed 2 from 754s, run 22:46).
+        -- seed 2 from 754s, run 22:46). It is waited at off the way (together.waiting).
+        local spot = together.waiting(snap, facts, door)
+        if spot ~= nil then
+            return spot
+        end
         local far = together.walk(snap, facts, snap, door)
         if far <= data.adjacent then
             return { kind = ACTION.HOLD }
@@ -298,7 +303,7 @@ local function close_on(snap, found)
     if found.choice.approach and (round or range > 1) then
         return {
             kind = ACTION.MOVE,
-            dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = round and 1 or range }
+            dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = round and 1 or range, mob = found.mob.oid }
         }
     end
     return battle.propose(found)

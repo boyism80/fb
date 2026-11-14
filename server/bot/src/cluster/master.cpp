@@ -1182,6 +1182,11 @@ void master::handle(agent_entry& agent, const Json::Value& message)
         if (current)
             agent.metrics = message;
     }
+    else if (type == "traffic")
+    {
+        if (current)
+            this->relay(agent, message);
+    }
     else if (type == "sync")
     {
         if (current == false)
@@ -1297,12 +1302,18 @@ void master::relay_occupied(const agent_entry& agent, const Json::Value& maps)
 {
     auto relayed    = Json::Value{};
     relayed["type"] = "occupied";
-    relayed["from"] = agent.id;
     relayed["maps"] = maps.isObject() ? maps : Json::Value{Json::objectValue};
+    this->relay(agent, relayed);
+}
+
+void master::relay(const agent_entry& agent, Json::Value message)
+{
+    message["from"] = agent.id;
+    message.removeMember("run_id");
     for (auto& [id, other] : this->_agents)
     {
         if (id != agent.id && other.busy && other.link != nullptr)
-            other.link->send(relayed);
+            other.link->send(message);
     }
 }
 

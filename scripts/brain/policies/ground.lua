@@ -583,17 +583,17 @@ end
 
 local settled = setmetatable({}, { __mode = "k" })
 
--- How a floor settles depends on the floor and on what others take from it, and a ranking asks it of every
--- floor of every ground each period: it is worked out again only when the others' demand on that floor moved.
-local function share(snap, floor, query, crew)
+-- How a floor settles under my own hunting depends on the floor alone, and a ranking asks it of every floor of every
+-- ground each period, so it is worked out once. What others take from the ground is weighed for the whole ground
+-- (lapped).
+local function share(snap, floor)
     if floor.kills <= 0 then
         return 0
     end
-    local others = query.demand(floor.map, crew ~= nil and crew.names or nil)
-    local known  = settled[floor]
-    if known == nil or known.others ~= others then
+    local known = settled[floor]
+    if known == nil then
         local supply = floor.supply * combat.rezen
-        local total  = floor.kills + others
+        local total  = floor.kills
         local whole  = 1000 / floor.kills
         local walk   = floor.walk or 0
         local low    = 0
@@ -608,8 +608,8 @@ local function share(snap, floor, query, crew)
                 low = alive
             end
         end
-        local effective = math.min(floor.kills * pace, supply * floor.kills / total)
-        known           = { others = others, rate = floor.rate * effective / floor.kills }
+        local effective = math.min(floor.kills * pace, supply)
+        known           = { rate = floor.rate * effective / floor.kills }
         settled[floor]  = known
     end
     return known.rate * remaining(snap, floor)
@@ -641,6 +641,64 @@ local function hop(snap, query, floors)
     return hops[key]
 end
 
+local spans = setmetatable({}, { __mode = "k" })
+
+-- The walk from where I stand to every map, or a jump and the walk after it where that is shorter, asked once for each
+-- place, level and set of jumps a ranking is made from (atlas distances).
+local function span(snap, query)
+    if snap.world.x == nil or query.distances == nil then
+        return nil
+    end
+    local jumps = require("brain.trees.go").jumps(snap, false, false)
+    local names = {}
+    for _, jump in ipairs(jumps) do
+        table.insert(names, jump.spell or jump.item or "")
+    end
+    local region = query.region(snap.world.map, snap.world.x, snap.world.y)
+    local spot   = region ~= 0 and region or snap.world.x .. "," .. snap.world.y
+    local key    = table.concat({ snap.world.map, spot, snap.self.level or 0, table.concat(names, ",") }, "|")
+    local known  = spans[query]
+    if known == nil then
+        known        = {}
+        spans[query] = known
+    end
+    if known[key] == nil then
+        known[key] = query.distances({ jumps = jumps },
+            { map = snap.world.map, x = snap.world.x, y = snap.world.y, level = snap.self.level }) or false
+    end
+    return known[key] or nil
+end
+
+-- A ground somebody else hunts, alone or in a group, is theirs first: a group laps its floors in order, so another
+-- group on the same ground meets it floor by floor, and each floor's respawn goes to the group already there. Of a
+-- floor I count only the respawn their kills leave. Split by kill speed instead, a second group still went where the
+-- ground was worth twice the rest, and both lost: 12.4M and 17.9M on 흑해골굴 against 22.4M and 25.0M alone (online
+-- 203032 against 200750; user 11-15: a ground somebody holds is not entered to take from them, while beginners weigh the
+-- walk to an empty ground against what a crowded one has left). The share is taken where a ground is picked, not in the
+-- ranking a period keeps: kept in it, three groups that chose within one period all saw 흑해골굴 empty and went there
+-- (online 170334, 17:05:11-41).
+local function held(query, floors, crew)
+    local others = 0
+    for _, floor in ipairs(floors) do
+        others = others + query.demand(floor.map, crew ~= nil and crew.names or nil)
+    end
+    if others <= 0 then
+        return 1
+    end
+    local wanted = 0
+    local left   = 0
+    for _, floor in ipairs(floors) do
+        local supply = (floor.supply or 0) * combat.rezen
+        local need   = math.min(supply, floor.kills or 0)
+        wanted       = wanted + need
+        left         = left + math.min(need, math.max(0, supply - others))
+    end
+    return wanted > 0 and left / wanted or 1
+end
+
+-- A ground away from me is worth its lap less the walk there, the lap being the stay one round of its floors takes
+-- before servicing, so a crowded ground near me can still beat an empty one too far to reach without a jump (user 11-15:
+-- beginners). A way not known is no walk to weigh, as an unknown reach is not "nowhere" (reach).
 local function lapped(snap, query, candidate, worth, moving, crew)
     local finish = 1
     local rate   = 0
@@ -648,11 +706,14 @@ local function lapped(snap, query, candidate, worth, moving, crew)
     local supply = 0
     local spent  = 0
     local stock  = 0
+    local took   = 0
+    local inside = false
     local gap    = moving and hop(snap, query, candidate.floors) or 0
     for index, floor in ipairs(candidate.floors) do
-        supply    = supply + share(snap, floor, query, crew)
+        supply    = supply + share(snap, floor)
         stock     = stock + (floor.stock or 0)
         spent     = spent + (floor.rate > 0 and (floor.stock or 0) / floor.rate or 0)
+        inside    = inside or floor.map == snap.world.map
         local raw = spent > 0 and stock / spent or floor.rate
         local lap = math.min(raw, supply)
         if index > 1 and gap > 0 then
@@ -663,13 +724,19 @@ local function lapped(snap, query, candidate, worth, moving, crew)
             best   = sum
             rate   = lap
             finish = index
+            took   = spent + (index > 1 and gap < math.huge and index * gap or 0)
         end
     end
-    return finish, rate, best
+    local walks   = inside == false and span(snap, query) or nil
+    local steps   = walks ~= nil and walks[candidate.floors[1].map] or nil
+    local away    = steps ~= nil and steps * (snap.pace.step or combat.walk) / 1000 or 0
+    local reached = away <= 0 and 1 or took > 0 and took / (took + away) or 0
+    return finish, rate * reached, best * reached
 end
 
 -- What a plan is worth when a rival hunts the same floors beside it: the rival's kills join the others' demand on
--- every floor both plans hold, and the respawn they share settles the rate (share). Plans on other floors keep theirs.
+-- every floor both plans hold, and the plan keeps its share of the kills there (lapped). Plans on other floors keep
+-- theirs.
 function M.contended(snap, query, plan, rival)
     if plan == nil then
         return 0
@@ -692,7 +759,7 @@ function M.contended(snap, query, plan, rival)
         end
     }, { __index = query })
     local _, rate = lapped(snap, shared, { floors = plan.floors }, {}, false, nil)
-    return math.min(value, rate)
+    return math.min(value, rate * held(shared, plan.floors, nil))
 end
 
 local function rank(snap, query, mode, crew, worth)
@@ -830,7 +897,7 @@ function M.ranked(snap, query, mode, crew)
     local period     = (snap.now or 0) // combat.rerank
     local _, marks   = avoided(snap, crew)
     local key        = table.concat({ score.signature(snap, ""), score.signature(snap, mode), context, M.emptied(snap),
-        marks }, "|")
+        marks, snap.world.map }, "|")
     local owner      = slot(snap, crew)
     -- Always rank for this exact key. A per-decision budget used to hand back the last ranking computed
     -- for another state; that stale list produced an empty plan, party.plan cached it, and low-level solo
@@ -1009,6 +1076,37 @@ local function pick(snap, query, mode, crew, guards)
     local ranked     = M.ranked(snap, query, mode, crew)
     local _, context = reach(snap, query, crew)
     local parts      = { context }
+    local shares     = {}
+    local open       = ranked
+    for index, entry in ipairs(ranked) do
+        local kept = held(query, entry.candidate.floors, crew)
+        if kept < 1 then
+            table.insert(shares, index .. ":" .. string.format("%.2f", kept))
+        end
+        if kept < 1 and open == ranked then
+            open = {}
+            for before = 1, index - 1 do
+                table.insert(open, ranked[before])
+            end
+        end
+        if open ~= ranked then
+            table.insert(open, {
+                candidate = entry.candidate,
+                finish = entry.finish,
+                rate = entry.rate * kept,
+                score = entry.score * kept
+            })
+        end
+    end
+    if open ~= ranked then
+        table.sort(open, function(left, right)
+            if left.score ~= right.score then
+                return left.score > right.score
+            end
+            return left.candidate.bundle.name < right.candidate.bundle.name
+        end)
+    end
+    table.insert(parts, table.concat(shares, ","))
     for _, guard in ipairs(guards or {}) do
         table.insert(parts, fighter(guard.rested, query, guard.crew))
     end
@@ -1025,7 +1123,7 @@ local function pick(snap, query, mode, crew, guards)
         picked[ranked] = known
     end
     if known[key] == nil then
-        known[key] = available(snap, query, ranked, shunned, crew, guards)
+        known[key] = available(snap, query, open, shunned, crew, guards)
     end
     local options = {}
     for index, option in ipairs(known[key]) do
