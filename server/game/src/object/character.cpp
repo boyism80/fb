@@ -1444,6 +1444,32 @@ fb::model::point16_t character::viewport_centered(const fb::model::point16_t& po
     return fb::model::point16_t{vx, vy};
 }
 
+fb::model::point<int32_t> character::screen_origin(const fb::model::point16_t& position) const
+{
+    auto x = static_cast<int32_t>(position.x);
+    auto y = static_cast<int32_t>(position.y);
+    if (this->options.enabled(OPTION::FIXED_MOVE) || this->_camera_pivot.has_value() == false)
+    {
+        auto vp = this->viewport_centered(position);
+        return fb::model::point<int32_t>{x - static_cast<int32_t>(vp.x), y - static_cast<int32_t>(vp.y)};
+    }
+
+    auto origin = this->_camera_pivot.value();
+    auto max_x  = static_cast<int32_t>(fb::game::map::MAX_SCREEN_WIDTH);
+    auto max_y  = static_cast<int32_t>(fb::game::map::MAX_SCREEN_HEIGHT);
+    if (x < origin.x)
+        origin.x = x;
+    else if (x - origin.x >= max_x)
+        origin.x = x - (max_x - 1);
+
+    if (y < origin.y)
+        origin.y = y;
+    else if (y - origin.y >= max_y)
+        origin.y = y - (max_y - 1);
+
+    return origin;
+}
+
 void character::camera_pivot() const
 {
     this->assert_thread();
@@ -1454,36 +1480,30 @@ void character::camera_pivot() const
         return;
     }
 
-    auto map = this->map();
+    if (this->map() == nullptr)
+        return;
+
+    this->_camera_pivot = this->screen_origin(this->position());
+}
+
+fb::model::area<uint16_t> character::sight_area(const fb::model::point16_t& position) const
+{
+    auto& map = this->_map;
     if (map == nullptr)
-        return;
+        return fb::model::area<uint16_t>(0, 0, 0, 0);
 
-    auto ax = static_cast<int32_t>(this->x());
-    auto ay = static_cast<int32_t>(this->y());
+    auto origin = this->screen_origin(position);
+    auto left   = std::max(0, origin.x - 1);
+    auto top    = std::max(0, origin.y - 1);
+    auto right  = std::min(static_cast<int32_t>(map->width()),
+                          origin.x + static_cast<int32_t>(fb::game::map::MAX_SCREEN_WIDTH) + 1);
+    auto bottom = std::min(static_cast<int32_t>(map->height()),
+                           origin.y + static_cast<int32_t>(fb::game::map::MAX_SCREEN_HEIGHT) + 1);
 
-    if (this->_camera_pivot.has_value() == false)
-    {
-        auto vp = this->viewport_centered(this->position());
-        this->_camera_pivot =
-            fb::model::point<int32_t>{ax - static_cast<int32_t>(vp.x), ay - static_cast<int32_t>(vp.y)};
-        return;
-    }
-
-    auto& pivot = this->_camera_pivot.value();
-    auto  vx    = ax - pivot.x;
-    auto  vy    = ay - pivot.y;
-    auto  max_x = static_cast<int32_t>(fb::game::map::MAX_SCREEN_WIDTH);
-    auto  max_y = static_cast<int32_t>(fb::game::map::MAX_SCREEN_HEIGHT);
-
-    if (vx < 0)
-        pivot.x = ax;
-    else if (vx >= max_x)
-        pivot.x = ax - (max_x - 1);
-
-    if (vy < 0)
-        pivot.y = ay;
-    else if (vy >= max_y)
-        pivot.y = ay - (max_y - 1);
+    return fb::model::area<uint16_t>(static_cast<uint16_t>(left),
+                                     static_cast<uint16_t>(top),
+                                     static_cast<uint16_t>(right),
+                                     static_cast<uint16_t>(bottom));
 }
 
 fb::model::point16_t character::viewport() const

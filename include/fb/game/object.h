@@ -115,8 +115,6 @@ private:
     void                             update_sector();
     async::task<bool>                place(map_ptr map, std::optional<fb::model::point16_t> position, map_options options);
     async::task<void>                invoke_map_character_hook(const fb::model::map& map_model, std::string_view hook);
-    static bool                      sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
-    static fb::model::area<uint16_t> sight_area(const fb::model::point16_t& position, const map_ptr& map);
     // clang-format on
 
 public:
@@ -163,6 +161,7 @@ public:
     bool                                                    sight(const fb::model::point16_t& position) const;
     bool                                                    sight(const fb::game::object& object) const;
     fb::model::area<uint16_t>                               sight_area() const;
+    virtual fb::model::area<uint16_t>                       sight_area(const fb::model::point16_t& position) const;
     fb::model::point16_t                                    side_position(DIRECTION direction, int step = 1) const;
     fb::model::point16_t                                    front_position(int step = 1) const;
     object_ptr                                              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT, int range = 1) const;

@@ -226,13 +226,14 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         return true;
 
     auto before       = this->_position;
+    auto before_sight = this->sight_area();
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if (refresh)
         this->update_position();
 
-    if (sight(before, this->_position, this->_map) == false)
+    if (before_sight.contains(this->_position) == false)
         this->show(*this);
 
     this->update_sector();
@@ -249,7 +250,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         }
 
         // Other object left my sight
-        if (sight(before, obj->_position, this->_map) && !this->sight(*obj))
+        if (before_sight.contains(obj->_position) && !this->sight(*obj))
         {
             obj->hide(*this);
         }
@@ -260,14 +261,14 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj.get())
             continue;
 
-        auto before_sight = obj->sight(before);
-        auto after_sight  = obj->sight(*this);
+        auto seen_before = obj->sight(before);
+        auto seen_after  = obj->sight(*this);
 
-        if (!before_sight && after_sight) // I entered the other object's sight
+        if (!seen_before && seen_after) // I entered the other object's sight
         {
             this->show(*obj);
         }
-        else if (refresh && before_sight && after_sight) // Force refresh while already in sight
+        else if (refresh && seen_before && seen_after) // Force refresh while already in sight
         {
             this->show(*obj);
         }
@@ -276,7 +277,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         }
 
         // Other object entered my sight
-        if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
+        if (!before_sight.contains(obj->_position) && this->sight(*obj))
         {
             obj->show(*this);
         }
@@ -452,7 +453,7 @@ bool object::sight(const fb::model::point16_t& position) const
 {
     this->assert_thread();
 
-    return object::sight(this->_position, position, this->_map);
+    return this->sight_area(this->_position).contains(position);
 }
 
 bool object::sight(const object& object) const
@@ -468,13 +469,9 @@ bool object::sight(const object& object) const
     return this->sight(object._position);
 }
 
-bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map)
+fb::model::area<uint16_t> object::sight_area(const fb::model::point16_t& position) const
 {
-    return map != nullptr && object::sight_area(me, map).contains(you);
-}
-
-fb::model::area<uint16_t> object::sight_area(const fb::model::point16_t& position, const map_ptr& map)
-{
+    auto& map = this->_map;
     if (map == nullptr)
         return fb::model::area<uint16_t>(0, 0, 0, 0);
 
@@ -521,7 +518,7 @@ fb::model::area<uint16_t> object::sight_area(const fb::model::point16_t& positio
 fb::model::area<uint16_t> object::sight_area() const
 {
     this->assert_thread();
-    return object::sight_area(this->_position, this->_map);
+    return this->sight_area(this->_position);
 }
 
 async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> position, map_options options)

@@ -464,6 +464,7 @@ private:
     void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
+    fb::model::point<int32_t>       screen_origin(const fb::model::point16_t& position) const;
     void                            camera_pivot() const;
     bool                            level_up();
     bool                            max_level() const;
@@ -510,6 +511,7 @@ public:
     [[nodiscard]] async::task<bool>          move(DIRECTION direction) override final;
     fb::model::point16_t                     viewport() const;
     fb::model::point16_t                     viewport(const fb::model::point16_t& position) const;
+    fb::model::area<uint16_t>                sight_area(const fb::model::point16_t& position) const override;
     bool                                     condition(const std::vector<fb::model::dsl>& conditions) const override final;
     fb::thread*                              thread() const override final;
     void                                     assert_thread() const override final;
