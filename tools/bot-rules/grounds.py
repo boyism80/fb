@@ -118,7 +118,13 @@ def bundles():
         result.append({'name': name, 'floors': floors, 'rank': floors[0]['rank']})
     result.sort(key=lambda bundle: (bundle['rank'], bundle['floors'][0]['map']))
 
-    used = sorted({mob['id'] for bundle in result for found in bundle['floors'] for mob in found['mobs']})
+    used = set()
+    for rows in spawns.values():
+        for row in rows:
+            mob = mobs.get(str(row['mob']))
+            if mob is not None and not mob.get('invincible') and row.get('count', 0) > 0:
+                used.add(row['mob'])
+    used = sorted(used)
     table_drops = json.loads((JSON / 'drop.json').read_text(encoding='utf-8'))
     items = {item['id']: item for item in json.loads((JSON / 'item.json').read_text(encoding='utf-8')).values()}
     rezens = {}

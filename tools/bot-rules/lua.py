@@ -5,6 +5,8 @@ def lua_value(value):
         return str(value)
     elif isinstance(value, str):
         return '"' + value.replace('\\', '\\\\').replace('"', '\\"') + '"'
+    elif len(value) == 0:
+        return '{}'
     elif isinstance(value, list):
         return '{ ' + ', '.join(lua_value(item) for item in value) + ' }'
     else:
