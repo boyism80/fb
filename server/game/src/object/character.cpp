@@ -1556,7 +1556,7 @@ bool character::title(std::string_view value)
 {
     this->assert_thread();
 
-    if (fb::text_length(value) > MAX_TITLE_LENGTH)
+    if (fb::text_length(value) > MAX_TITLE_LENGTH || fb::model::table::blocked_word->contains_substring(value))
         return false;
 
     if (this->_title == value)

@@ -1239,7 +1239,7 @@ function M.basic_class(me, npc, class, spells)
             if title == DIALOG_RESULT.PREV then
                 goto NPC_BASIC_CLASS_000
             end
-            if type(title) ~= 'string' or title == '' or has_blocked_word(title) then
+            if type(title) ~= 'string' or title == '' then
                 if me:dialog(npc, '그런 칭호는 줄 수 없느니라.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -1265,6 +1265,10 @@ function M.basic_class(me, npc, class, spells)
             end
             if me:title(title) == false then
                 me:exchange({}, { money = 5000 })
+                if me:dialog(npc, '그런 칭호는 줄 수 없느니라.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+                    return
+                end
+                goto NPC_BASIC_CLASS_000
             end
             if me:dialog(npc, '칭호를 받았으니, 자신감을 가 지고 다니게나...', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return
