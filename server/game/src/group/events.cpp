@@ -327,7 +327,7 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
         auto ptr   = weak.lock();
         auto reset = ptr != nullptr && (stale == false || ptr->group.id() == group_id);
         if (reset)
-            co_await this->reset_member(*ptr, message);
+            co_await ptr->group.leave(message);
 
         if (stale == false || reset)
         {
@@ -355,36 +355,19 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
     this->update_portraits(group_id);
 }
 
-async::task<void> group::container::reset_member(character& ch, std::string message)
-{
-    ch.assert_thread();
-
-    ch.group.reset();
-    this->clear_portraits(ch);
-    co_await ch.matchmaker.drop_ticket();
-    ch.message(message, MESSAGE_TYPE::STATE);
-
-    auto map = ch.map();
-    if (map != nullptr && map->is_instance() &&
-        map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
-    {
-        std::ignore = co_await map->kick(ch);
-    }
-}
-
 async::task<bool> group::container::enter_member(character& ch, uint64_t group_id)
 {
     ch.assert_thread();
 
-    if (this->_server.characters.find(ch.id).get() != &ch || ch.group.id() == group_id)
+    if (this->_server.characters.find(ch.id).get() != &ch)
         co_return false;
 
     // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
     auto entered = false;
     try
     {
-        entered = this->write(group_id, [weak = ch.weak_from_this_as<character>()](auto& group) {
-            return group != nullptr && group->enter(weak);
+        entered = this->write(group_id, [&ch](auto& group) {
+            return group != nullptr && ch.group.enter(*group);
         });
     }
     catch (const std::runtime_error&)
@@ -393,7 +376,6 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     if (entered == false)
         co_return false;
 
-    ch.group.id(group_id);
     ch.message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
 
     // A ticket holds the members it was queued with, so joining a group ends it.
@@ -405,41 +387,13 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     co_return true;
 }
 
-async::task<void> group::container::attach(character& ch)
-{
-    ch.assert_thread();
-
-    auto group_id = ch.group.id();
-    if (group_id.has_value() == false)
-        co_return;
-
-    auto entered = false;
-    {
-        auto guard = co_await this->enter_write(group_id.value());
-        if (auto& group = guard.value(); group != nullptr && group->enter(ch.weak_from_this_as<character>()))
-        {
-            this->update_portraits(*group);
-            entered = true;
-        }
-    }
-
-    if (entered == false)
-        co_await this->reset_member(ch, _TEXT(MESSAGE_GROUP_NOT_JOINED));
-}
-
 async::task<void> group::container::drop_stale_membership(character& ch, uint64_t group_id)
 {
     auto weak = ch.weak_from_this_as<character>();
-    {
-        auto guard = co_await this->enter_write(group_id);
-        if (guard.holds_lock() && guard.value() != nullptr)
-            guard.value()->detach(weak);
-    }
-
     co_await this->_server.threads.follow(weak);
     auto ptr = weak.lock();
     if (ptr != nullptr && ptr->group.id() == group_id)
-        co_await this->reset_member(*ptr, _TEXT(MESSAGE_GROUP_NOT_JOINED));
+        co_await ptr->group.leave(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
     co_await this->reload(group_id);
 }
@@ -474,8 +428,8 @@ async::task<void> group::container::on_destroyed(std::string actor, uint64_t gro
         this->erase(group_id);
 
     this->_server.characters.foreach_enqueue(
-        [this](auto& ch) -> async::task<void> {
-            co_await this->reset_member(*ch, _TEXT(MESSAGE_GROUP_DISBANDED));
+        [](auto& ch) -> async::task<void> {
+            co_await ch->group.leave(_TEXT(MESSAGE_GROUP_DISBANDED));
         },
         members);
     co_return;

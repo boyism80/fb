@@ -293,8 +293,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     if (resp.group.has_value())
     {
         auto guard = co_await this->server.groups.enter_write(resp.group.value());
-        if (auto& group = guard.value(); group != nullptr && group->contains(ch->name()))
-            ch->group.id(group->id());
+        if (auto& group = guard.value(); group != nullptr)
+            std::ignore = ch->group.enter(*group);
     }
 
     if (resp.clan.has_value())
@@ -338,7 +338,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
-    co_await this->server.groups.attach(*ch);
+    ch->group.refresh_portrait();
     std::ignore = co_await this->server.clans.attach(*ch);
 
     bool inserted = this->server.characters.insert(ch);

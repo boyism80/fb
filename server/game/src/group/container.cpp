@@ -97,9 +97,9 @@ async::task<void> group::container::reload(uint64_t id)
     }
 
     co_await this->_server.characters.foreach_async(
-        [this, id](auto& ch) -> async::task<void> {
+        [id](auto& ch) -> async::task<void> {
             if (ch->group.id() == id)
-                co_await this->reset_member(*ch, _TEXT(MESSAGE_GROUP_LEFT_SUCCESS));
+                co_await ch->group.leave(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS));
         },
         removed);
     co_await this->_server.characters.foreach_async(

@@ -41,22 +41,8 @@ async::task<void> fb::game::server::unload(character& ch)
 {
     this->matches.leave(ch);
 
-    auto  weak     = ch.weak_from_this_as<character>();
-    auto& group_id = ch.group.id();
-    if (group_id.has_value())
-    {
-        auto gid = group_id.value();
-        try
-        {
-            this->groups.write(gid, [weak](auto& group) {
-                group->detach(weak);
-            });
-        }
-        catch (const std::runtime_error&)
-        { }
-        ch.group.reset();
-        this->groups.update_portraits(gid);
-    }
+    auto weak = ch.weak_from_this_as<character>();
+    ch.group.detach();
 
     auto& clan_id = ch.clan.id();
     if (clan_id.has_value())

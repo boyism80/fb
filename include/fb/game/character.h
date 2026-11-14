@@ -51,6 +51,7 @@ class Unban;
 
 namespace fb::game {
 
+class group;
 class map;
 class match;
 
@@ -223,10 +224,11 @@ public:
 
     public:
         // clang-format off
-        const std::optional<uint64_t>& id() const;
-        void                           id(uint64_t value);
-        void                           reset();
-        void                           refresh_portrait();
+        const std::optional<uint64_t>&  id() const;
+        bool                            enter(fb::game::group& group);
+        [[nodiscard]] async::task<void> leave(std::string message);
+        void                            detach();
+        void                            refresh_portrait();
         // clang-format on
     };
 

@@ -89,7 +89,6 @@ public:
     async::task<bool> handle_action(character& actor, std::string_view target_name);
     async::task<void> toggle_member(character& actor, std::string_view target_name);
     async::task<void> leave_member(character& leaver);
-    async::task<void> attach(character& ch);
     async::task<void> broadcast(uint32_t world, uint64_t group_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void> on_error(uint32_t error, std::string_view actor);
     async::task<void> on_create(std::string target, uint64_t group_id, std::string master, std::map<uint32_t, std::string> members, uint64_t revision);
@@ -108,7 +107,6 @@ public:
 private:
     // clang-format off
     async::task<void>                                         remove_member(uint64_t group_id, std::string name, std::string message, std::string others_message, std::string log_name, uint64_t revision);
-    async::task<void>                                         reset_member(character& ch, std::string message);
     async::task<bool>                                         enter_member(character& ch, uint64_t group_id);
     async::task<void>                                         drop_stale_membership(character& ch, uint64_t group_id);
     async::task<void>                                         send_portraits(std::vector<std::string> names, std::string master, std::vector<std::shared_ptr<character>> online, std::vector<std::shared_ptr<character>> recipients);
