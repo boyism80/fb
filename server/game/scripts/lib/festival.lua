@@ -60,14 +60,42 @@ function M.stamp_lunar_year(q)
     if q == nil then
         return
     end
-    local year = M.lunar_year()
-    local p = q:param() or ''
+    M.save_payload(q, M.payload(q))
+end
+
+function M.payload(q)
+    local p = (q ~= nil and q:param()) or ''
     local rest = string.match(p, '^%d+:(.*)$')
     if rest ~= nil then
-        q:param(string.format('%d:%s', year, rest))
-    else
-        q:param(tostring(year))
+        return rest
     end
+    if string.match(p, '^%d*$') ~= nil then
+        return ''
+    end
+    return p
+end
+
+function M.save_payload(q, text)
+    if text == nil or text == '' then
+        q:param(tostring(M.lunar_year()))
+        return
+    end
+    q:param(string.format('%d:%s', M.lunar_year(), text))
+end
+
+function M.seotdal_flags(q)
+    local p = (q ~= nil and q:param()) or ''
+    local y, w, d, b = string.match(p, '^(%d+):(%d+):(%d+):(%d+)$')
+    if y ~= nil then
+        return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
+    end
+    -- Legacy "w:d:b" without year
+    w, d, b = string.match(p, '^(%d+):(%d+):(%d+)$')
+    return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
+end
+
+function M.set_seotdal_flags(q, w, d, b)
+    M.save_payload(q, string.format('%d:%d:%d', w, d, b))
 end
 
 -- 칠성당 입장/고사: 0,3,6,9,12,15,18,21
@@ -88,7 +116,7 @@ function M.set_pheasant_kill_penalty(me, seconds)
     if q == nil then
         return
     end
-    q:param(string.format('%d:%d', M.lunar_year(), ts + (seconds or 3600)))
+    M.save_payload(q, tostring(ts + (seconds or 3600)))
 end
 
 function M.pheasant_kill_penalty_remaining(me)
@@ -100,7 +128,7 @@ function M.pheasant_kill_penalty_remaining(me)
     if q == nil then
         return 0
     end
-    local until_ts = tonumber(string.match(q:param() or '', '^%d+:(%d+)$'))
+    local until_ts = tonumber(string.match(M.payload(q), '^(%d+)$'))
     if until_ts == nil then
         return 0
     end

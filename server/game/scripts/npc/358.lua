@@ -3,28 +3,13 @@ local festival = require('lib.festival')
 local enum = require('lib.enum')
 local quest = require('lib.quest')
 
-local function seotdal_flags(q)
-    local p = (q ~= nil and q:param()) or ''
-    local y, w, d, b = string.match(p, '^(%d+):(%d+):(%d+):(%d+)$')
-    if y ~= nil then
-        return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-    end
-    w, d, b = string.match(p, '^(%d+):(%d+):(%d+)$')
-    return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-end
-
-local function set_seotdal_flags(q, w, d, b)
-    local year = festival.lunar_year()
-    q:param(string.format('%d:%d:%d:%d', year, w, d, b))
-end
-
 local function run_seotdal(me, npc)
     local q = quest.get_annual(me, quest.QUEST_SEOTDAL_GIFTS)
     if q == nil or q:step() < 1 or q:completed() then
         return false
     end
 
-    local w, d, b = seotdal_flags(q)
+    local w, d, b = festival.seotdal_flags(q)
     if b == 1 or me:has_items('설화의이슬', 1) then
         me:dialog(npc, "이미 설화의이슬을 드렸지요. 어른들 몰래 드세요.", { prev = false, next = false })
         return true
@@ -60,7 +45,7 @@ local function run_seotdal(me, npc)
         return true
     end
 
-    set_seotdal_flags(q, w, d, 1)
+    festival.set_seotdal_flags(q, w, d, 1)
     return true
 end
 

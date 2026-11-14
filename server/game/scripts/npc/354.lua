@@ -53,8 +53,7 @@ local function parse_ferment_slots(q)
         return slots
     end
 
-    local p = q:param() or ''
-    local body = string.match(p, '^%d+:ferment|(.*)$')
+    local body = string.match(festival.payload(q), '^ferment|(.*)$')
     if body == nil or body == '' then
         return slots
     end
@@ -82,7 +81,7 @@ local function write_ferment_slots(q, slots)
     table.sort(ids)
 
     if #ids == 0 then
-        q:param(tostring(festival.lunar_year()))
+        festival.save_payload(q, '')
         return
     end
 
@@ -91,7 +90,7 @@ local function write_ferment_slots(q, slots)
         local id = ids[i]
         parts[i] = string.format('%d:%d', id, slots[id])
     end
-    q:param(string.format('%d:ferment|%s', festival.lunar_year(), table.concat(parts, '|')))
+    festival.save_payload(q, 'ferment|' .. table.concat(parts, '|'))
 end
 
 local function set_ferment_slot(q, kimchi_id, ready_ts)

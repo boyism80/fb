@@ -18,22 +18,6 @@ local function has_catch_jar(me)
     return false
 end
 
-local function seotdal_flags(q)
-    local p = (q ~= nil and q:param()) or ''
-    local y, w, d, b = string.match(p, '^(%d+):(%d+):(%d+):(%d+)$')
-    if y ~= nil then
-        return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-    end
-    -- Legacy "w:d:b" without year
-    w, d, b = string.match(p, '^(%d+):(%d+):(%d+)$')
-    return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-end
-
-local function set_seotdal_flags(q, w, d, b)
-    local year = festival.lunar_year()
-    q:param(string.format('%d:%d:%d:%d', year, w, d, b))
-end
-
 local function grant_missing_outgoing(me)
     local to_give = {}
     for _, name in ipairs(OUTGOING) do
@@ -215,7 +199,7 @@ local function run_seotdal(me, npc)
     end
 
     if q ~= nil and q:step() >= 1 then
-        local w, d, b = seotdal_flags(q)
+        local w, d, b = festival.seotdal_flags(q)
         local options = { "선물을 다시 주세요." }
         if w == 1 and d == 1 and b == 1 then
             table.insert(options, 1, "선물을 다 전해줬어요.")
@@ -294,7 +278,7 @@ local function run_seotdal(me, npc)
         return
     end
     q:step(1)
-    set_seotdal_flags(q, 0, 0, 0)
+    festival.set_seotdal_flags(q, 0, 0, 0)
 
     if me:mkitem({ ['곶감'] = 1, ['김장김치'] = 1, ['말린생선'] = 1 }) == nil then
         me:dialog(npc, "소지품이 가득 차서 선물을 드릴 수 없습니다.", { prev = false, next = false })

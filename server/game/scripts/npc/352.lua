@@ -247,8 +247,8 @@ local function run_jungyang(me, npc)
     local q = quest.get_annual(me, quest.QUEST_JUNGYANG_GUKHWA)
     local given = 0
     local last_day = 0
-    if q ~= nil and q:param() ~= nil and q:param() ~= "" then
-        local a, b = string.match(q:param(), "^(%d+):(%d+)$")
+    if q ~= nil then
+        local a, b = string.match(festival.payload(q), "^(%d+):(%d+)$")
         last_day = tonumber(a) or 0
         given = tonumber(b) or 0
         if last_day ~= day_key then
@@ -271,26 +271,11 @@ local function run_jungyang(me, npc)
         q = me:start_quest(quest.QUEST_JUNGYANG_GUKHWA)
     end
     if q ~= nil then
-        q:param(string.format("%d:%d", day_key, given))
+        festival.save_payload(q, string.format("%d:%d", day_key, given))
     end
 
     me:dialog(npc, "국화가 여기 있습니다. 그럼 잘 사용하세요..", { prev = false, next = false })
     return true
-end
-
-local function seotdal_flags(q)
-    local p = (q ~= nil and q:param()) or ''
-    local y, w, d, b = string.match(p, '^(%d+):(%d+):(%d+):(%d+)$')
-    if y ~= nil then
-        return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-    end
-    w, d, b = string.match(p, '^(%d+):(%d+):(%d+)$')
-    return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
-end
-
-local function set_seotdal_flags(q, w, d, b)
-    local year = festival.lunar_year()
-    q:param(string.format('%d:%d:%d:%d', year, w, d, b))
 end
 
 local function run_seotdal(me, npc)
@@ -303,7 +288,7 @@ local function run_seotdal(me, npc)
         return false
     end
 
-    local w, d, b = seotdal_flags(q)
+    local w, d, b = festival.seotdal_flags(q)
     if w == 1 then
         me:dialog(npc, "이미 김장김치를 받았어요. 제기는 선릉이에게 잘 전해 주세요.", { prev = false, next = false })
         return true
@@ -335,7 +320,7 @@ local function run_seotdal(me, npc)
         return true
     end
 
-    set_seotdal_flags(q, 1, d, b)
+    festival.set_seotdal_flags(q, 1, d, b)
     me:dialog(npc, "선릉이에게 제기 잘 전해 주세요.", { prev = false, next = false })
     return true
 end
