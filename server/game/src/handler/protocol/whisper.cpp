@@ -25,15 +25,8 @@ async::task<bool> whisper<V>::handle(fb::socket<character>& session, game_reqs::
         co_return true;
 
     auto weak = me->weak_from_this_as<character>();
-    auto map  = me->map();
-    if (map == nullptr)
+    if (me->map() == nullptr)
         co_return true;
-
-    if (me->role() == ROLE::USER && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_WHISPER))
-    {
-        me->message(_TEXT(MESSAGE_WHISPER_DISABLED_AREA));
-        co_return true;
-    }
 
     auto error = std::optional<std::string>{};
     try
