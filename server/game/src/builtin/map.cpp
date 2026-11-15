@@ -979,19 +979,19 @@ int builtin::map::builtin_cancel_timer(lua_State* L)
     auto builder = lua->new_co_builder();
     builder.weak = weak;
 
-    if (lua->is_string(2))
-    {
-        auto name     = lua->tostring(2);
-        builder.yield = [=]() -> async::task<void> {
-            *success = server->script_timers.cancel(map->id, name);
-            co_return;
-        };
-    }
-    else if (lua->is_number(2))
+    if (lua->is_number(2))
     {
         auto id       = static_cast<uint64_t>(lua->touint64(2));
         builder.yield = [=]() -> async::task<void> {
             *success = server->script_timers.cancel(map->id, id);
+            co_return;
+        };
+    }
+    else if (lua->is_string(2))
+    {
+        auto name     = lua->tostring(2);
+        builder.yield = [=]() -> async::task<void> {
+            *success = server->script_timers.cancel(map->id, name);
             co_return;
         };
     }
