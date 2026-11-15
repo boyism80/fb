@@ -65,6 +65,32 @@ function M.warding(name)
         ((boost.damage_derate or 0) > 0 or (boost.buff_phydef or 0) > 0)
 end
 
+-- The wards kept up on me, by me or a crewmate: a ward cast on others with no reuse delay (무장, 보호) is counted on
+-- me whether it is on this moment or not, as my own kept buffs are. Counted only while it was on, every cast and every
+-- end of one changed the build the crew planned for, and the whole crew worked its plan out anew and held its walks
+-- 1-3s each time (online 20261115-151147; user 11-16). A member's view carries the set its crew posted.
+function M.kept(snap)
+    if snap.kept ~= nil then
+        return snap.kept
+    end
+    local found = {}
+    local function add(spells)
+        for _, learned in ipairs(spells or {}) do
+            local data = magic.spells[learned.name]
+            if M.warding(learned.name) and data.delay == nil then
+                found[learned.name] = true
+            end
+        end
+    end
+    add(snap.spells)
+    for _, profile in ipairs(snap.party or {}) do
+        if profile.self == nil or profile.self.ghost ~= true then
+            add(profile.spells)
+        end
+    end
+    return found
+end
+
 local MODELED = { damage_rate = true, buff_hit = true, buff_dam = true, buff_phydef = true, damage_derate = true }
 
 -- A buff the fight model counts: a boost it reads, a strike multiplier, a splash or an echo.
@@ -90,6 +116,55 @@ function M.valued(name)
 end
 
 local NONE = {}
+
+-- A spell that comes off a die roll (금강불체: 30% on the live server, every cast on a debug build) is counted at the
+-- odds this bot has seen, from the data's odds as one first try: held to the data's 0.3, a poet on a debug server
+-- would weigh as a gamble the guard it always gets.
+function M.tallied(rolls, name, hit)
+    local result = {}
+    for key, entry in pairs(type(rolls) == "table" and rolls or NONE) do
+        result[key] = entry
+    end
+    local seen   = result[name] or { tries = 0, hits = 0 }
+    result[name] = { tries = seen.tries + 1, hits = seen.hits + (hit and 1 or 0) }
+    return result
+end
+
+function M.rolled(snap, name, prior)
+    local roll = ((snap.record or {}).memory or {}).rolls
+    local seen = type(roll) == "table" and roll[name] or nil
+    return ((seen ~= nil and seen.hits or 0) + prior) / ((seen ~= nil and seen.tries or 0) + 1)
+end
+
+-- While a guard is on me (금강불체) no blow takes hp: what the mobs beside me deal is counted from the time it ends,
+-- as the time a held mob cannot strike is (debuffs.disable), so the danger rises as the guard runs out instead of
+-- coming back all at once.
+function M.invincible(snap)
+    local left = 0
+    for name, ms in pairs(snap.buff_left or NONE) do
+        local data = magic.spells[name]
+        if data ~= nil and data.trigger == "EMERGENCY" then
+            left = math.max(left, ms)
+        end
+    end
+    return left
+end
+
+function M.pressure(snap, member, window)
+    local total = 0
+    if member.world.map ~= snap.world.map or member.world.x == nil then
+        return total
+    end
+    local open = math.max(0, window - M.invincible(member))
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and M.hits(mob) and (mob.speed or 0) > 0 and
+            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
+            local _, high = M.spread(member, mob)
+            total = total + high * open / mob.speed
+        end
+    end
+    return total
+end
 
 local function compute_buffs(snap)
     local result = { rate = 0, hit = 0, dam = 0, phydef = 0, derate = 1, opener = 1, echo = 1, splash = 0, enchant = 0 }
@@ -123,7 +198,11 @@ local function compute_buffs(snap)
             if data.trigger == "MANA" and data.surge ~= nil then
                 result.surge = { rate = data.surge / (magic.buff_tick or 1), mp = data.mp or 0 }
             elseif data.trigger == "EMERGENCY" then
-                result.emergency = { chance = data.chance or 1, time = (data.buff_time or 0) * 1000, mp = data.mp or 0 }
+                result.emergency = {
+                    chance = M.rolled(snap, learned.name, data.chance or 1),
+                    time   = (data.buff_time or 0) * 1000,
+                    mp     = data.mp or 0,
+                }
             end
         elseif data ~= nil and data.role == "AMBUSH" then
             ambush = true
@@ -155,6 +234,9 @@ local function compute_buffs(snap)
         if M.warding(learned.name) then
             wards[learned.name] = wards[learned.name] or "PLANNED"
         end
+    end
+    for name in pairs(M.kept(snap)) do
+        wards[name] = wards[name] or "PLANNED"
     end
     for name, state in pairs(wards) do
         local boost = (magic.spells[name] or {}).boost or {}
@@ -365,6 +447,10 @@ local function typical(low, high)
 end
 
 function M.imminent(snap, attackers)
+    local open = math.max(0, M.cast(snap) - M.invincible(snap))
+    if open <= 0 then
+        return 0
+    end
     local behind = ((magic.back_attack or 1) - 1) / math.max(combat.adjacent - 1, 1)
     local worst  = 0
     local flow   = 0
@@ -380,10 +466,14 @@ function M.imminent(snap, attackers)
             flow = flow + attacker.count * typical(low, high) / attacker.mob.speed * (1 + behind)
         end
     end
-    return worst + flow * M.cast(snap)
+    return worst + flow * open
 end
 
 function M.spike(snap, attackers)
+    local open = math.max(0, M.cast(snap) - M.invincible(snap))
+    if open <= 0 then
+        return 0
+    end
     local behind = ((magic.back_attack or 1) - 1) / math.max(combat.adjacent - 1, 1)
     local worst  = 0
     local flow   = 0
@@ -399,7 +489,7 @@ function M.spike(snap, attackers)
             flow = flow + attacker.count * M.blow(snap, attacker.mob) / attacker.mob.speed * (1 + behind)
         end
     end
-    return worst + flow * M.cast(snap)
+    return worst + flow * open
 end
 
 function M.blow(snap, mob)
@@ -566,10 +656,29 @@ local function best(choices, mp, field, hp)
     return found
 end
 
+-- A fight is worked out with the spells cast over and over. One that spends all the mana (헬파이어) is cast now and
+-- then, between its delays and refills (user 11-15: the hunt goes on as it would without it meanwhile), so it is left
+-- out here and weighed as a strike of its own when it can be cast (battle.candidates). Taken as the strongest spell,
+-- a fight was one cast of it and blows after, the mana gone.
+local function sustained(options)
+    if options.sustained == nil then
+        local found = {}
+        for _, choice in ipairs(options.offense) do
+            local spell = magic.spells[choice.name]
+            if spell == nil or spell.drain ~= true then
+                table.insert(found, choice)
+            end
+        end
+        options.sustained = found
+    end
+    return options.sustained
+end
+
 local function volley(options, mp, left, hp)
-    local casts = 0
-    local spent = 0
-    local spell = best(options.offense, mp, "damage", hp)
+    local casts   = 0
+    local spent   = 0
+    local offense = sustained(options)
+    local spell   = best(offense, mp, "damage", hp)
     while spell ~= nil and left > 0 do
         local count = math.ceil(left / spell.damage)
         local spend = -(spell.hp or 0)
@@ -584,7 +693,7 @@ local function volley(options, mp, left, hp)
         hp    = hp - count * math.max(spend, 0)
         spent = spent + count * math.max(spend, 0)
         casts = casts + count
-        spell = count > 0 and best(options.offense, mp, "damage", hp) or nil
+        spell = count > 0 and best(offense, mp, "damage", hp) or nil
     end
     return left, mp, casts, spent
 end
@@ -782,18 +891,21 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     end
     -- The hp the strike cost is off hp already, so only the blows count against it: counted again within taken, a
     -- warrior that ended its mob with 건곤대나이 planned ten heals after the fight (brain unit test, warrior63).
-    local taken  = landed(time, weak.disable, mob.speed, blow, mob) + spent
-    local healed = 0
-    local heal   = best(options.heal, mp, "hp")
+    local guarded = M.invincible(snap)
+    local spared  = math.max(weak.disable, guarded)
+    local taken   = landed(time, spared, mob.speed, blow, mob) + spent
+    local healed  = 0
+    local heal    = best(options.heal, mp, "hp")
     while heal ~= nil and heal.mp > 0 and taken - spent - healed >= hp do
         healed = healed + heal.hp
         mp     = mp - heal.mp
         time   = time + cast
-        taken  = landed(time, weak.disable, mob.speed, blow, mob) + spent
+        taken  = landed(time, spared, mob.speed, blow, mob) + spent
         heal   = best(options.heal, mp, "hp")
     end
     local guard = buffs.emergency
-    if guard ~= nil and taken - spent - healed >= hp and mp >= guard.mp and mob.speed ~= nil and mob.speed > 0 then
+    if guard ~= nil and guarded <= 0 and taken - spent - healed >= hp and mp >= guard.mp and mob.speed ~= nil and
+        mob.speed > 0 then
         mp    = mp - guard.mp
         taken = math.max(0, taken - guard.chance * guard.time / mob.speed * blow)
     end
@@ -806,7 +918,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         healed  = healed,
         drained = (snap.self.mp or 0) - mp,
         margin  = (hp + spent + healed - taken) / math.max(snap.self.max_hp, 1),
-        p_die   = M.lethal(snap, mob, time - weak.disable, hp + healed),
+        p_die   = M.lethal(snap, mob, time - spared, hp + healed),
         gain    = M.gain(mob, snap),
     }
 end

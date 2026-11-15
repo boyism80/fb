@@ -101,6 +101,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"occupied", builtin::brain::builtin_occupied},
     {"native",     builtin::brain::builtin_native},
     {"cast",       builtin::brain::builtin_cast},
+    {"face",       builtin::brain::builtin_face},
     {"aside",      builtin::brain::builtin_aside},
     {"habitats",   builtin::brain::builtin_habitats},
     {"spawns",   builtin::brain::builtin_spawns},
@@ -728,6 +729,15 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->pushstring("hit");
     lua->pushinteger(bot->prowess().hit);
     lua->settable(-3);
+    lua->pushstring("prowess_buffs");
+    lua->new_table();
+    auto counted = lua_Integer{1};
+    for (auto& name : bot->prowess().counted)
+    {
+        lua->pushstring(name);
+        lua_rawseti(L, -2, counted++);
+    }
+    lua->settable(-3);
     if (jumped.empty() == false)
     {
         lua->pushstring("jumped");
@@ -755,10 +765,20 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->pushstring("buffs");
     lua->new_table();
     auto buff = lua_Integer{1};
-    for (auto& name : bot->active_buffs())
+    for (auto& entry : bot->active_buffs())
     {
-        lua->pushstring(name);
+        lua->pushstring(entry.first);
         lua_rawseti(L, -2, buff++);
+    }
+    lua->settable(-3);
+    lua->pushstring("buff_left");
+    lua->new_table();
+    for (auto& [name, ends] : bot->active_buffs())
+    {
+        auto left = std::chrono::duration_cast<std::chrono::milliseconds>(ends - std::chrono::steady_clock::now());
+        lua->pushstring(name);
+        lua->pushinteger(std::max<lua_Integer>(0, left.count()));
+        lua->settable(-3);
     }
     lua->settable(-3);
     lua->pushstring("spells");
@@ -3284,6 +3304,31 @@ int builtin::brain::builtin_cast(lua_State* L)
     }
 
     lua->pushboolean(cast);
+    return 1;
+}
+
+int builtin::brain::builtin_face(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    using DIRECTION = fb::model::enum_value::DIRECTION;
+    auto here       = bot->position();
+    auto dx         = static_cast<int>(lua_tointeger(L, 3)) - static_cast<int>(here.x);
+    auto dy         = static_cast<int>(lua_tointeger(L, 4)) - static_cast<int>(here.y);
+    auto direction = dx < 0 ? DIRECTION::LEFT : dx > 0 ? DIRECTION::RIGHT : dy < 0 ? DIRECTION::TOP : DIRECTION::BOTTOM;
+    if (bot->direction() != direction)
+    {
+        bot->send(*bot->make<game_reqs::direction>(direction));
+        bot->set_direction(direction);
+    }
+
+    lua->pushboolean(true);
     return 1;
 }
 

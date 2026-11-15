@@ -168,8 +168,12 @@ local function rerouted(brain, bot, destination, detour, event)
     return true
 end
 
+-- A walk ends yielded, not failed, when what stopped it takes over: a fight with the blocker (ENGAGED) or a traffic
+-- plan that moves every bot round the knot (UNTANGLED). Counted a failed walk, its retry wait was as long as the whole
+-- walk and shut every field task: a warrior that walked 28s across 국내성 and was untangled at the door stood there 28s
+-- with nothing to do while its crew waited beside it (online 20261115-132144, 13:24:09-13:24:37).
 function M.yielded(event)
-    return event ~= nil and event.type == "ENGAGED"
+    return event ~= nil and (event.type == "ENGAGED" or event.type == "UNTANGLED")
 end
 
 local function expect(brain, bot, destination, detour)

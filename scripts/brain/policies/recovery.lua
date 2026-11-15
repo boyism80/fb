@@ -142,11 +142,15 @@ function M.least(snap)
     return least
 end
 
+-- A spell that spends all the mana there is (헬파이어) has no mana it needs: it is cast with what there is. Taken for
+-- the strongest, its need was all the mana and the spare on top, never met, and two mages at 99 charged 308 times in
+-- ten minutes at their start without a kill (offline 20261115-104514).
 function M.prime(snap)
     local best = nil
     for _, choice in ipairs(fight.options(snap, NEUTRAL).offense) do
+        local spell = magic.spells[choice.name]
         if choice.damage > 0 and choice.mp > 0 and choice.mp <= (snap.self.max_mp or 0) and
-            (best == nil or choice.damage > best.damage) then
+            (spell == nil or spell.drain ~= true) and (best == nil or choice.damage > best.damage) then
             best = choice
         end
     end

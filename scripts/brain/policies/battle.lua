@@ -453,16 +453,22 @@ local function candidates(snap, facts, mob, state, reachable)
     -- A mob I cannot walk to is fought only with what I aim at it from here: a drink or a buff opens a fight my blows
     -- go on with, and weighed so, a warrior that could not walk round its poet to a skeleton drank 동동주 at it 331
     -- times a minute (offline WA+PO 세작 seed 0, run 18:35).
+    -- A spell the server still delays (its time left comes on the buff packet, buff_left) cannot be cast; offered, it
+    -- would be refused with a message and nothing done.
+    local left      = snap.buff_left or {}
     local add       = function(entry)
-        local aimed = entry.aimed == true or (entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true)
-        local limit = entry.kind == "HEAL" and spendable or free
+        local aimed   = entry.aimed == true or (entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true)
+        local limit   = entry.kind == "HEAL" and spendable or free
+        local spell   = magic.spells[entry.key]
+        local delayed = spell ~= nil and spell.delay ~= nil and (left[entry.key] or 0) > 0
         if reachable == false and (aimed == false or entry.moves == true) then
             return
         end
         if entry.kind ~= "SWING" then
             entry.overlap = math.min(entry.time, cooling)
         end
-        if state.refused[entry.key] == nil and (entry.mp or 0) <= limit and (seen or aimed == false) then
+        if state.refused[entry.key] == nil and delayed == false and ((entry.mp or 0) <= limit or entry.drain) and
+            (seen or aimed == false) then
             table.insert(found, entry)
         end
     end
@@ -479,17 +485,22 @@ local function candidates(snap, facts, mob, state, reachable)
     local reserve  = drains and 0 or math.max(recovery.spare(snap), opener ~= nil and opener.mp or 0)
     local doses    = drains and recovery.doses(snap, "mp") or {}
     local mp       = snap.self.mp or 0
+    -- A spell that spends all the mana (헬파이어) is cast with what there is, so nothing is kept back for it and it is
+    -- not drunk for: its damage grows with the mana held, and the refill after it (a dose for 공력증강, then 공력증강,
+    -- restore.refuel) is what its mana costs, the price a point of mana already carries (value.spend).
     for _, choice in ipairs(options.offense) do
         local spell = magic.spells[choice.name]
         local area  = spell ~= nil and spell.role == "AREA" and spell.type == "NORMAL"
+        local drain = spell ~= nil and spell.drain == true
         local dose  = nil
-        if choice.mp + reserve > mp then
+        if drain == false and choice.mp + reserve > mp then
             for _, entry in ipairs(doses) do
                 dose = dose or
                     (mp + math.min(entry.amount, (snap.self.max_mp or 0) - mp) >= choice.mp + reserve and entry or nil)
             end
         end
-        if choice.damage > 0 and known[choice.name] ~= nil and (choice.mp + reserve <= mp or dose ~= nil) and
+        local usable = drain and mp > 0 or drain == false and (choice.mp + reserve <= mp or dose ~= nil)
+        if choice.damage > 0 and known[choice.name] ~= nil and usable and
             (choice.hp >= 0 or snap.self.hp + choice.hp > burst) and ((area or choice.front) == false or adjacent) then
             local extra = {}
             if area then
@@ -506,6 +517,7 @@ local function candidates(snap, facts, mob, state, reachable)
                 damage = choice.damage,
                 mp = choice.mp - drunk,
                 hp = choice.hp,
+                drain = drain or nil,
                 price = dose ~= nil and model ~= nil and model.price or nil,
                 extra = extra,
                 aimed = dose ~= nil or nil,
@@ -1078,7 +1090,7 @@ function evaluate(snap, facts, mob, reachable)
             -- 8,468 times in a run (offline, run 18:59).
             entry.value, entry.survives, left, entry.plan = (entry.outcomes ~= nil and gamble or estimate)(snap, facts,
                 reachable == false and copy(mob, { walled = true }) or mob, entry, baseline, loss,
-                entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
+                (entry.kind == "STRIKE" or entry.drain) and value.refill(snap, facts, baseline) or
                 entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
         end
         -- A spell that hits harder than a swing is worth the swing and the extra damage, less what its mana
@@ -1093,8 +1105,22 @@ function evaluate(snap, facts, mob, reachable)
                 (melee.damage or 0) * share - aside_gain(snap, melee.extra))
             local empty  = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
             local held   = value.held(snap, facts, mob)
-            entry.value  = direct > 0 and melee.value + direct - entry.mp * held or
-                math.min(entry.value, melee.value - entry.mp * math.max(held, empty * value.sip(snap, facts, mob)))
+            -- A spell that spends all the mana is refilled at once after it (a dose for 공력증강, then 공력증강), as
+            -- 필살검무 is: its mana costs the refill, and the heals it holds back only for the casts the refill takes.
+            -- Priced whole at what my heals make of a crewmate's strikes, a mage beside its warrior and poet never
+            -- cast 헬파이어 while its pair of mages cast it 99 times (online 20261115-120942; user 11-15: the mage
+            -- there deals and heals beside the poet).
+            local spent  = entry.mp * held
+            if entry.drain then
+                local charge = combat.buffs(snap).charge
+                local heal   = recovery.heal(snap)
+                local casts  = 1 + (charge ~= nil and charge.chance > 0 and 1 / charge.chance or 0)
+                spent        = entry.mp * value.refill(snap, facts, baseline) +
+                (heal ~= nil and heal.mp or 0) * casts * held
+            end
+            entry.value = direct > 0 and melee.value + direct - spent or
+                math.min(entry.value, melee.value - (entry.drain and spent or
+                    entry.mp * math.max(held, empty * value.sip(snap, facts, mob))))
         elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
             local gain  = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
             entry.value = math.min(entry.value, melee.value + gain)

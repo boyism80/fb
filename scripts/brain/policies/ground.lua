@@ -330,6 +330,36 @@ function M.lifetime(snap, rate)
     return math.max(0, last.exp - (snap.self.exp or 0)) / rate
 end
 
+-- One round of a plan's floors before servicing: each floor's stock (the exp of clearing it once) at its rate, as the
+-- ranking weighs a lap (lapped). A lasting gain is weighed over the lap, not until the next level: exp is exp at
+-- any level, and at 99 the time to a level that never comes made a gear's worth infinite and its value NaN, so the
+-- gear was never bought and kept a trio from inviting for 10 minutes (offline 20261115-104514; user 11-15).
+function M.lap(plan)
+    if plan == nil then
+        return 0
+    end
+    if plan.lap ~= nil then
+        return plan.lap
+    end
+    local time = 0
+    for _, floor in ipairs(plan.floors or {}) do
+        if (floor.rate or 0) > 0 then
+            time = time + (floor.stock or 0) / floor.rate
+        end
+    end
+    return time
+end
+
+-- What is left of the lap since the last servicing; a bot that never serviced has it all ahead.
+function M.lap_left(snap, plan)
+    local lap    = M.lap(plan)
+    local served = snap.record ~= nil and snap.record.memory.serviced or nil
+    if served == nil then
+        return lap
+    end
+    return math.max(0, lap - (snap.now - served) / 1000)
+end
+
 function M.horizon(snap, rate)
     local levels = growth[snap.self.class]
     local next   = levels ~= nil and levels[snap.self.level + 1] or nil

@@ -7,13 +7,12 @@ local function grouped(snap)
     return #(snap.group or {}) > 0
 end
 
-local function worth_leaving(snap, facts)
-    return part.value(snap, facts) > 0
-end
-
 return choose({
-    when(grouped, when(worth_leaving, choose({
-        when(part.stricken, act("PART", part.propose, "part_stricken")),
+    when(grouped, choose({
         when(part.finished, act("PART", part.propose, "part_finished")),
-    }))),
+        when(part.lapped, choose({
+            when(part.dissolved, act("PART", part.propose, "part_dissolved")),
+            when(part.unwanted, act("PART", part.propose, "part_unwanted")),
+        })),
+    })),
 }, "crew")

@@ -13,6 +13,7 @@ function M.member(profile)
     return {
         self      = profile.self,
         spells    = profile.spells or {},
+        kept      = profile.kept,
         gear      = profile.gear or {},
         buffs     = profile.buffs or {},
         bag       = profile.bag or { items = {}, used = 0, capacity = 0 },
@@ -40,6 +41,7 @@ function M.member(profile)
         task      = profile.task,
         fleeing   = profile.fleeing,
         fallen    = profile.fallen,
+        raising   = profile.raising,
         joined    = profile.joined,
         leashed   = profile.leashed,
         looted    = profile.looted or 0,

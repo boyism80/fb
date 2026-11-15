@@ -19,6 +19,7 @@ return when(defend.attacked, when(defend.holds_ground, choose({
     })),
     pick({
         survive.flee,
+        survive.guard,
         restore.recover,
         support.care,
         act("FIELD", together.step_off, "step_off", together.step_worth),

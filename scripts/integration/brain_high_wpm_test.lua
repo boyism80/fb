@@ -13,7 +13,7 @@ test_suite {
         {
             parallel = {
                 [0] = { function(ctx)
-                    return cases.group(ctx, { "warrior93", "poet94", "mage95" }, 0, WATCH, 0, FORM, true)
+                    return cases.group(ctx, { "warrior99", "poet99", "mage99" }, 0, WATCH, 0, FORM, true)
                 end },
             },
         },

@@ -44,7 +44,7 @@ local traded = setmetatable({}, { __mode = "k" })
 -- What a coin is worth in exp follows from the ranked grounds alone, and the list stays the same one while
 -- nothing moved (ground.ranked): worked out once for a list, not from every floor of every ground each decision.
 function M.exchange(snap, query)
-    local made  = require("brain.planner").current(snap, query)
+    local made  = require("brain.planner").latest(snap, query)
     local found = nil
     if made ~= nil then
         found = made.exchange or 0
@@ -79,11 +79,11 @@ function M.baseline(snap, query)
     if hunt == nil or hunt.rate <= 0 then
         result = { value = 0, exchange = M.exchange(snap, query), rate = 0, income = 0 }
     else
-        local income  = earnings(hunt.yields)
-        local rate    = M.exchange(snap, query)
-        local horizon = ground.horizon(snap, hunt.rate)
-        if rate <= 0 and horizon < math.huge then
-            rate = hunt.rate * horizon / math.max(snap.self.money or 0, 1)
+        local income = earnings(hunt.yields)
+        local rate   = M.exchange(snap, query)
+        local lap    = ground.lap(hunt)
+        if rate <= 0 and lap > 0 then
+            rate = hunt.rate * lap / math.max(snap.self.money or 0, 1)
         end
         local liking = (snap.persona or {}).hunt or 1
         result       = {
@@ -373,7 +373,7 @@ end
 local manas = {}
 
 function M.mana(snap, query)
-    local made   = require("brain.planner").current(snap, query)
+    local made   = require("brain.planner").latest(snap, query)
     local period = (snap.now or 0) // data.rerank
     local known  = manas[snap.self.name]
     local found  = 0

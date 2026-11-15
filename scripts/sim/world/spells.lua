@@ -76,6 +76,10 @@ function M.cast(world, me, name, target)
     if script == nil or script.on_cast == nil then
         return false, "NO_SCRIPT"
     end
+    local ends = me.inner.delays[model.label]
+    if ends ~= nil and world.now < ends then
+        return true
+    end
     local SPELL_TYPE = world.enums.SPELL_TYPE
     if model.kind == SPELL_TYPE.TARGET then
         if target == nil or target.inner.dead or world.map:sight(me.inner, target.inner) == false then

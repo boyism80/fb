@@ -2,6 +2,7 @@ local data    = require("brain.data.combat")
 local buyers  = require("brain.data.buyers")
 local hunting = require("brain.data.hunting")
 local items   = require("brain.data.items")
+local magic   = require("brain.data.spells")
 local shops   = require("brain.data.shops")
 local bag     = require("brain.policies.bag")
 local combat  = require("brain.policies.combat")
@@ -60,6 +61,21 @@ local function covered(snap, item)
     return false
 end
 
+-- A spell that takes what lies on the tile in front of me (노획) reaches a pile one step off without the step in and
+-- out, and a pile a mob or a crewmate stands on, which no walk reaches.
+local function seizing(snap)
+    if combat.can_cast(snap) == false then
+        return nil
+    end
+    for _, learned in ipairs(snap.spells or {}) do
+        local data = magic.spells[learned.name]
+        if data ~= nil and data.role == "LOOT" and (data.mp or 0) <= (snap.self.mp or 0) then
+            return learned, data
+        end
+    end
+    return nil
+end
+
 local function priced(names)
     local total = 0
     for _, name in ipairs(names) do
@@ -96,12 +112,14 @@ function M.pile(snap, query)
     local rates = value.baseline(snap, query)
     local step  = (snap.pace.step or data.walk) / 1000
     local stuck = snap.record.memory.stuck or {}
+    local reach = seizing(snap) ~= nil
     for _, item in ipairs(snap.world.items) do
         local cost = math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y)
         local gain = priced(item.names) * rates.exchange - cost * step * rates.value
         if stuck[tostring(item.oid)] == nil and
             near.visible(snap, { map = snap.world.map, x = item.x, y = item.y }) and worth(snap, item.names) and
-            covered(snap, item) == false and (tight == false or cost <= 1) and (best == nil or gain > best) and
+            (covered(snap, item) == false or (reach and cost == 1)) and (tight == false or cost <= 1) and
+            (best == nil or gain > best) and
             yielding(snap, item) == false and
             (query.warp == nil or query.warp(snap.world.map, item.x, item.y) == false) then
             found = item
@@ -116,14 +134,18 @@ function M.on_pile(snap, query)
     return item.x == snap.world.x and item.y == snap.world.y
 end
 
-function M.pick(snap, query)
-    local item = M.pile(snap, query)
+local function piled(snap, item)
     local oids = {}
     for _, other in ipairs(snap.world.items) do
         if other.x == item.x and other.y == item.y then
             table.insert(oids, other.oid)
         end
     end
+    return oids
+end
+
+function M.pick(snap, query)
+    local oids = piled(snap, M.pile(snap, query))
     return { kind = ACTION.PICK, oids = oids, looted = (snap.record.memory.looted or 0) + #oids }
 end
 
@@ -132,31 +154,66 @@ function M.walk(snap, query)
     return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = item.x, y = item.y, range = 0 } }
 end
 
-function M.value(snap, query)
-    local item  = M.pile(snap, query)
+function M.seize(snap, query)
+    local item    = M.pile(snap, query)
+    local learned = seizing(snap)
+    if learned == nil or math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y) ~= 1 then
+        return nil
+    end
+    return {
+        kind = ACTION.CAST,
+        slot = learned.slot,
+        face = { x = item.x, y = item.y },
+        looted = (snap.record.memory.looted or 0) + #piled(snap, item)
+    }
+end
+
+local function shares(snap, query, item)
     local worth = value.baseline(snap, query)
     local total = 0
     for _, name in ipairs(item.names) do
         local price = buyers[name] ~= nil and buyers[name].price or shops[name] ~= nil and shops[name].price or 0
         total = total + price
     end
-    local move  = { kind = ACTION.MOVE, dest = { map = snap.world.map, x = item.x, y = item.y, range = 0 } }
-    local peril = value.peril(snap, query, { map = snap.world.map, x = item.x, y = item.y })
-    local lead  = 0
+    local lead = 0
     for _, member in ipairs(party.members(snap)) do
         lead = math.max(lead, (member.looted or 0) - (snap.record.memory.looted or 0))
     end
+    return worth, total, lead
+end
+
+-- Seized, the pile costs the cast and its mana in place of the walk, and is taken whole where a mob or a crewmate
+-- stands on it. Cast from where I stand it takes me nowhere, so the peril of the tile walked onto does not come with
+-- it: weighed with it, a pile under the mob beside a rogue was worth less than nothing although no step was taken.
+function M.seized(snap, query, action)
+    local item = M.pile(snap, query)
+    local _, data = seizing(snap)
+    if action == nil or data == nil then
+        return nil
+    end
+    local worth, total, lead = shares(snap, query, item)
+    local cost = value.cost(snap, query, action, worth) + (data.mp or 0) * value.spend(snap, query, nil)
+    return (1 + lead) * total * worth.exchange - cost / (1 + lead)
+end
+
+local function walked(snap, query, item)
+    if covered(snap, item) then
+        return -math.huge
+    end
+    local worth, total, lead = shares(snap, query, item)
+    local peril              = value.peril(snap, query, { map = snap.world.map, x = item.x, y = item.y })
+    local move               = { kind = ACTION.MOVE, dest = { map = snap.world.map, x = item.x, y = item.y, range = 0 } }
     -- The walk to the pile is weighed in the steps it takes, as the way on from it is: weighed in a straight line,
     -- a pelt six tiles off behind a wall cost nothing on the way while the walk through the door took eight, so it
     -- paid from the far side of the door and no longer two steps on, and a vanguard turned back and forth between
     -- it and the stairs for five minutes with its crew behind it (offline profile trio rooted seed 3, 325-575s, run
     -- 05:22).
-    local direct = math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y)
-    local walked = query.steps ~= nil and
+    local direct             = math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y)
+    local steps              = query.steps ~= nil and
         query.steps(snap.world.map, snap.world.x, snap.world.y, { { x = item.x, y = item.y, range = 0 } })[1] or direct
-    local cost   = type(walked) == "number" and value.cost(snap, query, move, worth) +
-        math.max(0, walked - direct) * (snap.pace.step or data.walk) / 1000 * worth.value or math.huge
-    local delta  = (1 + lead) * (1 - peril) * total * worth.exchange - cost / (1 + lead) -
+    local cost               = type(steps) == "number" and value.cost(snap, query, move, worth) +
+        math.max(0, steps - direct) * (snap.pace.step or data.walk) / 1000 * worth.value or math.huge
+    local delta              = (1 + lead) * (1 - peril) * total * worth.exchange - cost / (1 + lead) -
         peril * party.death(snap, query, snap, worth) / (1 + lead)
     if data.journal then
         log("debug",
@@ -166,6 +223,15 @@ function M.value(snap, query)
                 tostring(peril), delta, #snap.world.items))
     end
     return delta
+end
+
+function M.walked(snap, query)
+    return walked(snap, query, M.pile(snap, query))
+end
+
+function M.value(snap, query)
+    local seize = M.seize(snap, query)
+    return math.max(M.walked(snap, query), seize ~= nil and M.seized(snap, query, seize) or -math.huge)
 end
 
 return M

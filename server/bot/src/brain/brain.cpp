@@ -524,7 +524,9 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
             }
         }
 
-        if (progressed == false)
+        if (progressed == false && next.has_value() && next->awaits.empty() == false)
+            std::ignore = co_await this->await_change(bot, next->awaits);
+        else if (progressed == false)
             std::ignore = co_await bot->changed(next.has_value() ? next->revisit : std::chrono::milliseconds{0});
     }
 
@@ -1204,6 +1206,27 @@ async::task<bool> brain::await_plan(std::shared_ptr<game_bot> bot, std::string k
     co_return ready;
 }
 
+async::task<bool> brain::await_change(std::shared_ptr<game_bot> bot, std::string key)
+{
+    auto name   = bot->name();
+    auto change = std::make_shared<async::task_completion_source<bool>>();
+    auto ready  = false;
+    {
+        auto lock  = std::lock_guard(this->_plan_mutex);
+        auto found = this->_plans.find(name);
+        ready      = found != this->_plans.end() && found->second.key == key;
+        if (ready == false && (this->_requests.contains(name) || this->_computing == name))
+            this->_awaiting[name].push_back(change);
+    }
+
+    if (ready)
+        co_return true;
+
+    auto result = co_await bot->changed(change);
+    co_await bot->thread()->switching();
+    co_return result;
+}
+
 void brain::tally(uint32_t bot, bool succeeded)
 {
     auto lock  = std::lock_guard(this->_mutex);
@@ -1316,6 +1339,10 @@ async::task<std::optional<brain::decision>> brain::think(std::shared_ptr<game_bo
 
             lua_getfield(L, -1, "revisit");
             next.revisit = std::chrono::milliseconds(static_cast<int64_t>(std::ceil(lua_tonumber(L, -1))));
+            lua_pop(L, 1);
+
+            lua_getfield(L, -1, "awaits");
+            next.awaits = lua_type(L, -1) == LUA_TSTRING ? std::string(lua_tostring(L, -1)) : std::string{};
             lua_pop(L, 1);
             next.action = fb::lua::value::copy_data(L, -1);
 

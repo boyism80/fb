@@ -88,6 +88,7 @@ public:
     void                connect(const boost::asio::ip::tcp::endpoint& endpoint);
     bool                process_hooks(uint8_t opcode, fb::protocol::header& header);
     async::task<bool>   changed(std::chrono::milliseconds within = std::chrono::milliseconds{0});
+    async::task<bool>   changed(std::shared_ptr<async::task_completion_source<bool>> change);
     void                wake(bool value = true);
     async::task<void>   yield();
     bool                remove_hook_by_context(uint8_t opcode, const void* context_ptr);

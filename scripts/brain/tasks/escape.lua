@@ -6,6 +6,7 @@ local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
 local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
+local raise    = require("brain.policies.raise")
 local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 local survival = require("brain.policies.survival")
@@ -215,7 +216,8 @@ function M.crew_notice(snap)
             return notice
         end
         local fallen = member.fallen
-        if fallen ~= nil and fallen.at > entry.at and ground.same_ground(fallen.map, snap.world.map) then
+        if fallen ~= nil and fallen.at > entry.at and ground.same_ground(fallen.map, snap.world.map) and
+            raise.abandoned(snap, member, fallen) then
             return fallen
         end
     end

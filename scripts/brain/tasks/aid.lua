@@ -22,23 +22,8 @@ local function copy(source, changes)
     return result
 end
 
-local function pressure(snap, member, window)
-    local total = 0
-    if member.world.map ~= snap.world.map or member.world.x == nil then
-        return total
-    end
-    for _, mob in ipairs(snap.world.mobs or {}) do
-        if mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
-            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
-            local _, high = combat.spread(member, mob)
-            total = total + high * window / mob.speed
-        end
-    end
-    return total
-end
-
 function M.risk(snap, member, current)
-    local blows = pressure(snap, member, 2 * combat.cast(snap))
+    local blows = combat.pressure(snap, member, 2 * combat.cast(snap))
     return blows > 0 and math.exp(-current / blows) or 0
 end
 
@@ -46,7 +31,7 @@ local function rescue(snap, query, member, current, restored, heal, worth)
     if heal.hp <= 0 then
         return 0
     end
-    local blows = pressure(snap, member, 2 * combat.cast(snap))
+    local blows = combat.pressure(snap, member, 2 * combat.cast(snap))
     if blows <= 0 then
         return 0
     end
@@ -118,14 +103,15 @@ local function heals(snap, query, slots, worth)
             end
             local steps = math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y)
             if best > 0 and steps > 0 then
-                local hunted = member.battle
-                local target = type(hunted) == "table" and seen[hunted.oid] or nil
-                local fuel   = target ~= nil and value.convertible(member, target) or 0
+                local hunted  = member.battle
+                local target  = type(hunted) == "table" and seen[hunted.oid] or nil
+                local fuel    = target ~= nil and value.convertible(member, target) or 0
+                local averted = rescue(snap, query, member, member.self.hp, best, { hp = best }, worth)
                 table.insert(found, {
-                    urgent = pressure(snap, member, combat.cast(snap)) >= member.self.hp,
+                    urgent = combat.pressure(snap, member, combat.cast(snap)) >= member.self.hp,
                     walk = { x = member.world.x, y = member.world.y },
-                    value = best * fuel + rescue(snap, query, member, member.self.hp, best, { hp = best }, worth) -
-                        steps * (snap.pace.step or data.walk) / 1000 * worth.value,
+                    averted = averted,
+                    value = best * fuel + averted - steps * (snap.pace.step or data.walk) / 1000 * worth.value,
                 })
             end
         end
@@ -144,33 +130,34 @@ local function heals(snap, query, slots, worth)
                         recovery.useful(heal.hp, deficit, member.self.max_hp or 0) *
                         value.vigor(member, query, worth, mana))
                     local leave    = leaving(snap, query, member, current, worth)
+                    local averted  = rescue(snap, query, member, current, restored, heal, worth)
                     if leave ~= nil then
-                        saved = saved + math.min(restored, leave.short) / leave.short * leave.cost
+                        averted = averted + math.min(restored, leave.short) / leave.short * leave.cost
                     end
                     table.insert(found, {
                         urgent = dying,
-                        dies = current / math.max(pressure(snap, member, 1000), 1e-9),
+                        dies = current / math.max(combat.pressure(snap, member, 1000), 1e-9),
                         oid = ally.oid,
                         slot = slots[heal.name],
                         key = heal.name,
                         cost = heal.mp,
-                        value = saved + rescue(snap, query, member, current, restored, heal, worth) -
-                            heal.mp * value.spend(snap, query, target),
+                        averted = averted,
+                        value = saved + averted - heal.mp * value.spend(snap, query, target),
                     })
                 end
             end
         end
     end
     local deficit    = snap.self.max_hp - snap.self.hp
-    local mine       = snap.self.hp / math.max(pressure(snap, snap, 1000), 1e-9)
+    local mine       = snap.self.hp / math.max(combat.pressure(snap, snap, 1000), 1e-9)
     local worthwhile = {}
     for _, heal in ipairs(combat.options(snap, {}).heal) do
         if slots[heal.name] ~= nil and heal.mp <= (snap.self.mp or 0) and heal.hp <= deficit and
-            heal.hp > pressure(snap, snap, combat.cast(snap)) then
+            heal.hp > combat.pressure(snap, snap, combat.cast(snap)) then
             table.insert(worthwhile, heal)
         end
     end
-    if #worthwhile > 0 and pressure(snap, snap, 2 * combat.cast(snap)) >= snap.self.hp then
+    if #worthwhile > 0 and combat.pressure(snap, snap, 2 * combat.cast(snap)) >= snap.self.hp then
         local kept = {}
         for _, entry in ipairs(found) do
             if entry.dies == nil or entry.dies < mine then
@@ -269,7 +256,7 @@ local function guard(snap, query, member, mob, current, chance, held, before, wo
         return 0
     end
     local window  = 2 * combat.cast(snap)
-    local blows   = pressure(snap, member, window)
+    local blows   = combat.pressure(snap, member, window)
     local _, high = combat.spread(member, mob)
     local rest    = blows - high * window / mob.speed
     local spared  = blows > 0 and math.exp(-current / blows) - (rest > 0 and math.exp(-current / rest) or 0) or 0
@@ -439,7 +426,7 @@ function M.ward(snap, query, target, name, worth, current)
     end
     local saved = math.max(pain, 1) * (spell.buff_time or 0) * share
     local cost  = (spell.mp or 0) * mana
-    local blows = pressure(snap, target, 2 * combat.cast(snap))
+    local blows = combat.pressure(snap, target, 2 * combat.cast(snap))
     local hp    = math.max(current or target.self.hp or 0, 1)
     local kept  = math.exp(-blows / hp)
     return math.max(saved * value.vigor(target, query, worth, mana), share * party.death(snap, query, target, worth)) *
@@ -546,6 +533,31 @@ end
 function M.urgent(snap, query)
     local found = best_of(snap, query, urgent)
     return found ~= nil and action_of(snap, found) or nil
+end
+
+-- The part of a heal that keeps a crewmate alive: the death it spares within the casts a heal is weighed in and the
+-- leave its shortfall would force (rescue, leaving), without what the healed hp makes in strikes. My own step of a plan
+-- gives way to a heal for that part alone (trees.main; user 11-15: step aside first unless a crewmate or I could die):
+-- weighed whole, poisoning kept a mage off its step for 38s (online 20261115-120942), and with only the heals that save
+-- a death within one cast, a poet stepped on beside its warrior at a tenth of its hp under two skeletons (brain unit test).
+local function saving(snap, query)
+    local found = nil
+    for _, candidate in ipairs(listed(snap, query)) do
+        if (candidate.averted or 0) > 0 and (found == nil or candidate.averted > found.averted) then
+            found = candidate
+        end
+    end
+    return found
+end
+
+function M.save(snap, query)
+    local found = saving(snap, query)
+    return found ~= nil and action_of(snap, found) or nil
+end
+
+function M.saved(snap, query)
+    local found = saving(snap, query)
+    return found ~= nil and found.averted or nil
 end
 
 function M.offer(group)

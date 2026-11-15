@@ -230,14 +230,14 @@ const std::optional<game_bot::death_record>& game_bot::last_death() const
 }
 
 // Buff management method implementations
-const std::set<std::string>& game_bot::active_buffs() const
+const game_bot::buff_ends& game_bot::active_buffs() const
 {
     return this->_active_buffs;
 }
 
-void game_bot::add_buff(std::string_view name)
+void game_bot::add_buff(std::string_view name, std::chrono::milliseconds duration)
 {
-    this->_active_buffs.insert(std::string(name));
+    this->_active_buffs.insert_or_assign(std::string(name), std::chrono::steady_clock::now() + duration);
 }
 
 void game_bot::remove_buff(std::string_view name)
@@ -672,6 +672,11 @@ const struct game_bot::prowess& game_bot::prowess() const
 void game_bot::set_prowess(const struct prowess& value)
 {
     this->_prowess = value;
+    this->_prowess.counted.clear();
+    for (auto& [name, ends] : this->_active_buffs)
+    {
+        this->_prowess.counted.insert(name);
+    }
 }
 
 async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model::timespan& delay)

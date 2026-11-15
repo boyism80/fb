@@ -4,7 +4,7 @@ return {
     swing         = 1000 / balance.swing_rate,
     walk          = 250,
     stride        = 50,
-    penalty       = { exp = 0.05, durability = 0.01 },
+    penalty       = { exp = 0.05, durability = 0.01, revive_hp = 50 },
     candidates    = 1000,
     bucket        = 0.25,
     window        = 8,

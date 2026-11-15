@@ -13,16 +13,16 @@ test_suite {
         {
             parallel = {
                 [0] = { function(ctx)
-                    return cases.group(ctx, { "warrior93", "rogue92", "poet94" }, 0, WATCH, 0, FORM, true)
+                    return cases.group(ctx, { "warrior99", "rogue99", "poet99" }, 0, WATCH, 0, FORM, true)
                 end },
                 [3] = { function(ctx)
-                    return cases.group(ctx, { "warrior93", "mage95", "poet94" }, 0, WATCH, 3, FORM, true)
+                    return cases.group(ctx, { "warrior99", "mage99", "poet99" }, 0, WATCH, 3, FORM, true)
                 end },
                 [6] = { function(ctx)
-                    return cases.group(ctx, { "warrior93", "mage91" }, 0, WATCH, 6, FORM, true)
+                    return cases.group(ctx, { "warrior99", "mage99b" }, 0, WATCH, 6, FORM, true)
                 end },
                 [8] = { function(ctx)
-                    return cases.group(ctx, { "mage95", "mage91" }, 0, WATCH, 8, FORM, true)
+                    return cases.group(ctx, { "mage99", "mage99b" }, 0, WATCH, 8, FORM, true)
                 end },
             },
         },

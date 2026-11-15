@@ -169,7 +169,7 @@ local CLASSES = { ["전사"] = "WARRIOR", ["도적"] = "ROGUE", ["주술사"] = 
 
 local START = { map = 22, x = 16, y = 103 }
 
-local function dressed(records, name, money, mind)
+local function dressed(records, name, money, mind, named)
     local spec = nil
     for _, entry in ipairs(require("integration.scenarios.brain.state.profiles")) do
         if entry.name == name then
@@ -189,8 +189,12 @@ local function dressed(records, name, money, mind)
         me[key] = entry
     end
     me.level, me.hp, me.max_hp, me.mp, me.max_mp = spec.level, spec.hp, spec.hp, spec.mp, spec.mp
-    me.str, me.int, me.dex, me.money = spec.str, spec.int, spec.dex, money
-    me.exp = 0
+    me.str, me.int, me.dex, me.money = spec.str, spec.int, spec.dex, spec.money or money
+    me.exp = spec.exp or 0
+    if named[me.name] ~= nil then
+        me.name = me.name .. "_" .. spec.name
+    end
+    named[me.name] = true
     local spells = {}
     for slot, spell in ipairs(spec.spells) do
         spells[slot] = { slot = slot, name = spell }
@@ -260,7 +264,7 @@ local function summary(result)
 end
 
 function M.profile(data, name, money, mind)
-    return dressed(data.records, name, money, mind)
+    return dressed(data.records, name, money, mind, {})
 end
 
 function M.teams(options)
@@ -272,8 +276,9 @@ function M.teams(options)
     for index, team in ipairs(options.teams) do
         local profiles = {}
         local missing  = nil
+        local named    = {}
         for _, want in ipairs(team.members) do
-            local snap = want.profile ~= nil and dressed(data.records, want.profile, want.money or 100000, mind) or
+            local snap = want.profile ~= nil and dressed(data.records, want.profile, want.money or 100000, mind, named) or
                 find(data.records, want, taken, mind)
             if snap == nil then
                 missing = want.class

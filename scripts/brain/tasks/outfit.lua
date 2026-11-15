@@ -1,5 +1,6 @@
 local outfits = require("brain.data.outfits")
 local combat  = require("brain.policies.combat")
+local failure = require("brain.policies.failure")
 local gear    = require("brain.policies.gear")
 local ground  = require("brain.policies.ground")
 local memo    = require("brain.policies.memo")
@@ -116,7 +117,6 @@ local function plan(snap, query)
     local best = nil
     local room = (snap.bag.capacity or 0) - (snap.bag.used or #snap.bag.items)
     if snap.self.ghost == false and snap.self.class ~= "NONE" and room > 0 then
-        local worth   = value.baseline(snap, query)
         local now     = ground.choose(snap, query)
         local held    = now ~= nil and ground.hold({ snap }, query, now.name) or nil
         local rate    = held ~= nil and held.rate or 0
@@ -137,11 +137,12 @@ local function plan(snap, query)
                     nil
                 return math.max(0, (after ~= nil and after.rate or 0) - rate)
             end)
-            if (gain or 0) > 0 then
-                local span = ground.horizon(snap, gain + rate)
-                local net  = gain * span - pick.outfit.price * worth.exchange
-                if best == nil or net > best.value or (net == best.value and pick.name < best.name) then
-                    best = { name = pick.name, npcs = pick.npcs, value = net, gain = gain, span = span }
+            -- A lasting gain pays any price in the end, so what is asked is whether the money is there and when to go
+            -- (worth): the biggest gain first. Weighed as the gain until the next level less the price, it was worth
+            -- nothing to read at 99 (ground.lap).
+            if (gain or 0) > 0 and pick.outfit.price <= (snap.self.money or 0) then
+                if best == nil or gain > best.gain or (gain == best.gain and pick.name < best.name) then
+                    best = { name = pick.name, npcs = pick.npcs, gain = gain }
                 end
             end
         end
@@ -150,12 +151,19 @@ local function plan(snap, query)
     return best
 end
 
-local function net(snap, query)
+-- Going now against buying it on the next servicing: the trip, with the crew waiting for it, is spread over what is
+-- left of the lap, since put off it costs the gain until then and nothing more (at least the trip itself, so a
+-- servicing due now still pays for the walk).
+local function worth(snap, query)
     local found  = plan(snap, query)
     local action = M.next_step(snap, query)
-    local worth  = value.baseline(snap, query)
-    return found.value * value.arrival(snap, query, action, worth) -
-        value.cost(snap, query, action, worth) * (1 + #party.members(snap))
+    local rates  = value.baseline(snap, query)
+    local cost   = value.cost(snap, query, action, rates) * (1 + #party.members(snap))
+    local trip   = action.kind == ACTION.MOVE and action.dest ~= nil and value.trip(snap, query, action.dest, rates) or
+    nil
+    local window = math.max(ground.lap_left(snap, party.plan(snap, query)), trip ~= nil and trip.time or 0,
+        combat.cast(snap) / 1000)
+    return found.gain * value.arrival(snap, query, action, rates) - (cost > 0 and cost / window or 0)
 end
 
 function M.has_plan(snap, query)
@@ -163,15 +171,21 @@ function M.has_plan(snap, query)
 end
 
 function M.pays(snap, query)
-    return net(snap, query) > 0
+    return worth(snap, query) > 0
 end
 
 function M.value(snap, query)
-    return net(snap, query) / plan(snap, query).span * combat.cast(snap) / 1000
+    return worth(snap, query) * combat.cast(snap) / 1000
+end
+
+-- Whether the errand would be taken now, the one rule the tree and a held invite both ask: told apart, the invite
+-- waited on gear whose worth read NaN and was never walked for (offline 20261115-104514).
+function M.ready(snap, query)
+    return M.has_plan(snap, query) and M.pays(snap, query) and failure.allowed(snap, "OUTFIT")
 end
 
 function M.pending(snap, query)
-    if M.has_plan(snap, query) == false or M.pays(snap, query) == false then
+    if M.ready(snap, query) == false then
         return nil
     end
     return {

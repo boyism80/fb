@@ -244,7 +244,7 @@ function World:damage(attacker, target, value, options)
     local physical = options.physical ~= false
     local final    = options.fixed and value or
         self:calculate(attacker, value, target, options.critical == true, options.rate or 1.0, physical)
-    local dealt    = math.min(final, target.hp)
+    local dealt    = target.invincible == true and 0 or math.min(final, target.hp)
     target.hp      = target.hp - dealt
     if target:is(self.enums.OBJECT_TYPE.MOB) then
         self:remember(target, attacker, dealt)
@@ -608,6 +608,10 @@ function World:buff(object, model, seconds)
     object.buffs[model.label] = { model = model, expires = self.now + seconds * 1000 }
     spells.hook(self, object.facade, model, "on_buff")
     return true
+end
+
+function World:delay(object, model, seconds)
+    object.delays[model.label] = seconds > 0 and self.now + seconds * 1000 or nil
 end
 
 function World:unbuff(object, name)

@@ -1,6 +1,5 @@
-local data    = require("brain.data.combat")
-local failure = require("brain.policies.failure")
-local value   = require("brain.policies.value")
+local data  = require("brain.data.combat")
+local value = require("brain.policies.value")
 
 local M = {}
 
@@ -152,20 +151,31 @@ local function same(step, x, y)
     return step ~= nil and step.x == x and step.y == y
 end
 
--- A plan is mine while I stand on its map and my last step did not fail. A failed step drops it, so no bot of the plan
--- waits on a part that is not walked any more, and the walk that failed asks for a new plan from where all stand now.
+-- A plan is mine while I stand on its map and no step failed since it was made. A failed step drops it, so no bot of
+-- the plan waits on a part that is not walked any more, and the walk that failed asks for a new plan from where all
+-- stand now. The failure is ordered against the plan by time, not by the retry wait still running: the wait is gone
+-- in 100ms to a few seconds, a mage that next decided seconds later found none and stepped seven times into a poet
+-- that had left the plan, while its warrior waited 29s before the door (online 20261115-125736, 13:00:22-13:00:51).
 function M.planned(snap, facts)
     local plan = facts.directed ~= nil and facts.directed(snap.self.name) or nil
     if type(plan) ~= "table" then
         return false
     end
-    if plan.map ~= snap.world.map or failure.remaining(snap, "TRAFFIC") ~= 0 then
+    local record = snap.record.failures["TRAFFIC"]
+    local failed = record ~= nil and snap.now - record.age >= (plan.made or 0)
+    if plan.map ~= snap.world.map or failed then
         log("debug", string.format("[brain:traffic] bot=%s drops %s at %s,%s done=%s/%d", snap.self.name,
             tostring(plan.id), tostring(snap.world.x), tostring(snap.world.y), tostring(plan.done), #(plan.steps or {})))
         facts.direct(snap.self.name, nil)
         return false
     end
     return true
+end
+
+-- It is my turn to step: my part has a step left and no bot of the plan is still to walk before it.
+function M.stepping(snap, facts)
+    local action = M.follow(snap, facts)
+    return action ~= nil and action.kind == ACTION.MOVE
 end
 
 -- My next step keeps every bot of the plan still walking on its way, so whatever else I do first costs each of them

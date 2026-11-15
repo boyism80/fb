@@ -210,14 +210,19 @@ compute_signature = function(snap, mode)
     for _, name in ipairs(snap.buffs or {}) do
         active[name] = true
     end
-    local spells = {}
-    local phydef = snap.self.phydef or 0
-    local hit    = snap.self.hit or 0
-    local dam    = snap.self.dam or 0
+    local spells  = {}
+    local learned = {}
+    local kept    = fight.kept(snap)
+    local phydef  = snap.self.phydef or 0
+    local hit     = snap.self.hit or 0
+    local dam     = snap.self.dam or 0
     for _, spell in ipairs(snap.spells or {}) do
         table.insert(spells, spell.name)
-        local data = magic.spells[spell.name]
-        if data ~= nil and data.role == "BUFF" and active[spell.name] then
+        learned[spell.name] = true
+    end
+    for name in pairs(active) do
+        local data = magic.spells[name]
+        if data ~= nil and data.role == "BUFF" and (learned[name] or kept[name]) then
             local stats = data.stats or {}
             phydef      = phydef - (stats.buff_phydef or 0)
             hit         = hit - (stats.buff_hit or 0)
@@ -237,7 +242,7 @@ function M.capability(snap, query, extra)
     local swing     = fight.strike(snap, query, NEUTRAL, nil, nil, extra)
     local melee     = swing * 1000 / combat.swing
     local single    = strongest(options.offense, "damage", function(choice)
-        return magic.spells[choice.name].role == "ATTACK"
+        return magic.spells[choice.name].role == "ATTACK" and magic.spells[choice.name].drain ~= true
     end)
     local area      = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "AREA"

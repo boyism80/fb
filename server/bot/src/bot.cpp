@@ -108,6 +108,15 @@ async::task<bool> base_bot::changed(std::chrono::milliseconds within)
     co_return result;
 }
 
+async::task<bool> base_bot::changed(std::shared_ptr<async::task_completion_source<bool>> change)
+{
+    if (this->_aborted)
+        co_return false;
+
+    this->_changes.push_back(change);
+    co_return co_await change->task();
+}
+
 bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
 {
     this->assert_thread();

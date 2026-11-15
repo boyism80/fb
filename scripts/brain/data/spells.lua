@@ -80,7 +80,7 @@ return {
         ["백열참주'첨"] = { role = "AREA", type = "NORMAL", mp = 330, damage = 720 },
         ["백호령"] = { role = "BUFF", type = "NORMAL", mp = 30, self = true, others = false, buff_time = 600, boost = { buff_dam = 3 }, stats = { buff_dam = 3 } },
         ["보호"] = { role = "BUFF", type = "TARGET", mp = 30, self = false, others = true, buff_time = 180, boost = { damage_derate = 1000 }, stats = { damage_derate = 1000 } },
-        ["부활"] = { role = "REVIVE", type = "TARGET", mp = 0 },
+        ["부활"] = { role = "REVIVE", type = "TARGET", mp = 300 },
         ["분신"] = { role = "BUFF", type = "NORMAL", mp = 0, self = true, others = false, buff_time = 625 },
         ["비영사천문"] = { role = "TRAVEL", type = "INPUT", mp = 30 },
         ["비영승보"] = { role = "AMBUSH", type = "NORMAL", mp = 0 },
@@ -154,10 +154,16 @@ return {
         ["헬파이어"] = {
             role = "ATTACK",
             type = "TARGET",
+            damage_mp = 1.5,
+            drain = true,
             damage = function(me) return math.floor(me.mp * 1.5) end,
             mp = function(
                 me)
                 return me.mp
+            end,
+            delay = function(me)
+                return (7) -
+                    (({ ["용랑제삼봉"] = 1, ["용랑제사봉"] = 1, ["용랑제오봉"] = 2, ["용랑제육봉"] = 2, ["용랑제칠봉"] = 3, ["용랑제팔봉"] = 3, ["용랑제구봉"] = 4 })[me.weapon] or 0)
             end
         },
         ["혼돈"] = { role = "NONE", type = "TARGET", mp = 0 },

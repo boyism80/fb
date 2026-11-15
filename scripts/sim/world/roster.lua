@@ -313,9 +313,9 @@ return {
                 drops = true,
                 ground = { form = true, map = 22 },
                 members = {
-                    { class = "WARRIOR", profile = "warrior93" },
-                    { class = "ROGUE", profile = "rogue92" },
-                    { class = "POET", profile = "poet94" },
+                    { class = "WARRIOR", profile = "warrior99" },
+                    { class = "ROGUE", profile = "rogue99" },
+                    { class = "POET", profile = "poet99" },
                 },
             },
             {
@@ -323,8 +323,8 @@ return {
                 drops = true,
                 ground = { form = true, map = 22 },
                 members = {
-                    { class = "MAGE", profile = "mage95" },
-                    { class = "MAGE", profile = "mage91" },
+                    { class = "MAGE", profile = "mage99" },
+                    { class = "MAGE", profile = "mage99b" },
                 },
             },
         },

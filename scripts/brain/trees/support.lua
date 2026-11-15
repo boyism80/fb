@@ -1,4 +1,5 @@
 local tree     = require("brain.tree")
+local raise    = require("brain.policies.raise")
 local aid      = require("brain.tasks.aid")
 local together = require("brain.trees.together")
 
@@ -8,7 +9,12 @@ local M = {}
 
 M.rescue = act("AID", aid.urgent, "rescue", aid.worth("urgent"))
 
+M.save = act("AID", aid.save, "save", aid.saved)
+
+M.raise = act("AID", raise.cast, "raise", raise.raised)
+
 M.care = pick({
+    M.raise,
     act("AID", aid.offer("heal"), "heal", aid.worth("heal")),
     act("AID", aid.offer("debuff"), "debuff", aid.worth("debuff")),
     act("AID", aid.offer("ward"), "ward", aid.worth("ward")),
@@ -16,6 +22,7 @@ M.care = pick({
 }, tree.compared, "care")
 
 M.tend = pick({
+    M.raise,
     act("AID", aid.offer("heal"), "heal", aid.spared("heal")),
     act("AID", aid.offer("debuff"), "debuff", aid.spared("debuff")),
     act("AID", aid.offer("ward"), "ward", aid.spared("ward")),

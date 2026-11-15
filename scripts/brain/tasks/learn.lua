@@ -6,6 +6,7 @@ local learning = require("brain.data.learning")
 local outfits  = require("brain.data.outfits")
 local shops    = require("brain.data.shops")
 local combat   = require("brain.policies.combat")
+local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local lessons  = require("brain.policies.lessons")
@@ -54,8 +55,7 @@ local function plan(snap, query)
         for name in pairs(snap.record.memory.untaught or {}) do
             known[name] = true
         end
-        local worth = value.baseline(snap, query)
-        local rate  = 0
+        local rate = 0
         for _, entry in ipairs(ground.standing(snap, query)) do
             if ground.reachable(snap, query, entry.candidate) then
                 rate = math.max(rate, entry.rate)
@@ -77,12 +77,10 @@ local function plan(snap, query)
                             local after = ground.choose(lessons.taught(snap, name, entry), query)
                             return after ~= nil and after.rate or 0
                         end)
+                        -- Affordable already (affordable), a lasting gain pays its price in the end: the biggest
+                        -- gain first, and when to walk for it is weighed apart (worth), as gear is (outfit).
                         local gain    = math.max(0, reached - rate)
-                        local net     = teleport.essential[name] and math.huge or -price * worth.exchange
-                        if gain > 0 and teleport.essential[name] == nil then
-                            net = net + gain * (#party.members(snap) > 0 and ground.horizon(snap, gain + rate) or
-                                ground.lifetime(snap, gain + rate))
-                        end
+                        local net     = teleport.essential[name] and math.huge or gain
                         if net > 0 then
                             for item, count in pairs(entry.materials) do
                                 if shops[item] ~= nil or outfits[item] ~= nil then
@@ -98,7 +96,6 @@ local function plan(snap, query)
                                 own = missing.bought,
                                 price = entry.money + missing.price,
                                 fee = entry.money,
-                                span = ground.lifetime(snap, gain + rate)
                             }
                         end
                     end
@@ -130,9 +127,9 @@ local function plan(snap, query)
     end
     if data.journal and best ~= nil then
         log("debug",
-            string.format("[brain:learn] bot=%s t=%s map=%s skill=%s net=%.0f gain=%.0f span=%.0f price=%s",
+            string.format("[brain:learn] bot=%s t=%s map=%s skill=%s net=%.0f gain=%.0f price=%s",
                 snap.self.name or "", tostring(snap.now),
-                tostring(snap.world.map), tostring(best.name), best.value, best.gain, best.span, tostring(best.price)))
+                tostring(snap.world.map), tostring(best.name), best.value, best.gain, tostring(best.price)))
     end
     plans[snap] = best or false
     return best
@@ -142,34 +139,48 @@ function M.has_lesson(snap, query)
     return plan(snap, query) ~= nil
 end
 
+-- Going now against learning it on the next servicing, as gear weighs it (outfit): the trip, with the crew waiting,
+-- spread over what is left of the lap. A lesson the way home needs is taken whenever it can be reached.
+local function worth(snap, query)
+    local found  = plan(snap, query)
+    local rates  = value.baseline(snap, query)
+    local step   = M.next_step(snap, query)
+    local arrive = value.arrival(snap, query, step, rates)
+    if found.value == math.huge then
+        return arrive > 0 and math.huge or 0
+    end
+    local cost   = value.cost(snap, query, step, rates) * (1 + #party.members(snap))
+    local trip   = step.kind == ACTION.MOVE and step.dest ~= nil and value.trip(snap, query, step.dest, rates) or nil
+    local window = math.max(ground.lap_left(snap, party.plan(snap, query)), trip ~= nil and trip.time or 0,
+        combat.cast(snap) / 1000)
+    return found.value * arrive - (cost > 0 and cost / window or 0)
+end
+
 function M.pays(snap, query)
-    local found = plan(snap, query)
-    local worth = value.baseline(snap, query)
-    local step  = M.next_step(snap, query)
-    local trip  = value.cost(snap, query, step, worth)
-    return found.value * value.arrival(snap, query, step, worth) - trip * (1 + #party.members(snap)) > 0
+    return worth(snap, query) > 0
 end
 
 M.low = rest.low
 
 function M.value(snap, query)
-    local found = plan(snap, query)
-    local worth = value.baseline(snap, query)
-    local step  = M.next_step(snap, query)
-    local net   = found.value * value.arrival(snap, query, step, worth) - value.cost(snap, query, step, worth)
-    return net / found.span * combat.cast(snap) / 1000
+    return worth(snap, query) * combat.cast(snap) / 1000
+end
+
+-- Whether the lesson would be walked for now, the one rule the tree (errand) and a held invite (group) both ask.
+function M.ready(snap, query)
+    return M.has_lesson(snap, query) and (#party.members(snap) == 0 or rest.low(snap, query) == false) and
+        M.pays(snap, query) and failure.allowed(snap, "LEARN")
 end
 
 function M.pending(snap, query)
-    local found = plan(snap, query)
-    if found == nil or found.gain <= 0 or (#party.members(snap) > 0 and rest.low(snap, query)) or
-        M.pays(snap, query) == false then
+    if M.ready(snap, query) == false or plan(snap, query).gain <= 0 then
         return nil
     end
+    local found = plan(snap, query)
     return {
         gain = found.gain,
         price = found.price,
-        net = found.value,
+        net = found.value == math.huge and math.huge or found.gain * ground.lap(party.plan(snap, query)),
         trip = value.cost(snap, query, M.next_step(snap, query), value.baseline(snap, query))
     }
 end

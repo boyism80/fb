@@ -419,7 +419,7 @@ async::task<void> game_bot_controller::on_buff(game_bot& bot, const game_resp::s
     if (response.duration.total_milliseconds() == 0)
         bot.remove_buff(response.name);
     else
-        bot.add_buff(response.name);
+        bot.add_buff(response.name, std::chrono::milliseconds(response.duration.total_milliseconds()));
 
     co_return;
 }

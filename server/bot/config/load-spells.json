@@ -3008,10 +3008,13 @@
    "mp": 0,
    "formula": {
     "damage": "math.floor(me.mp * 1.5)",
-    "mp": "me.mp"
+    "mp": "me.mp",
+    "delay": "(7) - (({ [\"용랑제삼봉\"] = 1, [\"용랑제사봉\"] = 1, [\"용랑제오봉\"] = 2, [\"용랑제육봉\"] = 2, [\"용랑제칠봉\"] = 3, [\"용랑제팔봉\"] = 3, [\"용랑제구봉\"] = 4 })[me.weapon] or 0)"
    },
    "role": "ATTACK",
    "damage": 0,
+   "damage_mp": 1.5,
+   "drain": true,
    "id": 3043,
    "type": "TARGET"
   },
@@ -3074,6 +3077,7 @@
     "POISON"
    ],
    "dot": 0.05,
+   "dot_floor": 100,
    "id": 3059,
    "type": "TARGET"
   },
@@ -3089,6 +3093,7 @@
    "chance": 0.5,
    "chance_int": 0.00196078431372549,
    "hp_cost": 0.4,
+   "hp_floor": 100,
    "id": 4002,
    "type": "NORMAL"
   },
@@ -3213,7 +3218,7 @@
    "type": "NORMAL"
   },
   "부활": {
-   "mp": 0,
+   "mp": 300,
    "role": "REVIVE",
    "id": 4014,
    "type": "TARGET"

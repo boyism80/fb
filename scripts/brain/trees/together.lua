@@ -357,12 +357,21 @@ local function off_landing(snap, facts, member)
     if route == nil or route.x == nil or math.abs(route.x - snap.world.x) + math.abs(route.y - snap.world.y) > 1 then
         return nil
     end
+    -- A warp is no tile to step off onto, as it is none to stand aside on (aside): a rogue making way inside a shop
+    -- for the mage landing beside it chose the door, walked out onto 국내성, came back in for the tile and out again
+    -- for ten minutes while its mage waited at the entrance (online 20261115-151147, map 30, 15:12:57-15:22:57).
     local goals = {}
+    local function add(x, y)
+        if (facts.floor == nil or facts.floor(snap.world.map, x, y)) and
+            (facts.warp == nil or facts.warp(snap.world.map, x, y) ~= true) then
+            table.insert(goals, { x = x, y = y, range = 0 })
+        end
+    end
     for dx = -2, 2 do
         local dy = 2 - math.abs(dx)
-        table.insert(goals, { x = route.x + dx, y = route.y + dy, range = 0 })
+        add(route.x + dx, route.y + dy)
         if dy ~= 0 then
-            table.insert(goals, { x = route.x + dx, y = route.y - dy, range = 0 })
+            add(route.x + dx, route.y - dy)
         end
     end
     local steps = facts.steps ~= nil and facts.steps(snap.world.map, snap.world.x, snap.world.y, goals) or {}
@@ -394,6 +403,10 @@ end
 -- way for its warrior (brain unit test, online WA+PO+MA 150824).
 -- A warp is no tile to stand aside on: it takes me off the map, and a poet making way at the stairs of 국내성 chose
 -- the second tile into 흑해골굴 and would have gone in ahead of its warrior (brain unit test, online WA+PO+MA 150824).
+-- Stepping on ahead of the member helps only where it walks to a tile: one that walks to a mob has to stand beside
+-- the mob, and the step ahead took that tile. A poet stepped from 28,14 to 28,15 in a one-tile corridor of 국내백륜동2,
+-- beside the 도깨비 its warrior walked to, and was struck there 2m25s while the warrior could not reach it (online
+-- 20261115-120942, 12:16:25-12:18:50).
 local function aside(snap, facts, member, going)
     local mine  = math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y)
     local goals = {}
@@ -408,12 +421,13 @@ local function aside(snap, facts, member, going)
             taken[other.world.x .. "," .. other.world.y] = true
         end
     end
+    local tile = taken[going.x .. "," .. going.y] == nil
     for dx = -2, 2 do
         for dy = -2, 2 do
             local far  = math.abs(dx) + math.abs(dy)
             local x, y = snap.world.x + dx, snap.world.y + dy
             local side = math.abs(x - member.world.x) + math.abs(y - member.world.y) >= far
-            local on   = far == 1 and math.abs(going.x - x) + math.abs(going.y - y) < mine and
+            local on   = tile and far == 1 and math.abs(going.x - x) + math.abs(going.y - y) < mine and
                 (x ~= going.x or y ~= going.y)
             if far > 0 and far <= 2 and taken[x .. "," .. y] == nil and (side or on) and
                 (facts.floor == nil or facts.floor(snap.world.map, x, y)) and

@@ -1,5 +1,6 @@
 local combat = require("brain.data.combat")
 local danger = require("brain.policies.danger")
+local fight  = require("brain.policies.combat")
 local escort = require("brain.policies.escort")
 local ground = require("brain.policies.ground")
 local score  = require("brain.policies.score")
@@ -26,6 +27,7 @@ local function summary(plan)
         peak = plan.peak,
         pain = plan.pain,
         peak = plan.peak,
+        lap = ground.lap(plan),
         floors = floors,
         yields = plan
             .yields,
@@ -188,8 +190,9 @@ local function judged(snap, query, own)
     return stay, table.concat(why, ","), rate
 end
 
-local stays  = setmetatable({}, { __mode = "k" })
-local stayed = {}
+local stays   = setmetatable({}, { __mode = "k" })
+local stayed  = {}
+local offered = {}
 
 function M.stays(snap, query)
     if stays[snap] == nil then
@@ -222,6 +225,7 @@ function M.profile(snap, query, decision)
     return {
         self      = base.self,
         spells    = snap.spells,
+        kept      = grouped and fight.kept(snap) or nil,
         gear      = base.gear,
         buffs     = snap.buffs,
         bag       = base.bag,
@@ -250,7 +254,8 @@ function M.profile(snap, query, decision)
         peril     = grouped and M.peril(snap, query) or nil,
         dealt     = grouped and require("brain.policies.battle").threat(snap.record.memory.dealt, snap.world.map) or nil,
         fallen    = snap.record.death ~= nil and
-            { map = snap.record.death.map, at = snap.now - (snap.record.death.age or 0) } or nil,
+            { map = snap.record.death.map, at = snap.now - (snap.record.death.age or 0) * 1000 } or nil,
+        raising   = grouped and require("brain.policies.raise").promise(snap, query) or nil,
         going     = going(snap, decision),
         heading   = decision ~= nil and decision.kind == ACTION.MOVE and decision.dest ~= nil and
             (decision.dest.maps or { decision.dest.map }) or nil,
@@ -400,12 +405,17 @@ function M.offer(snap, query)
         return a < b or (a == b and left.name < right.name)
     end)
     if #nearby == 0 then
+        if offered[snap.self.name] ~= "nearby=0" then
+            offered[snap.self.name] = "nearby=0"
+            log("debug", string.format("[brain:offer] bot=%s map=%s nearby=0", snap.self.name, tostring(snap.world.map)))
+        end
         offers[origin] = false
         return nil
     end
     local current = grouped and ground.party(team, query, "SUPPLY") or nil
     local alone   = grouped == false and solo(snap, query) or nil
     local best    = nil
+    local weighed = {}
     for rank, entry in ipairs(nearby) do
         if rank > combat.party.scan then
             break
@@ -416,8 +426,12 @@ function M.offer(snap, query)
             table.insert(members, 1, team[index])
         end
         local plan = ground.party(members, query, "SUPPLY")
-        if plan ~= nil and M.feasible(snap, query, plan, members) == nil then
+        local gate = plan ~= nil and M.feasible(snap, query, plan, members) or nil
+        if plan ~= nil and gate == nil then
+            table.insert(weighed, string.format("%s:%s:infeasible", entry.name, plan.name))
             plan = nil
+        elseif plan == nil then
+            table.insert(weighed, string.format("%s:noplan", entry.name))
         end
         if plan ~= nil then
             local theirs  = solo(other, query)
@@ -425,10 +439,17 @@ function M.offer(snap, query)
                 ground.contended(snap, query, alone, theirs)
             local gain    = (plan.peak or plan.rate) - mine
             local partner = (plan.peak or plan.rate) - ground.contended(other, query, theirs, alone)
+            table.insert(weighed, string.format("%s:%s:gain=%.0f:partner=%.0f", entry.name, plan.name, gain, partner))
             if gain > 0 and partner > 0 and (best == nil or gain > best.gain) then
                 best = { name = entry.name, gain = gain, plan = plan }
             end
         end
+    end
+    local summary = string.format("best=%s current=%s %s", best ~= nil and best.name or "-",
+        current ~= nil and current.name or "-", table.concat(weighed, ","))
+    if offered[snap.self.name] ~= summary then
+        offered[snap.self.name] = summary
+        log("debug", string.format("[brain:offer] bot=%s map=%s %s", snap.self.name, tostring(snap.world.map), summary))
     end
     offers[origin] = best or false
     return best
@@ -1247,12 +1268,17 @@ function M.regrouping(snap)
             latest = notice.at
         end
     end
-    -- A leader that has entered again since the flight has led the group back in; the regroup is over
+    -- A crewmate that has entered again since the flight has led the group back in; the regroup is over
     -- and the member follows it in. Without this a member that missed the crossing waited at the gate
-    -- while the leader waited inside (WA9+PO, 3178/5191).
+    -- while the leader waited inside (WA9+PO, 3178/5191). The vanguard goes in first whoever leads (user 11-14),
+    -- so the crewmate back in is the one I follow, not only the leader: looked for the leader alone, a leader
+    -- that was not the vanguard waited 6 minutes at the door of 평양흑해골굴 while its vanguard hunted inside
+    -- (online 20261115-151147, 15:15:37-15:21:39).
     local joined = snap.record.memory.joined
-    local lead   = snap.leader ~= snap.self.name and M.leader(snap) or nil
-    local led    = lead ~= nil and lead.joined ~= nil and latest ~= nil and lead.joined > latest
+    local led    = false
+    for _, member in ipairs(M.members(snap)) do
+        led = led or (member.self.ghost == false and member.joined ~= nil and latest ~= nil and member.joined > latest)
+    end
     return latest ~= nil and (joined == nil or latest > joined) and led == false
 end
 

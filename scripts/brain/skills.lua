@@ -1,6 +1,7 @@
 local protocol = require("integration.protocol")
 local resp     = require("integration.response")
 local battle   = require("brain.policies.battle")
+local combat   = require("brain.policies.combat")
 local trace    = require("brain.trace")
 local dialog   = require("brain.policies.dialog")
 local travel   = require("brain.policies.travel")
@@ -149,11 +150,26 @@ local SKILLS = {
     end,
     [ACTION.CAST]   = function(brain, bot, action)
         local hp, mp = bot:hp(), bot:mp()
+        if action.face ~= nil then
+            brain:face(bot, action.face.x, action.face.y)
+        end
         if brain:cast(bot, action.slot, action.oid, action.x, action.y) == false then
             return false, "NO_SPELL"
         end
         synced(bot)
-        if action.buff ~= nil then
+        if action.roll ~= nil then
+            -- A spell on a die roll (금강불체) is cast once its mana is spent, whether it took: a miss is a try counted
+            -- in its odds (combat.rolled), not a failure to wait out, or the next try is held back while blows land.
+            local hit = false
+            for _, name in ipairs(brain:observe(bot).buffs or {}) do
+                hit = hit or name == action.roll
+            end
+            if hit == false and bot:mp() == mp then
+                return false, "UNCHANGED"
+            end
+            brain:remember(bot, "rolls", combat.tallied(brain:recall(bot, "rolls"), action.roll, hit))
+            return true
+        elseif action.buff ~= nil then
             for _, name in ipairs(brain:observe(bot).buffs or {}) do
                 if name == action.buff then
                     return true

@@ -44,7 +44,10 @@ end
 
 local pickup = choose({
     when(loot.on_pile, act("LOOT", loot.pick, "pick_up")),
-    act("LOOT", loot.walk, "to_pile"),
+    tree.pick({
+        act("LOOT", loot.seize, "seize", loot.seized),
+        act("LOOT", loot.walk, "to_pile", loot.walked),
+    }, tree.compared, "reach_pile"),
 }, "pickup")
 
 M.loot = when(alive, when(has_pile, pickup), "loot")

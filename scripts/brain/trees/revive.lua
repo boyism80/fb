@@ -1,5 +1,6 @@
 local combat = require("brain.data.combat")
 local near   = require("brain.policies.near")
+local raise  = require("brain.policies.raise")
 local tree   = require("brain.tree")
 
 local choose, when, act = tree.select, tree.when, tree.act
@@ -22,6 +23,8 @@ end
 return when(function(snap)
     return snap.self.ghost
 end, choose({
+    act("REVIVE", raise.self_cast, "raise_self"),
+    act("REVIVE", raise.wait, "await_raise"),
     act("REVIVE", oath, "oath"),
     act("REVIVE", walk, "to_shrine"),
 }), "revive")

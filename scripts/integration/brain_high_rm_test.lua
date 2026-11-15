@@ -1,0 +1,21 @@
+local cases = require("integration.scenarios.brain.state.cases")
+
+local WATCH = 600000
+local FORM  = 480000
+
+cases.start(16, 103)
+
+test_suite {
+    name      = "Brain High Rogue Mage Test",
+    bot_count = 2,
+
+    scenarios = {
+        {
+            parallel = {
+                [0] = { function(ctx)
+                    return cases.group(ctx, { "rogue99", "mage99" }, 0, WATCH, 0, FORM, true)
+                end },
+            },
+        },
+    },
+}

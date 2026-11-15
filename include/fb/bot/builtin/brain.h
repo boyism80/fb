@@ -68,6 +68,7 @@ struct brain
     static int builtin_habitats(lua_State* L);
     static int builtin_engage(lua_State* L);
     static int builtin_cast(lua_State* L);
+    static int builtin_face(lua_State* L);
     static int builtin_aside(lua_State* L);
     static int builtin_tree(lua_State* L);
     static int builtin_leaps(lua_State* L);

@@ -103,6 +103,7 @@ public:
         ACTION                    kind = ACTION::TASK;
         fb::lua::value            action;
         std::chrono::milliseconds revisit{0};
+        std::string               awaits;
     };
 
     struct transition
@@ -394,6 +395,7 @@ public:
     void                   plan(game_bot& bot, const std::string& key, fb::lua::value request);
     std::optional<planned> plan_of(const std::string& name, uint64_t known) const;
     async::task<bool>      await_plan(std::shared_ptr<game_bot> bot, std::string key);
+    async::task<bool>      await_change(std::shared_ptr<game_bot> bot, std::string key);
     void                   measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
     void                   remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
     std::optional<fb::lua::value>                recall(uint32_t bot, const std::string& key) const;

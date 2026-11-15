@@ -8,6 +8,7 @@ local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
 local hunting  = require("brain.data.hunting")
 local party    = require("brain.policies.party")
+local planner  = require("brain.planner")
 local states   = require("brain.data.states")
 local profile  = require("brain.profile")
 local query    = require("brain.query")
@@ -128,9 +129,13 @@ local function decision(snap, facts, found, revisit)
     -- vanguard and its crew wait for each other: the crew walked on to where the vanguard was going while the
     -- vanguard waited where it stopped (offline RO+PO 흉가 and trio scenes, run 08:53). A walk toward a crewmate
     -- is never held back, and a crewmate out of sight is measured from the spot it last posted. One with no
-    -- walk to me is not waited for: it cannot come, and the rally takes the group to it.
+    -- walk to me is not waited for: it cannot come, and the rally takes the group to it. A step of a traffic plan
+    -- is never held back either: the bots of the plan wait on it, so a crewmate held by the plan cannot close in.
+    -- Held, the warrior waited for its rogue 7 steps off while the rogue waited for the warrior's next step, and
+    -- the crew of four stood 145s on 국내백륜동 (online 20261115-125736, 13:00:41-13:03:06).
     if result.kind == ACTION.MOVE and result.dest ~= nil and result.dest.x ~= nil and result.dest.map == snap.world.map and
-        name ~= "ESCAPE" and party.vanguard_name(snap, facts) == snap.self.name and ground.floor_at(snap.world.map) ~= nil then
+        result.dest.traffic == nil and name ~= "ESCAPE" and party.vanguard_name(snap, facts) == snap.self.name and
+        ground.floor_at(snap.world.map) ~= nil then
         local here  = { x = snap.world.x, y = snap.world.y }
         local there = { x = result.dest.x, y = result.dest.y }
         local leg   = nil
@@ -200,10 +205,22 @@ function M.choose(snap, facts, current, sink)
     if found == nil then
         return nil, revisit
     end
-    local route  = table.concat(path, ">") .. (found.via ~= nil and ">" .. found.via or "")
-    local result = nil
+    local route   = table.concat(path, ">") .. (found.via ~= nil and ">" .. found.via or "")
+    local result  = nil
+    local awaited = planner.stale(snap)
     if current == nil or (found.name ~= current and states.required[current] == nil) then
-        result = decision(snap, facts, found, revisit)
+        if awaited ~= nil and states.planned[found.name] then
+            result = {
+                state = found.state,
+                task = found.name,
+                step = 0,
+                reason = "plan",
+                kind = ACTION.HOLD,
+                awaits = awaited
+            }
+        else
+            result = decision(snap, facts, found, revisit)
+        end
     end
     if sink ~= nil and sink.alarm ~= nil then
         trace.alarm(sink.brain, sink.bot, snap, sink.alarm, current, result ~= nil and result.task or found.name, route)
@@ -277,7 +294,10 @@ end
 
 function M.errand(snap, decision)
     local errand = snap.record.memory.errand
-    local going  = decision ~= nil and ERRANDS[decision.task] and
+    if decision ~= nil and decision.awaits ~= nil then
+        return false
+    end
+    local going = decision ~= nil and ERRANDS[decision.task] and
         (decision.kind == ACTION.MOVE or decision.kind == ACTION.SAY or decision.kind == ACTION.TALK)
     if going and errand ~= nil and errand.name == decision.task then
         return false
@@ -373,7 +393,10 @@ function M.commit(snap, facts)
     if alone == false and party.known(snap) == false then
         return false, memory.commit, memory.swept, memory.solo
     end
-    local plan   = party.plan(snap, facts)
+    local plan = party.plan(snap, facts)
+    if planner.stale(snap) ~= nil then
+        return false, memory.commit, memory.swept, memory.solo
+    end
     local chosen = plan ~= nil and plan.name or nil
     local name   = nil
     local solo   = nil
@@ -422,7 +445,7 @@ function M.lap(brain, bot, snap, decision, facts)
             dry[tostring(map)] = snap.now
         end
         memory.dry       = dry
-        memory.servicing = { at = snap.now, leave = true }
+        memory.servicing = { at = snap.now, leave = true, lapped = true, group = { table.unpack(snap.group or {}) } }
         memory.commit    = nil
         memory.solo      = nil
         memory.swept     = nil
@@ -591,8 +614,10 @@ function M.first(brain, bot, current, alarm)
         snap.record.memory.entry = entry
         brain:remember(bot, "entry", entry)
         if entry ~= nil and party.entering(snap, facts, entry.map or snap.world.map) then
-            snap.record.memory.joined = entry.at
+            snap.record.memory.joined      = entry.at
+            snap.record.memory.joined_crew = { table.unpack(snap.group or {}) }
             brain:remember(bot, "joined", entry.at)
+            brain:remember(bot, "joined_crew", snap.record.memory.joined_crew)
         end
     end
     local fled, released = M.flee(snap, decision)

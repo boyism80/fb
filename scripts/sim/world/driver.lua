@@ -768,6 +768,7 @@ function Actor:snapshot()
     return {
         self = self_,
         buffs = self:buffs(),
+        buff_left = self:buff_left(),
         spells = copy(self.spells),
         gear = copy(base.gear),
         bag = copy(self.bag),
@@ -790,11 +791,22 @@ end
 
 function Actor:buffs()
     local names = {}
-    for name in pairs(self.me.buffs) do
+    for name in pairs(self:buff_left()) do
         table.insert(names, name)
     end
     table.sort(names)
     return names
+end
+
+function Actor:buff_left()
+    local left = {}
+    for _, timers in ipairs({ self.me.buffs, self.me.delays }) do
+        for name, timer in pairs(timers) do
+            local ends = type(timer) == "table" and timer.expires or timer
+            left[name] = math.max(left[name] or 0, ends - self.clock)
+        end
+    end
+    return left
 end
 
 function Actor:signature()
@@ -1681,9 +1693,23 @@ function Actor:perform(action)
         return self:consume(action.item, action.count), "NO_ITEM"
     elseif action.kind == ACTION.CAST then
         local hp, mp = self.me.hp, self.me.mp
+        if action.face ~= nil then
+            self:face(action.face)
+        end
         local ok, reason = self:cast(action.slot, action.oid, action.oid == nil)
+        for _, pile in ipairs(self.me.gained or {}) do
+            town.gather(self.bag, pile.names[1], pile.count, pile.capacity)
+        end
+        self.me.gained = nil
         if ok == false then
             return false, reason or "NO_SPELL"
+        elseif action.roll ~= nil then
+            local hit = self.me.buffs[action.roll] ~= nil
+            if hit == false and self.me.mp == mp then
+                return false, "UNCHANGED"
+            end
+            self.memory.rolls = fight.tallied(self.memory.rolls, action.roll, hit)
+            return true
         elseif action.buff ~= nil then
             return self.me.buffs[action.buff] ~= nil, "UNCHANGED"
         end
@@ -1882,8 +1908,10 @@ function Actor:think()
         snap.record.memory.entry = entry
         self.memory.entry = entry
         if entry ~= nil and party.entering(snap, bound, entry.map or snap.world.map) then
-            snap.record.memory.joined = entry.at
-            self.memory.joined = entry.at
+            snap.record.memory.joined      = entry.at
+            snap.record.memory.joined_crew = { table.unpack(snap.group or {}) }
+            self.memory.joined             = entry.at
+            self.memory.joined_crew        = snap.record.memory.joined_crew
         end
     end
     local fled, released = decide.flee(snap, decision)

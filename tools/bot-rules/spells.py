@@ -8,6 +8,7 @@ from lua import lua_value
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / 'server' / 'game' / 'scripts'
 SPELL_JSON = ROOT / 'server' / 'game' / 'json' / 'spell.json'
+ITEM_JSON = ROOT / 'server' / 'game' / 'json' / 'item.json'
 OUTPUT = ROOT / 'server' / 'bot' / 'config' / 'load-spells.json'
 BRAIN = ROOT / 'scripts' / 'brain' / 'data' / 'spells.lua'
 
@@ -31,6 +32,10 @@ STAT = re.compile(r"me:(\w+)\(me:\1\(\)\s*([+-])\s*(\d+)\)")
 UNBUFF = re.compile(r"me:unbuff\('([^']+)'\)")
 DOT = re.compile(r"maxhp\(\)\s*\*\s*(\d+)\)\s*//\s*(\d+)")
 DOT_FLOOR = re.compile(r"damage\s*>\s*me:hp\(\)\s*-\s*(\d+)")
+INLINE_MP = re.compile(r"spell\.\w+\([^)]*\{[^}]*\bmp\s*=\s*(\d+)")
+DELAY = re.compile(r"local\s+delay\s*=\s*([^\n]+)")
+WEAPON_TABLE = re.compile(r"local\s+WEAPON_DELAY_(REDUCTION|PERCENT)\s*=\s*\{(.*?)\}", re.S)
+WEAPON_ENTRY = re.compile(r"\[(\d+)\]\s*=\s*(\d+)")
 HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'handler.h'
 SPELL_HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'game' / 'handler' / 'protocol' / 'spell_cast.h'
 ACCEPTOR = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'acceptor.h'
@@ -67,7 +72,7 @@ def rules():
     multipliers = {name: int(value) for name, value in re.findall(r"me:isbuff\('([^']+)'\) then\s*rate = rate \* (\d+)", interaction)}
     splashes = {}
     for name, block in re.findall(r"if me:isbuff\('([^']+)'\) then\s*local points = \{\}(.*?)\n        end\n", ATTACK.read_text(encoding='utf-8'), re.S):
-        rate = re.search(r"lib\.damage\(me, obj, ([\d.]+)", block)
+        rate = re.search(r"(?:lib\.damage\(me, obj,|strike\(me, obj, '\w+',)\s*([\d.]+)", block)
         if rate is not None:
             first = re.split(r"\n\s*else", block, maxsplit=1)[0]
             splashes[name] = {'rate': float(rate.group(1)), 'sides': first.count('table.insert(points')}
@@ -148,10 +153,41 @@ def formulas(text):
     return result
 
 
-def effect(text):
+def weapon_names():
+    table = json.loads(ITEM_JSON.read_text(encoding='utf-8'))
+    return {int(item['id']): item['name'] for item in table.values() if isinstance(item, dict) and 'id' in item}
+
+
+def cooldown(text, weapons):
+    found = DELAY.search(text)
+    if found is None:
+        return None
+    base = found.group(1).split('--', 1)[0].strip().replace('me:maxmp()', 'me.max_mp')
+    if re.search(r"[:\[]|\bme:\w", base):
+        return None
+    table = WEAPON_TABLE.search(text)
+    if table is None:
+        return int(base) if re.fullmatch(r"\d+", base) else base
+    entries = ', '.join(f'["{weapons[int(model)]}"] = {amount}'
+                        for model, amount in WEAPON_ENTRY.findall(table.group(2)) if int(model) in weapons)
+    off = f'(({{ {entries} }})[me.weapon] or 0)'
+    if table.group(1) == 'PERCENT':
+        return f'({base}) - ({base}) * {off} // 100'
+    return f'({base}) - {off}'
+
+
+def effect(text, weapons):
     values = {key: int(value) for key, value in LOCAL.findall(text)}
     info = {'mp': values.get('mp', 0)}
+    inline = INLINE_MP.search(text)
+    if 'mp' not in values and inline is not None:
+        info['mp'] = int(inline.group(1))
     found = formulas(text)
+    delay = cooldown(text, weapons)
+    if isinstance(delay, str):
+        found['delay'] = delay
+    elif delay is not None:
+        info['delay'] = delay
     if found:
         info['formula'] = found
     cure = CURE.search(text)
@@ -174,6 +210,11 @@ def effect(text):
             info['hp_spend'] = values['hp_cost']
         if re.search(r"if\s+you:maxhp\(\)\s*>\s*damage\s+then", text):
             info['limit'] = values.get('damage', 0)
+        scale = re.search(r"local\s+damage\s*=\s*math\.floor\(me:mp\(\)\s*\*\s*([\d.]+)\)", text)
+        if scale is not None:
+            info['damage_mp'] = float(scale.group(1))
+        if re.search(r"local\s+mp\s*=\s*me:mp\(\)\s*$", text, re.M):
+            info['drain'] = True
     elif 'spell.attack_cast' in text:
         info['role'] = 'STRIKE'
         cost = re.search(r"local\s+hp\s*=\s*me:hp\(\)\s*(?:\*\s*(\d+)\s*)?(?://\s*(\d+)|-\s*(\d+))?", text)
@@ -230,7 +271,7 @@ def effect(text):
         info['role'] = 'SUMMON'
     elif 'you:mp(' in text:
         info['role'] = 'TRANSFER'
-    elif 'you:state' in text:
+    elif 'you:state' in text or 'you:revive(' in text:
         info['role'] = 'REVIVE'
     elif 'me:buff(' in text or ':buff(sp' in text:
         info['role'] = 'BUFF'
@@ -261,9 +302,12 @@ def effect(text):
             info['chance_int'] = float(wisdom.group(2)) / int(wisdom.group(1))
         cost = re.search(r"me:maxmp\(\)\s*\*\s*([\d.]+)\)", text)
         info['hp_cost'] = float(cost.group(1)) if cost else 0.0
+        floor = re.search(r"me:hp\(math\.max\((\d+),\s*me:hp\(\)\s*-", text)
+        if floor is not None:
+            info['hp_floor'] = int(floor.group(1))
     elif 'root:cardinal' in text or 'root:revive' in text or 'me:mp_down' in text:
         info['role'] = 'TRAVEL'
-    elif 'broadcast(' in text:
+    elif 'broadcast(' in text or 'me:shout(' in text:
         info['role'] = 'SHOUT'
     else:
         info['role'] = 'OTHER'
@@ -301,13 +345,14 @@ def teachers():
 
 def spells(names):
     table = json.loads(SPELL_JSON.read_text(encoding='utf-8'))
+    weapons = weapon_names()
     result = {}
     for spell in table.values():
         if spell['name'] not in names:
             continue
 
         path = SCRIPTS / 'spell' / f"{spell['id']}.lua"
-        info = effect(path.read_text(encoding='utf-8')) if path.exists() else {'role': 'OTHER', 'mp': 0}
+        info = effect(path.read_text(encoding='utf-8'), weapons) if path.exists() else {'role': 'OTHER', 'mp': 0}
         info['id'] = spell['id']
         info['type'] = spell['type']
         result[spell['name']] = info
@@ -326,9 +371,9 @@ def brain_data(catalog):
     for name in sorted(catalog['spells']):
         info = catalog['spells'][name]
         fields = {key: info[key] for key in ('role', 'type', 'mp', 'damage', 'hp', 'self', 'others', 'group', 'hp_cost',
-                                            'damage_hp', 'damage_mp', 'drain', 'buff_time', 'boost', 'chance', 'chance_int',
+                                            'hp_floor', 'damage_hp', 'damage_mp', 'drain', 'buff_time', 'boost', 'chance', 'chance_int',
                                             'excludes', 'trigger', 'surge', 'stats', 'dot', 'dot_floor', 'paralysis', 'blind', 'resists', 'front',
-                                            'hp_spend', 'limit')
+                                            'hp_spend', 'limit', 'delay')
                   if key in info and info[key] not in ({}, [])}
         formula = info.get('formula', {})
         entries = [f'{key} = {lua_value(value)}' for key, value in fields.items() if key not in formula]
@@ -353,7 +398,7 @@ def main():
         guild['spells'] = sorted(guild['spells'] + taught, key=lambda x: x['level'])
     names = {name for guild in classes.values() for spell in guild['spells'] for name in spell['names']}
     catalog = {'classes': classes, 'spells': spells(names), 'rules': rules()}
-    Path(args.output).write_text(json.dumps(catalog, ensure_ascii=False, indent=1), encoding='utf-8')
+    Path(args.output).write_text(json.dumps(catalog, ensure_ascii=False, indent=1), encoding='utf-8', newline='\n')
     Path(args.brain).write_text(brain_data(catalog), encoding='utf-8', newline='\n')
     counts = {name: len(guild['spells']) for name, guild in classes.items()}
     print(f'classes={counts} spells={len(catalog["spells"])} taught={[spell["names"][0] for spell in taught]}')

@@ -1,4 +1,5 @@
 local combat = require("brain.data.combat")
+local magic  = require("brain.data.spells")
 local states = require("brain.data.states")
 
 local M = {}
@@ -47,18 +48,54 @@ local function party(brain, bot, names)
     return found
 end
 
+-- The server tells phydef, hit and dam only in its answer to self_info, while a buff is told the moment it lands or
+-- ends, so for seconds the numbers miss a buff the list already holds or still hold one it lost. Shifted from the buffs
+-- held when they were told (prowess_buffs) to the buffs held now, they always match the list, and what takes a buff's
+-- stats back out of them (score.signature) or adds a buff not on (combat.compute_buffs) gets the same answer whenever it
+-- reads: a ward from a crewmate moved the plan key 10 phydef off and back on every cast, and every move planned anew
+-- (online 20261115-154519, 260 of 292 stale plans).
+function M.prowess(seen)
+    local result = { phydef = seen.phydef or 0, hit = seen.hit or 0, dam = seen.dam or 0 }
+    local told   = {}
+    local held   = {}
+    for _, name in ipairs(seen.prowess_buffs or seen.buffs or {}) do
+        told[name] = true
+    end
+    for _, name in ipairs(seen.buffs or {}) do
+        held[name] = true
+    end
+    local function shift(name, sign)
+        local stats   = (magic.spells[name] or {}).stats or {}
+        result.phydef = result.phydef + sign * (stats.buff_phydef or 0)
+        result.hit    = result.hit + sign * (stats.buff_hit or 0)
+        result.dam    = result.dam + sign * (stats.buff_dam or 0)
+    end
+    for name in pairs(held) do
+        if told[name] == nil then
+            shift(name, 1)
+        end
+    end
+    for name in pairs(told) do
+        if held[name] == nil then
+            shift(name, -1)
+        end
+    end
+    return result
+end
+
 function M.take(brain, bot)
     local seen           = brain:observe(bot)
     local position       = bot:position()
     local names          = {}
     local listed, leader = grouped(seen.group)
+    local stats          = M.prowess(seen)
     for _, name in ipairs(listed) do
         if name ~= bot:name() then
             table.insert(names, name)
         end
     end
     return {
-        self    = {
+        self      = {
             name      = bot:name(),
             level     = seen.level,
             exp       = seen.exp,
@@ -76,9 +113,9 @@ function M.take(brain, bot)
             mp        = seen.mp,
             max_mp    = seen.max_mp,
             money     = seen.money,
-            phydef    = seen.phydef,
-            dam       = seen.dam,
-            hit       = seen.hit,
+            phydef    = stats.phydef,
+            dam       = stats.dam,
+            hit       = stats.hit,
             struck    = seen.struck,
             casted    = seen.casted,
             swung     = seen.swung,
@@ -86,11 +123,12 @@ function M.take(brain, bot)
             cloaked   = seen.cloaked,
             riding    = seen.riding,
         },
-        buffs   = seen.buffs,
-        spells  = seen.spells,
-        gear    = brain:worn(bot),
-        bag     = { items = brain:inventory(bot), used = seen.bag, capacity = seen.capacity },
-        world   = {
+        buffs     = seen.buffs,
+        buff_left = seen.buff_left or {},
+        spells    = seen.spells,
+        gear      = brain:worn(bot),
+        bag       = { items = brain:inventory(bot), used = seen.bag, capacity = seen.capacity },
+        world     = {
             map      = seen.map,
             x        = position[1],
             y        = position[2],
@@ -101,19 +139,19 @@ function M.take(brain, bot)
             no_spell = seen.no_spell,
             aside    = brain:aside(bot),
         },
-        record  = {
+        record    = {
             current  = brain:state(bot),
             failures = failures(brain, bot),
             death    = brain:death(bot),
             jumped   = seen.jumped,
             memory   = brain:recall(bot),
         },
-        pace    = setmetatable({ step = combat.walk }, { __index = seen.pace }),
-        now     = seen.now,
-        persona = brain:persona(bot),
-        group   = names,
-        leader  = leader,
-        party   = party(brain, bot, names),
+        pace      = setmetatable({ step = combat.walk }, { __index = seen.pace }),
+        now       = seen.now,
+        persona   = brain:persona(bot),
+        group     = names,
+        leader    = leader,
+        party     = party(brain, bot, names),
     }
 end
 

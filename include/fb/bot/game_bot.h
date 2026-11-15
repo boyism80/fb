@@ -75,9 +75,10 @@ public:
 
     struct prowess
     {
-        int8_t phydef = 0;
-        int8_t dam    = 0;
-        int8_t hit    = 0;
+        int8_t                phydef = 0;
+        int8_t                dam    = 0;
+        int8_t                hit    = 0;
+        std::set<std::string> counted;
     };
 
     struct simple_spell
@@ -100,6 +101,8 @@ public:
         std::unordered_map<std::string, uint32_t> items;
         uint32_t                                  money = 0;
     };
+
+    using buff_ends = std::map<std::string, std::chrono::steady_clock::time_point>;
 
     struct simple_npc
     {
@@ -192,7 +195,7 @@ private:
     std::chrono::steady_clock::time_point _struck;
     std::vector<std::pair<uint16_t, uint8_t>> _accessories;
     std::optional<death_record>     _last_death;
-    std::set<std::string>           _active_buffs;
+    buff_ends                       _active_buffs;
     std::map<uint8_t, simple_item>  _items;
     std::map<uint8_t, simple_spell> _spells;
     uint8_t                         _nation        = 0;
@@ -284,8 +287,8 @@ public:
     const std::vector<std::pair<uint16_t, uint8_t>>& accessories() const;
     void                                      notice(std::string_view kind, uint32_t oid = 0);
     const std::optional<death_record>&        last_death() const;
-    const std::set<std::string>&              active_buffs() const;
-    void                                      add_buff(std::string_view name);
+    const buff_ends&                          active_buffs() const;
+    void                                      add_buff(std::string_view name, std::chrono::milliseconds duration);
     void                                      remove_buff(std::string_view name);
     bool                                      has_buff(std::string_view name) const;
     void                                      update_spell(uint8_t slot, std::string_view name, uint8_t type);

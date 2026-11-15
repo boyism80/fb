@@ -62,6 +62,15 @@ local function surface(world)
             end
             return found
         end,
+        belows = function(_, x, y)
+            local found = {}
+            for _, pile in pairs(world.piles or {}) do
+                if pile.x == x and pile.y == y then
+                    table.insert(found, pile)
+                end
+            end
+            return found
+        end,
         model = function()
             return model(world, {})
         end,
@@ -72,6 +81,7 @@ function M.life(world, fields)
     local object     = setmetatable(fields, State)
     object.world     = world
     object.buffs     = object.buffs or {}
+    object.delays    = object.delays or {}
     object.dam_value = object.dam_value or 0
     object.hit_value = object.hit_value or 0
     object.rate      = object.rate or 1000
@@ -174,6 +184,17 @@ function Life:front_position()
     return inner.world.map:step(inner.x, inner.y, inner.facing)
 end
 
+function Life:gain(...)
+    local inner  = self.inner
+    inner.gained = inner.gained or {}
+    for _, pile in ipairs({ ... }) do
+        if (inner.world.piles or {})[pile.oid] == pile then
+            inner.world.piles[pile.oid] = nil
+            table.insert(inner.gained, pile)
+        end
+    end
+end
+
 function Life:nears(kind, points)
     local inner = self.inner
     local found = {}
@@ -219,6 +240,28 @@ end
 
 function Life:unbuff(name)
     self.inner.world:unbuff(self.inner, name)
+end
+
+function Life:spell(model)
+    local inner = self.inner
+    return {
+        delay = function(_, seconds)
+            if seconds ~= nil then
+                inner.world:delay(inner, model, seconds)
+                return
+            end
+            local ends = inner.delays[model.label]
+            return ends ~= nil and math.max(0, (ends - inner.world.now) // 1000) or 0
+        end,
+    }
+end
+
+function Life:invincible(value)
+    if value ~= nil then
+        self.inner.invincible = value
+        return
+    end
+    return self.inner.invincible == true
 end
 
 function Life:hit()
