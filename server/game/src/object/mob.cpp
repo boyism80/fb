@@ -310,7 +310,7 @@ async::task<void> mob::action(fb::model::datetime now)
     if (this->_spawn_type == spawn_type::SUMMONED)
     {
         auto current_owner = this->owner.lock();
-        if (current_owner == nullptr || current_owner->map() != this->map() || !this->sight(*current_owner))
+        if (current_owner == nullptr || !this->sight(*current_owner))
         {
             this->target(nullptr);
             co_return;

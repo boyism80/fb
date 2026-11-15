@@ -54,7 +54,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         co_return false;
 
     auto owner = mob_obj.owner.lock();
-    if (owner == nullptr || owner->map() != mob_obj.map() || !mob_obj.sight(*owner))
+    if (owner == nullptr || !mob_obj.sight(*owner))
     {
         mob_obj.target(nullptr);
         co_return true;

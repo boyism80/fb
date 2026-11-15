@@ -263,6 +263,20 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             this->trade->cancel(*this);
 
         this->_world_map = std::nullopt;
+
+        if (this->_spawned_mobs.empty() == false)
+        {
+            auto pending = std::move(this->_spawned_mobs);
+            this->_spawned_mobs.clear();
+            for (auto& mob : pending)
+            {
+                if (mob == nullptr || mob->invincible())
+                    continue;
+                if (mob->map() != old_map)
+                    continue;
+                co_await mob->destroy(DESTROY_TYPE::DEFAULT);
+            }
+        }
     }
 
     auto switch_process = (map != nullptr && map->active == false);
