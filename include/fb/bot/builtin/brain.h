@@ -55,6 +55,9 @@ struct brain
     static int builtin_reservations(lua_State* L);
     static int builtin_occupy(lua_State* L);
     static int builtin_demand(lua_State* L);
+    static int builtin_plan(lua_State* L);
+    static int builtin_planned(lua_State* L);
+    static int builtin_await_plan(lua_State* L);
     static int builtin_post(lua_State* L);
     static int builtin_roster(lua_State* L);
     static int builtin_recall(lua_State* L);

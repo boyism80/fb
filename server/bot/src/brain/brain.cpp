@@ -13,6 +13,7 @@
 #include <cctype>
 #include <cmath>
 #include <chrono>
+#include <limits>
 #include <string>
 #include <string_view>
 
@@ -27,11 +28,21 @@ constexpr auto STALL_FACTOR    = 2;
 constexpr auto ALERT_MODULE    = "brain.policies.alert";
 constexpr auto DECIDE_MODULE   = "brain.decide";
 constexpr auto SKILLS_MODULE   = "brain.skills";
+constexpr auto PLANNER_MODULE  = "brain.planner";
 constexpr auto OBSERVE_TIMEOUT = 5s;
 
 brain::brain(bool recording) :
     _recording(recording)
 { }
+
+brain::~brain()
+{
+    if (this->_planner == nullptr)
+        return;
+
+    this->_planner->exit();
+    this->_planner->join();
+}
 
 void brain::attach(game_bot& bot, const profile& profile)
 {
@@ -167,6 +178,25 @@ void brain::detach(game_bot& bot)
         }
     }
     brain::vacate(bot.name());
+    auto waiting = std::vector<std::shared_ptr<async::task_completion_source<bool>>>{};
+    {
+        auto lock = std::lock_guard(this->_plan_mutex);
+        this->_plans.erase(bot.name());
+        this->_requests.erase(bot.name());
+        auto found = this->_awaiting.find(bot.name());
+        if (found != this->_awaiting.end())
+        {
+            waiting = std::move(found->second);
+            this->_awaiting.erase(found);
+        }
+    }
+
+    for (auto& waiter : waiting)
+    {
+        auto failure = std::exception_ptr{};
+        std::ignore  = waiter->try_set_value(false, failure);
+    }
+
     if (bot.attached().get() == this)
         bot.attached(nullptr);
 }
@@ -338,8 +368,13 @@ fb::lua::root& brain::scripts(game_bot& bot)
     if (found != this->_scripts.end())
         return *found->second;
 
-    auto  created = std::make_unique<fb::lua::root>(bot.controller.container, *thread);
-    auto& lua     = *created;
+    auto created = std::make_unique<fb::lua::root>(bot.controller.container, *thread);
+    brain::prepare(*created);
+    return *this->_scripts.insert_or_assign(thread, std::move(created)).first->second;
+}
+
+void brain::prepare(fb::lua::root& lua)
+{
     lua.build<fb::lua::luable>();
     lua.build<game_bot, fb::lua::luable>();
     lua.build<brain, fb::lua::luable>();
@@ -353,7 +388,6 @@ fb::lua::root& brain::scripts(game_bot& bot)
     lua.package_path("../../scripts/?/init.lua");
     lua.package_path("scripts/?.lua");
     lua.package_path("scripts/?/init.lua");
-    return *this->_scripts.insert_or_assign(thread, std::move(created)).first->second;
 }
 
 std::string brain::module(std::string_view task)
@@ -995,6 +1029,179 @@ async::task<void> brain::alarm(std::shared_ptr<game_bot> bot, std::string task, 
     {
         this->notice(*bot, event, oid);
     }
+}
+
+void brain::plan(game_bot& bot, const std::string& key, fb::lua::value request)
+{
+    auto name  = bot.name();
+    auto start = false;
+    {
+        auto lock    = std::lock_guard(this->_plan_mutex);
+        auto planned = this->_plans.find(name);
+        auto pending = this->_requests.find(name);
+        if ((planned != this->_plans.end() && planned->second.key == key) ||
+            (pending != this->_requests.end() && pending->second.key == key))
+            return;
+
+        if (pending == this->_requests.end())
+            this->_queued.push_back(name);
+
+        this->_requests.insert_or_assign(name, planning{key, std::move(request)});
+        start           = this->_planning == false;
+        this->_planning = true;
+        if (this->_planner == nullptr)
+            this->_planner = std::make_unique<fb::thread>(std::numeric_limits<uint8_t>::max());
+    }
+
+    if (start)
+    {
+        auto& executor = bot.controller.container;
+        auto  builder  = this->_planner->new_builder<void>();
+        builder.func   = [this, &executor](auto&) -> async::task<void> {
+            co_await this->plan_queued(executor);
+        };
+        builder.enqueue();
+    }
+}
+
+async::task<void> brain::plan_queued(fb::async_executor& executor)
+{
+    if (this->_planner_lua == nullptr)
+    {
+        this->_planner_lua = std::make_unique<fb::lua::root>(executor, *this->_planner);
+        brain::prepare(*this->_planner_lua);
+    }
+
+    while (true)
+    {
+        auto name = std::string{};
+        auto job  = std::optional<planning>{};
+        {
+            auto lock = std::lock_guard(this->_plan_mutex);
+            if (this->_queued.empty())
+            {
+                this->_planning = false;
+                co_return;
+            }
+
+            name = std::move(this->_queued.front());
+            this->_queued.pop_front();
+            auto found = this->_requests.find(name);
+            if (found != this->_requests.end())
+            {
+                job = std::move(found->second);
+                this->_requests.erase(found);
+                this->_computing = name;
+            }
+        }
+
+        if (job.has_value() == false)
+            continue;
+
+        auto result  = std::optional<fb::lua::value>{};
+        auto started = clock::now();
+        auto raw     = this->_planner_lua->pop();
+        if (raw != nullptr)
+        {
+            auto ctx = fb::lua::context::guard{raw};
+            auto L   = static_cast<lua_State*>(*ctx);
+            lua_getglobal(L, "require");
+            lua_pushstring(L, PLANNER_MODULE);
+            if (lua_pcall(L, 1, 1, 0) == LUA_OK)
+            {
+                lua_getfield(L, -1, "run");
+                ctx->pushuserdata(*this, true);
+                job->request.push(*ctx);
+                try
+                {
+                    auto base = lua_gettop(L) - 3;
+                    if (co_await ctx->call(2) && lua_gettop(L) > base && lua_istable(L, base + 1))
+                        result = fb::lua::value::copy_data(L, base + 1);
+                }
+                catch (const std::exception& e)
+                {
+                    fb::logger::fatal("brain: plan for {} failed: {}", name, e.what());
+                }
+            }
+            else
+            {
+                fb::logger::fatal("brain: cannot load {}: {}", PLANNER_MODULE, lua_tostring(L, -1));
+            }
+        }
+
+        auto waiting = std::vector<std::shared_ptr<async::task_completion_source<bool>>>{};
+        auto queued  = size_t{0};
+        {
+            auto lock = std::lock_guard(this->_plan_mutex);
+            this->_computing.clear();
+            if (result.has_value())
+                this->_plans.insert_or_assign(name, planned{job->key, ++this->_versions, std::move(result.value())});
+
+            auto found = this->_awaiting.find(name);
+            if (found != this->_awaiting.end())
+            {
+                waiting = std::move(found->second);
+                this->_awaiting.erase(found);
+            }
+            queued = this->_queued.size();
+        }
+
+        fb::logger::debug("brain: planned bot={} took={}ms queued={} made={}",
+                          name,
+                          std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started).count(),
+                          queued,
+                          result.has_value());
+
+        for (auto& waiter : waiting)
+        {
+            auto failure = std::exception_ptr{};
+            std::ignore  = waiter->try_set_value(result.has_value(), failure);
+        }
+    }
+}
+
+std::optional<brain::planned> brain::plan_of(const std::string& name, uint64_t known) const
+{
+    auto lock  = std::lock_guard(this->_plan_mutex);
+    auto found = this->_plans.find(name);
+    if (found == this->_plans.end())
+        return std::nullopt;
+
+    if (found->second.version == known)
+        return planned{found->second.key, found->second.version, fb::lua::value{}};
+    else
+        return found->second;
+}
+
+async::task<bool> brain::await_plan(std::shared_ptr<game_bot> bot, std::string key)
+{
+    auto name    = bot->name();
+    auto ready   = false;
+    auto waiting = true;
+    while (waiting)
+    {
+        auto waiter = std::make_shared<async::task_completion_source<bool>>();
+        auto coming = false;
+        {
+            auto lock  = std::lock_guard(this->_plan_mutex);
+            auto found = this->_plans.find(name);
+            ready      = found != this->_plans.end() && found->second.key == key;
+            coming     = this->_requests.contains(name) || this->_computing == name;
+            if (ready == false && coming)
+                this->_awaiting[name].push_back(waiter);
+        }
+
+        if (ready || coming == false)
+        {
+            waiting = false;
+        }
+        else
+        {
+            waiting = co_await waiter->task();
+            co_await bot->thread()->switching();
+        }
+    }
+    co_return ready;
 }
 
 void brain::tally(uint32_t bot, bool succeeded)

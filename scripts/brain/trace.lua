@@ -221,6 +221,8 @@ function M.decide(brain, bot, snap, decision, path, current)
     entry.dest            = decision.dest
     entry.cpu, entry.wait = profile.spent(bot:name())
     entry.parts           = profile.parts(bot:name())
+    entry.calls           = profile.calls(bot:name())
+    entry.waits           = profile.waits(bot:name())
     brain:trace(bot, entry)
 end
 

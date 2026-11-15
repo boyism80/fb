@@ -30,10 +30,46 @@ function M.apart(snap, facts)
     return M.grouped(snap) and escort.complete(snap, facts) == false
 end
 
+-- Under blows I walk back to a crew that is not with me, not to one on its way to me: walked back to it, a vanguard
+-- struck on landing in 졸본흑해골굴 left the floor its crewmate was crossing into (online 060721, 06:09-06:13).
+function M.parted(snap, facts)
+    return M.apart(snap, facts) and escort.coming(snap, facts) == false
+end
+
 function M.walk(snap, facts, member, spot)
     local world = member.world
     local walk  = escort.steps(snap, facts, member, { { x = spot.x, y = spot.y } })[1]
     return type(walk) == "number" and walk or math.abs(spot.x - world.x) + math.abs(spot.y - world.y)
+end
+
+-- A door of several warp tiles is one exit, told by its first tile (the top, then the left one) whichever of its tiles
+-- my way starts at: measured from the tile nearest me, a mage before the two-tile door of 평양흑해골굴 (30,30 and
+-- 31,30) took 31,28 from 30,28 and 30,28 from 31,28, and stepped between them 91 times while its warrior walked back to
+-- it (online 020937, 02:18:03-02:19:33).
+local function door_tile(facts, map, exit)
+    if facts.warp == nil or facts.warp(map, exit.x, exit.y) ~= true then
+        return exit
+    end
+    local first = { x = exit.x, y = exit.y }
+    local seen  = { [exit.x .. "," .. exit.y] = true }
+    local queue = { first }
+    local index = 1
+    while index <= #queue do
+        local tile = queue[index]
+        index      = index + 1
+        if tile.y < first.y or (tile.y == first.y and tile.x < first.x) then
+            first = tile
+        end
+        for _, step in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
+            local x, y = tile.x + step[1], tile.y + step[2]
+            local key  = x .. "," .. y
+            if seen[key] == nil and x >= 0 and y >= 0 and facts.warp(map, x, y) == true then
+                seen[key] = true
+                table.insert(queue, { x = x, y = y })
+            end
+        end
+    end
+    return first
 end
 
 -- Waiting at an exit is done in front of it, on the tile that lengthens the ways into it least once the crewmates
@@ -51,6 +87,7 @@ function M.waiting(snap, facts, exit)
     if facts.lane == nil or facts.walled == nil or facts.steps == nil or snap.world.x == nil then
         return nil
     end
+    exit       = door_tile(facts, map, exit)
     local here = M.walk(snap, facts, snap, exit)
     if here > 2 * radius then
         return nil
@@ -128,7 +165,8 @@ function M.waiting(snap, facts, exit)
             table.insert(base, steps)
         end
     end
-    local best = nil
+    local best  = nil
+    local tried = {}
     for _, choice in ipairs(choices) do
         local blocked = { { x = choice.x, y = choice.y } }
         for _, wall in ipairs(walls) do
@@ -139,6 +177,7 @@ function M.waiting(snap, facts, exit)
         for index, steps in ipairs(base) do
             lost = lost + (type(found[index]) == "number" and found[index] - steps or math.huge)
         end
+        table.insert(tried, string.format("%d,%d/%d/%s", choice.x, choice.y, choice.walk, tostring(lost)))
         if best == nil or lost < best.lost then
             best      = choice
             best.lost = lost
@@ -150,6 +189,20 @@ function M.waiting(snap, facts, exit)
     if best == nil or (best.x == snap.world.x and best.y == snap.world.y) then
         return nil
     end
+    local listed = {}
+    for key in pairs(taken) do
+        table.insert(listed, key)
+    end
+    local stood = {}
+    for _, wall in ipairs(walls) do
+        table.insert(stood, wall.x .. "," .. wall.y)
+    end
+    table.sort(listed)
+    log("debug",
+        string.format("[brain:waiting] bot=%s at %d:%s exit=%d,%d best=%d,%d tried=%s taken=%s walls=%s ways=%d",
+            snap.self.name, map, mine, exit.x, exit.y, best.x, best.y, table.concat(tried, " "),
+            table.concat(listed, " "),
+            table.concat(stood, " "), #ways))
     return { kind = ACTION.MOVE, dest = { map = map, x = best.x, y = best.y, range = 0 } }
 end
 
@@ -191,14 +244,14 @@ function M.to_rally(snap, facts)
     if rally == nil then
         return nil
     elseif awaiting(snap, facts) then
-        return { kind = ACTION.HOLD }
+        return { kind = ACTION.HOLD, why = "awaiting" }
     end
     -- A vanguard on its way to my floor is met where I stand: walking back to the floor it was leaving made a
     -- warrior that crossed first bounce between the two floors until its poet came (offline profile swap seed 2,
     -- 837-841s).
     local lead = party.vanguard(snap, facts)
     if lead ~= nil and M.on_ground(snap, facts) and passing(snap, facts, lead) then
-        return { kind = ACTION.HOLD }
+        return { kind = ACTION.HOLD, why = "passing" }
     end
     -- A rally on a member whose moves failed means the crew comes to fetch it. That member still keeps
     -- walking toward the vanguard: one that cannot move fails again and stays fetched, one that can rejoins.
@@ -208,7 +261,7 @@ function M.to_rally(snap, facts)
     if rally.name == snap.self.name then
         local lead = party.vanguard(snap, facts)
         if lead == nil or lead.world.x == nil or party.stuck(snap, snap.pace.swing or data.swing) == false then
-            return { kind = ACTION.HOLD }
+            return { kind = ACTION.HOLD, why = "rally_on_me" }
         end
         rally = { map = lead.world.map, x = lead.world.x, y = lead.world.y }
     end
@@ -220,7 +273,7 @@ function M.to_rally(snap, facts)
         local steps    = escort.steps(snap, facts, snap, { { x = rally.x, y = rally.y } })[1]
         local walk     = type(steps) == "number" and steps or straight
         if walk <= data.adjacent then
-            return { kind = ACTION.HOLD }
+            return { kind = ACTION.HOLD, why = "at_rally" }
         end
         local range = straight <= data.adjacent and 1 or data.adjacent
         return { kind = ACTION.MOVE, dest = { map = rally.map, x = rally.x, y = rally.y, range = range } }

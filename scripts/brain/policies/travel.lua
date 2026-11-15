@@ -30,8 +30,17 @@ local function remember_block(brain, bot, event, destination, walls)
     local by   = event.detail == "CHARACTER" and event.x ~= nil and { x = event.x, y = event.y } or nil
     local goal = event.gx ~= nil and { map = event.map, x = event.gx, y = event.gy } or nil
     brain:remember(bot, "blocked",
-        { detail = event.detail, at = now, since = since, map = event.map, walls = walls, dest = dest, by = by, goal =
-        goal })
+        {
+            detail = event.detail,
+            at = now,
+            since = since,
+            map = event.map,
+            walls = walls,
+            dest = dest,
+            by = by,
+            goal =
+                goal
+        })
 end
 
 local function vaulted(brain, bot, destination, event)

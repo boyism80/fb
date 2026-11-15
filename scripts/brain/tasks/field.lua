@@ -48,14 +48,17 @@ end
 
 M.walking = walking
 
--- The fight stays within a straight sight's reach of every crewmate, and whether the crewmate can walk there is
+-- A fight I walk to stays within a straight sight's reach of every crewmate, and whether the crewmate can walk there is
 -- tethered's to judge. Counting that walk here too, a warrior took six skeletons 8-16 steps from its poet for out of
 -- reach, left for the next floor, and they caught the poet on the way (offline profile pair rooted striker seed 0,
--- 579-587s, run 08:53; user 11-11).
-local function allowed(snap, mob)
-    if approachable(snap, mob) == false then
-        return false
-    end
+-- 579-587s, run 08:53; user 11-11). A strike cast from where I stand needs only every crewmate's sight round the mob
+-- (escort.tethered, user 11-11 and 11-15): held to this tighter reach as well, a mage never shot a skeleton at 1% six
+-- tiles off across a wall because its warrior stood eight tiles from it, poisoned it again and again instead, and its
+-- crew waited on it for five minutes (online 004028, 00:43:36-00:48:30). A mob beside me is no strike from afar and
+-- keeps the tighter reach: let through as one, a rogue followed a skeleton to nine tiles from its poet, fought it there,
+-- was drawn on by the next ones and stood 57s out of its poet's sight (offline watch trio seed 4, 274-348s, run
+-- 031445).
+local function near_crew(snap, mob)
     local range = math.min(data.sight.x, data.sight.y)
     for _, member in ipairs(party.members(snap)) do
         local world = member.world
@@ -102,14 +105,27 @@ local function sought(snap, query, names)
     -- hangs on it (escort.tethered). Asked first of every mob in sight, it was weighed for bots with no crew at all:
     -- 107,047 asks, a fifth of the time spent deciding (offline 8 teams, run 19:36).
     return battle.target(snap, query, function(mob)
-        if wanted[mob.name] == nil or M.castable(snap, query, mob) == false or allowed(snap, mob) == false then
+        if wanted[mob.name] == nil or M.castable(snap, query, mob) == false or approachable(snap, mob) == false then
             return false
         end
+        local walk = nil
         local function walks()
-            return walking(snap, query, mob)
+            if walk == nil then
+                walk = walking(snap, query, mob)
+            end
+            return walk
         end
         local beside = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
+        if near_crew(snap, mob) == false then
+            return beside == false and M.fightable(snap, query, mob) and walks() == false
+        end
         return (healer == false or beside or walks() == false) and escort.tethered(snap, query, mob.x, mob.y, walks)
+    end)
+end
+
+function M.fightable(snap, query, mob)
+    return escort.tethered(snap, query, mob.x, mob.y, function()
+        return false
     end)
 end
 

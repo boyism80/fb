@@ -244,7 +244,24 @@ function M.follow(snap, facts)
         facts.direct(snap.self.name, nil)
         return nil
     end
+    -- A step onto a tile a bot of the plan leaves at that same step waits until it has left: walked at once, a warrior
+    -- reached 2,12 before its poet had stepped off it to 3,12, the step failed and the plan was dropped, and the crew
+    -- stood in the one-tile corridor of 흑령굴 for five minutes (online 004028, 00:43:20).
     local target = steps[done + 1]
+    for _, name in ipairs(plan.members or {}) do
+        local other = name ~= snap.self.name and facts.directed(name) or nil
+        local seen  = type(other) == "table" and other.id == plan.id and (other.done or 1) == done and facts.ally(name) or
+            nil
+        if seen ~= nil and seen.x == target.x and seen.y == target.y then
+            local reason = string.format("%s for %s to leave %d,%d mine=%d/%d", tostring(plan.id), name, target.x,
+                target.y, done, #steps)
+            if waits[snap.self.name] ~= reason then
+                waits[snap.self.name] = reason
+                log("debug", string.format("[brain:traffic] bot=%s waits %s", snap.self.name, reason))
+            end
+            return { kind = ACTION.HOLD }
+        end
+    end
     return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = target.x, y = target.y, range = 0, traffic = plan.id } }
 end
 

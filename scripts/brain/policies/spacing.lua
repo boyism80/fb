@@ -237,7 +237,12 @@ function M.place(snap, query, budget)
         -- The tile a crewmate's walk stopped at is on its way and no place of mine: the tile south of their warrior,
         -- its only way to the stairs of 흉가 92, was the best place beside it for its rogue and its poet, and one of
         -- them was back on it at each of the warrior's tries for 400s (offline profile trio rooted seed 6, 320-740s,
-        -- run 22:38, walker held to the judged way).
+        -- run 22:38, walker held to the judged way). The tile a crewmate walks to is no place of mine either: while a
+        -- poet had stepped off 2,12 in a one-tile corridor of 흑령굴, its warrior and its mage both took that tile as
+        -- their place, the poet came back to it, and the three blocked one another for five minutes (online 004028,
+        -- 00:43:20). Nor is a tile a crewmate's plan still has to walk through: a rogue that had stepped aside from
+        -- 15,9 for its poet took it again as its place beside the vanguard before the poet stepped on, and the plan
+        -- was dropped and made again twice in 20s (online 020937, 02:13:13-02:13:34).
         local members = crew(snap)
         local mates   = {}
         for _, member in ipairs(members) do
@@ -245,6 +250,16 @@ function M.place(snap, query, budget)
             mates[member.world.x .. "," .. member.world.y] = true
             if member.blocker ~= nil then
                 taken[member.blocker.x .. "," .. member.blocker.y] = true
+            end
+            if type(member.going) == "table" and member.going.map == snap.world.map and member.going.x ~= nil then
+                taken[member.going.x .. "," .. member.going.y] = true
+            end
+            local planned = query.directed ~= nil and query.directed(member.self.name) or nil
+            if type(planned) == "table" and planned.map == snap.world.map then
+                for index = (planned.done or 1) + 1, #(planned.steps or {}) do
+                    local step = planned.steps[index]
+                    taken[step.x .. "," .. step.y] = true
+                end
             end
         end
         -- A tile that warps leaves the floor: a poet closing in on its rogue by the stairs of 흉가 93 stepped on

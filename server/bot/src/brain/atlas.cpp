@@ -1309,8 +1309,9 @@ std::optional<std::vector<std::vector<atlas::position>>> atlas::untangle(uint16_
             return weight(left) > weight(right);
         });
 
-        auto push = std::function<bool(size_t, std::optional<position>)>{};
-        push      = [&](size_t index, std::optional<position> forbid) -> bool {
+        auto pushing = std::unordered_set<size_t>{};
+        auto push    = std::function<bool(size_t, std::optional<position>)>{};
+        push         = [&](size_t index, std::optional<position> forbid) -> bool {
             auto here       = current[index];
             auto candidates = std::vector<position>{here};
             for (auto side = size_t{0}; side < sides.size(); side++)
@@ -1344,14 +1345,18 @@ std::optional<std::vector<std::vector<atlas::position>>> atlas::untangle(uint16_
                 return gap(left) > gap(right);
             });
 
+            pushing.insert(index);
             for (auto& candidate : candidates)
             {
                 if ((forbid.has_value() && candidate == forbid.value()) || reserved.contains(key(candidate)))
                     continue;
 
+                auto other = standing.find(key(candidate));
+                if (other != standing.end() && other->second != index && pushing.contains(other->second))
+                    continue;
+
                 reserved.insert_or_assign(key(candidate), index);
                 next[index] = candidate;
-                auto other  = standing.find(key(candidate));
                 if (other != standing.end() && other->second != index && next[other->second].has_value() == false &&
                     push(other->second, here) == false)
                 {
@@ -1362,11 +1367,13 @@ std::optional<std::vector<std::vector<atlas::position>>> atlas::untangle(uint16_
                     next[index].reset();
                     continue;
                 }
+                pushing.erase(index);
                 return true;
             }
 
             next[index] = here;
             reserved.insert_or_assign(key(here), index);
+            pushing.erase(index);
             return false;
         };
 

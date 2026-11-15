@@ -15,7 +15,7 @@ end
 return when(defend.attacked, when(defend.holds_ground, choose({
     when(together.grouped, choose({
         support.rescue,
-        when(steady, when(together.apart, when(together.on_ground, when(together.can_move, together.rejoin)))),
+        when(steady, when(together.parted, when(together.on_ground, when(together.can_move, together.rejoin)))),
     })),
     pick({
         survive.flee,

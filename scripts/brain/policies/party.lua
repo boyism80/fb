@@ -125,9 +125,100 @@ function M.stalled(snap, span)
         snap.self.struck ~= nil and snap.self.struck <= span)
 end
 
+-- The best mob I take here now and what it is worth, posted while I hunt so the leader can weigh staying on the floor
+-- for it: the target the hunt weighed this decision, its kill and the time its fight and walk take.
+local function prey(snap, query, decision)
+    if decision == nil or decision.task ~= "FIELD" then
+        return nil
+    end
+    local plan = M.plan(snap, query)
+    local here = nil
+    for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+        if floor.map == snap.world.map then
+            here = floor
+        end
+    end
+    -- Prey is what I would strike (trees.hunt strike): a mage beside its warrior had a skeleton in reach whose strike
+    -- was not worth its mana there, so it held back, while the skeleton kept its leader on the floor and both waited
+    -- for good (online 024320, 02:47:33).
+    local found = here ~= nil and require("brain.tasks.field").target(snap, query, here.targets) or nil
+    if found == nil or require("brain.tasks.aid").outweighs(snap, query, found) == false then
+        return nil
+    end
+    local fight = (found.forecast or {}).fight or {}
+    return {
+        map  = snap.world.map,
+        oid  = found.mob.oid,
+        gain = require("brain.policies.combat").gain(found.mob, snap),
+        time = (fight.time or 0) + (found.steps or 0) * (snap.pace.step or combat.walk),
+    }
+end
+
+-- Whether the crew stays on this floor is the leader's call, and the vanguard leads on as it says (user 11-15). The
+-- crew stays while a crewmate here cannot come along (held), is busy with something else than the hunt, or has prey
+-- worth more than what its fight takes at the next floor's rate: a caster shooting a skeleton across a wall keeps the
+-- vanguard that cannot walk round to it from leaving it behind (healer_waits_beside_leader). Kept as a crewmate having
+-- hurt a mob still alive, the crew waited five minutes on a skeleton at 1% that nobody could strike and a poison could
+-- not finish (online 004028, 00:43:36-00:48:30).
+local function judged(snap, query, own)
+    local plan = M.plan(snap, query)
+    local rate = 0
+    for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+        if floor.map ~= snap.world.map then
+            rate = math.max(rate, floor.rate or 0)
+        end
+    end
+    local stay = type(own) == "table" and own.map == snap.world.map and (own.gain or 0) > (own.time or 0) / 1000 * rate
+    local why  = stay and { "own:" .. tostring(own.oid) } or {}
+    for _, member in ipairs(M.members(snap)) do
+        if member.world.map == snap.world.map and member.self.ghost == false then
+            local busy  = member.task ~= nil and member.task ~= "FIELD" and member.task ~= "NOTHING"
+            local found = type(member.prey) == "table" and member.prey.map == snap.world.map and member.prey or nil
+            local worth = found ~= nil and (found.gain or 0) > (found.time or 0) / 1000 * rate
+            if M.held(member) then
+                table.insert(why, member.self.name .. ":held")
+            elseif busy then
+                table.insert(why, member.self.name .. ":" .. tostring(member.task))
+            elseif worth then
+                table.insert(why, member.self.name .. ":prey" .. tostring(found.oid))
+            end
+            stay = stay or M.held(member) or busy or worth
+        end
+    end
+    return stay, table.concat(why, ","), rate
+end
+
+local stays  = setmetatable({}, { __mode = "k" })
+local stayed = {}
+
+function M.stays(snap, query)
+    if stays[snap] == nil then
+        local leader = snap.leader ~= snap.self.name and M.leader(snap) or nil
+        local posted = leader ~= nil and type(leader.stay) == "table" and leader.stay or nil
+        if posted ~= nil and posted.map == snap.world.map then
+            stays[snap] = posted.stay == true
+        else
+            stays[snap] = (judged(snap, query, nil))
+        end
+    end
+    return stays[snap]
+end
+
 function M.profile(snap, query, decision)
     local grouped = #(snap.group or {}) > 0
     local base    = score.recovered(snap, query)
+    local mine    = grouped and prey(snap, query, decision) or nil
+    local stay    = nil
+    if grouped and snap.leader == snap.self.name then
+        local why, rate = nil, nil
+        stay, why, rate = judged(snap, query, mine)
+        local key       = tostring(snap.world.map) .. "|" .. tostring(stay)
+        if stayed[snap.self.name] ~= key then
+            stayed[snap.self.name] = key
+            log("debug", string.format("[brain:stay] bot=%s map=%s stay=%s why=%s rate=%.3f", snap.self.name,
+                tostring(snap.world.map), tostring(stay), why, rate))
+        end
+    end
     return {
         self      = base.self,
         spells    = snap.spells,
@@ -165,6 +256,9 @@ function M.profile(snap, query, decision)
             (decision.dest.maps or { decision.dest.map }) or nil,
         arrives   = arrival(snap, query, decision),
         battle    = grouped and snap.record.memory.battle or nil,
+        prey      = mine,
+        stay      = stay ~= nil and { map = snap.world.map, stay = stay } or
+            nil,
         marks     = grouped and snap.record.memory.marks or nil,
         plan      = grouped and snap.leader == snap.self.name and summary(M.plan(base, query)) or nil,
         rally     = grouped and snap.leader == snap.self.name and M.rally(snap, query) or nil,
@@ -364,6 +458,40 @@ function M.forget()
     end
 end
 
+local logged = setmetatable({}, { __mode = "v" })
+
+local function team_of(snap, members)
+    local team = { snap }
+    for _, member in ipairs(members) do
+        table.insert(team, member)
+    end
+    return team
+end
+
+local function committed(snap, members)
+    return #members == 0 and snap.record.memory.solo or snap.record.memory.commit
+end
+
+function M.key(snap, query)
+    local members = M.members(snap)
+    local parts   = { (snap.now or 0) // combat.rerank, tostring(committed(snap, members)),
+        table.concat(danger.shunned(snap, query), ",") }
+    for _, member in ipairs(team_of(snap, members)) do
+        table.insert(parts, score.signature(member, ""))
+        table.insert(parts, tostring(member.self.ghost))
+        table.insert(parts, tostring(ground.emptied(member)))
+    end
+    return table.concat(parts, "|")
+end
+
+function M.compute(snap, query)
+    local members = M.members(snap)
+    local team    = team_of(snap, members)
+    local commit  = committed(snap, members)
+    local plan    = commit ~= nil and ground.hold(team, query, commit) or nil
+    return plan or ground.party(team, query, "SUPPLY")
+end
+
 function M.plan(snap, query)
     local members = M.members(snap)
     if #members > 0 and snap.leader ~= nil and snap.leader ~= snap.self.name then
@@ -374,36 +502,29 @@ function M.plan(snap, query)
         end
     end
     if plans[snap] == nil then
-        local team = { snap }
-        for _, member in ipairs(members) do
-            table.insert(team, member)
-        end
-        local commit = #members == 0 and snap.record.memory.solo or snap.record.memory.commit
-        local parts  = { (snap.now or 0) // combat.rerank, tostring(commit), table.concat(danger.shunned(snap, query),
-            ",") }
-        for _, member in ipairs(team) do
-            table.insert(parts, score.signature(member, ""))
-            table.insert(parts, tostring(member.self.ghost))
-            table.insert(parts, tostring(ground.emptied(member)))
-        end
-        local key  = table.concat(parts, "|")
-        local kept = held[snap.self.name]
-        local plan = nil
-        if kept ~= nil and kept.key == key then
+        local team   = team_of(snap, members)
+        local commit = committed(snap, members)
+        local key    = M.key(snap, query)
+        local kept   = held[snap.self.name]
+        local made   = require("brain.planner").current(snap, query)
+        local plan   = nil
+        if made ~= nil then
+            plan = made.plan
+        elseif kept ~= nil and kept.key == key then
             plan = kept.plan
         else
-            plan = commit ~= nil and ground.hold(team, query, commit) or nil
-            plan = plan or ground.party(team, query, "SUPPLY")
+            plan = M.compute(snap, query)
             held[snap.self.name] = { key = key, plan = plan }
-            if plan ~= nil and plan.floors[1] ~= nil and query.demand ~= nil then
-                local names = {}
-                for _, member in ipairs(team) do
-                    table.insert(names, member.self.name)
-                end
-                log("debug", string.format("[brain:plan] bot=%s ground=%s first=%d others=%.3f committed=%s",
-                    snap.self.name, tostring(plan.name), plan.floors[1].map, query.demand(plan.floors[1].map, names),
-                    tostring(commit ~= nil)))
+        end
+        if plan ~= nil and plan ~= logged[snap.self.name] and plan.floors[1] ~= nil and query.demand ~= nil then
+            logged[snap.self.name] = plan
+            local names = {}
+            for _, member in ipairs(team) do
+                table.insert(names, member.self.name)
             end
+            log("debug", string.format("[brain:plan] bot=%s ground=%s first=%d others=%.3f committed=%s",
+                snap.self.name, tostring(plan.name), plan.floors[1].map, query.demand(plan.floors[1].map, names),
+                tostring(commit ~= nil)))
         end
         if plan ~= nil then
             local copy = {}

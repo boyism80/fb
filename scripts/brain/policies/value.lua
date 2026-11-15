@@ -43,21 +43,27 @@ local traded = setmetatable({}, { __mode = "k" })
 
 -- What a coin is worth in exp follows from the ranked grounds alone, and the list stays the same one while
 -- nothing moved (ground.ranked): worked out once for a list, not from every floor of every ground each decision.
-local function exchange(snap, query)
-    local ranked = ground.ranked(snap, query)
-    local found  = traded[ranked]
-    if found == nil then
-        local best = nil
-        for _, entry in ipairs(ranked) do
-            for _, floor in ipairs(entry.candidate.floors) do
-                local income = earnings(floor.yields)
-                if income > 0 and floor.rate > 0 and (best == nil or floor.rate / income < best) then
-                    best = floor.rate / income
+function M.exchange(snap, query)
+    local made  = require("brain.planner").current(snap, query)
+    local found = nil
+    if made ~= nil then
+        found = made.exchange or 0
+    else
+        local ranked = ground.ranked(snap, query)
+        found        = traded[ranked]
+        if found == nil then
+            local best = nil
+            for _, entry in ipairs(ranked) do
+                for _, floor in ipairs(entry.candidate.floors) do
+                    local income = earnings(floor.yields)
+                    if income > 0 and floor.rate > 0 and (best == nil or floor.rate / income < best) then
+                        best = floor.rate / income
+                    end
                 end
             end
+            found          = best or 0
+            traded[ranked] = found
         end
-        found          = best or 0
-        traded[ranked] = found
     end
     return found
 end
@@ -71,10 +77,10 @@ function M.baseline(snap, query)
     local hunt   = party.plan(snap, query)
     local result = nil
     if hunt == nil or hunt.rate <= 0 then
-        result = { value = 0, exchange = exchange(snap, query), rate = 0, income = 0 }
+        result = { value = 0, exchange = M.exchange(snap, query), rate = 0, income = 0 }
     else
         local income  = earnings(hunt.yields)
-        local rate    = exchange(snap, query)
+        local rate    = M.exchange(snap, query)
         local horizon = ground.horizon(snap, hunt.rate)
         if rate <= 0 and horizon < math.huge then
             rate = hunt.rate * horizon / math.max(snap.self.money or 0, 1)
@@ -367,28 +373,32 @@ end
 local manas = {}
 
 function M.mana(snap, query)
+    local made   = require("brain.planner").current(snap, query)
     local period = (snap.now or 0) // data.rerank
     local known  = manas[snap.self.name]
-    if known ~= nil and known.period == period then
-        return known.found
-    end
-    local full = ground.choose(snap, query, "REFILL")
-    local dry  = ground.choose(snap, query, "DRY")
-    local team = party.members(snap)
-    if #team > 0 then
-        local members = { snap }
-        for _, member in ipairs(team) do
-            table.insert(members, member)
+    local found  = 0
+    if made ~= nil then
+        found = made.mana or 0
+    elseif known ~= nil and known.period == period then
+        found = known.found
+    else
+        local full = ground.choose(snap, query, "REFILL")
+        local dry  = ground.choose(snap, query, "DRY")
+        local team = party.members(snap)
+        if #team > 0 then
+            local members = { snap }
+            for _, member in ipairs(team) do
+                table.insert(members, member)
+            end
+            full = ground.party(members, query, "REFILL") or full
+            dry  = ground.party(members, query, "DRY") or dry
         end
-        full = ground.party(members, query, "REFILL") or full
-        dry  = ground.party(members, query, "DRY") or dry
+        local drain = full ~= nil and ground.drain(full, snap) or 0
+        if drain > 0 then
+            found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / drain)
+        end
+        manas[snap.self.name] = { period = period, found = found }
     end
-    local found = 0
-    local drain = full ~= nil and ground.drain(full, snap) or 0
-    if drain > 0 then
-        found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / drain)
-    end
-    manas[snap.self.name] = { period = period, found = found }
     return found
 end
 

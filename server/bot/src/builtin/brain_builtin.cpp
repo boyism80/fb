@@ -91,6 +91,9 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"reservations", builtin::brain::builtin_reservations},
     {"occupy",       builtin::brain::builtin_occupy},
     {"demand",       builtin::brain::builtin_demand},
+    {"plan",         builtin::brain::builtin_plan},
+    {"planned",      builtin::brain::builtin_planned},
+    {"await_plan",   builtin::brain::builtin_await_plan},
     {"post",         builtin::brain::builtin_post},
     {"roster",       builtin::brain::builtin_roster},
     {"recall",   builtin::brain::builtin_recall},
@@ -2511,11 +2514,11 @@ int builtin::brain::builtin_demand(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto bot = lua->touserdata<fb::bot::game_bot>(2);
-    if (bot == nullptr)
-        return 0;
+    auto bot    = lua->touserdata<fb::bot::game_bot>(2);
+    auto except = std::unordered_set<std::string>{};
+    if (bot != nullptr)
+        except.insert(bot->name());
 
-    auto except = std::unordered_set<std::string>{bot->name()};
     lua_pushnil(L);
     while (lua_next(L, 4) != 0)
     {
@@ -2525,6 +2528,87 @@ int builtin::brain::builtin_demand(lua_State* L)
 
     lua_pushnumber(L, fb::bot::brain::demand(static_cast<uint16_t>(lua_tointeger(L, 3)), except));
     return 1;
+}
+
+int builtin::brain::builtin_plan(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr || lua_isstring(L, 3) == false)
+        return 0;
+
+    brain->plan(*bot, lua_tostring(L, 3), fb::lua::value::copy_data(L, 4));
+    return 0;
+}
+
+int builtin::brain::builtin_planned(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    auto known = lua_isinteger(L, 3) ? static_cast<uint64_t>(lua_tointeger(L, 3)) : uint64_t{0};
+    auto found = brain->plan_of(bot->name(), known);
+    if (found.has_value() == false)
+        return 0;
+
+    lua->new_table();
+    lua->pushstring("key");
+    lua_pushlstring(L, found->key.data(), found->key.size());
+    lua->settable(-3);
+    lua->pushstring("version");
+    lua->pushinteger(static_cast<lua_Integer>(found->version));
+    lua->settable(-3);
+    if (found->version != known)
+    {
+        lua->pushstring("value");
+        found->value.push(*lua);
+        lua->settable(-3);
+    }
+    return 1;
+}
+
+int builtin::brain::builtin_await_plan(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr || lua_isstring(L, 3) == false)
+        return 0;
+
+    auto key      = std::string(lua_tostring(L, 3));
+    auto shared   = bot->shared_from_this_as<fb::bot::game_bot>();
+    auto result   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, shared, key, result]() -> async::task<void> {
+        *result = co_await brain->await_plan(shared, key);
+    };
+    builder.resume = [lua, result]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::brain::builtin_recall(lua_State* L)

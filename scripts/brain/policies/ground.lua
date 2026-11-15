@@ -586,7 +586,7 @@ local settled = setmetatable({}, { __mode = "k" })
 -- How a floor settles under my own hunting depends on the floor alone, and a ranking asks it of every floor of every
 -- ground each period, so it is worked out once. What others take from the ground is weighed for the whole ground
 -- (lapped).
-local function share(snap, floor)
+local function share(snap, floor, recovering)
     if floor.kills <= 0 then
         return 0
     end
@@ -612,7 +612,7 @@ local function share(snap, floor)
         known           = { rate = floor.rate * effective / floor.kills }
         settled[floor]  = known
     end
-    return known.rate * remaining(snap, floor)
+    return known.rate * (recovering and remaining(snap, floor) or 1)
 end
 
 local function bonus(floor, worth)
@@ -642,9 +642,11 @@ local function hop(snap, query, floors)
 end
 
 local spans = setmetatable({}, { __mode = "k" })
+local walks = {}
 
 -- The walk from where I stand to every map, or a jump and the walk after it where that is shorter, asked once for each
--- place, level and set of jumps a ranking is made from (atlas distances).
+-- place, level and set of jumps a ranking is made from (atlas distances). The last walks a bot asked for are kept for
+-- its next decisions while it stands on the same tile, as maps and jumps do not change while the bot runs.
 local function span(snap, query)
     if snap.world.x == nil or query.distances == nil then
         return nil
@@ -663,8 +665,18 @@ local function span(snap, query)
         spans[query] = known
     end
     if known[key] == nil then
-        known[key] = query.distances({ jumps = jumps },
-            { map = snap.world.map, x = snap.world.x, y = snap.world.y, level = snap.self.level }) or false
+        local tile = table.concat({ snap.world.map, snap.world.x, snap.world.y, snap.self.level or 0,
+            table.concat(names, ",") }, "|")
+        local kept = walks[snap.self.name]
+        if kept == nil or kept.tile ~= tile then
+            kept = {
+                tile = tile,
+                found = query.distances({ jumps = jumps },
+                    { map = snap.world.map, x = snap.world.x, y = snap.world.y, level = snap.self.level }) or false
+            }
+            walks[snap.self.name] = kept
+        end
+        known[key] = kept.found
     end
     return known[key] or nil
 end
@@ -699,7 +711,7 @@ end
 -- A ground away from me is worth its lap less the walk there, the lap being the stay one round of its floors takes
 -- before servicing, so a crowded ground near me can still beat an empty one too far to reach without a jump (user 11-15:
 -- beginners). A way not known is no walk to weigh, as an unknown reach is not "nowhere" (reach).
-local function lapped(snap, query, candidate, worth, moving, crew)
+local function lapped(snap, query, candidate, worth, moving, crew, recovering)
     local finish = 1
     local rate   = 0
     local best   = 0
@@ -710,7 +722,7 @@ local function lapped(snap, query, candidate, worth, moving, crew)
     local inside = false
     local gap    = moving and hop(snap, query, candidate.floors) or 0
     for index, floor in ipairs(candidate.floors) do
-        supply    = supply + share(snap, floor)
+        supply    = supply + share(snap, floor, recovering)
         stock     = stock + (floor.stock or 0)
         spent     = spent + (floor.rate > 0 and (floor.stock or 0) / floor.rate or 0)
         inside    = inside or floor.map == snap.world.map
@@ -758,40 +770,37 @@ function M.contended(snap, query, plan, rival)
             return query.demand(map, crew) + (taken[map] or 0)
         end
     }, { __index = query })
-    local _, rate = lapped(snap, shared, { floors = plan.floors }, {}, false, nil)
+    local _, rate = lapped(snap, shared, { floors = plan.floors }, {}, false, nil, true)
     return math.min(value, rate * held(shared, plan.floors, nil))
 end
 
-local function rank(snap, query, mode, crew, worth)
-    local ranked = {}
-    for _, candidate in ipairs(candidates(snap, query, mode, crew)) do
-        local finish, rate, best = lapped(snap, query, candidate, worth, false, crew)
-        if best > 0 then
-            table.insert(ranked, { candidate = candidate, finish = finish, rate = rate, score = best })
-        end
-    end
+local function ordered(ranked)
     table.sort(ranked, function(left, right)
         if left.score ~= right.score then
             return left.score > right.score
         end
         return left.candidate.bundle.name < right.candidate.bundle.name
     end)
+end
+
+local function settle(snap, query, ranked, worth, crew, recovering)
+    ordered(ranked)
     local settled = 0
-    for _, entry in ipairs(ranked) do
+    for index, entry in ipairs(ranked) do
         if entry.score < settled then
             break
         end
-        if entry.finish > 1 then
-            entry.finish, entry.rate, entry.score = lapped(snap, query, entry.candidate, worth, true, crew)
+        if entry.finish > 1 and entry.moving ~= true then
+            local finish, rate, score = lapped(snap, query, entry.candidate, worth, true, crew, recovering)
+            entry = { candidate = entry.candidate, finish = finish, rate = rate, score = score, moving = true }
+            ranked[index] = entry
         end
         settled = math.max(settled, entry.score)
     end
-    table.sort(ranked, function(left, right)
-        if left.score ~= right.score then
-            return left.score > right.score
-        end
-        return left.candidate.bundle.name < right.candidate.bundle.name
-    end)
+    ordered(ranked)
+end
+
+local function nearest_first(snap, query, ranked)
     local nearest = nil
     local closest = math.huge
     for index, entry in ipairs(ranked) do
@@ -822,7 +831,66 @@ local function rank(snap, query, mode, crew, worth)
     if nearest ~= nil and nearest > 1 then
         ranked[1], ranked[nearest] = ranked[nearest], ranked[1]
     end
+end
+
+local function rank(snap, query, mode, crew, worth)
+    local ranked = {}
+    for _, candidate in ipairs(candidates(snap, query, mode, crew)) do
+        local finish, rate, best = lapped(snap, query, candidate, worth, false, crew)
+        if best > 0 then
+            table.insert(ranked, { candidate = candidate, finish = finish, rate = rate, score = best })
+        end
+    end
+    settle(snap, query, ranked, worth, crew, false)
+    nearest_first(snap, query, ranked)
     return ranked
+end
+
+local function dried(snap, candidate)
+    for _, floor in ipairs(candidate.floors) do
+        if remaining(snap, floor) < 1 then
+            return true
+        end
+    end
+    return false
+end
+
+-- A floor I emptied comes back with its respawn, which goes on with time, while the ranking stays the same until what
+-- it is made from changes (ranked). So the regrowth is weighed where a ground is picked, on the grounds that have such
+-- a floor, and the list is ordered again by the same steps as the ranking.
+local function recovered(snap, query, ranked, crew)
+    local found = nil
+    for index, entry in ipairs(ranked) do
+        if found == nil and dried(snap, entry.candidate) then
+            found = {}
+            for before = 1, index - 1 do
+                found[before] = ranked[before]
+            end
+        end
+        if found ~= nil and dried(snap, entry.candidate) then
+            local finish, rate, score = lapped(snap, query, entry.candidate, ranked.worth, false, crew, true)
+            if score > 0 then
+                table.insert(found, { candidate = entry.candidate, finish = finish, rate = rate, score = score })
+            end
+        elseif found ~= nil then
+            table.insert(found, entry)
+        end
+    end
+    if found == nil then
+        return ranked, ""
+    end
+    settle(snap, query, found, ranked.worth, crew, true)
+    nearest_first(snap, query, found)
+    local before = {}
+    for _, entry in ipairs(ranked) do
+        before[entry.candidate] = entry.score
+    end
+    local marks = {}
+    for _, entry in ipairs(found) do
+        table.insert(marks, string.format("%s~%d:%.2f", entry.candidate.bundle.name, entry.finish,
+            entry.score / before[entry.candidate]))
+    end
+    return found, table.concat(marks, ",")
 end
 
 local worths = {}
@@ -894,24 +962,35 @@ end
 
 function M.ranked(snap, query, mode, crew)
     local _, context = reach(snap, query, crew)
-    local period     = (snap.now or 0) // combat.rerank
     local _, marks   = avoided(snap, crew)
-    local key        = table.concat({ score.signature(snap, ""), score.signature(snap, mode), context, M.emptied(snap),
-        marks, snap.world.map }, "|")
+    local region     = snap.world.x ~= nil and query.region(snap.world.map, snap.world.x, snap.world.y) or 0
+    local spot       = region ~= 0 and region or tostring(snap.world.x) .. "," .. tostring(snap.world.y)
+    local aim        = ((snap.actual or snap).record.memory or {}).aim
+    local base       = score.signature(snap, "")
+    local key        = table.concat({ base, score.signature(snap, mode), context, marks, snap.world.map, spot,
+        tostring(aim) }, "|")
     local owner      = slot(snap, crew)
     -- Always rank for this exact key. A per-decision budget used to hand back the last ranking computed
     -- for another state; that stale list produced an empty plan, party.plan cached it, and low-level solo
     -- bots stood still beside dozens of mobs. Decisions must depend on the state, never on call history.
-    -- A period that ranks the same grounds the same way keeps the list of the period before: what is chosen from
-    -- a list (pick) is kept by the list, and most periods change nothing.
-    return memo.get(standings, owner, period, key, function()
+    -- The key holds all a ranking is made from: the walk to each ground starts in the region stood in, the ground
+    -- aimed at goes first among equals, and what changes with time alone (a floor's regrowth, what others take) is
+    -- weighed where a ground is picked. Ranked again every five seconds as well, the rankings spent 55 of their 122
+    -- seconds at those turns while a mage stood four seconds under skeletons in one decision (online 215552).
+    return memo.get(standings, owner, base, key, function()
         local ranked = rank(snap, query, mode, crew, {})
         local worth  = materials(snap, query, mode, crew, ranked[1] ~= nil and ranked[1].rate or 0)
         if next(worth) ~= nil then
             ranked = rank(snap, query, mode, crew, worth)
         end
-        return memo.keep(lasting, owner, score.signature(snap, ""), key, ranked, alike)
+        local kept = memo.keep(lasting, owner, base, key, ranked, alike)
+        kept.worth = worth
+        return kept
     end)
+end
+
+function M.standing(snap, query, crew)
+    return (recovered(snap, query, M.ranked(snap, query, nil, crew), crew))
 end
 
 function M.reachable(snap, query, candidate, crew)
@@ -1073,23 +1152,24 @@ local function pick(snap, query, mode, crew, guards)
             shunned[map] = true
         end
     end
-    local ranked     = M.ranked(snap, query, mode, crew)
-    local _, context = reach(snap, query, crew)
-    local parts      = { context }
-    local shares     = {}
-    local open       = ranked
-    for index, entry in ipairs(ranked) do
+    local ranked           = M.ranked(snap, query, mode, crew)
+    local listed, regrowth = recovered(snap, query, ranked, crew)
+    local _, context       = reach(snap, query, crew)
+    local parts            = { context, regrowth }
+    local shares           = {}
+    local open             = listed
+    for index, entry in ipairs(listed) do
         local kept = held(query, entry.candidate.floors, crew)
         if kept < 1 then
             table.insert(shares, index .. ":" .. string.format("%.2f", kept))
         end
-        if kept < 1 and open == ranked then
+        if kept < 1 and open == listed then
             open = {}
             for before = 1, index - 1 do
-                table.insert(open, ranked[before])
+                table.insert(open, listed[before])
             end
         end
-        if open ~= ranked then
+        if open ~= listed then
             table.insert(open, {
                 candidate = entry.candidate,
                 finish = entry.finish,
@@ -1098,13 +1178,8 @@ local function pick(snap, query, mode, crew, guards)
             })
         end
     end
-    if open ~= ranked then
-        table.sort(open, function(left, right)
-            if left.score ~= right.score then
-                return left.score > right.score
-            end
-            return left.candidate.bundle.name < right.candidate.bundle.name
-        end)
+    if open ~= listed then
+        ordered(open)
     end
     table.insert(parts, table.concat(shares, ","))
     for _, guard in ipairs(guards or {}) do
@@ -1150,8 +1225,12 @@ function M.choose(snap, query, mode, crew, guards)
     end
     local key = (mode or "") .. (crew ~= nil and crew.key or "") .. (guards ~= nil and "|guarded" or "")
     if cached[key] == nil then
+        local made  = mode == nil and crew == nil and guards == nil and snap.hypothesis == nil and
+            require("brain.planner").current(snap, query) or nil
         local found = nil
-        if mode == nil and recovery.rates(snap).mp <= 0 and #recovery.doses(snap, "mp") == 0 then
+        if made ~= nil then
+            found = made.chosen
+        elseif mode == nil and recovery.rates(snap).mp <= 0 and #recovery.doses(snap, "mp") == 0 then
             local full = pick(snap, query, "REFILL", crew, guards)
             local dry  = pick(snap, query, "DRY", crew, guards)
             found      = (full ~= nil and (dry == nil or full.rate > dry.rate)) and full or dry
@@ -1188,6 +1267,26 @@ function M.party(members, query, mode)
         end
         return M.mode(member)
     end
+    local known = { rested = {}, ability = {}, crew = {} }
+    local function rested(member)
+        if known.rested[member] == nil then
+            known.rested[member] = score.rested(member, state(member))
+        end
+        return known.rested[member]
+    end
+    local function crew(list)
+        local names = {}
+        local found = {}
+        for _, member in ipairs(list) do
+            table.insert(names, member.self.name)
+            table.insert(found, rested(member))
+        end
+        local key = table.concat(names, ",")
+        if known.crew[key] == nil then
+            known.crew[key] = M.crew(found, query)
+        end
+        return known.crew[key]
+    end
     local best   = nil
     local front  = 1
     local merged = {}
@@ -1207,20 +1306,13 @@ function M.party(members, query, mode)
                     table.insert(rest, other)
                 end
             end
-            local rested = score.rested(member, state(member))
-            local crew = {}
-            for _, other in ipairs(rest) do
-                table.insert(crew, score.rested(other, state(other)))
+            if known.ability[member] == nil then
+                known.ability[member] = score.capability(rested(member), query)
             end
-            table.insert(guards,
-                { rested = rested, ability = score.capability(rested, query), crew = M.crew(crew, query) })
-        end
-        local rested = {}
-        for _, member in ipairs(others) do
-            table.insert(rested, score.rested(member, state(member)))
+            table.insert(guards, { rested = rested(member), ability = known.ability[member], crew = crew(rest) })
         end
         local plan = M.choose(lead, query, state(lead),
-            #rested > 0 and M.crew(rested, query) or nil, #guards > 0 and guards or nil)
+            #others > 0 and crew(others) or nil, #guards > 0 and guards or nil)
         for _, option in ipairs(plan ~= nil and plan.options or {}) do
             table.insert(merged, option)
             owners[option] = index
@@ -1233,24 +1325,46 @@ function M.party(members, query, mode)
     return best, front
 end
 
-local function held(members, index, query, bundle)
-    local lead    = score.rested(members[index], M.mode(members[index]))
-    local ability = score.capability(lead, query)
-    local others  = {}
-    for other, member in ipairs(members) do
-        if other ~= index then
-            table.insert(others, score.rested(member, M.mode(member)))
+local function held(members, index, query, bundle, known)
+    local function rested(at)
+        if known.rested[at] == nil then
+            known.rested[at] = score.rested(members[at], M.mode(members[at]))
+        end
+        return known.rested[at]
+    end
+    local function ability(at)
+        if known.ability[at] == nil then
+            known.ability[at] = score.capability(rested(at), query)
+        end
+        return known.ability[at]
+    end
+    local function crew(list)
+        local key = table.concat(list, ",")
+        if known.crew[key] == nil then
+            local found = {}
+            for _, at in ipairs(list) do
+                table.insert(found, rested(at))
+            end
+            known.crew[key] = M.crew(found, query)
+        end
+        return known.crew[key]
+    end
+    local lead   = rested(index)
+    local others = {}
+    for at = 1, #members do
+        if at ~= index then
+            table.insert(others, at)
         end
     end
     local guards = {}
-    for slot, member in ipairs(others) do
-        local rest = { lead }
+    for slot, at in ipairs(others) do
+        local rest = { index }
         for other, entry in ipairs(others) do
             if other ~= slot then
                 table.insert(rest, entry)
             end
         end
-        table.insert(guards, { rested = member, ability = score.capability(member, query), crew = M.crew(rest, query) })
+        table.insert(guards, { rested = rested(at), ability = ability(at), crew = crew(rest) })
     end
     local shunned = {}
     for _, member in ipairs(members) do
@@ -1259,7 +1373,7 @@ local function held(members, index, query, bundle)
         end
     end
     local floors = {}
-    for _, floor in ipairs(sweep(lead, query, bundle, ability, #others > 0 and M.crew(others, query) or nil)) do
+    for _, floor in ipairs(sweep(lead, query, bundle, ability(index), #others > 0 and crew(others) or nil)) do
         if shunned[floor.map] then
             break
         end
@@ -1292,8 +1406,9 @@ function M.hold(members, query, name)
         end
     end
     local floors = {}
+    local known  = { rested = {}, ability = {}, crew = {} }
     for index = 1, #members do
-        local found = held(members, index, query, bundle)
+        local found = held(members, index, query, bundle, known)
         if #found > #floors then
             floors = found
         end

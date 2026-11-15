@@ -4,7 +4,7 @@ local records = {}
 local running = setmetatable({}, { __mode = "k" })
 
 function M.start(owner)
-    records[owner] = { started = clock(), waited = 0, sections = {}, parts = {}, open = {} }
+    records[owner] = { started = clock(), waited = 0, sections = {}, parts = {}, open = {}, calls = {}, waits = {} }
     running[coroutine.running()] = owner
     return records[owner]
 end
@@ -13,6 +13,9 @@ function M.part(name, fn)
     return function(...)
         local owner  = running[coroutine.running()]
         local record = owner ~= nil and records[owner] or nil
+        if record ~= nil then
+            record.calls[name] = (record.calls[name] or 0) + 1
+        end
         if record == nil or record.open[name] then
             return fn(...)
         end
@@ -40,6 +43,23 @@ function M.parts(owner)
     return found
 end
 
+function M.calls(owner)
+    local record = records[owner]
+    return record ~= nil and record.calls or nil
+end
+
+function M.waits(owner)
+    local record = records[owner]
+    if record == nil then
+        return nil
+    end
+    local found = {}
+    for name, spent in pairs(record.waits) do
+        found[name] = spent / 1000
+    end
+    return found
+end
+
 function M.measure(owner, name, fn, ...)
     local record = records[owner]
     if record == nil then
@@ -53,16 +73,18 @@ function M.measure(owner, name, fn, ...)
     return table.unpack(results, 1, results.n)
 end
 
-function M.wait(owner, fn, ...)
+function M.wait(owner, name, fn, ...)
     local record = records[owner]
     if record == nil or record.waiting then
         return fn(...)
     end
-    local started  = clock()
-    record.waiting = true
-    local results  = table.pack(pcall(fn, ...))
-    record.waiting = false
-    record.waited  = record.waited + clock() - started
+    local started      = clock()
+    record.waiting     = true
+    local results      = table.pack(pcall(fn, ...))
+    local spent        = clock() - started
+    record.waiting     = false
+    record.waited      = record.waited + spent
+    record.waits[name] = (record.waits[name] or 0) + spent
     if results[1] == false then
         error(results[2], 0)
     end

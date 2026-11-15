@@ -33,6 +33,7 @@ M.offers = {}
 
 local picks  = {}
 local claims = {}
+local paths  = {}
 
 local ERRANDS = { SUPPLY = true, SELL = true, OUTFIT = true, LEARN = true }
 
@@ -206,6 +207,17 @@ function M.choose(snap, facts, current, sink)
     end
     if sink ~= nil and sink.alarm ~= nil then
         trace.alarm(sink.brain, sink.bot, snap, sink.alarm, current, result ~= nil and result.task or found.name, route)
+    end
+    if sink ~= nil and found.name == "FIELD" and #(snap.party or {}) > 0 then
+        local action = result or found.action or {}
+        local dest   = action.dest or {}
+        local seen   = string.format("%s kind=%s dest=%s:%s,%s maps=%s", route, tostring(action.kind),
+            tostring(dest.map), tostring(dest.x), tostring(dest.y), table.concat(dest.maps or {}, ","))
+        if paths[owner] ~= seen then
+            paths[owner] = seen
+            log("debug", string.format("[brain:path] bot=%s at %s:%s,%s %s", owner, tostring(snap.world.map),
+                tostring(snap.world.x), tostring(snap.world.y), seen))
+        end
     end
     -- The cooldown gap can turn the found task into the current one (a hit while drinking finds DEFEND, whose
     -- swing waits, and the gap drinks again): that is the task already running, so it is not interrupted.

@@ -115,7 +115,13 @@ local function stage(snap, facts, maps, hunting)
     -- crossed to the next floor without a rogue that was rooted on its own floor, and a rogue went on and
     -- came back for a poet held at the exit (offline profile trio rooted seed 2, 244-250s; RO+PO 흉가 seed 1,
     -- 219-222s).
-    local plan = party.plan(snap, facts)
+    -- Entering from outside, a member waits for the crossing within its steps of the door, on whichever side of it
+    -- it came to (together.waiting), so it is gathered by its walk to the door, not to me: counted by its walk to me,
+    -- a mage four steps south of the door of 개주비밀세작의집 was eleven steps round the wall from its mage leader two
+    -- steps north, and each waited for the other for good (online 024320, 02:45:10). On the hunting floors the crew
+    -- gathers on the vanguard (together.cross_after), and is counted by its walk to me.
+    local gathered = hunting == true and snap.world or exit
+    local plan     = party.plan(snap, facts)
     for _, member in ipairs(party.members(snap)) do
         local world   = member.world
         local through = false
@@ -127,7 +133,7 @@ local function stage(snap, facts, maps, hunting)
         end
         if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
                 party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
-                together.walk(snap, facts, member, snap.world) > 2 * data.adjacent) then
+                together.walk(snap, facts, member, gathered) > 2 * data.adjacent) then
             return (hunting == true and together.to_rally(snap, facts)) or together.waiting(snap, facts, exit) or
                 { kind = ACTION.HOLD }
         end
@@ -178,12 +184,57 @@ local function doorway(facts, floor, map, from)
     return found
 end
 
+local entry_waits = {}
+
+-- A vanguard that set off into the ground from the door is over once it is gone from my sight: its profile shows it at
+-- the door until it decides inside, and waited for till then, a mage stood at the door of 졸본흑해골굴 while its
+-- vanguard, struck on landing with no crew beside it, walked back out to it, four times in four minutes (online 060721,
+-- 06:09-06:13).
+local function crossed(snap, facts, lead, door)
+    local world = lead.world
+    if facts.ally == nil or world.map ~= snap.world.map or world.x == nil or lead.heading == nil then
+        return false
+    end
+    local inward = false
+    for _, map in ipairs(lead.heading) do
+        inward = inward or ground.floor_at(map) ~= nil
+    end
+    return inward and math.abs(world.x - door.x) + math.abs(world.y - door.y) <= data.adjacent and
+        facts.ally(lead.self.name) == nil
+end
+
+local function wait_entry(snap, lead, branch)
+    local leader = party.leader(snap) or {}
+    local function placed(entry)
+        return type(entry) == "table" and
+            string.format("%s@%s:%s,%s", tostring(entry.name or entry.by), tostring(entry.map), tostring(entry.x),
+                tostring(entry.y)) or "-"
+    end
+    local servicing = type(leader.servicing) == "table" and
+        string.format("%s/%s", tostring(leader.servicing.at), tostring(leader.servicing.leave)) or "-"
+    local rescue    = type(leader.rescue) == "table" and
+        string.format("%s<-%s", tostring(leader.rescue.name), tostring(leader.rescue.by)) or "-"
+    local reason    = string.format(
+        "%s lead=%s@%s heading=%s leader=%s heading=%s servicing=%s joined=%s rescue=%s rally=%s regrouping=%s",
+        branch, tostring(lead ~= nil and lead.self.name or nil), tostring(lead ~= nil and lead.world.map or nil),
+        table.concat(lead ~= nil and lead.heading or {}, ","), tostring((leader.self or {}).name),
+        table.concat(leader.heading or {}, ","), servicing, tostring(leader.joined), rescue, placed(leader.rally),
+        tostring(party.regrouping(snap)))
+    if entry_waits[snap.self.name] ~= reason then
+        entry_waits[snap.self.name] = reason
+        log("debug", string.format("[brain:entry] bot=%s at %s:%s,%s waits %s lead_at=%s,%s", snap.self.name,
+            tostring(snap.world.map), tostring(snap.world.x), tostring(snap.world.y), reason,
+            tostring(lead ~= nil and lead.world.x or nil), tostring(lead ~= nil and lead.world.y or nil)))
+    end
+    return { kind = ACTION.HOLD }
+end
+
 local function follow_entry(snap, facts)
     local plan = party.plan(snap, facts)
     local lead = party.vanguard(snap, facts) or party.leader(snap)
     local gate = plan.gate or plan.floors[1].map
     if lead == nil or lead.world.x == nil then
-        return { kind = ACTION.HOLD }
+        return wait_entry(snap, lead, "no_lead")
     end
     -- While the leader is outside the ground a member never goes in on its own: it walks to the entrance of
     -- the gate map, waits there, and follows only when the leader crosses from that gate. Following the
@@ -203,10 +254,13 @@ local function follow_entry(snap, facts)
         local from = lead.world.map == regate and
             { map = lead.world.map, x = lead.world.x, y = lead.world.y, level = lead.self.level } or nil
         local door = doorway(facts, plan.floors[1].map, regate, from)
+        if door ~= nil and crossed(snap, facts, lead, door) then
+            return { kind = ACTION.MOVE, dest = { maps = lead.heading } }
+        end
         if door == nil then
             if lead.world.map ~= regate or
                 math.abs(lead.world.x - snap.world.x) + math.abs(lead.world.y - snap.world.y) <= data.adjacent then
-                return { kind = ACTION.HOLD }
+                return wait_entry(snap, lead, "outside_no_door")
             end
             return { kind = ACTION.MOVE, dest = { map = regate, x = lead.world.x, y = lead.world.y, range = data.adjacent } }
         end
@@ -220,7 +274,8 @@ local function follow_entry(snap, facts)
         end
         local far = together.walk(snap, facts, snap, door)
         if far <= data.adjacent then
-            return { kind = ACTION.HOLD }
+            return wait_entry(snap, lead, ground.floor_at(lead.world.map) == nil and "outside_at_door" or
+                party.regrouping(snap) and "regrouping_at_door" or "outbound_at_door")
         end
         return {
             kind = ACTION.MOVE,
@@ -230,7 +285,9 @@ local function follow_entry(snap, facts)
         -- While the group is scattered the member goes where the leader's rally point says, not to wherever
         -- the leader happens to be: walking to the leader crossed the leader coming to fetch it.
         local rallied = together.to_rally(snap, facts)
-        if rallied ~= nil then
+        if rallied ~= nil and rallied.kind == ACTION.HOLD then
+            return wait_entry(snap, lead, "rally:" .. tostring(rallied.why))
+        elseif rallied ~= nil then
             return rallied
         end
     end
@@ -246,13 +303,13 @@ local function follow_entry(snap, facts)
         return { kind = ACTION.MOVE, dest = { maps = lead.heading } }
     end
     if lead.world.map ~= snap.world.map then
-        return { kind = ACTION.HOLD }
+        return wait_entry(snap, lead, "heading_here")
     end
     -- Follow to where the leader is going, not to where it stood: on a large map a walk to the leader's
     -- old tile took over a minute and ended far from the exit the leader was waiting at.
     local going = lead.going ~= nil and lead.going.map == snap.world.map and lead.going or lead.world
     if math.abs(going.x - snap.world.x) + math.abs(going.y - snap.world.y) <= data.adjacent then
-        return { kind = ACTION.HOLD }
+        return wait_entry(snap, lead, "beside_lead")
     end
     return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = going.x, y = going.y, range = data.adjacent } }
 end
@@ -371,29 +428,6 @@ end
 
 local function several(snap, facts)
     return #party.plan(snap, facts).floors > 1
-end
-
--- A crewmate hurting a mob still alive here is busy here though its task is the hunt: one shooting a skeleton across
--- a wall looked free, and its vanguard, that may not walk round the wall to join it (escort.tethered), went on to the
--- next floor without it (healer_waits_beside_leader). Hurting is the damage it dealt on this floor (dealt):
--- its last battle stays named after a curse or once the fight is over, and a skeleton a poet had cursed across a
--- wall held its whole crew waiting (offline profile trio seed 12, run 14:24).
-local function crew_busy_here(snap)
-    local alive = {}
-    for _, mob in ipairs(snap.world.mobs or {}) do
-        alive[tostring(mob.oid)] = true
-    end
-    for _, member in ipairs(party.members(snap)) do
-        local fighting = false
-        for oid in pairs(member.world.map == snap.world.map and member.dealt or {}) do
-            fighting = fighting or alive[oid] == true
-        end
-        if member.world.map == snap.world.map and member.self.ghost == false and (party.held(member) or fighting or
-                member.task ~= nil and member.task ~= "FIELD" and member.task ~= "NOTHING") then
-            return true
-        end
-    end
-    return false
 end
 
 local function left_floors(snap, leg)
@@ -596,7 +630,7 @@ local on_ground = choose({
     when(several, choose({
         when(together.grouped, choose({
             when(not_vanguard, together.advance),
-            when(crew_busy_here, together.advance),
+            when(party.stays, together.advance),
         })),
         when(other_floor_ready, act("FIELD", occupied(next_floor), "next_floor")),
     })),

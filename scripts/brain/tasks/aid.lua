@@ -372,12 +372,24 @@ local function debuffs(snap, query, slots, worth)
     -- A mob in sight that nobody fights yet takes the ticks of a poison until it is reached, so poisoned first it is
     -- that much of its kill done meanwhile, short of the hp the poison never takes (dot_floor). Poisoned only once it
     -- was fought, five skeletons in sight were fought one after another at full hp (user 11-14, online WA+MA 152615).
-    -- A mob that would not come by itself is drawn by the ticks, and its blows on me while poisoned are the cost.
+    -- A mob that would not come by itself is drawn by the ticks, and its blows on me while poisoned are the cost. Only
+    -- prey the crew hunts here and may fight where it stands is poisoned (field.fightable): poisoned beyond that, a mob
+    -- at 1% six tiles off that nobody was allowed to strike was poisoned again each time the ticks ran out, and the
+    -- crew waited on it for five minutes (online 004028, 00:43:36-00:48:30).
     local fought = snap.record.memory.battle
+    local plan   = party.plan(snap, query)
+    local hunted = {}
+    for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+        for _, name in ipairs(floor.map == snap.world.map and floor.targets or {}) do
+            hunted[name] = true
+        end
+    end
+    local field = require("brain.tasks.field")
     for _, mob in ipairs(snap.world.mobs or {}) do
         if mob.oid ~= nil and engaged[mob.oid] == nil and mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
             (fought == nil or fought.oid ~= mob.oid) and math.abs(mob.x - snap.world.x) <= data.sight.x and
-            math.abs(mob.y - snap.world.y) <= data.sight.y then
+            math.abs(mob.y - snap.world.y) <= data.sight.y and hunted[mob.name] ~= nil and
+            field.fightable(snap, query, mob) then
             local names     = applied(snap, mob.oid)
             local remaining = (mob.hp or 0) * (mob.ratio or 1)
             for name, slot in pairs(slots) do

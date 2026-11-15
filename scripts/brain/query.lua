@@ -3,9 +3,25 @@ local profile = require("brain.profile")
 
 local M = {}
 
+local function asked(kind)
+    local info = debug.getinfo(3, "Sl")
+    return info ~= nil and string.format("%s@%s:%d", kind, info.short_src:match("([%w_]+)%.lua$") or "?",
+        info.currentline) or kind
+end
+
 function M.bind(brain, bot, snap)
     local demands = {}
     return {
+        snap = snap,
+        plan = function(key, request)
+            brain:plan(bot, key, request)
+        end,
+        planned = function(known)
+            return brain:planned(bot, known)
+        end,
+        await_plan = function(key)
+            return profile.wait(bot:name(), "plan", brain.await_plan, brain, bot, key)
+        end,
         npcs = function(names)
             return brain:npcs(bot, names)
         end,
@@ -73,21 +89,21 @@ function M.bind(brain, bot, snap)
             return brain:region(map, x, y)
         end,
         reach = function(perilous, shunned, from)
-            return profile.wait(bot:name(), brain.reach, brain, bot,
+            return profile.wait(bot:name(), asked("reach"), brain.reach, brain, bot,
                 { perilous = perilous or {}, shunned = shunned or {} }, from)
         end,
         leaps = function(destination, detour, origin)
-            return profile.wait(bot:name(), brain.leaps, brain, bot, destination, detour, origin)
+            return profile.wait(bot:name(), "leaps", brain.leaps, brain, bot, destination, detour, origin)
         end,
         distances = function(detour, origin)
-            return profile.wait(bot:name(), brain.distances, brain, bot, detour, origin)
+            return profile.wait(bot:name(), "distances", brain.distances, brain, bot, detour, origin)
         end,
         route = function(maps, perilous, shunned)
-            return profile.wait(bot:name(), brain.route, brain, bot, { maps = maps },
+            return profile.wait(bot:name(), asked("route"), brain.route, brain, bot, { maps = maps },
                 { perilous = perilous or {}, shunned = shunned or {} })
         end,
         path = function(dest, perilous, shunned, origin)
-            return profile.wait(bot:name(), brain.route, brain, bot, dest,
+            return profile.wait(bot:name(), asked("path"), brain.route, brain, bot, dest,
                 { perilous = perilous or {}, shunned = shunned or {} },
                 origin)
         end,

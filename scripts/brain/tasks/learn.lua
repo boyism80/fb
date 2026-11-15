@@ -56,7 +56,7 @@ local function plan(snap, query)
         end
         local worth = value.baseline(snap, query)
         local rate  = 0
-        for _, entry in ipairs(ground.ranked(snap, query)) do
+        for _, entry in ipairs(ground.standing(snap, query)) do
             if ground.reachable(snap, query, entry.candidate) then
                 rate = math.max(rate, entry.rate)
             end

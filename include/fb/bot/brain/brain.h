@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <exception>
 #include <functional>
 #include <thread>
@@ -178,6 +179,19 @@ public:
         fb::lua::value profile;
     };
 
+    struct planned
+    {
+        std::string    key;
+        uint64_t       version = 0;
+        fb::lua::value value;
+    };
+
+    struct planning
+    {
+        std::string    key;
+        fb::lua::value request;
+    };
+
     struct maneuver
     {
         MANEUVER                  kind = MANEUVER::SWING;
@@ -278,20 +292,30 @@ private:
     uint64_t                                                                           _sessions = 0;
     const bool                                                                         _recording;
     std::unordered_map<uint64_t, std::shared_ptr<async::task_completion_source<bool>>> _loops;
-    boost::asio::thread_pool _workers{std::max(1u, std::thread::hardware_concurrency())};
-    inline static std::mutex _ledger_mutex;
-    inline static std::unordered_map<std::string, std::string>                          _ledger;
-    inline static std::unordered_map<std::string, std::pair<uint16_t, double>>          _occupancy;
-    inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>> _occupants;
-    inline static std::unordered_map<uint32_t, std::unordered_map<uint16_t, double>>    _foreign_occupants;
-    inline static std::unordered_map<std::string, listing>                              _roster;
-    inline static std::unordered_map<std::string, direction>                            _directions;
-    inline static std::unordered_map<std::string, presence>                             _presences;
-    inline static std::function<void(const Json::Value&)>                               _publish;
+    boost::asio::thread_pool                  _workers{std::max(1u, std::thread::hardware_concurrency())};
+    mutable std::mutex                        _plan_mutex;
+    std::unordered_map<std::string, planning> _requests;
+    std::deque<std::string>                   _queued;
+    bool                                      _planning = false;
+    std::string                               _computing;
+    uint64_t                                  _versions = 0;
+    std::unordered_map<std::string, planned>  _plans;
+    std::unordered_map<std::string, std::vector<std::shared_ptr<async::task_completion_source<bool>>>> _awaiting;
+    std::unique_ptr<fb::thread>                                                                        _planner;
+    std::unique_ptr<fb::lua::root>                                                                     _planner_lua;
+    inline static std::mutex                                                                           _ledger_mutex;
+    inline static std::unordered_map<std::string, std::string>                                         _ledger;
+    inline static std::unordered_map<std::string, std::pair<uint16_t, double>>                         _occupancy;
+    inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>>                _occupants;
+    inline static std::unordered_map<uint32_t, std::unordered_map<uint16_t, double>> _foreign_occupants;
+    inline static std::unordered_map<std::string, listing>                           _roster;
+    inline static std::unordered_map<std::string, direction>                         _directions;
+    inline static std::unordered_map<std::string, presence>                          _presences;
+    inline static std::function<void(const Json::Value&)>                            _publish;
 
 public:
     explicit brain(bool recording = true);
-    ~brain() = default;
+    ~brain();
 
 public:
     // clang-format off
@@ -367,8 +391,11 @@ public:
     static void                                          publish(std::function<void(const Json::Value&)> send);
     static void                                          hear(const Json::Value& message);
     static std::unordered_map<std::string, uint32_t>     reservations(const std::string& except);
-    void measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
-    void remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
+    void                   plan(game_bot& bot, const std::string& key, fb::lua::value request);
+    std::optional<planned> plan_of(const std::string& name, uint64_t known) const;
+    async::task<bool>      await_plan(std::shared_ptr<game_bot> bot, std::string key);
+    void                   measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
+    void                   remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
     std::optional<fb::lua::value>                recall(uint32_t bot, const std::string& key) const;
     static snapshot                              observe(const game_bot& bot);
     static const char*                           name(STATE value);
@@ -388,7 +415,9 @@ private:
     async::task<outcome>                 perform(std::shared_ptr<game_bot> bot, const decision& decision);
     void settle(const game_bot& bot, const std::string& task, const outcome& result, std::chrono::milliseconds elapsed);
     async::task<void> alarm(std::shared_ptr<game_bot> bot, std::string task, std::string kind);
+    async::task<void> plan_queued(fb::async_executor& executor);
     fb::lua::root&    scripts(game_bot& bot);
+    static void       prepare(fb::lua::root& lua);
     bool              update(uint32_t bot, uint64_t session, const std::optional<decision>& next);
     bool              halted(uint32_t bot, const decision& decision) const;
     static void       evict(const std::string& name);

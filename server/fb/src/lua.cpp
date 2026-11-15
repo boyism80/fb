@@ -108,12 +108,12 @@ context& context::pushboolean(bool value)
     return *this;
 }
 
-context& context::pushuserdata(const luable& value)
+context& context::pushuserdata(const luable& value, bool borrowed)
 {
     auto& target = const_cast<luable&>(value);
-    auto  weak   = target.std::enable_shared_from_this<luable>::weak_from_this();
+    auto  weak   = borrowed ? std::weak_ptr<luable>{} : target.std::enable_shared_from_this<luable>::weak_from_this();
     auto  pin    = std::shared_ptr<void>{};
-    if (weak.expired() && luable::raw_pin_provider != nullptr)
+    if (weak.expired() && borrowed == false && luable::raw_pin_provider != nullptr)
         pin = luable::raw_pin_provider(value);
 
     if (weak.expired() && pin != nullptr)

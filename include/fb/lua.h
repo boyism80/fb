@@ -399,7 +399,7 @@ public:
         }
     }
 
-    context& pushuserdata(const luable& value);
+    context& pushuserdata(const luable& value, bool borrowed = false);
     context& push(const void* value);
     context& pop(int offset);
 

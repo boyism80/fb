@@ -24,6 +24,8 @@ function M.member(profile)
         rally     = profile.rally,
         vanguard  = profile.vanguard,
         battle    = profile.battle,
+        prey      = profile.prey,
+        stay      = profile.stay,
         heading   = profile.heading,
         pinned    = profile.pinned,
         blocker   = profile.blocker,
@@ -243,6 +245,16 @@ local function arriving(snap, member)
     end
     return member.task == "FIELD" and
         member.arrives + 2 * combat.adjacent * (member.pace.step or combat.walk) >= snap.now
+end
+
+function M.coming(snap, query)
+    for _, profile in ipairs(snap.party or {}) do
+        local member = M.member(profile)
+        if near(snap, query, member) == false and arriving(snap, member) == false then
+            return false
+        end
+    end
+    return #(snap.party or {}) > 0
 end
 
 local gaps = {}
