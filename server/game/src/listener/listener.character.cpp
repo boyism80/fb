@@ -118,6 +118,9 @@ void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 {
     for (auto& [id, buff] : buffs)
     {
+        if (buff->remaining() <= std::chrono::milliseconds::zero())
+            continue;
+
         ch.send(game_resp::spell_buff(*buff));
     }
 }
