@@ -131,12 +131,7 @@ void character::options::assign(OPTION key, bool value, bool notify)
     this->_values[opt] = value;
 
     if (key == OPTION::FIXED_MOVE)
-    {
-        if (value)
-            this->_owner._camera_pivot.reset();
-        else
-            this->_owner.camera_pivot();
-    }
+        this->_owner.recenter_camera();
 
     if (key == OPTION::VISIBLE_HELMET)
         this->_owner.show();

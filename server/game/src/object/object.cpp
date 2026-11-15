@@ -23,6 +23,7 @@
 #include <string_view>
 #include <thread>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -248,12 +249,6 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             this->hide(*obj);
         }
-
-        // Other object left my sight
-        if (before_sight.contains(obj->_position) && !this->sight(*obj))
-        {
-            obj->hide(*this);
-        }
     }
 
     for (auto& obj : this->_map->nears(this->_position))
@@ -272,18 +267,40 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             this->show(*obj);
         }
-        else
-        {
-        }
-
-        // Other object entered my sight
-        if (!before_sight.contains(obj->_position) && this->sight(*obj))
-        {
-            obj->show(*this);
-        }
     }
 
+    this->show_sight_changes(before_sight, before);
+
     return true;
+}
+
+void object::show_sight_changes(const fb::model::area<uint16_t>&    before,
+                                std::optional<fb::model::point16_t> near_before)
+{
+    this->assert_thread();
+
+    if (this->_map == nullptr)
+        return;
+
+    auto seen = std::unordered_set<fb::game::object*>{};
+    auto scan = [&](const fb::model::point16_t& at) {
+        for (auto& obj : this->_map->nears(at))
+        {
+            if (this == obj.get() || seen.insert(obj.get()).second == false)
+                continue;
+
+            auto was = before.contains(obj->_position);
+            auto now = this->sight(*obj);
+            if (was && !now)
+                obj->hide(*this);
+            else if (!was && now)
+                obj->show(*this);
+        }
+    };
+
+    scan(this->_position);
+    if (near_before.has_value())
+        scan(near_before.value());
 }
 
 bool object::position(const fb::model::point16_t position, bool refresh)

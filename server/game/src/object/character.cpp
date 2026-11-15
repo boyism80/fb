@@ -299,10 +299,11 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     }
     else
     {
-        this->_camera_pivot.reset();
-
         if (co_await object::map(map, position, std::move(options)) == false)
             co_return false;
+
+        if (old_map != map)
+            this->camera_pivot();
     }
 
     if (old_map != map)
@@ -1496,16 +1497,20 @@ void character::camera_pivot() const
 {
     this->assert_thread();
 
-    if (this->options.enabled(OPTION::FIXED_MOVE))
-    {
-        this->_camera_pivot.reset();
-        return;
-    }
-
     if (this->map() == nullptr)
         return;
 
     this->_camera_pivot = this->screen_origin(this->position());
+}
+
+void character::recenter_camera()
+{
+    this->assert_thread();
+
+    auto before = this->sight_area(this->position());
+    this->_camera_pivot.reset();
+    this->camera_pivot();
+    this->show_sight_changes(before);
 }
 
 fb::model::area<uint16_t> character::sight_area(const fb::model::point16_t& position) const
@@ -1532,9 +1537,6 @@ fb::model::point16_t character::viewport() const
 {
     this->assert_thread();
 
-    if (this->options.enabled(OPTION::FIXED_MOVE) == false)
-        this->camera_pivot();
-
     return this->viewport(this->position());
 }
 
@@ -1546,20 +1548,9 @@ fb::model::point16_t character::viewport(const fb::model::point16_t& position) c
     if (map == nullptr)
         return fb::model::point16_t{0, 0};
 
-    if (this->options.enabled(OPTION::FIXED_MOVE))
-        return this->viewport_centered(position);
-
-    if (this->_camera_pivot.has_value() == false)
-    {
-        auto vp             = this->viewport_centered(position);
-        this->_camera_pivot = fb::model::point<int32_t>{static_cast<int32_t>(position.x) - static_cast<int32_t>(vp.x),
-                                                        static_cast<int32_t>(position.y) - static_cast<int32_t>(vp.y)};
-        return vp;
-    }
-
-    auto& pivot = this->_camera_pivot.value();
-    return fb::model::point16_t{static_cast<uint16_t>(static_cast<int32_t>(position.x) - pivot.x),
-                                static_cast<uint16_t>(static_cast<int32_t>(position.y) - pivot.y)};
+    auto origin = this->screen_origin(position);
+    return fb::model::point16_t{static_cast<uint16_t>(static_cast<int32_t>(position.x) - origin.x),
+                                static_cast<uint16_t>(static_cast<int32_t>(position.y) - origin.y)};
 }
 
 void character::screen_refresh()
@@ -1680,8 +1671,7 @@ async::task<bool> character::move(DIRECTION direction, const fb::model::point16_
     else
     {
         auto viewport = this->viewport(before);
-        if (this->options.enabled(OPTION::FIXED_MOVE) == false)
-            this->camera_pivot();
+        this->camera_pivot();
 
         auto v651 = this->client_version == fb::protocol::CLIENT_VERSION::v651;
         if (v651 && ENUM_IN(map->config_flag(), MAP_CONFIG_FLAG::NO_SELF_CONFIRM))

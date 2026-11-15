@@ -162,6 +162,7 @@ public:
     bool                                                    sight(const fb::game::object& object) const;
     fb::model::area<uint16_t>                               sight_area() const;
     virtual fb::model::area<uint16_t>                       sight_area(const fb::model::point16_t& position) const;
+    void                                                    show_sight_changes(const fb::model::area<uint16_t>& before, std::optional<fb::model::point16_t> near_before = std::nullopt);
     fb::model::point16_t                                    side_position(DIRECTION direction, int step = 1) const;
     fb::model::point16_t                                    front_position(int step = 1) const;
     object_ptr                                              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT, int range = 1) const;

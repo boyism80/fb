@@ -469,6 +469,7 @@ private:
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
     fb::model::point<int32_t>       screen_origin(const fb::model::point16_t& position) const;
     void                            camera_pivot() const;
+    void                            recenter_camera();
     bool                            level_up();
     bool                            max_level() const;
     float                           experience_percent() const;
