@@ -287,6 +287,14 @@ function M.buffs(snap)
     return found
 end
 
+-- The hp a poison's ticks leave a mob (dot_floor) as its bar shows it: the bar counts whole percents, so a mob with
+-- more than a hundred times that hp shows its last percent when the ticks stop. Counted at the floor alone, a 흑해골
+-- ticked down to 100 of 20,000 showed 1%, looked to hold 100 more for the ticks, and was poisoned again 14 times on
+-- one floor (online 20261115-185734, 흑해골굴).
+function M.floor(mob, spell)
+    return math.max(spell.dot_floor or 0, (mob.hp or 0) / 100)
+end
+
 function M.debuffs(snap, mob)
     local result = { defense = 0, dot = 0, dot_time = 0, disable = 0, mp = 0, casts = 0 }
     local function apply(name, cost)

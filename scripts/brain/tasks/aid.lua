@@ -86,8 +86,11 @@ local function standing(member, ally)
     return math.min(bar, member.self.hp or bar)
 end
 
+-- The hp I restore counts only as far as it is mine to restore (escort.owed); the death a heal may spare meanwhile
+-- counts whole (rescue, leaving).
 local function heals(snap, query, slots, worth)
     local found   = {}
+    local share   = escort.owed(snap, query, snap, party.members(snap))
     local mana    = value.spend(snap, query, nil)
     local reserve = recovery.draining(snap) and 0 or recovery.spare(snap)
     local seen    = value.targets(snap)
@@ -117,6 +120,7 @@ local function heals(snap, query, slots, worth)
         end
         local current = standing(member, ally)
         local deficit = (member.self.max_hp or 0) - current
+        local left    = deficit * share
         local memory  = snap.record.memory.battle
         local dying   = 2 * volley(snap, member) >= current
         if ally ~= nil and deficit > 0 and member.self.ghost == false then
@@ -126,8 +130,8 @@ local function heals(snap, query, slots, worth)
                     local restored = math.min(deficit, heal.hp)
                     local target   = value.fought(snap, member, seen)
                     local fuel     = target ~= nil and value.convertible(member, target) or 0
-                    local saved    = math.max(restored * fuel,
-                        recovery.useful(heal.hp, deficit, member.self.max_hp or 0) *
+                    local saved    = math.max(math.min(left, heal.hp) * fuel,
+                        recovery.useful(heal.hp, left, member.self.max_hp or 0) *
                         value.vigor(member, query, worth, mana))
                     local leave    = leaving(snap, query, member, current, worth)
                     local averted  = rescue(snap, query, member, current, restored, heal, worth)
@@ -184,15 +188,15 @@ local function heals(snap, query, slots, worth)
         end
     end
     if #found > 0 and deficit > 0 then
-        local crew    = escort.present(snap, query)
-        local helped  = (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
+        local left    = deficit * share
         local shared  = (snap.record.memory.battle or {}).oid
         local engaged = shared ~= nil and seen[shared] or nil
         local fuel    = engaged ~= nil and value.convertible(snap, engaged) or 0
         for _, heal in ipairs(combat.options(snap, {}).heal) do
             if slots[heal.name] ~= nil and heal.mp + reserve <= (snap.self.mp or 0) then
-                local restored = math.max(0, math.min(deficit, heal.hp) - helped)
-                local saved    = math.max(restored * fuel, restored * value.vigor(snap, query, worth, mana))
+                local restored = math.min(deficit, heal.hp)
+                local owned    = math.min(left, heal.hp)
+                local saved    = math.max(owned * fuel, owned * value.vigor(snap, query, worth, mana))
                 table.insert(found, {
                     self = true,
                     slot = slots[heal.name],
@@ -292,6 +296,20 @@ local function exclusive(snap, query, name)
     return found
 end
 
+-- The hp a poison of mine takes off a mob in its ticks, short of the hp the ticks leave it as its bar shows it
+-- (combat.floor). The server counts each tick as my blow (caster:damage_to), so the mob turns on me for them as for a
+-- hit (battle.tally).
+local function ticked(snap, mob, name)
+    local spell     = magic.spells[name]
+    local remaining = (mob.hp or 0) * (mob.ratio or 1)
+    if spell == nil or (spell.dot or 0) <= 0 or remaining <= 0 then
+        return 0
+    end
+    local weak  = combat.debuffs(snap, copy(mob, { applied = { [name] = true } }))
+    local dealt = weak.dot * (mob.hp or 0) * weak.dot_time / ((magic.buff_tick or 1) * 1000)
+    return math.max(0, math.min(dealt, remaining - combat.floor(mob, spell)))
+end
+
 local function debuffs(snap, query, slots, worth)
     local found   = {}
     local seen    = value.targets(snap)
@@ -347,6 +365,7 @@ local function debuffs(snap, query, slots, worth)
                             key = name,
                             debuff = name,
                             cost = cost or 0,
+                            ticks = ticked(snap, mob, name),
                             value = saved * combat.gain(mob, member) * (mob.ratio or 1) + kept -
                                 (cost or 0) * value.spend(snap, query, mob),
                         })
@@ -385,8 +404,8 @@ local function debuffs(snap, query, slots, worth)
                 if spell ~= nil and spell.role == "DEBUFF" and (spell.dot or 0) > 0 and names[name] == nil and
                     type(cost or 0) == "number" and (cost or 0) <= recovery.free(snap) and remaining > 0 then
                     local weak     = combat.debuffs(snap, copy(mob, { applied = { [name] = true } }))
-                    local dealt    = weak.dot * (mob.hp or 0) * weak.dot_time / ((magic.buff_tick or 1) * 1000)
-                    local done     = math.max(0, math.min(dealt, remaining - (spell.dot_floor or 0))) / remaining
+                    local dealt    = ticked(snap, mob, name)
+                    local done     = dealt / remaining
                     local drawn    = mob.attack ~= "AGGRESSIVE" and
                         combat.blow(snap, mob) * weak.dot_time / mob.speed * mending(snap, query, mob, worth) or 0
                     local worth_of = done * combat.gain(mob, snap) - drawn - (cost or 0) * value.spend(snap, query, mob)
@@ -397,6 +416,7 @@ local function debuffs(snap, query, slots, worth)
                             key = name,
                             debuff = name,
                             cost = cost or 0,
+                            ticks = dealt,
                             value = worth_of,
                         })
                     end
@@ -518,6 +538,7 @@ local function action_of(snap, found)
         key      = found.key,
         ward     = found.ward,
         debuff   = found.debuff,
+        ticks    = found.ticks,
         maneuver = { kind = MANEUVER.CAST, slot = found.slot, self = false, cost = found.cost },
     }
 end
@@ -587,7 +608,7 @@ function M.value(snap, query)
 end
 
 function M.fueling(snap, query, mob)
-    return value.fuel(snap, snap, party.members(snap), mob)
+    return value.fuel(snap, query, snap, party.members(snap), mob)
 end
 
 -- Out of a fight a cast on a crewmate is the strike at my prey I do not make in that cast, worth its share of the

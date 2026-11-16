@@ -6,6 +6,7 @@ local shops    = require("brain.data.shops")
 local teleport = require("brain.data.teleport")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
+local escort   = require("brain.policies.escort")
 local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
 local memo     = require("brain.policies.memo")
@@ -205,7 +206,7 @@ end
 -- 06:38; user 11-11).
 function M.held(snap, query, mob)
     local sink = sunk(snap, query, mob)
-    return math.max(sink ~= nil and sink.held or 0, M.fuel(snap, snap, party.members(snap), mob))
+    return math.max(sink ~= nil and sink.held or 0, M.fuel(snap, query, snap, party.members(snap), mob))
 end
 
 function M.targets(snap)
@@ -255,8 +256,8 @@ end
 -- group, 16:23). Only a crewmate in the healer's sight is fuelled: one out of sight cannot be healed, and pricing
 -- my mana for it left a poet ten tiles from its warrior taking blows without striking back (offline stage supply
 -- seed 18, 818-823s). The healer is any crewmate as the leader sees it, so the one it sends to a rescue is priced
--- as that one prices its own strikes.
-function M.fuel(snap, healer, crew, mob)
+-- as that one prices its own strikes. Its mana fuels only the heals that are its own to make (escort.owed).
+function M.fuel(snap, query, healer, crew, mob)
     local seen = M.targets(snap)
     local best = 0
     for _, member in ipairs(crew) do
@@ -272,7 +273,7 @@ function M.fuel(snap, healer, crew, mob)
             end
         end
     end
-    return best
+    return best > 0 and best * escort.owed(snap, query, healer, crew) or 0
 end
 
 function M.sip(snap, query, mob)

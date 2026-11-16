@@ -1374,7 +1374,9 @@ local GOING = { STRUCK = true, DONE = true, REFUSED = true, APPROACHED = true }
 -- that mob off whoever it strikes. A mob keeps what each attacker dealt it until the attacker leaves its floor or dies
 -- (the server's threat table): forgotten after 10s instead, a warrior holding three skeletons off its poet drew them
 -- again every 10-11s (online 053346, 51 백열장). Hits are counted at the damage the choice expected: a client sees a
--- mob's hp only as a share, crewmates' blows included.
+-- mob's hp only as a share, crewmates' blows included. A poison is counted at the hp its ticks will take (aid.ticked):
+-- counted at none, a mage's poisoned skeletons looked drawable to its warrior, which left its own for them (online
+-- 20261115-181437).
 function M.threat(dealt, map)
     local kept = {}
     for oid, entry in pairs(dealt or {}) do
@@ -1389,9 +1391,10 @@ function M.tally(dealt, oid, action, event, now, map)
     local kept = M.threat(dealt, map)
     if event == "KILLED" then
         kept[tostring(oid)] = nil
-    elseif event == "DONE" and (action.damage or 0) > 0 then
+    elseif event == "DONE" and (action.damage or 0) + (action.ticks or 0) > 0 then
         local entry         = kept[tostring(oid)] or { damage = 0 }
-        kept[tostring(oid)] = { damage = entry.damage + action.damage, at = now, since = entry.since or now, map = map }
+        local dealt         = (action.damage or 0) + (action.ticks or 0)
+        kept[tostring(oid)] = { damage = entry.damage + dealt, at = now, since = entry.since or now, map = map }
     end
     return kept
 end

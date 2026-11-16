@@ -48,6 +48,51 @@ function M.member(profile)
     }
 end
 
+-- How much a member heals for each hp of strikes it gives up to do so: the crewmate higher on it heals at less cost to
+-- the crew's kills, so what it mends is left to it (aid.heals).
+function M.efficacy(strong)
+    return strong.hps.others / math.max(strong.dps.single, 1e-9)
+end
+
+-- The share of the hp the crew loses that is a healer's to restore: what the crewmates who heal at less cost to their
+-- strikes than it does (efficacy) keep up with of the blows on all of them is theirs, and it is owed only the rest. With
+-- them keeping up with every blow, the hp its heals give back are theirs to give anyway, and so is what its mana is
+-- worth in heals (value.fuel): only the death a heal may spare meanwhile stays its own (aid.heals). Counted for every
+-- healer present, a mage healed its warrior 69 times beside its poet and struck 14 (online 20261115-181437,
+-- 흑해골굴); left out of its mana, the same mage struck 4 times and stood waiting for its warrior a third of the time,
+-- every strike outweighed by heals its poet was making (online 20261115-185734). Counted for any healer whatever its
+-- cost, two poets would each leave the warrior to the other; counted for one cast of theirs, a mage beside its poet
+-- still owned 85% of a warrior's half bar (brain unit test). Healers alike in it share the work (user 11-16: two poets
+-- heal together, a mage beside a poet strikes, a mage alone does both).
+local owes = setmetatable({}, { __mode = "k" })
+
+function M.owed(snap, query, healer, crew)
+    local known = owes[snap]
+    if known == nil then
+        known      = {}
+        owes[snap] = known
+    end
+    local name = healer.self.name
+    if known[name] == nil then
+        local mine  = M.efficacy(score.capability(healer, query))
+        local kept  = 0
+        local taken = fight.pressure(snap, healer, 1000)
+        for _, member in ipairs(crew) do
+            if member.self.ghost == false and member.world.map == healer.world.map and member.world.x ~= nil and
+                healer.world.x ~= nil and math.abs(member.world.x - healer.world.x) <= combat.sight.x and
+                math.abs(member.world.y - healer.world.y) <= combat.sight.y then
+                local strong = score.capability(member, query)
+                if M.efficacy(strong) > mine then
+                    kept = kept + strong.hps.others
+                end
+                taken = taken + fight.pressure(snap, member, 1000)
+            end
+        end
+        known[name] = kept <= 0 and 1 or math.max(0, 1 - kept / math.max(taken, 1e-9))
+    end
+    return known[name]
+end
+
 function M.crew(members, query)
     local keys  = {}
     local heals = {}

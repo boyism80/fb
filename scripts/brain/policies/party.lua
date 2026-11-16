@@ -750,7 +750,7 @@ end
 -- warrior was never sent (offline profile trio rooted seed 2, 516.8s, run 21:55).
 local rescues = setmetatable({}, { __mode = "k" })
 
-local function casts_pay(snap, helper, team, attacker, strong)
+local function casts_pay(snap, query, helper, team, attacker, strong)
     if attacker == nil or strong.blow.mana <= 0 then
         return true
     end
@@ -763,7 +763,7 @@ local function casts_pay(snap, helper, team, attacker, strong)
     local value = require("brain.policies.value")
     local share = strong.blow.ranged / math.max(attacker.hp or 1, 1) *
         require("brain.policies.combat").gain(attacker, helper.member)
-    return share >= strong.blow.mana * value.fuel(snap, helper.member, crew, attacker)
+    return share >= strong.blow.mana * value.fuel(snap, query, helper.member, crew, attacker)
 end
 
 local function dealt_by(snap, member)
@@ -890,7 +890,7 @@ local function struck_price(snap, query, victim, team, worth, attacker)
         end
     end
     local mana  = math.max(value.refill(victim.member, query, worth),
-        value.fuel(snap, victim.member, crew, attacker))
+        value.fuel(snap, query, victim.member, crew, attacker))
     local price = value.vigor(victim.member, query, worth, mana)
     return price < math.huge and price or 0
 end
@@ -932,7 +932,7 @@ local function weigh_rescue(snap, query)
                 for _, helper in ipairs(team) do
                     local world  = helper.member.world
                     local strong = helper ~= victim and score.capability(helper.member, query) or nil
-                    local spells = strong ~= nil and casts_pay(snap, helper, team, attacker, strong)
+                    local spells = strong ~= nil and casts_pay(snap, query, helper, team, attacker, strong)
                     local dps    = strong ~= nil and (spells and strong.dps.single or strong.dps.melee) or 0
                     local burst  = strong ~= nil and (spells and strong.burst or strong.blow.strike) or 0
                     if dps > 0 and world.map == member.world.map and world.x ~= nil then

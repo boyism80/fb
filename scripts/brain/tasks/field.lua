@@ -75,23 +75,20 @@ local function sought(snap, query, names)
     for _, name in ipairs(names) do
         wanted[name] = true
     end
-    -- The vanguard takes on a crewmate's fight first, wherever it is: with only its own prey in reach, a
-    -- warrior in front walked on to the next floor while the caster beside it shot a skeleton from afar
-    -- (healer_waits_beside_leader). Every other hitter takes its own prey within the crew's reach: with three
-    -- or more, all striking the one mob the leader fights wastes the other hitters (crew rule, 11-10).
+    -- The vanguard may walk to a crewmate's fight wherever it is: with only its own prey in reach, a warrior in front
+    -- walked on to the next floor while the caster beside it shot a skeleton from afar (healer_waits_beside_leader).
+    -- That fight is weighed beside its own prey, by the kill, the share of saving the crewmate and the draw off it
+    -- (battle.target), not taken first: taken first, a warrior left 88 of 161 fights for the mob its mage had just
+    -- poisoned, which no blow of its own could draw off the mage, and walked between them while skeletons at 1% piled
+    -- up (online 20261115-181437, 흑해골굴; user 11-16: guarding is worth its draw, never first). Every other hitter takes
+    -- its own prey within the crew's reach: with three or more, all striking the one mob the leader fights wastes the
+    -- other hitters (crew rule, 11-10).
+    local shared = {}
     if party.vanguard_name(snap, query) == snap.self.name then
         for _, member in ipairs(party.members(snap)) do
-            local shared = member.self.ghost == false and member.battle or nil
-            if type(shared) == "table" and shared.map == snap.world.map then
-                local found = battle.target(snap, query, function(mob)
-                    return mob.oid == shared.oid and wanted[mob.name] ~= nil and M.castable(snap, query, mob) and
-                        approachable(snap, mob) and escort.tethered(snap, query, mob.x, mob.y, function()
-                            return walking(snap, query, mob)
-                        end)
-                end)
-                if found ~= nil then
-                    return found
-                end
+            local fight = member.self.ghost == false and member.battle or nil
+            if type(fight) == "table" and fight.map == snap.world.map then
+                shared[fight.oid] = true
             end
         end
     end
@@ -114,6 +111,9 @@ local function sought(snap, query, names)
                 walk = walking(snap, query, mob)
             end
             return walk
+        end
+        if shared[mob.oid] then
+            return escort.tethered(snap, query, mob.x, mob.y, walks)
         end
         local beside = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
         if near_crew(snap, mob) == false then

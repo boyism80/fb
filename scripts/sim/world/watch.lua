@@ -216,7 +216,7 @@ function M.check(actor, snap, bound, decision, path)
             target = mob
         end
     end
-    local fueled = target ~= nil and value.fuel(snap, snap, party.members(snap), target) > 0
+    local fueled = target ~= nil and value.fuel(snap, bound, snap, party.members(snap), target) > 0
     local melee  = me.class == "WARRIOR" or (me.class == "ROGUE" and cloak == false) or outswings(snap, bound) or fueled
     if counted(dog, "swings", key == "SWING" and snap.self.cloaked ~= true and near > 0 and melee == false and
             (spare or cloak)) >= M.SWINGS then
