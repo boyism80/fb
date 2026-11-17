@@ -4,13 +4,13 @@ local spell = require('lib.spell')
 
 return {
     on_cast = function(me, sp)
-        local hp = me:mp() * 2
-        local mp = me:mp() // 2
         local sound = 95
         local effect = 64
-        if not spell.heal_group(me, sp, { hp = hp, mp = mp, sound = sound, effect = effect }) then
+        local ok, delay = spell.heal_group_baekho(me, sp, { sound = sound, effect = effect })
+        if not ok then
             return
         end
+        me:spell(sp):delay(delay)
     end,
 
     -- on_buff = function(me, sp)

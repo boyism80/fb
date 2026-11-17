@@ -983,6 +983,14 @@ function M.heal_near(me, you, spell, opts)
     return true
 end
 
+function M.baekho_delay(mp)
+    local delay = mp / 10000
+    if mp > 100000 then
+        delay = delay - (mp - 100000) / 100000
+    end
+    return math.max(0, math.floor(delay))
+end
+
 function M.heal_group(me, spell, opts)
     opts = opts or {}
     local hp = opts.hp or 0
@@ -1023,6 +1031,72 @@ function M.heal_group(me, spell, opts)
         end
     end
     return true
+end
+
+function M.heal_group_baekho(me, spell, opts)
+    opts = opts or {}
+    local sound = opts.sound
+    local effect = opts.effect
+    if me:is(OBJECT_TYPE.CHARACTER) then
+        local err = me:assert(STATE.GHOST, STATE.RIDING)
+        if err then
+            me:message(err)
+            return false
+        end
+    end
+    local map = me:map()
+    if not map then
+        return false
+    end
+    local group = me:group()
+    if not group then
+        me:message('가입된 그룹이 없습니다.')
+        return false
+    end
+    local near_by_name = {}
+    for _, ch in pairs(group:nears(map, { me:position() })) do
+        near_by_name[ch:name()] = ch
+    end
+    local targets = {}
+    for _, name in ipairs(group:members()) do
+        local ch = near_by_name[name]
+        if ch ~= nil and me ~= ch and not ch:assert(STATE.GHOST) then
+            table.insert(targets, ch)
+        end
+    end
+    if #targets == 0 then
+        return false
+    end
+    local start_mp = me:mp()
+    local rem = start_mp
+    local heals = {}
+    local delay_mp = start_mp
+    for i = 1, #targets do
+        delay_mp = rem
+        heals[i] = rem * 3 // 2
+        rem = rem // 2
+    end
+    local cost = start_mp - rem
+    if me:mp() < cost then
+        me:message('마력이 모자랍니다.')
+        return false
+    end
+    me:mp_down(cost)
+    me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    for i, ch in ipairs(targets) do
+        if execute_mob_spell_hit(me, ch, spell) then
+            ch:heal(heals[i])
+        end
+        if effect then
+            ch:effect(effect)
+        end
+        if sound then
+            ch:sound(sound)
+        end
+        ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
+    end
+    return true, M.baekho_delay(delay_mp)
 end
 
 function M.disguise_look(me, mobs, name)

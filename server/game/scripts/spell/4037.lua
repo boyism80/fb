@@ -14,11 +14,12 @@ local WEAPON_DELAY_PERCENT = {
 
 return {
     on_cast = function(me, you, sp)
-        local hp = me:mp() * 2
-        local mp = me:mp() // 2
+        local current_mp = me:mp()
+        local hp = current_mp * 3 // 2
+        local mp = current_mp // 2
         local sound = 95
         local effect = 64
-        local delay = math.min(60, me:maxmp() // 10000)
+        local delay = spell.baekho_delay(current_mp)
         if me:is(OBJECT_TYPE.CHARACTER) then
             local weapon = me:weapon()
             if weapon ~= nil then

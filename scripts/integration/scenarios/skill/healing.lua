@@ -308,8 +308,8 @@ local BAEKHO_CASE = {
             caster:hp(50)
 
             local current_mp = caster:mp()
-            local theoretical_hp_gain = current_mp * 2
-            local expected_mp_cost = math.floor(current_mp / 2)
+            local theoretical_hp_gain = current_mp * 3 // 2
+            local expected_mp_cost = current_mp // 2
             local caster_max_hp = caster:base_hp()
             local caster_current_hp = caster:hp()
             local caster_recoverable_hp = caster_max_hp - caster_current_hp

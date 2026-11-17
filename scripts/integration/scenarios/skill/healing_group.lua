@@ -8,11 +8,12 @@ local skill = require("integration.lib.skill")
 local wait = require("integration.lib.wait")
 
 local function build_cases(ctx)
-    local function verify_group_healing_effects(before_hp_values, expected_hp_gain)
+    local function verify_group_healing_effects(before_hp_values, expected_hp_gains)
         for i = 1, ctx:bot_count() - 1 do
             local bot = ctx:bot(i)
             local max_hp = bot:base_hp()
             local recoverable_amount = max_hp - before_hp_values[i + 1]
+            local expected_hp_gain = type(expected_hp_gains) == "table" and expected_hp_gains[i] or expected_hp_gains
             local actual_hp_gain = math.min(expected_hp_gain, recoverable_amount)
             local expected_hp = before_hp_values[i + 1] + actual_hp_gain
             local healed = wait.state(bot, resp.update_internal, function()
@@ -33,8 +34,13 @@ local function build_cases(ctx)
             pre = function(caster, _, state)
                 caster:set_current_hp_mp(10000, 10000)
                 local current_mp = caster:mp()
-                state.expected_hp_gain = current_mp * 2
-                state.expected_mp_cost = math.floor(current_mp / 2)
+                local rem = current_mp
+                state.expected_hp_gains = {}
+                for i = 1, ctx:bot_count() - 1 do
+                    table.insert(state.expected_hp_gains, rem * 3 // 2)
+                    rem = rem // 2
+                end
+                state.expected_mp_cost = current_mp - rem
 
                 for i = 1, ctx:bot_count() - 1 do
                     local bot = ctx:bot(i)
@@ -60,7 +66,7 @@ local function build_cases(ctx)
                 if caster:mp() ~= state.expected_mp then
                     return false
                 end
-                return verify_group_healing_effects(state.before_hp_values, state.expected_hp_gain)
+                return verify_group_healing_effects(state.before_hp_values, state.expected_hp_gains)
             end,
         },
         {
@@ -69,7 +75,7 @@ local function build_cases(ctx)
             cast_type = "NORMAL",
             pre = function(caster, _, state)
                 caster:set_current_hp_mp(10000, 10000)
-                state.expected_hp_gain = 10000
+                state.expected_hp_gains = 10000
                 state.expected_mp_cost = 1000
 
                 for i = 1, ctx:bot_count() - 1 do
@@ -96,7 +102,7 @@ local function build_cases(ctx)
                 if caster:mp() ~= state.expected_mp then
                     return false
                 end
-                return verify_group_healing_effects(state.before_hp_values, state.expected_hp_gain)
+                return verify_group_healing_effects(state.before_hp_values, state.expected_hp_gains)
             end,
         },
     }
