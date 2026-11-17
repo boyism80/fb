@@ -525,6 +525,35 @@ test_suite {
                         return ready == "헬파이어" and delayed ~= "헬파이어",
                             string.format("ready=%s delayed=%s", ready, delayed)
                     end),
+                    case("a poet heals itself and its warrior with 백호의희원 only once the server no longer delays it", function()
+                        local aid = require("brain.tasks.aid")
+                        local function healed(delay)
+                            local snap, bound                          = state("poet3", { hp = 250000 })
+                            local mate                                 = state("warrior3")
+                            snap.world.map, snap.world.x, snap.world.y = 5375, 9, 6
+                            mate.world.map, mate.world.x, mate.world.y = 5375, 9, 4
+                            mate.self.hp                               = mate.self.max_hp // 2
+                            snap.buff_left                             = delay ~= nil and { ["백호의희원"] = delay } or {}
+                            snap.party                                 = { party.profile(mate, bound, nil) }
+                            snap.party[1].task                         = "FIELD"
+                            snap.group                                 = { mate.self.name, snap.self.name }
+                            snap.leader                                = mate.self.name
+                            bound.ally                                 = function(name)
+                                return name == mate.self.name and { oid = 9001, x = 9, y = 4, percent = 50 } or nil
+                            end
+                            local names                                = {}
+                            for _, learned in ipairs(snap.spells) do
+                                names[learned.slot] = learned.name
+                            end
+                            local cure  = recovery.mending(snap, snap.self.max_hp - snap.self.hp)
+                            local found = aid.offer("heal")(snap, bound)
+                            return tostring(cure and names[cure.slot]), tostring(found and found.key)
+                        end
+                        local cure, care   = healed(nil)
+                        local waited, held = healed(30000)
+                        return cure == "백호의희원" and waited ~= "백호의희원" and held ~= "백호의희원",
+                            string.format("cure=%s care=%s delayed cure=%s care=%s", cure, care, waited, held)
+                    end),
                     case("a poet guards itself where no heal holds the blows, heals where one does, and not with none beside or short of mana", function()
                         local guard = require("brain.tasks.guard")
                         local function poet(hp, mp, mobs, rolls)

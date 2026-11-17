@@ -133,7 +133,8 @@ local function heals(snap, query, slots, worth)
         if ally ~= nil and deficit > 0 and member.self.ghost == false then
             for _, heal in ipairs(casts) do
                 local refused = memory ~= nil and memory.oid == ally.oid and memory.refused == heal.name
-                if heal.others and slots[heal.name] ~= nil and heal.mp + (dying and 0 or reserve) <= (snap.self.mp or 0) and refused == false then
+                if heal.others and slots[heal.name] ~= nil and heal.mp + (dying and 0 or reserve) <= (snap.self.mp or 0) and refused == false and
+                    combat.ready(snap, heal.name) then
                     local restored = math.min(deficit, heal.hp)
                     local target   = value.fought(snap, member, seen)
                     local fuel     = target ~= nil and value.convertible(member, target) or 0
@@ -179,7 +180,7 @@ local function heals(snap, query, slots, worth)
     local worthwhile = {}
     for _, heal in ipairs(combat.options(snap, {}).heal) do
         if slots[heal.name] ~= nil and heal.mp <= (snap.self.mp or 0) and heal.hp <= deficit and
-            heal.hp > combat.pressure(snap, snap, combat.cast(snap)) then
+            heal.hp > combat.pressure(snap, snap, combat.cast(snap)) and combat.ready(snap, heal.name) then
             table.insert(worthwhile, heal)
         end
     end
@@ -215,7 +216,7 @@ local function heals(snap, query, slots, worth)
         local engaged = shared ~= nil and seen[shared] or nil
         local fuel    = engaged ~= nil and value.convertible(snap, engaged) or 0
         for _, heal in ipairs(combat.options(snap, {}).heal) do
-            if slots[heal.name] ~= nil and heal.mp + reserve <= (snap.self.mp or 0) then
+            if slots[heal.name] ~= nil and heal.mp + reserve <= (snap.self.mp or 0) and combat.ready(snap, heal.name) then
                 local restored = math.min(deficit, heal.hp)
                 local owned    = math.min(left, heal.hp)
                 local saved    = math.max(owned * fuel, owned * value.vigor(snap, query, worth, mana))

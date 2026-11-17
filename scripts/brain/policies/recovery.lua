@@ -108,7 +108,8 @@ function M.mending(snap, deficit)
     end
     local found = nil
     for _, choice in ipairs(fight.options(snap, NEUTRAL).heal) do
-        if choice.hp > 0 and slots[choice.name] ~= nil and choice.mp <= M.spendable(snap) then
+        if choice.hp > 0 and slots[choice.name] ~= nil and choice.mp <= M.spendable(snap) and
+            fight.ready(snap, choice.name) then
             local enough = choice.hp >= deficit
             local better = found == nil or
                 (enough and (found.hp < deficit or choice.mp < found.mp)) or

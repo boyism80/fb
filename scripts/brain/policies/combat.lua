@@ -117,6 +117,11 @@ end
 
 local NONE = {}
 
+function M.ready(snap, name)
+    local data = magic.spells[name]
+    return data == nil or data.delay == nil or ((snap.buff_left or NONE)[name] or 0) <= 0
+end
+
 -- A spell that comes off a die roll (금강불체: 30% on the live server, every cast on a debug build) is counted at the
 -- odds this bot has seen, from the data's odds as one first try: held to the data's 0.3, a poet on a debug server
 -- would weigh as a gamble the guard it always gets.

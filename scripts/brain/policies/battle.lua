@@ -491,12 +491,10 @@ local function candidates(snap, facts, mob, state, reachable)
     -- times a minute (offline WA+PO 세작 seed 0, run 18:35).
     -- A spell the server still delays (its time left comes on the buff packet, buff_left) cannot be cast; offered, it
     -- would be refused with a message and nothing done.
-    local left      = snap.buff_left or {}
     local add       = function(entry)
         local aimed   = entry.aimed == true or (entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true)
         local limit   = entry.kind == "HEAL" and spendable or free
-        local spell   = magic.spells[entry.key]
-        local delayed = spell ~= nil and spell.delay ~= nil and (left[entry.key] or 0) > 0
+        local delayed = combat.ready(snap, entry.key) == false
         if reachable == false and (aimed == false or entry.moves == true) then
             return
         end
