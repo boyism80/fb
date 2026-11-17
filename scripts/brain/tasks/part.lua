@@ -48,8 +48,8 @@ function M.unwanted(snap, query)
     local base  = score.recovered(snap, query)
     local plan  = party.plan(base, query)
     local alone = ground.choose(base, query, ground.mode(base))
-    local group = plan ~= nil and (plan.peak or plan.rate) or 0
-    local solo  = alone ~= nil and (alone.peak or alone.rate) or 0
+    local group = plan ~= nil and (plan.top or plan.rate) or 0
+    local solo  = alone ~= nil and (alone.top or alone.rate) or 0
     return solo > group
 end
 

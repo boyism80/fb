@@ -967,7 +967,7 @@ function Actor:sighted(oid)
     return mob
 end
 
-function Actor:engage(oid, steps, leeway)
+function Actor:engage(oid, steps, leeway, via)
     local world      = self.active
     local start      = self.me.hp
     local mob, ended = self:sighted(oid)
@@ -975,19 +975,26 @@ function Actor:engage(oid, steps, leeway)
         return ended
     end
     if math.abs(mob.x - self.me.x) + math.abs(mob.y - self.me.y) ~= 1 then
-        local goal = { x = mob.x, y = mob.y }
-        local path = world.map:route(self.me, function(x, y)
-            return math.abs(x - goal.x) + math.abs(y - goal.y) == 1
-        end)
-        local open = (path == nil or #path == 0 or leeway ~= nil) and world.map:route(self.me, function(x, y)
-            return math.abs(x - goal.x) + math.abs(y - goal.y) == 1
-        end, true) or nil
-        if path == nil or #path == 0 or (leeway ~= nil and open ~= nil and #path > #open + leeway) then
-            self.blocked = { walls = open == nil, x = goal.x, y = goal.y, me = { self.me.x, self.me.y } }
-            return "UNREACHABLE"
+        local goal  = { x = mob.x, y = mob.y }
+        local aside = via ~= nil and (via.x ~= self.me.x or via.y ~= self.me.y) and
+        world.map:route(self.me, function(x, y)
+            return x == via.x and y == via.y
+        end) or nil
+        local path  = aside
+        if aside == nil or #aside == 0 then
+            path       = world.map:route(self.me, function(x, y)
+                return math.abs(x - goal.x) + math.abs(y - goal.y) == 1
+            end)
+            local open = (path == nil or #path == 0 or leeway ~= nil) and world.map:route(self.me, function(x, y)
+                return math.abs(x - goal.x) + math.abs(y - goal.y) == 1
+            end, true) or nil
+            if path == nil or #path == 0 or (leeway ~= nil and open ~= nil and #path > #open + leeway) then
+                self.blocked = { walls = open == nil, x = goal.x, y = goal.y, me = { self.me.x, self.me.y } }
+                return "UNREACHABLE"
+            end
         end
         for index, direction in ipairs(path) do
-            if (steps or 0) > 0 and index > steps then
+            if path ~= aside and (steps or 0) > 0 and index > steps then
                 break
             end
             if world:move(self.me, direction) == false then
@@ -1147,7 +1154,7 @@ function Actor:attack(action)
             event = "REFUSED"
         end
     else
-        event = self:engage(action.oid, maneuver.steps, maneuver.leeway)
+        event = self:engage(action.oid, maneuver.steps, maneuver.leeway, maneuver.via)
     end
     self:fight(action.oid, action, event)
     local visible = {}

@@ -393,6 +393,14 @@ function M.commit(snap, facts)
     if alone == false and party.known(snap) == false then
         return false, memory.commit, memory.swept, memory.solo
     end
+    local pinned = party.pin(snap)
+    if pinned ~= nil then
+        local swept = memory.swept
+        if swept == nil or swept.name ~= pinned then
+            swept = { name = pinned, floors = {} }
+        end
+        return pinned ~= memory.commit or pinned ~= memory.solo or swept ~= memory.swept, pinned, swept, pinned
+    end
     local plan = party.plan(snap, facts)
     if planner.stale(snap) ~= nil then
         return false, memory.commit, memory.swept, memory.solo
@@ -446,9 +454,11 @@ function M.lap(brain, bot, snap, decision, facts)
         end
         memory.dry       = dry
         memory.servicing = { at = snap.now, leave = true, lapped = true, group = { table.unpack(snap.group or {}) } }
-        memory.commit    = nil
-        memory.solo      = nil
-        memory.swept     = nil
+        local pinned     = party.pin(snap)
+        memory.ground    = pinned or memory.ground
+        memory.commit    = pinned
+        memory.solo      = pinned
+        memory.swept     = pinned ~= nil and { name = pinned, floors = {} } or nil
         memory.leg       = nil
         memory.aim       = nil
         memory.search    = nil
@@ -456,9 +466,12 @@ function M.lap(brain, bot, snap, decision, facts)
         brain:remember(bot, "roam", nil)
         brain:remember(bot, "dry", dry)
         brain:remember(bot, "servicing", memory.servicing)
-        brain:remember(bot, "commit", nil)
-        brain:remember(bot, "solo", nil)
-        brain:remember(bot, "swept", nil)
+        if pinned ~= nil then
+            brain:remember(bot, "ground", pinned)
+        end
+        brain:remember(bot, "commit", memory.commit)
+        brain:remember(bot, "solo", memory.solo)
+        brain:remember(bot, "swept", memory.swept)
         brain:remember(bot, "leg", nil)
         brain:remember(bot, "aim", nil)
         brain:remember(bot, "search", nil)
@@ -557,6 +570,11 @@ function M.first(brain, bot, current, alarm)
         snap.record.memory.spot = spot
     end
     profile.measure(owner, "alert", alert.watch, brain, bot, snap, facts)
+    local pinned = party.pin(snap)
+    if pinned ~= nil and snap.record.memory.ground ~= pinned then
+        brain:remember(bot, "ground", pinned)
+        snap.record.memory.ground = pinned
+    end
     local changed, commit, swept, solo = M.commit(snap, facts)
     if changed then
         brain:remember(bot, "commit", commit)
@@ -624,11 +642,21 @@ function M.first(brain, bot, current, alarm)
     if fled ~= nil then
         brain:remember(bot, "fled", fled)
     end
-    if released then
+    local pinned = party.pin(snap)
+    if released and pinned == nil then
         for _, name in ipairs({ "commit", "solo", "aim" }) do
             snap.record.memory[name] = nil
             brain:remember(bot, name, nil)
         end
+    elseif released then
+        snap.record.memory.ground = pinned
+        snap.record.memory.commit = pinned
+        snap.record.memory.solo   = pinned
+        snap.record.memory.aim    = nil
+        brain:remember(bot, "ground", pinned)
+        brain:remember(bot, "commit", pinned)
+        brain:remember(bot, "solo", pinned)
+        brain:remember(bot, "aim", nil)
     end
     local swept = M.sweep(snap, decision)
     if swept ~= nil then

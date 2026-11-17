@@ -1,9 +1,28 @@
-local data  = require("brain.data.combat")
-local value = require("brain.policies.value")
+local data   = require("brain.data.combat")
+local magic  = require("brain.data.spells")
+local combat = require("brain.policies.combat")
+local party  = require("brain.policies.party")
+local value  = require("brain.policies.value")
 
 local M = {}
 
 local LIMIT = 64
+
+local function aids(profile, going)
+    if type(going) == "table" and going.x ~= nil then
+        return false
+    end
+    if type(profile) ~= "table" then
+        return false
+    end
+    for _, learned in ipairs(profile.spells or {}) do
+        local spell = magic.spells[learned.name]
+        if spell ~= nil and spell.role == "HEAL" and spell.self ~= true then
+            return true
+        end
+    end
+    return false
+end
 
 -- A walk stopped at a bot of ours in a narrow way is untangled for every bot of ours round it at once: their tiles,
 -- the tiles their walks head for and who goes first make one plan of steps, solved in one pass (atlas untangle,
@@ -28,20 +47,24 @@ function M.untangle(brain, bot, snap, query, destination, event)
         return true
     end
     local radius = math.max(data.sight.x, data.sight.y)
+    local lead   = #(snap.group or {}) > 0 and party.vanguard_name(snap, query) or nil
     local movers = { {
         x = snap.world.x,
         y = snap.world.y,
         gx = event.gx,
         gy = event.gy,
         range = destination.range or 0,
-        priority = 2
+        priority = snap.self.name == lead and 3 or 2
     } }
     local names  = { snap.self.name }
     local listed = { [snap.self.name] = true }
     local taken  = { [snap.world.x .. "," .. snap.world.y] = true }
     local held   = false
-    local function join(name, at, going)
+    local function join(name, at, going, profile)
         if listed[name] ~= nil or at == nil or at.x == nil or math.abs(at.x - event.x) + math.abs(at.y - event.y) > radius then
+            return
+        end
+        if name ~= snap.self.name and aids(profile, going) then
             return
         end
         local walking = type(going) == "table" and going.x ~= nil
@@ -51,7 +74,7 @@ function M.untangle(brain, bot, snap, query, destination, event)
             gx = walking and going.x or nil,
             gy = walking and going.y or nil,
             range = 0,
-            priority = walking and 1 or 0,
+            priority = name == lead and 3 or (walking and 1 or 0),
         })
         table.insert(names, name)
         listed[name]               = true
@@ -66,14 +89,14 @@ function M.untangle(brain, bot, snap, query, destination, event)
         if type(profile) == "table" and profile.self ~= nil and profile.self.ghost == false and
             (ally ~= nil or (world ~= nil and world.map == snap.world.map)) then
             join(entry.name, ally ~= nil and ally.x ~= nil and ally or world,
-                type(going) == "table" and going.map == snap.world.map and going or nil)
+                type(going) == "table" and going.map == snap.world.map and going or nil, profile)
         end
     end
     for _, entry in ipairs(query.presences ~= nil and query.presences(snap.self.name) or {}) do
         local ally = query.ally(entry.name)
         if entry.map == snap.world.map then
             join(entry.name, ally ~= nil and ally.x ~= nil and ally or entry,
-                entry.gx ~= nil and { x = entry.gx, y = entry.gy } or nil)
+                entry.gx ~= nil and { x = entry.gx, y = entry.gy } or nil, nil)
         end
     end
     if held == false then
@@ -191,7 +214,31 @@ function M.worth(snap, facts)
             walking = walking + 1
         end
     end
-    return walking * (snap.pace.swing or data.swing) / 1000 * value.baseline(snap, facts).value
+    local worth = value.baseline(snap, facts)
+    local base  = walking * (snap.pace.swing or data.swing) / 1000 * worth.value
+    if base <= 0 or #(snap.group or {}) == 0 then
+        return base
+    end
+    local mend = false
+    for _, heal in ipairs(combat.options(snap, {}).heal) do
+        if heal.others and heal.mp <= (snap.self.mp or 0) then
+            mend = true
+            break
+        end
+    end
+    if mend == false then
+        return base
+    end
+    local risk = 0
+    local cast = combat.cast(snap)
+    for _, member in ipairs(party.members(snap)) do
+        local hp = member.self.hp or 0
+        if member.self.ghost == false and hp > 0 and facts.ally(member.self.name) ~= nil and
+            combat.pressure(snap, member, cast) >= hp then
+            risk = risk + party.death(snap, facts, member, worth)
+        end
+    end
+    return math.max(0, base - risk)
 end
 
 -- My part of a plan is walked one step at a time, a step once every other bot of the plan has walked the one before:

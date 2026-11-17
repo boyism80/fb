@@ -26,7 +26,7 @@ local function summary(plan)
         rate = plan.rate,
         peak = plan.peak,
         pain = plan.pain,
-        peak = plan.peak,
+        top = plan.top,
         lap = ground.lap(plan),
         floors = floors,
         yields = plan
@@ -157,7 +157,7 @@ local function prey(snap, query, decision)
 end
 
 -- Whether the crew stays on this floor is the leader's call, and the vanguard leads on as it says (user 11-15). The
--- crew stays while a crewmate here cannot come along (held), is busy with something else than the hunt, or has prey
+-- crew stays while a crewmate here cannot come along (held), is fighting back (DEFEND), or has prey
 -- worth more than what its fight takes at the next floor's rate: a caster shooting a skeleton across a wall keeps the
 -- vanguard that cannot walk round to it from leaving it behind (healer_waits_beside_leader). Kept as a crewmate having
 -- hurt a mob still alive, the crew waited five minutes on a skeleton at 1% that nobody could strike and a poison could
@@ -172,9 +172,13 @@ local function judged(snap, query, own)
     end
     local stay = type(own) == "table" and own.map == snap.world.map and (own.gain or 0) > (own.time or 0) / 1000 * rate
     local why  = stay and { "own:" .. tostring(own.oid) } or {}
+    -- Of what a crewmate does besides the hunt only a fight holds the crew here: a heal, a step of a plan, a dose or a
+    -- buff is done as it comes along, and the exit is crossed only with every member gathered there (hunt.stage).
+    -- Held for any of them, a crew of four stood 80 of its 112 idle seconds on 흉노족5 with no mob in sight while a
+    -- poet healed its warrior 10,000 at a time from 1.6M (online 001330, 00:19-00:23).
     for _, member in ipairs(M.members(snap)) do
         if member.world.map == snap.world.map and member.self.ghost == false then
-            local busy  = member.task ~= nil and member.task ~= "FIELD" and member.task ~= "NOTHING"
+            local busy  = member.task == "DEFEND"
             local found = type(member.prey) == "table" and member.prey.map == snap.world.map and member.prey or nil
             local worth = found ~= nil and (found.gain or 0) > (found.time or 0) / 1000 * rate
             if M.held(member) then
@@ -231,10 +235,12 @@ function M.profile(snap, query, decision)
         bag       = base.bag,
         pace      = snap.pace,
         world     = { map = snap.world.map, x = snap.world.x, y = snap.world.y },
+        reached   = grouped and fight.reached(snap) or nil,
         now       = snap.now,
         grouped   = grouped,
         fled      = snap.record.memory.fled,
         dry       = snap.record.memory.dry,
+        ground    = M.pin(snap),
         servicing = snap.record.memory.servicing,
         fleeing   = grouped and snap.record.memory.fleeing or nil,
         joined    = grouped and snap.record.memory.joined or nil,
@@ -265,7 +271,7 @@ function M.profile(snap, query, decision)
         stay      = stay ~= nil and { map = snap.world.map, stay = stay } or
             nil,
         marks     = grouped and snap.record.memory.marks or nil,
-        plan      = grouped and snap.leader == snap.self.name and summary(M.plan(base, query)) or nil,
+        plan      = grouped and M.known(snap) and snap.leader == snap.self.name and summary(M.plan(base, query)) or nil,
         rally     = grouped and snap.leader == snap.self.name and M.rally(snap, query) or nil,
         vanguard  = grouped and snap.leader == snap.self.name and M.vanguard_name(snap, query) or nil,
         rescue    = grouped and snap.leader == snap.self.name and M.rescue(snap, query) or nil,
@@ -435,10 +441,10 @@ function M.offer(snap, query)
         end
         if plan ~= nil then
             local theirs  = solo(other, query)
-            local mine    = grouped and (current ~= nil and (current.peak or current.rate) or 0) or
+            local mine    = grouped and (current ~= nil and (current.top or current.rate) or 0) or
                 ground.contended(snap, query, alone, theirs)
-            local gain    = (plan.peak or plan.rate) - mine
-            local partner = (plan.peak or plan.rate) - ground.contended(other, query, theirs, alone)
+            local gain    = (plan.top or plan.rate) - mine
+            local partner = (plan.top or plan.rate) - ground.contended(other, query, theirs, alone)
             table.insert(weighed, string.format("%s:%s:gain=%.0f:partner=%.0f", entry.name, plan.name, gain, partner))
             if gain > 0 and partner > 0 and (best == nil or gain > best.gain) then
                 best = { name = entry.name, gain = gain, plan = plan }
@@ -467,16 +473,36 @@ function M.members(snap)
 end
 
 function M.known(snap)
-    return #M.members(snap) >= #(snap.group or {})
+    local need = 0
+    for _, name in ipairs(snap.group or {}) do
+        if name ~= snap.self.name then
+            need = need + 1
+        end
+    end
+    return #M.members(snap) >= need
 end
 
-local held  = {}
-local gates = {}
+local held     = {}
+local gates    = {}
+local injected = {}
 
 function M.forget()
     for name in pairs(held) do
         held[name] = nil
     end
+    for name in pairs(injected) do
+        injected[name] = nil
+    end
+end
+
+function M.pin(snap)
+    local name   = snap.self.name
+    local pinned = snap.record.memory.ground
+    if pinned ~= nil then
+        injected[name] = pinned
+        return pinned
+    end
+    return injected[name]
 end
 
 local logged = setmetatable({}, { __mode = "v" })
@@ -495,7 +521,8 @@ end
 
 function M.key(snap, query)
     local members = M.members(snap)
-    local parts   = { (snap.now or 0) // combat.rerank, tostring(committed(snap, members)),
+    local parts   = { (snap.now or 0) // combat.rerank, tostring(M.pin(snap)),
+        tostring(committed(snap, members)), tostring(#(snap.group or {})), tostring(#members),
         table.concat(danger.shunned(snap, query), ",") }
     for _, member in ipairs(team_of(snap, members)) do
         table.insert(parts, score.signature(member, ""))
@@ -508,18 +535,31 @@ end
 function M.compute(snap, query)
     local members = M.members(snap)
     local team    = team_of(snap, members)
-    local commit  = committed(snap, members)
-    local plan    = commit ~= nil and ground.hold(team, query, commit) or nil
+    local pinned  = M.pin(snap)
+    if pinned ~= nil then
+        return ground.force(team, query, pinned) or ground.force({ team[1] }, query, pinned)
+    end
+    if #(snap.group or {}) > 0 and M.known(snap) == false then
+        local commit = snap.record.memory.commit
+        return commit ~= nil and ground.hold(team, query, commit) or nil
+    end
+    local commit = committed(snap, members)
+    local plan   = commit ~= nil and ground.hold(team, query, commit) or nil
     return plan or ground.party(team, query, "SUPPLY")
 end
 
 function M.plan(snap, query)
     local members = M.members(snap)
+    local pinned  = M.pin(snap)
     if #members > 0 and snap.leader ~= nil and snap.leader ~= snap.self.name then
         for _, member in ipairs(members) do
-            if member.self.name == snap.leader and member.plan ~= nil then
+            if member.self.name == snap.leader and member.plan ~= nil and
+                (pinned == nil or member.plan.name == pinned) then
                 return member.plan
             end
+        end
+        if #(snap.group or {}) > 0 and M.known(snap) == false then
+            return nil
         end
     end
     if plans[snap] == nil then
@@ -527,11 +567,11 @@ function M.plan(snap, query)
         local commit = committed(snap, members)
         local key    = M.key(snap, query)
         local kept   = held[snap.self.name]
-        local made   = require("brain.planner").current(snap, query)
+        local made   = pinned == nil and require("brain.planner").current(snap, query) or nil
         local plan   = nil
         if made ~= nil then
             plan = made.plan
-        elseif kept ~= nil and kept.key == key then
+        elseif kept ~= nil and kept.key == key and (pinned == nil or kept.plan == nil or kept.plan.name == pinned) then
             plan = kept.plan
         else
             plan = M.compute(snap, query)
@@ -545,7 +585,7 @@ function M.plan(snap, query)
             end
             log("debug", string.format("[brain:plan] bot=%s ground=%s first=%d others=%.3f committed=%s",
                 snap.self.name, tostring(plan.name), plan.floors[1].map, query.demand(plan.floors[1].map, names),
-                tostring(commit ~= nil)))
+                tostring(commit ~= nil or pinned ~= nil)))
         end
         if plan ~= nil then
             local copy = {}

@@ -94,6 +94,13 @@ local function heals(snap, query, slots, worth)
     local mana    = value.spend(snap, query, nil)
     local reserve = recovery.draining(snap) and 0 or recovery.spare(snap)
     local seen    = value.targets(snap)
+    local options = combat.options(snap, {})
+    local casts   = { table.unpack(options.heal) }
+    local spread  = {}
+    for _, heal in ipairs(options.group) do
+        table.insert(casts, heal)
+        spread[heal.name] = true
+    end
     for _, member in ipairs(party.members(snap)) do
         local ally = query.ally(member.self.name)
         if ally == nil and member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil and
@@ -124,7 +131,7 @@ local function heals(snap, query, slots, worth)
         local memory  = snap.record.memory.battle
         local dying   = 2 * volley(snap, member) >= current
         if ally ~= nil and deficit > 0 and member.self.ghost == false then
-            for _, heal in ipairs(combat.options(snap, {}).heal) do
+            for _, heal in ipairs(casts) do
                 local refused = memory ~= nil and memory.oid == ally.oid and memory.refused == heal.name
                 if heal.others and slots[heal.name] ~= nil and heal.mp + (dying and 0 or reserve) <= (snap.self.mp or 0) and refused == false then
                     local restored = math.min(deficit, heal.hp)
@@ -146,10 +153,25 @@ local function heals(snap, query, slots, worth)
                         key = heal.name,
                         cost = heal.mp,
                         averted = averted,
+                        saved = saved,
                         value = saved + averted - heal.mp * value.spend(snap, query, target),
                     })
                 end
             end
+        end
+    end
+    -- A group heal mends every crewmate it reaches in one cast, so a cast of it is worth what it saves on all of them
+    -- (백호의희원'첨, spell.heal_group_baekho): weighed on the one crewmate it was offered for, what it gave the others
+    -- went uncounted (user 11-17: 백호의희원'첨 finished on the server and in the bot).
+    local pooled = {}
+    for _, entry in ipairs(found) do
+        if spread[entry.key] then
+            pooled[entry.key] = (pooled[entry.key] or 0) + entry.saved
+        end
+    end
+    for _, entry in ipairs(found) do
+        if spread[entry.key] then
+            entry.value = entry.value + pooled[entry.key] - entry.saved
         end
     end
     local deficit    = snap.self.max_hp - snap.self.hp

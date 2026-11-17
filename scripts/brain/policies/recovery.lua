@@ -233,7 +233,12 @@ end
 
 M.draining = draining
 
-function M.spare(snap)
+-- The mana kept back is what lands a 공력증강 and what heals me first to where its cost leaves me above its floor: a
+-- landed 공력증강 fills the mana and only then takes the hp (spell 4002), so the hp it costs is healed from the mana it
+-- gave, and only the hp I lack now is mine to heal before it. Kept for the whole cost at any hp, a 진인 at full hp
+-- never cast 백호의희원'첨' on three crewmates, which leaves it an eighth of its mana (user 11-17). Asked at an hp, it
+-- is the mana kept back at that hp.
+function M.spare(snap, hp)
     local buffs   = fight.buffs(snap)
     local opening = M.opening(snap) or 0
     if opening > 0 and draining(snap) then
@@ -242,10 +247,11 @@ function M.spare(snap)
     if buffs.charge == nil or buffs.charge.chance <= 0 then
         return opening
     end
-    local mend = M.heal(snap)
-    local back = 0
+    local mend  = M.heal(snap)
+    local back  = 0
+    local short = math.max(0, math.min(snap.self.max_hp, buffs.charge.cost + buffs.charge.floor) - (hp or snap.self.hp))
     if mend ~= nil and mend.hp > 0 then
-        back = buffs.charge.cost / mend.hp * mend.mp
+        back = short / mend.hp * mend.mp
     end
     return math.max(opening, buffs.charge.mp / buffs.charge.chance + back)
 end

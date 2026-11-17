@@ -180,6 +180,28 @@ function M.perilous(snap, query, crew)
         end)
 end
 
+-- Before a bot has hunted its ground, its errands keep off the maps of mobs it cannot beat alone though they neither
+-- keep up with it nor kill it at a blow: they stand in the way in numbers and hem it in (user 11-17: servicing before
+-- the ground leaves out a shop whose way is dangerous, servicing during the hunt may still go). Crossing 흉노족2 for a
+-- gear shop with no 빨간시약, a 3rd promotion 검황 was hemmed in at 70% and died twice in four minutes (online 015836).
+function M.hazards(snap, query)
+    if snap.self.ghost then
+        return {}
+    end
+    return memo.get(perils, "hazards" .. (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or ""),
+        score.signature(snap, ""), score.signature(snap), function()
+            local found  = {}
+            local rested = score.rested(snap)
+            for id, mob in pairs(hunting.mobs) do
+                if combat.seeks(mob) and combat.hits(mob) and M.winnable(rested, query, mob, false) == false then
+                    table.insert(found, id)
+                end
+            end
+            table.sort(found)
+            return found
+        end)
+end
+
 local shunning = setmetatable({}, { __mode = "k" })
 
 local floors = nil

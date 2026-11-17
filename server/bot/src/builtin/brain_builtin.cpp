@@ -3233,7 +3233,19 @@ int builtin::brain::builtin_engage(lua_State* L)
         if (lua_isnumber(L, -1))
             maneuver.leeway = static_cast<uint16_t>(std::min<lua_Integer>(lua_tointeger(L, -1), UINT16_MAX));
 
-        lua_pop(L, 8);
+        lua_getfield(L, 4, "via");
+        if (lua_istable(L, -1))
+        {
+            lua_getfield(L, -1, "x");
+            lua_getfield(L, -2, "y");
+            if (lua_isinteger(L, -2) && lua_isinteger(L, -1))
+                maneuver.via = atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)),
+                                               static_cast<uint16_t>(lua_tointeger(L, -1)));
+
+            lua_pop(L, 2);
+        }
+
+        lua_pop(L, 9);
     }
     auto result = std::make_shared<fb::bot::brain::event>();
 

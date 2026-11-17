@@ -55,6 +55,42 @@ local function occupant(snap, x, y, except)
     return nil
 end
 
+local function blocked(snap, facts, mob, depth, from)
+    local origin = from or snap.world
+    if mob.x == nil or origin.x == nil or origin.y == nil then
+        return true
+    end
+    local dx = mob.x - origin.x
+    local dy = mob.y - origin.y
+    if (dx ~= 0 and dy ~= 0) or math.abs(dx) + math.abs(dy) ~= depth + 1 then
+        return true
+    end
+    local sx = dx == 0 and 0 or (dx > 0 and 1 or -1)
+    local sy = dy == 0 and 0 or (dy > 0 and 1 or -1)
+    for i = 1, depth do
+        local x = origin.x + sx * i
+        local y = origin.y + sy * i
+        if facts.floor ~= nil and facts.floor(snap.world.map, x, y) ~= true then
+            return true
+        end
+        if occupant(snap, x, y, mob.oid) ~= nil then
+            return true
+        end
+        for _, member in ipairs(snap.party or {}) do
+            if member.world ~= nil and member.world.map == snap.world.map and member.world.x == x and
+                member.world.y == y then
+                return true
+            end
+        end
+        for _, tile in ipairs(snap.world.occupied or {}) do
+            if tile.x == x and tile.y == y then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 local function around(snap, except)
     local found = {}
     for _, other in ipairs(snap.world.mobs or {}) do
@@ -536,8 +572,15 @@ local function candidates(snap, facts, mob, state, reachable)
                 dose = dose or (mp + math.min(entry.amount, (snap.self.max_mp or 0) - mp) >= choice.mp and entry or nil)
             end
         end
-        local drunk = dose ~= nil and math.min(dose.amount, (snap.self.max_mp or 0) - mp) or 0
-        if known[choice.name] ~= nil and (choice.mp <= mp or dose ~= nil) and adjacent and
+        local drunk  = dose ~= nil and math.min(dose.amount, (snap.self.max_mp or 0) - mp) or 0
+        local reach  = choice.reach or 1
+        local dx     = mob.x ~= nil and snap.world.x ~= nil and mob.x - snap.world.x or nil
+        local dy     = mob.y ~= nil and snap.world.y ~= nil and mob.y - snap.world.y or nil
+        local span   = dx ~= nil and dy ~= nil and (dx == 0 or dy == 0) and math.abs(dx) + math.abs(dy) or nil
+        local placed = choice.clear ~= nil and span == reach and blocked(snap, facts, mob, choice.clear) == false or
+            choice.clear == nil and (reach <= 1 and adjacent or
+                (choice.dash == true and span ~= nil and span >= 1 and span <= reach) or span == reach)
+        if known[choice.name] ~= nil and (choice.mp <= mp or dose ~= nil) and placed and
             pays(snap, facts, mob, choice) and bears(snap, facts, mob, choice) then
             local spell = magic.spells[choice.name]
             local model = dose ~= nil and facts.item(dose.name) or nil
@@ -551,6 +594,7 @@ local function candidates(snap, facts, mob, state, reachable)
                 hp = -choice.hp,
                 price = dose ~= nil and model ~= nil and model.price or nil,
                 opener = true,
+                spared = reach > 1 and span ~= nil and reachable ~= false and span - 1 or nil,
                 aimed = dose ~= nil or nil,
                 maneuver = dose ~= nil and { kind = MANEUVER.USE, item = dose.name } or
                     { kind = MANEUVER.CAST, slot = known[choice.name], cost = choice.mp }
@@ -690,26 +734,56 @@ local function candidates(snap, facts, mob, state, reachable)
     return found
 end
 
-local function delay(snap, mob, entry, regen, taken)
+-- A strike that spends hp is cast now or once the heals have filled the hp it is made of: from less hp it deals less
+-- for the same mana, and the blows while that hp comes back take a larger share of what it left, so the same cast is
+-- worth more after the heals (user 11-16). Toll is the mana's price as time. Weighed by the rate alone, a warrior cast
+-- 건곤대나이 from 42% of its hp; with the stake of the blows too it waits while doses are dear and heals are few, and
+-- still strikes when 공력증강 or many heals make the mana and the stake nothing (user 11-16).
+local function delay(snap, mob, entry, regen, taken, toll, loss, worth)
     local spent = -math.min(entry.hp or 0, 0)
     local heal  = regen - taken * 1000 / entry.time
     local top   = snap.self.max_hp
-    if spent <= 0 or heal <= 0 or snap.self.hp >= top then
+    local hp    = snap.self.hp
+    if spent <= 0 or hp >= top then
         return 0
     end
-    local cast = entry.time / 1000
+    local debt = spent * top / hp
+    local hits = 0
+    local crit = 1 + data.critical.chance * (data.critical.factor - 1)
+    for _, other in ipairs(snap.world.mobs or {}) do
+        if other.x ~= nil and combat.hits(other) and (other.speed or 0) > 0 and
+            (other.oid == mob.oid or M.attacking(snap, other)) then
+            local least, most = combat.spread(snap, other)
+            hits              = hits + (least + most) / 2 * crit / other.speed
+        end
+    end
+    local thin  = math.max(hp - spent, 0)
+    local thick = math.max(top - debt, 0)
+    local climb = heal > 0 and math.max(0, thick - thin) / heal or math.huge
+    local hurt  = hits > 0 and climb < math.huge and hits * climb * 1000 or (hits > 0 and math.huge or 0)
+    local risk  = thin <= 0 and (hurt > 0 and 1 or 0) or
+        (hurt == math.huge and 1 or math.min(1, hurt / math.max(thin, 1)))
+    local dear  = worth > 0 and loss > 0 and risk * loss / worth or 0
+    if recovery.spells(snap).charge ~= nil then
+        return dear
+    end
+    if heal <= 0 then
+        return dear
+    end
+    local cast = entry.time / 1000 + toll
     local rate = function(damage, debt)
         local mend = debt / heal
         return (damage + entry.melee * mend) / (cast + mend)
     end
-    local now  = rate(entry.damage, spent)
+    local now = rate(entry.damage, spent)
     if now <= 0 then
-        return 0
+        return dear
     end
-    local full = rate(entry.damage + top - snap.self.hp, spent * top / snap.self.hp)
-    local wait = (top - snap.self.hp) / heal
+    local full = rate(entry.damage + top - hp, debt)
+    local wait = (top - hp) / heal
     local left = (mob.hp or 0) * (mob.ratio or 1)
-    return math.max(0, (full - now) * left / now - (now - entry.melee) * wait) / now
+    local pace = math.max(0, (full - now) * left / now - (now - entry.melee) * wait) / now
+    return pace + dear
 end
 
 local function estimate(snap, facts, mob, entry, worth, loss, mana)
@@ -787,7 +861,8 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     -- free beside a healer, 금강퇴 filled the cast between every two swings once its time overlapped the swing's
     -- cooldown, 1962 to 4119 casts a run, and 홍주 went 1555 to 1835 (offline WA+PO 흉가, runs 11:55 and 17:32).
     if entry.melee ~= nil then
-        time = time + delay(snap, mob, entry, regen, taken)
+        time = time + delay(snap, mob, entry, regen, taken,
+            worth.value > 0 and (entry.mp or 0) * mana / worth.value or 0, loss, worth.value)
     elseif (entry.hp or 0) < 0 and regen > 0 then
         time = time - entry.hp / regen
     end
@@ -795,9 +870,9 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         local refill = recovery.rates(snap).mp + recovery.refilling(snap, "mp")
         time         = refill > 0 and time + entry.wasted / refill or time
     end
-    local bonus = aside_gain(snap, entry.extra)
-    local risk  = (1 - p_die) * (combat.gain(mob, snap) + bonus) - (p_die + near) * loss
-    local plan  = {
+    local bonus  = aside_gain(snap, entry.extra)
+    local risk   = (1 - p_die) * (combat.gain(mob, snap) + bonus) - (p_die + near) * loss
+    local plan   = {
         time = time * 1000,
         p_die = p_die,
         ending = ending,
@@ -805,9 +880,23 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         extra = #(entry.extra or {}),
         drained = rest.drained or 0
     }
+    -- Hp is the fuel of a strike that spends it (value.convertible), and the heals that come in while I do anything else
+    -- past my full bar are fuel thrown away: at full hp the strike goes first and the swing waits for the hp it is made
+    -- of. Uncounted, a swing then a strike came out level with a strike first, and a warrior beside its poet swung at
+    -- full hp (brain unit test, warrior99 beside poet99 at 주해골).
+    local inflow = recovery.rates(snap).hp + (crew ~= nil and crew.heal or 0)
+    local fuel   = (entry.hp or 0) >= 0 and inflow > 0 and value.convertible(snap, mob) or 0
+    if fuel > 0 then
+        local room = snap.self.max_hp - math.max(0, snap.self.hp - taken)
+        risk       = risk - math.max(0, inflow * entry.time / 1000 - room) * fuel
+    end
+    -- The mana the rest of the fight spends goes into the strikes it already counts, so it costs what getting it back
+    -- costs (value.strike), not what a strike would make of it: priced so, a swing beside a 3rd promotion crew paid
+    -- for the 백호참 after it twice, came out at -40M against +9.6M before it, and a warrior with no 백호참 ready stood
+    -- beside its mob (online 001330; brain unit probe, 흉노전사 at 흉노족5).
     return
         risk - time * worth.value - (entry.price or 0) * worth.exchange -
-        ((entry.spend or entry.mp or 0) + (rest.drained or 0)) * mana,
+        (entry.spend or entry.mp or 0) * mana - (rest.drained or 0) * value.strike(snap, facts, worth),
         ending > 0 and (entry.kind == "CHARGE" or
             entry.kind ~= "CHARGE" and hp > M.burst(snap) and hp > combat.spike(snap, { { mob = mob, count = 1 } })),
         ending,
@@ -890,13 +979,22 @@ local SAMPLE  = 5
 
 local chosen = setmetatable({}, { __mode = "k" })
 
+local function lined(snap, facts, mob)
+    for _, choice in ipairs(combat.options(snap, mob).strike) do
+        if choice.clear ~= nil and blocked(snap, facts, mob, choice.clear) == false then
+            return true
+        end
+    end
+    return false
+end
+
 local function kindred(snap, facts, mob, flag)
     if mob.x == nil or mob.id == nil then
         return nil
     end
     local distance = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
     local memory   = snap.record.memory.battle
-    if distance <= 1 or (memory ~= nil and memory.oid == mob.oid) then
+    if distance <= 1 or (memory ~= nil and memory.oid == mob.oid) or lined(snap, facts, mob) then
         return nil
     end
     for _, profile in ipairs(snap.party or {}) do
@@ -1047,7 +1145,15 @@ end
 
 -- The same order picks the plan when none survives: taking the first listed of equal values, a solo warrior beaten
 -- by a crab cast 백열장 rather than the swing it tied with (offline solo seed 201, run 06:06).
+-- A strike cast from afar (초혼비무, 쇄혼비무) is a bonus taken only where it beats walking up: the blows struck beside
+-- the mob are weighed as if I stood there (the walk is priced once a mob is picked, battle.target), so it is ranked
+-- with the walk it spares. Only its rank holds the walk, never its worth: priced into every blow struck beside the mob,
+-- the walk changed what a rogue did for its poet seven tiles off, eating 웅담 or casting 백열장 there instead of
+-- walking up (user 11-17: the bonus must leave every other choice as it was).
 local function ahead(entry, other)
+    if other ~= nil and (entry.rank or entry.value) ~= (other.rank or other.value) then
+        return (entry.rank or entry.value) > (other.rank or other.value)
+    end
     return other == nil or entry.value > other.value or (entry.value == other.value and
         ((entry.damage or 0) > (other.damage or 0) or ((entry.damage or 0) == (other.damage or 0) and entry.key < other.key)))
 end
@@ -1090,7 +1196,7 @@ function evaluate(snap, facts, mob, reachable)
             -- 8,468 times in a run (offline, run 18:59).
             entry.value, entry.survives, left, entry.plan = (entry.outcomes ~= nil and gamble or estimate)(snap, facts,
                 reachable == false and copy(mob, { walled = true }) or mob, entry, baseline, loss,
-                (entry.kind == "STRIKE" or entry.drain) and value.refill(snap, facts, baseline) or
+                (entry.kind == "STRIKE" or entry.drain) and value.strike(snap, facts, baseline) or
                 entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
         end
         -- A spell that hits harder than a swing is worth the swing and the extra damage, less what its mana
@@ -1115,8 +1221,8 @@ function evaluate(snap, facts, mob, reachable)
                 local charge = combat.buffs(snap).charge
                 local heal   = recovery.heal(snap)
                 local casts  = 1 + (charge ~= nil and charge.chance > 0 and 1 / charge.chance or 0)
-                spent        = entry.mp * value.refill(snap, facts, baseline) +
-                (heal ~= nil and heal.mp or 0) * casts * held
+                spent        = entry.mp * value.strike(snap, facts, baseline) +
+                    (heal ~= nil and heal.mp or 0) * casts * held
             end
             entry.value = direct > 0 and melee.value + direct - spent or
                 math.min(entry.value, melee.value - (entry.drain and spent or
@@ -1132,6 +1238,8 @@ function evaluate(snap, facts, mob, reachable)
             entry.value = entry.value + drawing(snap, facts, mob, entry.damage)
         end
         entry.value = entry.value - M.holding(snap, facts, mob, entry.damage)
+        entry.rank  = entry.spared ~= nil and
+            entry.value + entry.spared * (snap.pace.step or data.walk) / 1000 * baseline.value or nil
         if ahead(entry, last) then
             last = entry
         end
@@ -1212,6 +1320,64 @@ function M.marginal(snap, found)
     return (found.choice.damage or 0) / math.max(mob.hp or 1, 1) * combat.gain(mob, snap)
 end
 
+-- A strike cast from afar (초혼비무, 쇄혼비무) lands from a tile straight off the mob with the tiles between clear, so
+-- the walk up to a mob goes by the nearest such tile when the strike weighed from there, less the walk to it, beats
+-- the walk up: I stand there and weigh it again, and walk the last tiles up if it does not pay (user 11-17).
+local function waypoint(snap, facts, found, net, step, worth)
+    local mob = found.mob
+    if facts.steps == nil or mob.x == nil or snap.world.x == nil or (found.steps or 0) <= 0 then
+        return nil
+    end
+    local lanes = {}
+    local tiles = {}
+    local goals = {}
+    for _, choice in ipairs(combat.options(snap, mob).strike) do
+        if choice.clear ~= nil and choice.reach > 1 and choice.mp <= (snap.self.mp or 0) then
+            lanes[choice.name] = true
+            for _, way in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
+                local tile  = { x = mob.x + way[1] * choice.reach, y = mob.y + way[2] * choice.reach }
+                local taken = tile.x < 0 or tile.y < 0 or occupant(snap, tile.x, tile.y, nil) ~= nil or
+                    (facts.floor ~= nil and facts.floor(snap.world.map, tile.x, tile.y) ~= true)
+                for _, member in ipairs(snap.party or {}) do
+                    taken = taken or (member.world ~= nil and member.world.map == snap.world.map and
+                        member.world.x == tile.x and member.world.y == tile.y)
+                end
+                for _, spot in ipairs(snap.world.occupied or {}) do
+                    taken = taken or (spot.x == tile.x and spot.y == tile.y)
+                end
+                if taken == false and blocked(snap, facts, mob, choice.clear, tile) == false then
+                    table.insert(tiles, tile)
+                    table.insert(goals, { x = tile.x, y = tile.y, range = 0 })
+                end
+            end
+        end
+    end
+    local paths   = #goals > 0 and facts.steps(snap.world.map, snap.world.x, snap.world.y, goals, nil, true) or {}
+    local nearest = nil
+    local least   = math.huge
+    for index, tile in ipairs(tiles) do
+        local walk = paths[index]
+        if type(walk) == "number" and walk > 0 and walk < least then
+            nearest, least = tile, walk
+        end
+    end
+    if nearest == nil or escort.tethered(snap, facts, nearest.x, nearest.y, function() return true end) == false then
+        return nil
+    end
+    local there  = copy(snap, { world = copy(snap.world, { x = nearest.x, y = nearest.y }) })
+    local choice = M.choose(there, facts, mob, true)
+    if choice == nil or lanes[choice.key] ~= true then
+        return nil
+    end
+    local gaps  = spacing.costs(snap, facts, { { x = snap.world.x, y = snap.world.y }, nearest })
+    local apart = gaps ~= nil and gaps[2] - gaps[1] or 0
+    local guard = party.rescue_share(snap, facts, mob)
+    if choice.value + guard - least * step / 1000 * worth - apart > net then
+        return nearest
+    end
+    return nil
+end
+
 function M.target(snap, facts, accept)
     local step  = snap.pace.step or data.walk
     local plain = value.baseline(snap, facts)
@@ -1267,6 +1433,7 @@ function M.target(snap, facts, accept)
     end
     if found ~= nil then
         found.forecast = M.forecast(snap, facts, found.mob, found.choice)
+        found.via      = found.choice.approach == true and waypoint(snap, facts, found, best, step, worth) or nil
         local owner    = snap.self.name or ""
         local last     = targets[owner]
         if last == nil or last.oid ~= found.mob.oid then
@@ -1344,7 +1511,7 @@ end
 function M.propose(found, extra)
     local maneuver = found.choice.maneuver
     if found.choice.approach == true and found.steps ~= nil then
-        maneuver = copy(maneuver, { steps = math.max(1, found.steps), leeway = escort.reach() })
+        maneuver = copy(maneuver, { steps = math.max(1, found.steps), leeway = escort.reach(), via = found.via })
     end
     local drinking = maneuver.kind == MANEUVER.USE
     local action   = {

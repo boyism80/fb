@@ -169,7 +169,9 @@ local function evaluate(snap, query, kind)
         local drains = recovery.draining(snap)
         if drains == false and income >= (refill ~= nil and ground.drain(refill, snap) or 0) and income > 0 then
             local spare = recovery.ignition(snap)
-            return spare > 0 and { crisis = spare, stock = recovery.spare(snap), loot = 0 } or nil
+            -- Stocked for the worst a hunt brings, the mana kept back with my hp gone: kept at the hp of the moment,
+            -- what a bot bought would turn with every blow it took.
+            return spare > 0 and { crisis = spare, stock = recovery.spare(snap, 0), loot = 0 } or nil
         end
         local team = party.members(snap)
         if #team > 0 then
@@ -191,19 +193,21 @@ local function evaluate(snap, query, kind)
                 usage = opening * 1000 / (2 * combat.cast(snap)),
                 loot = 0,
                 yields = refill ~= nil and refill.yields or nil,
-                level = refill ~= nil and ground.lifetime(snap, refill.rate) or nil
+                level = refill ~= nil and ground.lifetime(snap, refill.rate) or nil,
+                lap = refill ~= nil and ground.lap(refill) or nil
             } or nil
         end
         if refill == nil or ground.drain(refill, snap) <= 0 then
             return nil
         end
         return {
-            gain = refill.rate - (dry ~= nil and dry.rate or 0),
+            gain = (refill.top or refill.rate) - (dry ~= nil and (dry.top or dry.rate) or 0),
             base = dry ~= nil and dry.rate or 0,
             usage = ground.drain(refill, snap),
             loot = refill.loot,
             yields = refill.yields,
-            level = ground.lifetime(snap, refill.rate)
+            level = ground.lifetime(snap, refill.rate),
+            lap = ground.lap(refill)
         }
     end
     local best = ground.choose(snap, query)
@@ -225,7 +229,8 @@ local function evaluate(snap, query, kind)
         usage = best.wear,
         loot = best.loot,
         yields = best.yields,
-        level = ground.horizon(snap, best.rate)
+        level = ground.horizon(snap, best.rate),
+        lap = ground.lap(best)
     }
 end
 
@@ -293,7 +298,10 @@ local function plan(snap, query, kind)
     local worth  = value.baseline(snap, query)
     local refill = refilled(snap, kind)
     -- The bag holds the stock and the loot of the hunt together, and the stock is sized to run out when the loot fills
-    -- the rest: sized to the whole free bag, a stock left the loot no room (user 11-14).
+    -- the rest: sized to the whole free bag, a stock left the loot no room (user 11-14). It is bought for the whole lap
+    -- the plan makes, from its first floor to its last (user 11-16), which is the same lap wherever the bot asks from
+    -- (ground.lapped): the trip a bot sets out on for a lap is then still wanted at the shop. The time to the next
+    -- level is no bound on it, as the lap is hunted to its end across a level.
     local litter = 0
     for _, entry in pairs(need.yields or {}) do
         litter = litter + entry.rate / math.max(entry.capacity or 1, 1)
@@ -304,7 +312,7 @@ local function plan(snap, query, kind)
             local length = math.huge
             if need.usage ~= nil and need.usage > 0 then
                 local slots = need.usage / offer.slot + litter
-                length      = math.min(slots > 0 and free / slots or 0, need.level or math.huge)
+                length      = math.min(slots > 0 and free / slots or 0, need.lap or need.level or math.huge)
             end
             if need.crisis ~= nil and need.usage == nil then
                 amount = math.max(0, (need.stock or need.crisis) - held)

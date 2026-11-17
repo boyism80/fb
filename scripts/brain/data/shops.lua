@@ -1,5 +1,7 @@
 return {
     ["감자"] = { price = 10, capacity = 100, uses = 1, npcs = { "고균도푸줏간", "환상의섬푸줏간" } },
+    ["고구려-고균도승선권"] = { price = 100, capacity = 1, uses = 1, npcs = { "고구려고균도매표상" } },
+    ["부여-고균도승선권"] = { price = 100, capacity = 1, uses = 1, npcs = { "부여고균도매표상" } },
     ["고구마"] = { price = 10, capacity = 100, uses = 1, npcs = { "고균도푸줏간", "환상의섬푸줏간" } },
     ["고기"] = { price = 30, capacity = 100, uses = 1, npcs = { "대방성푸줏간", "옥이", "일본푸줏간", "현도성푸줏간" } },
     ["곰가죽"] = { price = 8, capacity = 200, uses = 1, npcs = { "대방성푸줏간", "옥이", "일본푸줏간", "현도성푸줏간" } },

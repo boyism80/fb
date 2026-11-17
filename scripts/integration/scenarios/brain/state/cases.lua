@@ -27,8 +27,8 @@ local UNREACHABLE_WATCH = 3000
 
 local spot = START
 
-function M.start(x, y)
-    spot = { map = START.map, x = x, y = y }
+function M.start(x, y, map)
+    spot = { map = map or START.map, x = x, y = y }
 end
 
 local function enter(ctx, index)
@@ -760,15 +760,32 @@ function M.seller(ctx, index)
         string.format("sold=%s money=%d", tostring(done), ctx:bot(index):money()))
 end
 
-local SLOTS          = { "WEAPON", "ARMOR", "HELMET" }
+local SLOTS          = { "WEAPON", "ARMOR", "SHIELD", "HELMET", "LEFT_HAND", "RIGHT_HAND" }
 local PROFILE_TOP    = 5
 local PROFILE_REPEAT = 20
 local PROFILE_SETTLE = 2000
 local PROFILE_MONEY  = 100000
+local PROFILE_STOCK  = {
+    { name = "동동주", count = 1, copies = 5, uses = 200 },
+    { name = "홍주", count = 1, copies = 3, uses = 100 },
+    { name = "빨간시약", count = 100 },
+    { name = "마법의시약", count = 100 },
+    { name = "팔과탕", count = 50 },
+}
+local FEMALE_ARMOR   = {
+    ["검황의영혼"] = "검황의심장",
+    ["귀검의영혼"] = "귀검의심장",
+    ["현인의영혼"] = "현인의심장",
+    ["진인의영혼"] = "진인의심장",
+}
 
 local function fitted(bot, name)
-    if name ~= nil and bot:gender() == "FEMALE" then
-        return (string.gsub(name, "남자", "여자"))
+    if name == nil then
+        return nil
+    end
+    if bot:gender() == "FEMALE" then
+        name = (string.gsub(name, "남자", "여자"))
+        name = FEMALE_ARMOR[name] or name
     end
     return name
 end
@@ -797,9 +814,22 @@ local function dress(ctx, index, profile)
             expect.within(ctx, PROFILE_SETTLE, function()
                 return ctx:bot(index):item_count(name) > 0
             end)
-            ctx:bot(index):equip(ctx:bot(index):item_slot(name))
+            local held = ctx:bot(index):item_slot(name)
+            if held ~= nil then
+                ctx:bot(index):equip(held)
+                expect.within(ctx, PROFILE_SETTLE, function()
+                    return ctx:bot(index):item_count(name) == 0
+                end)
+            end
+        end
+    end
+    for _, stock in ipairs(PROFILE_STOCK) do
+        for _ = 1, stock.copies or 1 do
+            local before = ctx:bot(index):item_count(stock.name)
+            local gain   = stock.uses or stock.count
+            ctx:bot(index):create_item(stock.name, stock.count)
             expect.within(ctx, PROFILE_SETTLE, function()
-                return ctx:bot(index):item_count(name) == 0
+                return ctx:bot(index):item_count(stock.name) >= before + gain
             end)
         end
     end
@@ -1250,6 +1280,139 @@ function M.learn(ctx, index, name, spell, materials, money)
     local _, tasks = history(mind, ctx:bot(index))
     return finish(ctx, index, mind, "learn", learned and tasks.LEARN ~= nil,
         string.format("learned=%s spell=%s", tostring(learned), spell))
+end
+
+local function bundle_named(name)
+    for _, bundle in ipairs(hunting.bundles) do
+        if bundle.name == name then
+            return bundle
+        end
+    end
+end
+
+local function place_map(ctx, slot, facts, map)
+    local model = id2map(map)
+    if model == nil then
+        return false
+    end
+    local open = inside(facts, map)
+    local spot = open[1]
+    if spot == nil then
+        local route = facts.route({ map })
+        local last  = route ~= nil and route.path ~= nil and route.path[#route.path] or nil
+        if last == nil or last.dest ~= map then
+            return false
+        end
+        spot = { x = last.ax, y = last.ay }
+    end
+    ctx:bot(slot):map_move(model:name(), spot.x, spot.y)
+    return expect.within(ctx, TIMEOUT, function()
+        local here = id2map(ctx:bot(slot):map())
+        local at   = ctx:bot(slot):position()
+        return here ~= nil and here:name() == model:name() and at ~= nil and at[1] == spot.x and at[2] == spot.y
+    end)
+end
+
+local function on_bundle(bot, bundle)
+    local map = bot:map()
+    for _, floor in ipairs(bundle.floors) do
+        if floor.map == map then
+            return true
+        end
+    end
+    return false
+end
+
+function M.forced_hunt(ctx, names, ground_name, watch, hub)
+    local bundle = bundle_named(ground_name)
+    if bundle == nil then
+        log("fatal", string.format("[brain:forced] unknown ground %s", tostring(ground_name)))
+        return false
+    end
+    local start = hub
+    if start == nil then
+        local model = name2map("고균도")
+        start = model ~= nil and model:id() or 1596
+    end
+    local minds = {}
+    for index, name in ipairs(names) do
+        local slot = index - 1
+        if stage(ctx, slot) == nil then
+            log("fatal", string.format("[brain:forced] %s FAILED stage", name))
+            return false
+        end
+        dress(ctx, slot, profiled(name))
+        option.set_option(ctx:bot(slot), "GROUP", true, "그룹허가")
+    end
+    for index = 2, #names do
+        if ctx:bot(0):invite_group(ctx:bot(index - 1)) == false then
+            log("fatal", string.format("[brain:forced] FAILED invite %s", names[index]))
+            return false
+        end
+    end
+    local probe = brain.new()
+    local facts = query.bind(probe, ctx:bot(0), snapshot.take(probe, ctx:bot(0)))
+    for index = 1, #names do
+        if place_map(ctx, index - 1, facts, start) == false then
+            log("fatal", string.format("[brain:forced] FAILED place on hub %s", tostring(start)))
+            return false
+        end
+    end
+    local crew = {}
+    for index = 1, #names do
+        crew[ctx:bot(index - 1):name()] = true
+    end
+    for index = 1, #names do
+        minds[index] = brain.new()
+        ctx:bot(index - 1):brain(minds[index], {
+            seed = index,
+            persona = { hunt = 1 },
+            memory = { crew = crew, ground = ground_name, commit = ground_name, solo = ground_name },
+        })
+    end
+    local engaged = expect.within(ctx, TIMEOUT * 4, function()
+        if on_bundle(ctx:bot(0), bundle) == false then
+            return false
+        end
+        for _, activity in ipairs(minds[1]:activities(ctx:bot(0)) or {}) do
+            if activity == "attack" or activity == "swing" or activity == "cast" then
+                return true
+            end
+        end
+        return false
+    end)
+    local stayed  = 0
+    local fought  = 0
+    local pinned  = 0
+    local watched = 0
+    while watched < (watch or GROUP_WATCH) do
+        if on_bundle(ctx:bot(0), bundle) then
+            stayed = stayed + 1
+        end
+        for index = 1, #names do
+            for _, activity in ipairs(minds[index]:activities(ctx:bot(index - 1)) or {}) do
+                if activity == "attack" or activity == "swing" or activity == "cast" then
+                    fought = fought + 1
+                end
+            end
+        end
+        local snap = snapshot.take(minds[1], ctx:bot(0))
+        local plan = require("brain.policies.party").plan(snap, query.bind(minds[1], ctx:bot(0), snap))
+        if plan ~= nil and plan.name == ground_name then
+            pinned = pinned + 1
+        end
+        ctx:sleep(1000)
+        watched = watched + 1000
+    end
+    for index = 1, #names do
+        expect.release(ctx, index - 1, minds[index], TIMEOUT)
+    end
+    local passed = engaged and stayed > 0 and fought > 0 and pinned > 0
+    log(passed and "debug" or "fatal", string.format(
+        "[brain:forced] %s ground=%s hub=%s engaged=%s stayed=%ds fought=%d pinned=%d watched=%ds",
+        passed and "SUCCESS" or "FAILED", ground_name, tostring(start), tostring(engaged), stayed, fought, pinned,
+        watched // 1000))
+    return passed
 end
 
 return M

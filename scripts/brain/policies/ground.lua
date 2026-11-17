@@ -13,8 +13,7 @@ local score    = require("brain.policies.score")
 
 local M = {}
 
-local NEAREST      = 0.64
-local SETTLE_STEPS = 24
+local NEAREST = 0.64
 
 local cache = {}
 
@@ -330,10 +329,11 @@ function M.lifetime(snap, rate)
     return math.max(0, last.exp - (snap.self.exp or 0)) / rate
 end
 
--- One round of a plan's floors before servicing: each floor's stock (the exp of clearing it once) at its rate, as the
--- ranking weighs a lap (lapped). A lasting gain is weighed over the lap, not until the next level: exp is exp at
--- any level, and at 99 the time to a level that never comes made a gear's worth infinite and its value NaN, so the
--- gear was never bought and kept a trio from inviting for 10 minutes (offline 20261115-104514; user 11-15).
+-- One round of a plan's floors before servicing: each floor's stock (the exp of clearing it once) at its combat rate,
+-- not the ranking's cycle that waits on respawn. Supply is sized to this clear (supply.plan); the wait has no fight
+-- drain. A lasting gain is weighed over the clear, not until the next level: exp is exp at any level, and at 99 the
+-- time to a level that never comes made a gear's worth infinite and its value NaN, so the gear was never bought and
+-- kept a trio from inviting for 10 minutes (offline 20261115-104514; user 11-15).
 function M.lap(plan)
     if plan == nil then
         return 0
@@ -449,6 +449,45 @@ local function peaks(floors)
         worst = math.max(worst, floor.peak or 0)
     end
     return worst
+end
+
+-- What a lap spends and brings in a second: each floor's mana, wounds and loot weighed by the time it is cleared in
+-- (M.lap), so the supply bought for a lap and the bag it fills are sized on the whole lap. Taken from its last floor, a
+-- lap of 흑해골굴 three floors deep filled the bag with loot in over a day and one nine floors deep in under three
+-- minutes, and the supply a warrior walked to the shop for was not wanted there (online 061552).
+local function over(floors)
+    local time   = 0
+    local drain  = 0
+    local wear   = 0
+    local loot   = 0
+    local drains = {}
+    local yields = {}
+    for _, floor in ipairs(floors) do
+        local stay = (floor.rate or 0) > 0 and (floor.stock or 0) / floor.rate or 0
+        time       = time + stay
+        drain      = drain + stay * (floor.drain or 0)
+        wear       = wear + stay * (floor.wear or 0)
+        loot       = loot + stay * (floor.loot or 0)
+        for name, rate in pairs(floor.drains or {}) do
+            drains[name] = (drains[name] or 0) + stay * rate
+        end
+        for name, entry in pairs(floor.yields or {}) do
+            local found = yields[name] or { rate = 0, capacity = entry.capacity }
+            found.rate = found.rate + stay * entry.rate
+            yields[name] = found
+        end
+    end
+    if time <= 0 then
+        local last = floors[#floors] or {}
+        return { drain = last.drain, drains = last.drains, wear = last.wear, loot = last.loot, yields = last.yields }
+    end
+    for name, rate in pairs(drains) do
+        drains[name] = rate / time
+    end
+    for _, entry in pairs(yields) do
+        entry.rate = entry.rate / time
+    end
+    return { drain = drain / time, drains = drains, wear = wear / time, loot = loot / time, yields = yields }
 end
 
 local raws = nil
@@ -611,38 +650,22 @@ local function remaining(snap, floor)
     return 1 - math.exp(-math.max(0, (snap.now or at) - at) / 1000 * floor.supply / floor.mobs)
 end
 
-local settled = setmetatable({}, { __mode = "k" })
-
--- How a floor settles under my own hunting depends on the floor alone, and a ranking asks it of every floor of every
--- ground each period, so it is worked out once. What others take from the ground is weighed for the whole ground
--- (lapped).
-local function share(snap, floor, recovering)
-    if floor.kills <= 0 then
-        return 0
+-- A floor is worth the mobs standing on it, cleared once a lap: what respawns while I clear it is not counted, and a
+-- floor my last lap emptied counts only what has come back since (remaining), so a lap that outran the respawn goes on
+-- to another ground and one the respawn has refilled is a candidate again (user 11-16). Counted at the respawn, the
+-- kills a crew makes past it were lost and every ground of a 99 crew of four came out within a tenth of the others
+-- (brain unit probe, 63k-77k). Fewer mobs stand further apart, so the walk to each is stretched by how much thinner
+-- they stand.
+local function cleared(snap, floor, recovering)
+    local left = recovering and remaining(snap, floor) or 1
+    if (floor.rate or 0) <= 0 or (floor.stock or 0) <= 0 or left <= 0 then
+        return 0, 0
     end
-    local known = settled[floor]
-    if known == nil then
-        local supply = floor.supply * combat.rezen
-        local total  = floor.kills
-        local whole  = 1000 / floor.kills
-        local walk   = floor.walk or 0
-        local low    = 0
-        local high   = 1
-        local pace   = 1
-        for _ = 1, SETTLE_STEPS do
-            local alive = (low + high) / 2
-            pace        = whole / (whole - walk + walk / math.sqrt(alive))
-            if pace * total > supply * (1 - alive) then
-                high = alive
-            else
-                low = alive
-            end
-        end
-        local effective = math.min(floor.kills * pace, supply)
-        known           = { rate = floor.rate * effective / floor.kills }
-        settled[floor]  = known
-    end
-    return known.rate * (recovering and remaining(snap, floor) or 1)
+    local whole = (floor.kills or 0) > 0 and 1000 / floor.kills or 0
+    local walk  = math.min(floor.walk or 0, whole)
+    local pace  = whole > 0 and whole / (whole - walk + walk / math.sqrt(left)) or 1
+    local stock = floor.stock * left
+    return stock, stock / (floor.rate * pace)
 end
 
 local function bonus(floor, worth)
@@ -671,109 +694,113 @@ local function hop(snap, query, floors)
     return hops[key]
 end
 
-local spans = setmetatable({}, { __mode = "k" })
-local walks = {}
-
--- The walk from where I stand to every map, or a jump and the walk after it where that is shorter, asked once for each
--- place, level and set of jumps a ranking is made from (atlas distances). The last walks a bot asked for are kept for
--- its next decisions while it stands on the same tile, as maps and jumps do not change while the bot runs.
-local function span(snap, query)
-    if snap.world.x == nil or query.distances == nil then
-        return nil
-    end
-    local jumps = require("brain.trees.go").jumps(snap, false, false)
-    local names = {}
-    for _, jump in ipairs(jumps) do
-        table.insert(names, jump.spell or jump.item or "")
-    end
-    local region = query.region(snap.world.map, snap.world.x, snap.world.y)
-    local spot   = region ~= 0 and region or snap.world.x .. "," .. snap.world.y
-    local key    = table.concat({ snap.world.map, spot, snap.self.level or 0, table.concat(names, ",") }, "|")
-    local known  = spans[query]
-    if known == nil then
-        known        = {}
-        spans[query] = known
-    end
-    if known[key] == nil then
-        local tile = table.concat({ snap.world.map, snap.world.x, snap.world.y, snap.self.level or 0,
-            table.concat(names, ",") }, "|")
-        local kept = walks[snap.self.name]
-        if kept == nil or kept.tile ~= tile then
-            kept = {
-                tile = tile,
-                found = query.distances({ jumps = jumps },
-                    { map = snap.world.map, x = snap.world.x, y = snap.world.y, level = snap.self.level }) or false
-            }
-            walks[snap.self.name] = kept
-        end
-        known[key] = kept.found
-    end
-    return known[key] or nil
-end
-
 -- A ground somebody else hunts, alone or in a group, is theirs first: a group laps its floors in order, so another
--- group on the same ground meets it floor by floor, and each floor's respawn goes to the group already there. Of a
--- floor I count only the respawn their kills leave. Split by kill speed instead, a second group still went where the
--- ground was worth twice the rest, and both lost: 12.4M and 17.9M on 흑해골굴 against 22.4M and 25.0M alone (online
--- 203032 against 200750; user 11-15: a ground somebody holds is not entered to take from them, while beginners weigh the
--- walk to an empty ground against what a crowded one has left). The share is taken where a ground is picked, not in the
--- ranking a period keeps: kept in it, three groups that chose within one period all saw 흑해골굴 empty and went there
--- (online 170334, 17:05:11-41).
+-- group on the same ground meets it floor by floor and takes from the standing stock of that lap. Of a floor I count
+-- only the mobs their kills leave while I clear it. Split by respawn rate instead, the share disagreed with the lap
+-- the ranking weighs, and a second group still went where the ground was worth twice the rest, and both lost: 12.4M
+-- and 17.9M on 흑해골굴 against 22.4M and 25.0M alone (online 203032 against 200750; user 11-15: a ground somebody holds
+-- is not entered to take from them, while beginners weigh the walk to an empty ground against what a crowded one has
+-- left). The share is taken where a ground is picked, not in the ranking a period keeps: kept in it, three groups that
+-- chose within one period all saw 흑해골굴 empty and went there (online 170334, 17:05:11-41).
 local function held(query, floors, crew)
-    local others = 0
-    for _, floor in ipairs(floors) do
-        others = others + query.demand(floor.map, crew ~= nil and crew.names or nil)
-    end
-    if others <= 0 then
-        return 1
-    end
     local wanted = 0
     local left   = 0
     for _, floor in ipairs(floors) do
-        local supply = (floor.supply or 0) * combat.rezen
-        local need   = math.min(supply, floor.kills or 0)
-        wanted       = wanted + need
-        left         = left + math.min(need, math.max(0, supply - others))
+        local mobs = floor.mobs or 0
+        local stay = (floor.rate or 0) > 0 and (floor.stock or 0) / floor.rate or 0
+        local take = query.demand(floor.map, crew ~= nil and crew.names or nil) * stay
+        wanted     = wanted + mobs
+        left       = left + math.max(0, mobs - take)
     end
     return wanted > 0 and left / wanted or 1
 end
 
--- A ground away from me is worth its lap less the walk there, the lap being the stay one round of its floors takes
--- before servicing, so a crowded ground near me can still beat an empty one too far to reach without a jump (user 11-15:
--- beginners). A way not known is no walk to weigh, as an unknown reach is not "nowhere" (reach).
+-- The walk between a floor and the town a bot services in, one way; a way not known is no walk to weigh, as an
+-- unknown reach is not "nowhere" (reach).
+local function homeward(snap, query, floor)
+    local trip = restock(snap, query, floor)
+    return trip < math.huge and trip / 2000 or 0
+end
+
+-- The walk from a floor to town and back that a servicing takes, in seconds.
+function M.servicing(snap, query, floor)
+    return 2 * homeward(snap, query, floor)
+end
+
+-- The mana a bag carries into a lap, for a bot that gets its mana back by drinking alone: the doses that fill it. One
+-- that charges (공력증강) gets it back on the floor, and no bag bounds its lap.
+local function bagged(member)
+    if recovery.spells(member).charge ~= nil then
+        return math.huge
+    end
+    local slot = recovery.carriable(member, "mp")
+    local free = ((member.bag or {}).capacity or 0) - 2
+    return slot > 0 and free > 0 and slot * free or math.huge
+end
+
+-- A lap runs from one servicing to the next: the walk from town to its first floor and back, and the floors cleared
+-- once, so a far ground pays its walk on every lap and a crowded ground near town can still beat an empty one far from
+-- it (user 11-15: beginners). A lap is left by a jump (leave_ground means), so the way home is weighed as the way in:
+-- asked of every floor, the walks home took 36s of a crew of four's plan against 11 (brain unit probe, 3rd promotion
+-- crew at 흉노족1; online 015836, plans of 45-57s while the crew stood). How deep the lap goes is chosen with the walk in
+-- it, as it is made once for the whole lap: chosen before it, a lap of floors alike in worth stopped at its first floor
+-- and carried the whole walk on it, and 국내백륜동 fell from 77k to 63k for a 99 crew of four (brain unit probe). Weighed
+-- from where the bot stood instead, the lap was three floors deep standing on 흑해골굴 and nine from town, the supply sized
+-- for one lap found nothing to buy for the other, and a warrior walked to the shop and back empty three times (online
+-- 061552, 06:22-06:24). The supply of a lap is bought whole at its servicing (supply.plan), so a lap goes no deeper
+-- than the doses of any member's bag last: past them a member walks out for more halfway round. Ranked by clear and
+-- town alone, a 99 crew of four still preferred weak multi-floor caves: their clear was near nothing, so the score was
+-- stock over the walk, while a stronger ground cut short by safety carried less stock (user 11-16). A crew that stays
+-- on one ground waits for the first floor to refill before the next lap; that wait caps the rate without counting
+-- mid-lap respawn kills (which once packed every ground of the crew into a tenth of each other). The bag and M.lap keep
+-- the clear only: wait has no fight drain.
 local function lapped(snap, query, candidate, worth, moving, crew, recovering)
     local finish = 1
     local rate   = 0
     local best   = 0
-    local supply = 0
     local spent  = 0
     local stock  = 0
-    local took   = 0
-    local inside = false
+    local first  = 0
+    local refill = 0
     local gap    = moving and hop(snap, query, candidate.floors) or 0
+    local out    = homeward(snap, query, candidate.floors[1])
+    local bags   = { { bag = bagged(snap), regen = recovery.rates(snap).mp, need = 0 } }
+    for _, member in ipairs(crew ~= nil and crew.members or {}) do
+        table.insert(bags,
+            { name = member.self.name, bag = bagged(member), regen = recovery.rates(member).mp, need = 0 })
+    end
     for index, floor in ipairs(candidate.floors) do
-        supply    = supply + share(snap, floor, recovering)
-        stock     = stock + (floor.stock or 0)
-        spent     = spent + (floor.rate > 0 and (floor.stock or 0) / floor.rate or 0)
-        inside    = inside or floor.map == snap.world.map
-        local raw = spent > 0 and stock / spent or floor.rate
-        local lap = math.min(raw, supply)
-        if index > 1 and gap > 0 then
-            lap = gap < math.huge and raw > 0 and math.min(lap, stock / (spent + index * gap)) or 0
+        local left      = recovering and remaining(snap, floor) or 1
+        local exp, time = cleared(snap, floor, recovering)
+        local carried   = true
+        for _, entry in ipairs(bags) do
+            local drain = entry.name == nil and floor.drain or (floor.drains or {})[entry.name] or entry.regen
+            entry.need  = entry.need + math.max(0, (drain or 0) - entry.regen) * time
+            carried     = carried and entry.need <= entry.bag
         end
-        local sum = lap + bonus(floor, worth)
+        if carried == false and index > 1 then
+            break
+        end
+        if index == 1 then
+            first  = time
+            refill = (floor.supply or 0) > 0 and (floor.mobs or 0) > 0 and left * floor.mobs / floor.supply or 0
+        end
+        stock        = stock + exp
+        spent        = spent + time
+        local took   = spent + (index > 1 and index * gap or 0)
+        local trip   = 2 * out
+        local wait   = math.max(0, refill - (took - first + trip))
+        local cycle  = took + trip + wait
+        local open   = took > 0 and cycle > 0 and cycle < math.huge
+        local combat = open and stock / took or 0
+        local sum    = open and (combat + bonus(floor, worth)) * took / cycle or 0
         if sum > best then
             best   = sum
-            rate   = lap
+            rate   = stock / cycle
             finish = index
-            took   = spent + (index > 1 and gap < math.huge and index * gap or 0)
         end
     end
-    local walks   = inside == false and span(snap, query) or nil
-    local steps   = walks ~= nil and walks[candidate.floors[1].map] or nil
-    local away    = steps ~= nil and steps * (snap.pace.step or combat.walk) / 1000 or 0
-    local reached = away <= 0 and 1 or took > 0 and took / (took + away) or 0
-    return finish, rate * reached, best * reached
+    return finish, rate, best
 end
 
 -- What a plan is worth when a rival hunts the same floors beside it: the rival's kills join the others' demand on
@@ -783,7 +810,7 @@ function M.contended(snap, query, plan, rival)
     if plan == nil then
         return 0
     end
-    local value = plan.peak or plan.rate
+    local value = plan.top or plan.rate
     local taken = {}
     local both  = false
     for _, floor in ipairs(rival ~= nil and rival.floors or {}) do
@@ -1084,25 +1111,21 @@ local function density_of(floors)
     return #floors > 0 and total / #floors or 0
 end
 
+-- The plan that makes the most a second is hunted, and the denser floors break a tie only: the rate already counts the
+-- walk between mobs that a thin floor costs. Chosen by density among every plan above the mean, a 99 crew of four went
+-- to 평양흑해골굴 at 71k past the haunted houses at 77k (brain unit test; user 11-17: the score first). The best rate is
+-- kept as top, apart from peak, the burst a plan's floors deal that resting is weighed by (rest.volleys): written over
+-- peak, a 3rd promotion crew's 1.3M a second stood in for its blows, so any member below a full bar counted as low
+-- (brain unit probe at 흉노족1; online 001330, a 검황 ate 팔과탕 for 1,000 hp between its 백호참).
 local function prefer(plans)
-    local rates = {}
-    for _, plan in ipairs(plans) do
-        table.insert(rates, plan.rate)
-    end
-    local peak = 0
-    for _, rate in ipairs(rates) do
-        peak = math.max(peak, rate)
-    end
-    local tier = math.min(upper_mean(rates), peak)
     local best = nil
     for _, plan in ipairs(plans) do
-        if plan.rate >= tier and (best == nil or plan.density > best.density or
-                (plan.density == best.density and plan.rate > best.rate)) then
+        if best == nil or plan.rate > best.rate or (plan.rate == best.rate and plan.density > best.density) then
             best = plan
         end
     end
     if best ~= nil then
-        best.peak = peak
+        best.top = best.rate
     end
     return best
 end
@@ -1132,6 +1155,7 @@ local function available(snap, query, ranked, shunned, crew, guards)
             open = open and M.reachable(guard.rested, query, candidate, guard.crew)
         end
         if open then
+            local lap = over(floors)
             table.insert(options, {
                 name    = candidate.bundle.name,
                 floors  = floors,
@@ -1139,15 +1163,15 @@ local function available(snap, query, ranked, shunned, crew, guards)
                 rate    = entry.rate,
                 need    = floors[#floors].need,
                 margin  = floors[#floors].margin,
-                drain   = floors[#floors].drain,
-                drains  = floors[#floors].drains,
+                drain   = lap.drain,
+                drains  = lap.drains,
                 spend   = floors[#floors].spend,
-                wear    = floors[#floors].wear,
+                wear    = lap.wear,
                 pain    = floors[#floors].pain,
                 press   = floors[#floors].press,
                 peak    = peaks(floors),
-                loot    = floors[#floors].loot,
-                yields  = floors[#floors].yields,
+                loot    = lap.loot,
+                yields  = lap.yields,
                 deaths  = floors[#floors].deaths,
                 crowd   = floors[#floors].crowd,
             })
@@ -1256,7 +1280,7 @@ function M.choose(snap, query, mode, crew, guards)
     local key = (mode or "") .. (crew ~= nil and crew.key or "") .. (guards ~= nil and "|guarded" or "")
     if cached[key] == nil then
         local made  = mode == nil and crew == nil and guards == nil and snap.hypothesis == nil and
-            require("brain.planner").current(snap, query) or nil
+            require("brain.policies.party").pin(snap) == nil and require("brain.planner").current(snap, query) or nil
         local found = nil
         if made ~= nil then
             found = made.chosen
@@ -1412,6 +1436,36 @@ local function held(members, index, query, bundle, known)
     return guarded(floors, query, guards)
 end
 
+local function planned(bundle, floors)
+    if #floors == 0 then
+        return nil
+    end
+    local rate = 0
+    for _, floor in ipairs(floors) do
+        rate = math.max(rate, floor.rate)
+    end
+    local last = floors[#floors]
+    local lap  = over(floors)
+    return {
+        name   = bundle.name,
+        floors = floors,
+        rate   = rate,
+        need   = last.need,
+        margin = last.margin,
+        drain  = lap.drain,
+        drains = lap.drains,
+        spend  = last.spend,
+        wear   = lap.wear,
+        pain   = last.pain,
+        press  = last.press,
+        peak   = peaks(floors),
+        loot   = lap.loot,
+        yields = lap.yields,
+        deaths = last.deaths,
+        crowd  = last.crowd,
+    }
+end
+
 function M.hold(members, query, name)
     local bundle = nil
     for _, entry in ipairs(hunting.bundles) do
@@ -1443,32 +1497,42 @@ function M.hold(members, query, name)
             floors = found
         end
     end
-    if #floors == 0 then
+    return planned(bundle, floors)
+end
+
+local function on_bundle(snap, bundle)
+    for _, floor in ipairs(bundle.floors) do
+        if snap.world.map == floor.map then
+            return true
+        end
+    end
+    return false
+end
+
+function M.force(members, query, name)
+    local bundle = nil
+    for _, entry in ipairs(hunting.bundles) do
+        if entry.name == name then
+            bundle = entry
+        end
+    end
+    if bundle == nil or #members == 0 then
         return nil
     end
-    local rate = 0
-    for _, floor in ipairs(floors) do
-        rate = math.max(rate, floor.rate)
+    local lead    = members[1]
+    local rested  = score.rested(lead)
+    local ability = score.capability(rested, query)
+    local others  = {}
+    for index = 2, #members do
+        table.insert(others, members[index])
     end
-    local last = floors[#floors]
-    return {
-        name   = bundle.name,
-        floors = floors,
-        rate   = rate,
-        need   = last.need,
-        margin = last.margin,
-        drain  = last.drain,
-        drains = last.drains,
-        spend  = last.spend,
-        wear   = last.wear,
-        pain   = last.pain,
-        press  = last.press,
-        peak   = peaks(floors),
-        loot   = last.loot,
-        yields = last.yields,
-        deaths = last.deaths,
-        crowd  = last.crowd,
-    }
+    local crew   = #others > 0 and M.crew(others, query) or nil
+    local floors = sweep(rested, query, bundle, ability, crew)
+    if #floors == 0 then
+        local result = M.evaluate(rested, query, bundle.floors[1], ability, crew)
+        floors = { result }
+    end
+    return planned(bundle, floors)
 end
 
 local names = nil

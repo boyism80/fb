@@ -926,7 +926,366 @@ test_suite {
                         return errand == false and lapped and whole == false and broken and joined_late == false and
                             before == false, detail
                     end),
-                    case("a group keeps off a ground whose respawn another group already takes, not off one with respawn to spare", function()
+                    case("promo3 crews pick grounds and report top ranks", function()
+                        local score = require("brain.policies.score")
+                        local function crew_of(names)
+                            local lead, bound = state(names[1])
+                            lead.world.map, lead.world.x, lead.world.y = 22, 16, 103
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for i = 2, #names do
+                                local mate = state(names[i])
+                                mate.world.map, mate.world.x, mate.world.y = 22, 16, 103
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return members, bound
+                        end
+                        local crews = {
+                            { "wrpp", { "warrior3", "rogue3", "poet3", "poet3b" } },
+                            { "wpm", { "warrior3", "poet3", "mage3" } },
+                            { "trio", { "warrior3", "rogue3", "poet3" } },
+                            { "wm", { "warrior3", "mage3b" } },
+                            { "rm", { "rogue3", "mage3" } },
+                            { "mm", { "mage3", "mage3b" } },
+                        }
+                        local watch = {
+                            "부여비밀세작의집", "동부여물망동", "평양성흉가", "흉노족5-", "흉노족", "흑해골굴",
+                        }
+                        local lines = {}
+                        local ok = true
+                        for _, crew in ipairs(crews) do
+                            local members, bound = crew_of(crew[2])
+                            local plan = ground.party(members, bound, "REFILL")
+                            local ranked = ground.ranked(members[1], bound)
+                            local tops = {}
+                            for rank, entry in ipairs(ranked) do
+                                if rank > 8 then
+                                    break
+                                end
+                                local name = entry.candidate ~= nil and entry.candidate.bundle ~= nil and
+                                    entry.candidate.bundle.name or "?"
+                                table.insert(tops, string.format("%d:%s:%.0f/%d", rank, name, entry.rate or 0,
+                                    entry.finish or 0))
+                            end
+                            ok = ok and plan ~= nil
+                            local able = score.capability(score.rested(members[1]), bound)
+                            log("debug", string.format(
+                                "[unit] promo3 ground %s pick=%s rate=%.0f floors=%s dens=%.3f dps=%.0f/%.0f burst=%.0f heal=%.0f top=%s",
+                                crew[1], tostring(plan and plan.name), plan and plan.rate or -1,
+                                tostring(plan and #plan.floors), plan and plan.density or -1, able.dps.single,
+                                able.dps.melee, able.burst, able.hps.others, table.concat(tops, ",")))
+                            local watched = {}
+                            for _, name in ipairs(watch) do
+                                local held = ground.hold(members, bound, name)
+                                local forced = ground.force(members, bound, name)
+                                if held ~= nil then
+                                    table.insert(watched, string.format(
+                                        "%s:hold=%.0f/%df:force=%.0f/%df:peak=%.0f",
+                                        name, held.rate or 0, #held.floors,
+                                        forced ~= nil and forced.rate or -1,
+                                        forced ~= nil and #forced.floors or 0, held.peak or 0))
+                                else
+                                    table.insert(watched, string.format("%s:hold=nil:force=%s", name,
+                                        forced ~= nil and string.format("%.0f/%df", forced.rate, #forced.floors) or "nil"))
+                                end
+                            end
+                            log("debug", string.format("[unit] promo3 hold %s %s", crew[1],
+                                table.concat(watched, " | ")))
+                            if plan ~= nil and plan.options ~= nil then
+                                local opts = {}
+                                for index, option in ipairs(plan.options) do
+                                    if index > 12 then
+                                        break
+                                    end
+                                    table.insert(opts, string.format("%s:%.0f/d%.3f/%df", option.name, option.rate,
+                                        option.density or 0, #option.floors))
+                                end
+                                log("debug", string.format("[unit] promo3 options %s %s", crew[1],
+                                    table.concat(opts, ",")))
+                            end
+                            table.insert(lines, string.format("%s=%s/%df", crew[1], tostring(plan and plan.name),
+                                plan and #plan.floors or 0))
+                        end
+                        return ok, table.concat(lines, " ")
+                    end),
+                    case("초혼비무 and 쇄혼비무 need a clear four-tile lane, not a mob beside me", function()
+                        local battle = require("brain.policies.battle")
+                        local function aimed(dx, dy, decoy)
+                            local snap, bound = state("warrior3")
+                            local ox, oy      = open_ground(bound, 1575)
+                            local kept        = {}
+                            for _, learned in ipairs(snap.spells) do
+                                if learned.name == "초혼비무" or learned.name == "쇄혼비무" or learned.name == "어검술" then
+                                    table.insert(kept, learned)
+                                end
+                            end
+                            snap.spells                                = kept
+                            snap.world.map, snap.world.x, snap.world.y = 1575, ox - 1, oy
+                            snap.record.memory.commit                  = "흉노족5-"
+                            local poet                                 = state("poet3")
+                            poet.world.map, poet.world.x, poet.world.y = 1575, ox - 1, oy - 2
+                            snap.party                                 = { party.profile(poet, bound, nil) }
+                            snap.group                                 = { snap.self.name, poet.self.name }
+                            snap.leader                                = snap.self.name
+                            bound.ally                                 = function(name)
+                                if name == poet.self.name then
+                                    return { oid = 9001, x = ox - 1, y = oy - 2, percent = 100 }
+                                end
+                                return nil
+                            end
+                            snap.world.mobs                            = {
+                                mob_named("흉노전사", snap.world.x + dx, snap.world.y + dy, 501),
+                            }
+                            if decoy then
+                                table.insert(snap.world.mobs, 1,
+                                    mob_named("흉노전사", snap.world.x + 2, snap.world.y + 2, 502))
+                            end
+                            local found = battle.choose(snap, bound, snap.world.mobs[#snap.world.mobs],
+                                true)
+                            return tostring(found and found.key)
+                        end
+                        local near   = aimed(1, 0)
+                        local far    = aimed(4, 0)
+                        local beside = aimed(4, 0, true)
+                        return near == "어검술" and (far == "초혼비무" or far == "쇄혼비무") and
+                            (beside == "초혼비무" or beside == "쇄혼비무"),
+                            string.format("near=%s far=%s beside=%s", near, far, beside)
+                    end),
+                    case("a warrior goes by the nearest 초혼비무 tile when the strike there beats walking up", function()
+                        local battle = require("brain.policies.battle")
+                        local function strip(bound)
+                            for y = 3, 80 do
+                                for x = 3, 80 do
+                                    local open = true
+                                    for tx = x - 2, x + 6 do
+                                        for ty = y - 2, y + 2 do
+                                            open = open and bound.floor(1575, tx, ty) ~= false
+                                        end
+                                    end
+                                    if open then
+                                        return x, y
+                                    end
+                                end
+                            end
+                            return nil, nil
+                        end
+                        local function via(dx, dy, learned)
+                            local snap, bound = state("warrior3")
+                            local ox, oy      = strip(bound)
+                            local kept        = {}
+                            for _, spell in ipairs(snap.spells) do
+                                if learned and (spell.name == "초혼비무" or spell.name == "쇄혼비무") or spell.name == "어검술" then
+                                    table.insert(kept, spell)
+                                end
+                            end
+                            snap.spells                                = kept
+                            snap.world.map, snap.world.x, snap.world.y = 1575, ox, oy
+                            snap.record.memory.commit                  = "흉노족5-"
+                            local poet                                 = state("poet3")
+                            poet.world.map, poet.world.x, poet.world.y = 1575, ox, oy - 2
+                            snap.party                                 = { party.profile(poet, bound, nil) }
+                            snap.group                                 = { snap.self.name, poet.self.name }
+                            snap.leader                                = snap.self.name
+                            bound.ally                                 = function(name)
+                                if name == poet.self.name then
+                                    return { oid = 9001, x = ox, y = oy - 2, percent = 100 }
+                                end
+                                return nil
+                            end
+                            snap.world.mobs                            = { mob_named("흉노전사", ox + dx, oy + dy, 501) }
+                            local found                                = battle.target(snap, bound, function()
+                                return true
+                            end)
+                            local tile                                 = found ~= nil and found.via or nil
+                            local approach                             = found ~= nil and found.choice.approach == true
+                            return tile ~= nil and string.format("%d,%d", tile.x - ox, tile.y - oy) or
+                                (approach and "walk" or tostring(found and found.choice.key))
+                        end
+                        local straight = via(6, 0, true)
+                        local aside    = via(5, 1, true)
+                        local behind   = via(2, 0, true)
+                        local corner   = via(3, 2, true)
+                        local without  = via(6, 0, false)
+                        return straight == "2,0" and aside == "1,1" and behind == "walk" and corner == "-1,2" and
+                            without == "walk",
+                            string.format("straight=%s aside=%s behind=%s corner=%s without=%s", straight, aside, behind,
+                                corner, without)
+                    end),
+                    case("promo3 battle and heal picks for 3rd profiles", function()
+                        local score = require("brain.policies.score")
+                        local function pick(name, mob, count, mates)
+                            local snap, bound = state(name)
+                            snap.party, snap.group = {}, { snap.self.name }
+                            for index, mate_name in ipairs(mates or {}) do
+                                local mate = state(mate_name)
+                                mate.world.map, mate.world.x, mate.world.y = snap.world.map, snap.world.x + index,
+                                    snap.world.y
+                                table.insert(snap.party, party.profile(mate, bound, nil))
+                                table.insert(snap.group, mate.self.name)
+                            end
+                            snap.leader = snap.self.name
+                            local found = battle.choose(snap, bound, surround(snap, mob, count), true)
+                            local mob_model = nil
+                            for _, entry in pairs(hunting.mobs) do
+                                if entry.name == mob then
+                                    mob_model = entry
+                                end
+                            end
+                            local options = combat.options(snap, mob_model or { defense = 0, ward = 0, hp = 10000 })
+                            local strikes, offense = {}, {}
+                            for _, choice in ipairs(options.strike) do
+                                table.insert(strikes, string.format("%s:%.0f", choice.name, choice.damage))
+                            end
+                            table.sort(strikes, function(a, b)
+                                return tonumber(a:match(":(%d+)")) > tonumber(b:match(":(%d+)"))
+                            end)
+                            for _, choice in ipairs(options.offense) do
+                                table.insert(offense, string.format("%s:%.0f", choice.name, choice.damage))
+                            end
+                            table.sort(offense, function(a, b)
+                                return tonumber(a:match(":(%-?%d+)")) > tonumber(b:match(":(%-?%d+)"))
+                            end)
+                            local able = score.capability(score.rested(snap), bound)
+                            local heals = {}
+                            for _, choice in ipairs(options.heal) do
+                                if choice.others then
+                                    table.insert(heals, string.format("%s:%.0f@%d", choice.name, choice.hp, choice.mp))
+                                end
+                            end
+                            table.sort(heals, function(a, b)
+                                return tonumber(a:match(":(%d+)")) > tonumber(b:match(":(%d+)"))
+                            end)
+                            log("debug", string.format(
+                                "[unit] promo3 skill %s mob=%sx%d pick=%s strike=%s offense=%s heal=%s burst=%.0f",
+                                name, mob, count, tostring(found and found.key),
+                                table.concat({ strikes[1], strikes[2], strikes[3] }, ","),
+                                table.concat({ offense[1], offense[2], offense[3] }, ","),
+                                table.concat({ heals[1], heals[2], heals[3] }, ","), able.burst))
+                            return found and found.key or "nil"
+                        end
+                        local warrior = pick("warrior3", "흉노전사", 1, { "poet3" })
+                        local rogue = pick("rogue3", "흉노전사", 1, { "poet3" })
+                        local mage = pick("mage3", "흉노평민", 1, { "warrior3", "poet3" })
+                        local mage_crowd = pick("mage3", "흉노평민", 4, { "mage3b" })
+                        local poet = pick("poet3", "흉노전사", 1, { "warrior3" })
+                        return warrior ~= "nil" and rogue ~= "nil" and mage ~= "nil",
+                            string.format("wa=%s ro=%s ma=%s ma4=%s po=%s", warrior, rogue, mage, mage_crowd, poet)
+                    end),
+                    case("a 99 crew of four does not settle on a skull cave the respawn wait has capped below a stronger ground", function()
+                        local function crew_of(names)
+                            local lead, bound = state(names[1])
+                            lead.world.map, lead.world.x, lead.world.y = 22, 16, 103
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for i = 2, #names do
+                                local mate = state(names[i])
+                                mate.world.map, mate.world.x, mate.world.y = 22, 16, 103
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return members, bound
+                        end
+                        local members, bound = crew_of({ "warrior99", "rogue99", "poet99", "poet99b" })
+                        local plan = ground.party(members, bound, "REFILL")
+                        local ghost = ground.hold(members, bound, "흑령굴")
+                        local clear = ghost ~= nil and ground.lap(ghost) or 0
+                        local refill = 0
+                        for _, floor in ipairs(ghost ~= nil and ghost.floors or {}) do
+                            if (floor.supply or 0) > 0 and (floor.mobs or 0) > 0 then
+                                refill = math.max(refill, floor.mobs / floor.supply)
+                            end
+                        end
+                        local weak = plan ~= nil and
+                        (string.find(plan.name, "흑해골", 1, true) ~= nil or string.find(plan.name, "흑령", 1, true) ~= nil)
+                        return plan ~= nil and weak ~= true and ghost ~= nil and clear > 0 and clear < refill,
+                            string.format("pick=%s rate=%.0f ghost_floors=%s clear=%.1f refill=%.1f",
+                                tostring(plan and plan.name),
+                                plan and plan.rate or -1, tostring(ghost and #ghost.floors), clear, refill)
+                    end),
+                    case("a 99 crew of four stops a haunted house where a floor's rate falls to nothing, not where a mob is deadly", function()
+                        local hunting = require("brain.data.hunting")
+                        local danger  = require("brain.policies.danger")
+                        local score   = require("brain.policies.score")
+                        local function crew_of(names)
+                            local lead, bound = state(names[1])
+                            lead.world.map, lead.world.x, lead.world.y = 22, 16, 103
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for i = 2, #names do
+                                local mate = state(names[i])
+                                mate.world.map, mate.world.x, mate.world.y = 22, 16, 103
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return members, bound
+                        end
+                        local members, bound = crew_of({ "warrior99", "rogue99", "poet99", "poet99b" })
+                        local haunted = ground.hold(members, bound, "평양성흉가")
+                        local bundle = nil
+                        for _, entry in ipairs(hunting.bundles) do
+                            if entry.name == "평양성흉가" then
+                                bundle = entry
+                            end
+                        end
+                        local rested = {}
+                        for _, member in ipairs(members) do
+                            table.insert(rested, score.rested(member, nil))
+                        end
+                        local others = {}
+                        for i = 2, #rested do
+                            table.insert(others, rested[i])
+                        end
+                        local crew = ground.crew(others, bound)
+                        local ability = score.capability(rested[1], bound)
+                        local cut = haunted ~= nil and #haunted.floors + 1 or 0
+                        local floor = bundle ~= nil and bundle.floors[cut] or nil
+                        local result = floor ~= nil and ground.evaluate(rested[1], bound, floor, ability, crew) or nil
+                        local deadly = false
+                        if floor ~= nil then
+                            for _, entry in ipairs(floor.mobs) do
+                                local mob = hunting.mobs[entry.id]
+                                deadly = deadly or (mob ~= nil and danger.deadly(rested[1], bound, mob, crew or false))
+                            end
+                        end
+                        return haunted ~= nil and #haunted.floors >= 1 and result ~= nil and result.rate <= 0 and
+                            deadly == false,
+                            string.format("floors=%s cut_rate=%s deadly=%s", tostring(haunted and #haunted.floors),
+                                tostring(result and result.rate), tostring(deadly))
+                    end),
+                    case("a refill plan for a 99 crew of four is the same length from town and from the shop", function()
+                        local function crew_at(map, x, y)
+                            local lead, bound = state("warrior99")
+                            lead.world.map, lead.world.x, lead.world.y = map, x, y
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for _, name in ipairs({ "rogue99", "poet99", "poet99b" }) do
+                                local mate = state(name)
+                                mate.world.map, mate.world.x, mate.world.y = map, x, y
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return ground.party(members, bound, "REFILL"), bound, members
+                        end
+                        local town = crew_at(22, 16, 103)
+                        local shop = crew_at(30, 10, 10)
+                        return town ~= nil and shop ~= nil and town.name == shop.name and #town.floors == #shop.floors and
+                            math.abs(ground.lap(town) - ground.lap(shop)) < 1e-6 and
+                            math.abs(town.rate - shop.rate) < 1e-6,
+                            string.format("town=%s/%d/%.1f/%.0f shop=%s/%d/%.1f/%.0f", tostring(town and town.name),
+                                town and #town.floors or 0, town and ground.lap(town) or -1, town and town.rate or -1,
+                                tostring(shop and shop.name), shop and #shop.floors or 0, shop and ground.lap(shop) or -1,
+                                shop and shop.rate or -1)
+                    end),
+                    case("a group keeps off a ground whose standing stock another group already takes, not off one with stock to spare", function()
                         local rerank = require("brain.data.combat").rerank
                         local function planned(claim, shift, claimed)
                             local snap, bound = state("warrior93")
@@ -951,17 +1310,24 @@ test_suite {
                             for _, entry in ipairs(plan ~= nil and plan.floors or {}) do
                                 floors[entry.map] = true
                             end
+                            local stay = 0
+                            local mobs = 0
+                            for _, entry in ipairs(plan ~= nil and plan.floors or {}) do
+                                stay = stay + ((entry.rate or 0) > 0 and (entry.stock or 0) / entry.rate or 0)
+                                mobs = mobs + (entry.mobs or 0)
+                            end
                             return plan ~= nil and plan.name or "nil", first.kills, floors,
-                                plan ~= nil and plan.rate or 0
+                                plan ~= nil and plan.rate or 0, stay, mobs
                         end
-                        local free, kills, floors, rate = planned(0, 40, nil)
-                        local spare, _, _, kept         = planned(0.005, 50, floors)
-                        local taken                     = planned(0.3, 60, floors)
-                        local share                     = type(kills) == "number" and kills > 0 and 0.005 / kills or 1
+                        local free, kills, floors, rate, stay, mobs = planned(0, 40, nil)
+                        local spare, _, _, kept                     = planned(0.005, 50, floors)
+                        local taken                                 = planned(0.3, 60, floors)
+                        local share                                 = mobs > 0 and math.min(1, 0.005 * stay / mobs) or 1
                         return free ~= "nil" and kept >= rate * (1 - share) and taken ~= free and type(kills) == "number" and
                             kills > 0,
-                            string.format("free=%s spare=%s taken=%s posted kills=%s rate=%.0f kept=%.0f", free, spare,
-                                taken, tostring(kills), rate, kept)
+                            string.format(
+                                "free=%s spare=%s taken=%s posted kills=%s rate=%.0f kept=%.0f stay=%.1f mobs=%s",
+                                free, spare, taken, tostring(kills), rate, kept, stay, tostring(mobs))
                     end),
                     case("a plan made from a copied snapshot with fresh modules is the plan made in place", function()
                         local planner                              = require("brain.planner")
@@ -1035,7 +1401,7 @@ test_suite {
                             string.format("plan=%s difference=%s", tostring(here.plan and here.plan.name),
                                 tostring(found))
                     end),
-                    case("a bot leaves a ground somebody hunts for an empty one, and one far off for one near", function()
+                    case("a bot leaves a ground somebody hunts for an empty one, and one far from town for one near it", function()
                         local ground        = require("brain.policies.ground")
                         local first, bound0 = state("warrior63")
                         local chosen        = ground.choose(first, bound0)
@@ -1049,13 +1415,12 @@ test_suite {
                         end
                         local other                             = ground.choose(taken, bound1)
                         local far, bound2                       = state("warrior63")
-                        local measured                          = bound2.distances
-                        bound2.distances                        = function(detour, from)
-                            local found = measured(detour, from) or {}
-                            for map in pairs(held) do
-                                found[map] = 100000
+                        local measured                          = bound2.path
+                        bound2.path                             = function(goal, perilous, shunned, from)
+                            if from ~= nil and held[from.map] and from.x == 0 and from.y == 0 then
+                                return { cost = 100000 }
                             end
-                            return found
+                            return measured(goal, perilous, shunned, from)
                         end
                         local loaded                            = package.loaded["brain.policies.ground"]
                         package.loaded["brain.policies.ground"] = nil
@@ -1300,6 +1665,7 @@ test_suite {
                         local walker, walks                              = apart_floors("warrior63", "poet65")
                         local mate                                       = walker.party[1]
                         walker.world.map, walker.world.x, walker.world.y = 421, 18, 6
+                        walker.record.memory.commit                      = "국내해골굴"
                         mate.world.map, mate.world.x, mate.world.y       = walker.world.map, 16, 8
                         mate.task                                        = "FIELD"
                         local plan                                       = party.plan(walker, walks)
@@ -1316,6 +1682,7 @@ test_suite {
                         local held, holds                                                     = apart_floors("warrior63",
                             "poet65")
                         held.world.map, held.world.x, held.world.y                            = 421, 18, 6
+                        held.record.memory.commit                                             = "국내해골굴"
                         held.party[1].world.map, held.party[1].world.x, held.party[1].world.y = 421, 16, 8
                         held.party[1].task                                                    = "FIELD"
                         held.world.mobs                                                       = { mob_named(name, 22, 3,
@@ -1453,6 +1820,7 @@ test_suite {
                             local other                                = "untangle-peer"
                             snap.world.map, snap.world.x, snap.world.y = 2376, 19, 14
                             mate.world.map, mate.world.x, mate.world.y = 2376, 16, 14
+                            snap.record.memory.commit                  = "흑해골굴"
                             snap.buffs, mate.buffs                     = { "무장", "보호" }, { "무장", "보호" }
                             local far                                  = mob_named("흑해골", 24, 17, 903)
                             far.attack                                 = "AGGRESSIVE"
@@ -2038,6 +2406,106 @@ test_suite {
                         return enclosed == false and open == true,
                             string.format("enclosed=%s open=%s", tostring(enclosed), tostring(open))
                     end),
+                    case("map 22 reaches gogundo hunt floors by ferry and the path names the boarding hop", function()
+                        local snap, bound = state("warrior99")
+                        snap.world.map, snap.world.x, snap.world.y = 22, 16, 103
+                        local jungle = 1612
+                        local beach = 1599
+                        local known = bound.reach({}, {}, {
+                            map = 22,
+                            x = 16,
+                            y = 103,
+                            level = snap.self.level,
+                        })
+                        local path = bound.path({ maps = { jungle } }, {}, {}, {
+                            map = 22,
+                            x = 16,
+                            y = 103,
+                            level = snap.self.level,
+                        })
+                        local ferry_hop = false
+                        for _, hop in ipairs(path ~= nil and path.path or {}) do
+                            ferry_hop = ferry_hop or hop.ferry == true
+                        end
+                        return known[jungle] == true and known[beach] == true and path ~= nil and ferry_hop and
+                            path.cost > 0,
+                            string.format("jungle=%s beach=%s path=%s ferry=%s cost=%s",
+                                tostring(known[jungle]), tostring(known[beach]), tostring(path ~= nil),
+                                tostring(ferry_hop), tostring(path and path.cost))
+                    end),
+                    case("a 99 crew can hold a gogundo ground from town once ferry opens the way", function()
+                        local function crew_of(names)
+                            local lead, bound = state(names[1])
+                            lead.world.map, lead.world.x, lead.world.y = 22, 16, 103
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for i = 2, #names do
+                                local mate = state(names[i])
+                                mate.world.map, mate.world.x, mate.world.y = 22, 16, 103
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return members, bound
+                        end
+                        local members, bound = crew_of({ "warrior99", "poet99", "mage99" })
+                        local jungle = ground.hold(members, bound, "고균도열대림")
+                        local beach = ground.hold(members, bound, "고균도-가릉도해변")
+                        local flame = ground.hold(members, bound, "폭염도화산굴")
+                        local plan = ground.party(members, bound, "REFILL")
+                        local island_rate = -1
+                        local island_name = nil
+                        for _, option in ipairs(plan ~= nil and plan.options or {}) do
+                            local name = option.name or ""
+                            if string.find(name, "고균", 1, true) or string.find(name, "가릉", 1, true) or
+                                string.find(name, "폭염", 1, true) then
+                                if (option.rate or 0) > island_rate then
+                                    island_rate = option.rate or 0
+                                    island_name = name
+                                end
+                            end
+                        end
+                        local island = plan ~= nil and (
+                            string.find(plan.name, "고균", 1, true) ~= nil or
+                            string.find(plan.name, "가릉", 1, true) ~= nil or
+                            string.find(plan.name, "폭염", 1, true) ~= nil)
+                        return jungle ~= nil and beach ~= nil and island_name ~= nil,
+                            string.format(
+                                "jungle=%s beach=%s flame=%s pick=%s island=%s rate=%.0f best_island=%s ir=%.0f",
+                                tostring(jungle and jungle.name), tostring(beach and beach.name),
+                                tostring(flame and flame.name), tostring(plan and plan.name),
+                                tostring(island), plan and plan.rate or -1,
+                                tostring(island_name), island_rate)
+                    end),
+                    case("a pinned ground overrides mainland ranking", function()
+                        local function crew_of(names)
+                            local lead, bound = state(names[1])
+                            lead.world.map, lead.world.x, lead.world.y = 22, 16, 103
+                            lead.party, lead.group = {}, { lead.self.name }
+                            local members = { lead }
+                            for i = 2, #names do
+                                local mate = state(names[i])
+                                mate.world.map, mate.world.x, mate.world.y = 22, 16, 103
+                                table.insert(lead.party, party.profile(mate, bound, nil))
+                                table.insert(lead.group, mate.self.name)
+                                table.insert(members, mate)
+                            end
+                            lead.leader = lead.self.name
+                            return members, bound
+                        end
+                        local members, bound = crew_of({ "warrior99", "poet99", "mage99" })
+                        local natural = ground.party(members, bound, "REFILL")
+                        for _, member in ipairs(members) do
+                            member.record.memory.ground = "고균도절벽"
+                            member.record.memory.commit = "고균도절벽"
+                        end
+                        local forced = require("brain.policies.party").compute(members[1], bound)
+                        return forced ~= nil and forced.name == "고균도절벽" and
+                            (natural == nil or natural.name ~= "고균도절벽"),
+                            string.format("natural=%s forced=%s", tostring(natural and natural.name),
+                                tostring(forced and forced.name))
+                    end),
                     case("one region of a map is asked for its reach once, wherever the bot stands in it", function()
                         local g = require("brain.policies.ground")
                         local snap, bound = recorded("rogue_no_food")
@@ -2309,8 +2777,14 @@ test_suite {
                     end),
                     case("a caster shoots a mob across a wall from beside its poet, where a hitter would walk round", function()
                         local wall, seen          = recorded("vanguard_wall_prey")
+                        wall.record.memory.commit = "국내해골굴"
                         local snap, bound         = state("mage60")
                         local targets             = party.plan(wall, seen).floors[1].targets
+                        for _, floor in ipairs(party.plan(wall, seen).floors) do
+                            if floor.map == wall.world.map then
+                                targets = floor.targets
+                            end
+                        end
                         snap.world                = wall.world
                         snap.party                = wall.party
                         snap.group                = wall.group
@@ -2866,7 +3340,7 @@ test_suite {
                                 tostring(score.healer(rogue, bound)), tostring(score.healer(poet, bound)),
                                 tostring(score.healer(warrior, bound)))
                     end),
-                    case("a strike that spends hp is cast while it takes more of the mob than it stakes of me: at full hp, not from a third", function()
+                    case("a strike that spends hp is cast while it takes more of the mob than it stakes of me: at full hp, not before the heals fill it", function()
                         local battle = require("brain.policies.battle")
                         local function pick(hp, count)
                             local snap, bound = state("warrior93", { hp = hp })
@@ -2889,8 +3363,35 @@ test_suite {
                             return tostring(found and found.key)
                         end
                         local full, worn, third, crowd = pick(6972, 3), pick(5000, 1), pick(2291, 1), pick(2291, 3)
-                        return full == "건곤대나이" and worn == "건곤대나이" and third ~= "건곤대나이" and crowd ~= "건곤대나이",
+                        return full == "건곤대나이" and worn ~= "건곤대나이" and third ~= "건곤대나이" and crowd ~= "건곤대나이",
                             string.format("full=%s worn=%s third=%s crowd=%s", full, worn, third, crowd)
+                    end),
+                    case("a warrior beside its poet spends 건곤대나이 at full hp and not from low hp when doses are dear", function()
+                        local battle = require("brain.policies.battle")
+                        local top    = state("warrior99").self.max_hp
+                        local function pick(hp)
+                            local snap, bound = state("warrior99", { hp = hp })
+                            local kept        = {}
+                            for _, item in ipairs(snap.bag.items) do
+                                if item.name ~= "홍주" then
+                                    table.insert(kept, item)
+                                end
+                            end
+                            snap.bag.items             = kept
+                            local poet                 = state("poet99")
+                            poet.world.x, poet.world.y = snap.world.x - 1, snap.world.y
+                            snap.party                 = { party.profile(poet, bound, nil) }
+                            snap.group                 = { snap.self.name, poet.self.name }
+                            snap.leader                = snap.self.name
+                            snap.pace                  = snap.pace or {}
+                            snap.pace.use              = 70
+                            local found                = battle.choose(snap, bound, surround(snap, "주해골", 1), true)
+                            return tostring(found and found.key)
+                        end
+                        local full = pick(top)
+                        local low  = pick(math.floor(top * 0.42))
+                        return full == "건곤대나이" and low ~= "건곤대나이",
+                            string.format("full=%s low=%s", full, low)
                     end),
                     case("a ground held by the crew keeps its crowd, so the buffs that strike beside the target are cast on it", function()
                         local buff                                    = require("brain.tasks.buff")
@@ -3418,6 +3919,7 @@ test_suite {
                             local snap, bound                          = state("mage91", { hp = 2499, mp = 2810 })
                             local mate                                 = state("warrior93", { hp = hp, mp = 83 })
                             snap.world.map, snap.world.x, snap.world.y = 5245, 15, 23
+                            snap.record.memory.commit                  = "평양흑해골굴"
                             mate.world.map, mate.world.x, mate.world.y = 5245, 13, 23
                             snap.buffs                                 = { "무장", "보호" }
                             mate.buffs                                 = { "무장", "보호" }
@@ -3849,6 +4351,7 @@ test_suite {
                         local snap, bound                          = state("warrior63")
                         local mate                                 = state("poet65")
                         snap.world.map, snap.world.x, snap.world.y = 420, 25, 26
+                        snap.record.memory.commit                  = "국내해골굴"
                         mate.world.map, mate.world.x, mate.world.y = 420, 25, 27
                         snap.self.struck                           = 0
                         snap.world.mobs                            = { mob_named("해골", 25, 25, 601) }
@@ -3999,6 +4502,7 @@ test_suite {
                             local snap, bound                          = apart_floors("warrior63", "poet65")
                             local mate                                 = snap.party[1]
                             snap.world.map, snap.world.x, snap.world.y = 421, 18, 6
+                            snap.record.memory.commit                  = "국내해골굴"
                             mate.world.map, mate.world.x, mate.world.y = snap.world.map, x, y
                             mate.task                                  = "FIELD"
                             local plan                                 = party.plan(snap, bound)
@@ -4027,6 +4531,7 @@ test_suite {
                             local mate                                 = snap.party[1]
                             local me                                   = snap.self.name
                             snap.world.map, snap.world.x, snap.world.y = 421, 18, 6
+                            snap.record.memory.commit                  = "국내해골굴"
                             mate.world.map, mate.world.x, mate.world.y = snap.world.map, 14, 9
                             mate.task                                  = "FIELD"
                             local plan                                 = party.plan(snap, bound)
@@ -4568,6 +5073,7 @@ test_suite {
                         local snap, bound                          = apart_floors("warrior63", "poet65")
                         local mate                                 = snap.party[1]
                         snap.world.map, snap.world.x, snap.world.y = 421, 18, 6
+                        snap.record.memory.commit                  = "국내해골굴"
                         mate.world.map, mate.world.x, mate.world.y = snap.world.map, 14, 9
                         mate.task                                  = "FIELD"
                         local plan                                 = party.plan(snap, bound)
@@ -4591,6 +5097,7 @@ test_suite {
                         local snap, bound                          = apart_floors("poet65", "warrior63")
                         local mate                                 = snap.party[1]
                         snap.world.map, snap.world.x, snap.world.y = 421, 18, 6
+                        snap.record.memory.commit                  = "국내해골굴"
                         mate.world.map, mate.world.x, mate.world.y = snap.world.map, 14, 9
                         mate.task                                  = "FIELD"
                         snap.world.mobs                            = {}
@@ -5410,13 +5917,15 @@ test_suite {
                             first.group                                = { team.self.name, first.self.name }
                             first.leader                               = first.self.name
                             local plan                                 = party.plan(first, seen)
+                            local ox, oy                               = open_ground(seen, plan.floors[1].map)
                             local snap, bound                          = state("rogue50")
                             local crew                                 = state("poet65")
-                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
-                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 12, 10
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, ox, oy
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, ox + 2, oy
                             crew.group                                 = { crew.self.name, snap.self.name }
                             local sides                                = walled and
-                                { { 13, 10 }, { 11, 10 }, { 12, 9 }, { 12, 11 } } or { { 13, 10 } }
+                                { { ox + 3, oy }, { ox + 1, oy }, { ox + 2, oy - 1 }, { ox + 2, oy + 1 } } or
+                                { { ox + 3, oy } }
                             local still                                = nil
                             for _, mob in pairs(hunting.mobs) do
                                 if mob.attack == "RETALIATE" and (still == nil or mob.name < still.name) then
@@ -5463,10 +5972,11 @@ test_suite {
                             first.group                                = { team.self.name, first.self.name }
                             first.leader                               = first.self.name
                             local plan                                 = party.plan(first, seen)
+                            local ox, oy                               = open_ground(seen, plan.floors[1].map)
                             local snap, bound                          = state(me)
                             local crew                                 = state(mate)
-                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
-                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 12, 10
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, ox, oy
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, ox + 2, oy
                             crew.group                                 = { crew.self.name, snap.self.name }
                             local prey                                 = {}
                             for _, name in ipairs(plan.floors[1].targets or {}) do
@@ -5479,7 +5989,7 @@ test_suite {
                                 end
                             end
                             local walls = {}
-                            for index, side in ipairs({ { 13, 10 }, { 11, 10 }, { 12, 9 }, { 12, 11 } }) do
+                            for index, side in ipairs({ { ox + 3, oy }, { ox + 1, oy }, { ox + 2, oy - 1 }, { ox + 2, oy + 1 } }) do
                                 table.insert(walls, mob_named(still.name, side[1], side[2], 900 + index))
                             end
                             crew.world.mobs           = walls
@@ -5541,10 +6051,11 @@ test_suite {
                             first.group                                = { team.self.name, first.self.name }
                             first.leader                               = first.self.name
                             local plan                                 = party.plan(first, seen)
+                            local ox, oy                               = open_ground(seen, plan.floors[1].map)
                             local snap, bound                          = state("rogue50")
                             local crew                                 = state("poet65")
-                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, 10, 10
-                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, 11, 10
+                            snap.world.map, snap.world.x, snap.world.y = plan.floors[1].map, ox, oy
+                            crew.world.map, crew.world.x, crew.world.y = snap.world.map, ox + 1, oy
                             crew.world.mobs                            = {}
                             crew.group                                 = { crew.self.name, snap.self.name }
                             snap.party                                 = { party.profile(crew, bound,
@@ -5614,10 +6125,11 @@ test_suite {
                             first.group                                = { team.self.name, first.self.name }
                             first.leader                               = first.self.name
                             local plan                                 = party.plan(first, seen)
+                            local ox, oy                               = open_ground(seen, plan.floors[1].map)
                             local lead                                 = state("rogue50")
                             local snap, bound                          = state("poet65")
-                            lead.world.map, lead.world.x, lead.world.y = plan.floors[1].map, 10, 10
-                            snap.world.map, snap.world.x, snap.world.y = lead.world.map, 11, 10
+                            lead.world.map, lead.world.x, lead.world.y = plan.floors[1].map, ox, oy
+                            snap.world.map, snap.world.x, snap.world.y = lead.world.map, ox + 1, oy
                             lead.world.mobs, snap.world.mobs           = {}, {}
                             lead.group                                 = { lead.self.name, snap.self.name }
                             lead.leader                                = lead.self.name
@@ -6097,7 +6609,8 @@ test_suite {
                         snap.party[1].self.mp = 3142
                         local mob = require("brain.tasks.escape").adjacent_hitter(snap)
                         local choice = battle.choose(snap, bound, mob, true)
-                        return choice ~= nil and choice.key == "건곤대나이", tostring(choice and choice.key)
+                        return choice ~= nil and (choice.hp or 0) < 0 and (choice.damage or 0) > 0,
+                            tostring(choice and choice.key)
                     end),
                     case("healer spends the charge reserve on a dying ally", function()
                         local snap = recorded("fighter_dying_with_ready_healer")
@@ -6193,6 +6706,7 @@ test_suite {
                     case("a member a floor ahead on its vanguard's way waits there, and walks back only to one that cannot move", function()
                         local function pick(pinned)
                             local snap, bound    = recorded("swap_pass_through")
+                            snap.self.hp         = snap.self.max_hp
                             snap.world.map       = 3002
                             snap.world.x         = 2
                             snap.world.y         = 17
@@ -6566,6 +7080,7 @@ test_suite {
                         local plan = require("brain.policies.ground").choose(snap, bound)
                         snap.record.memory.solo = plan.name
                         snap.record.memory.commit = plan.name
+                        plan = party.plan(snap, bound)
                         snap.world.map = plan.floors[#plan.floors].map
                         snap.world.mobs = {}
                         snap.record.memory.search = { map = snap.world.map, from = 0 }

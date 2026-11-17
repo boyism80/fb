@@ -195,14 +195,15 @@ public:
 
     struct maneuver
     {
-        MANEUVER                  kind = MANEUVER::SWING;
-        uint8_t                   slot = 0;
-        bool                      self = false;
-        int32_t                   cost = -1;
-        std::string               item;
-        std::chrono::milliseconds pace  = std::chrono::milliseconds{0};
-        uint16_t                  steps = 0;
-        std::optional<uint16_t>   leeway;
+        MANEUVER                       kind = MANEUVER::SWING;
+        uint8_t                        slot = 0;
+        bool                           self = false;
+        int32_t                        cost = -1;
+        std::string                    item;
+        std::chrono::milliseconds      pace  = std::chrono::milliseconds{0};
+        uint16_t                       steps = 0;
+        std::optional<uint16_t>        leeway;
+        std::optional<atlas::position> via;
     };
 
     struct answer

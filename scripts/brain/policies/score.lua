@@ -10,9 +10,15 @@ local M = {}
 
 local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
 
+-- A spell the server makes wait between casts (delay, in seconds) is cast once a wait however fast the bot casts:
+-- paced at the cast alone, 백호의희원's 1.5M every 36s came out 4.5M a second, a crew of two 진인 healed its 검황 at
+-- 9M a second, and every swing beside them threw heals away (brain unit probe, 3rd promotion crew at 흉노족5).
 local function sustained(choice, field, regen, rate, recovered)
     if choice == nil or choice[field] <= 0 then
         return 0
+    end
+    if (choice.delay or 0) > 0 then
+        rate = math.min(rate, 1 / choice.delay)
     end
     local paced = choice[field] * rate
     local spend = -(choice.hp or 0)
@@ -23,6 +29,17 @@ local function sustained(choice, field, regen, rate, recovered)
         return paced
     end
     return math.min(paced, choice[field] * regen / choice.mp)
+end
+
+-- The heal a bot keeps up is its quickest one, waits counted: its biggest is cast once a wait and may heal the less.
+local function fastest(choices, regen, rate, accept)
+    local best = 0
+    for _, choice in ipairs(choices) do
+        if accept(choice) then
+            best = math.max(best, sustained(choice, "hp", regen, rate))
+        end
+    end
+    return best
 end
 
 local function affordable(choice, mp)
@@ -247,18 +264,19 @@ function M.capability(snap, query, extra)
     local area      = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "AREA"
     end)
-    local heal      = strongest(options.heal, "hp", function()
-        return true
-    end)
-    local others    = strongest(options.heal, "hp", function(choice)
+    local mends     = { table.unpack(options.heal) }
+    for _, choice in ipairs(options.group) do
+        table.insert(mends, choice)
+    end
+    local others = strongest(mends, "hp", function(choice)
         return choice.others
     end)
-    local opener    = strongest(options.strike, "damage", function()
+    local opener = strongest(options.strike, "damage", function()
         return true
     end)
-    local nuke      = single ~= nil and single.mp > 0 and math.floor((snap.self.mp or 0) / single.mp) * single.damage or
+    local nuke   = single ~= nil and single.mp > 0 and math.floor((snap.self.mp or 0) / single.mp) * single.damage or
         0
-    local guard     = fight.mitigate(100, snap.self.phydef or 0, 0) / 100
+    local guard  = fight.mitigate(100, snap.self.phydef or 0, 0) / 100
 
     return {
         dps      = {
@@ -276,8 +294,8 @@ function M.capability(snap, query, extra)
         },
         ehp      = snap.self.hp / guard,
         hps      = {
-            self   = sustained(heal, "hp", regen, rate),
-            others = sustained(others, "hp", regen, rate),
+            self   = fastest(options.heal, regen, rate, function() return true end),
+            others = fastest(mends, regen, rate, function(choice) return choice.others end),
             stock  = affordable(others, snap.self.mp or 0),
         },
         supply   = supplies(snap),

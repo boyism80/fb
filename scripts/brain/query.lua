@@ -1,3 +1,4 @@
+local ferry   = require("brain.policies.ferry")
 local terrain = require("brain.policies.terrain")
 local profile = require("brain.profile")
 
@@ -11,6 +12,14 @@ end
 
 function M.bind(brain, bot, snap)
     local demands = {}
+    local function raw_reach(perilous, shunned, from)
+        return profile.wait(bot:name(), asked("reach"), brain.reach, brain, bot,
+            { perilous = perilous or {}, shunned = shunned or {} }, from)
+    end
+    local function raw_route(dest, perilous, shunned, origin)
+        return profile.wait(bot:name(), asked("path"), brain.route, brain, bot, dest,
+            { perilous = perilous or {}, shunned = shunned or {} }, origin)
+    end
     return {
         snap = snap,
         plan = function(key, request)
@@ -50,7 +59,8 @@ function M.bind(brain, bot, snap)
             return brain:roster(bot)
         end,
         steps = function(map, x, y, goals, traced, strict)
-            return terrain.steps(brain, map, x, y, goals, terrain.blocking(snap, map, x, y), traced, strict)
+            return terrain.steps(brain, map, x, y, goals, terrain.blocking(snap or { world = { map = map } }, map, x, y),
+                traced, strict)
         end,
         detour = function(map, from, to, avoided)
             return terrain.detour(brain, map, from, to, avoided)
@@ -89,8 +99,13 @@ function M.bind(brain, bot, snap)
             return brain:region(map, x, y)
         end,
         reach = function(perilous, shunned, from)
-            return profile.wait(bot:name(), asked("reach"), brain.reach, brain, bot,
-                { perilous = perilous or {}, shunned = shunned or {} }, from)
+            local at = snap ~= nil and snap.world or nil
+            return ferry.widen(raw_reach, perilous, shunned, from or {
+                map = at ~= nil and at.map or bot:map(),
+                x = at ~= nil and (at.x or 0) or (bot:position() or { 0, 0 })[1],
+                y = at ~= nil and (at.y or 0) or (bot:position() or { 0, 0 })[2],
+                level = snap ~= nil and snap.self.level or bot:level(),
+            })
         end,
         leaps = function(destination, detour, origin)
             return profile.wait(bot:name(), "leaps", brain.leaps, brain, bot, destination, detour, origin)
@@ -99,13 +114,22 @@ function M.bind(brain, bot, snap)
             return profile.wait(bot:name(), "distances", brain.distances, brain, bot, detour, origin)
         end,
         route = function(maps, perilous, shunned)
-            return profile.wait(bot:name(), asked("route"), brain.route, brain, bot, { maps = maps },
-                { perilous = perilous or {}, shunned = shunned or {} })
+            local at = snap ~= nil and snap.world or nil
+            return ferry.bridge(raw_route, { maps = maps }, perilous, shunned, {
+                map = at ~= nil and at.map or bot:map(),
+                x = at ~= nil and (at.x or 0) or (bot:position() or { 0, 0 })[1],
+                y = at ~= nil and (at.y or 0) or (bot:position() or { 0, 0 })[2],
+                level = snap ~= nil and snap.self.level or bot:level(),
+            })
         end,
         path = function(dest, perilous, shunned, origin)
-            return profile.wait(bot:name(), asked("path"), brain.route, brain, bot, dest,
-                { perilous = perilous or {}, shunned = shunned or {} },
-                origin)
+            local at = snap ~= nil and snap.world or nil
+            return ferry.bridge(raw_route, dest, perilous, shunned, origin or {
+                map = at ~= nil and at.map or bot:map(),
+                x = at ~= nil and (at.x or 0) or (bot:position() or { 0, 0 })[1],
+                y = at ~= nil and (at.y or 0) or (bot:position() or { 0, 0 })[2],
+                level = snap ~= nil and snap.self.level or bot:level(),
+            })
         end,
     }
 end

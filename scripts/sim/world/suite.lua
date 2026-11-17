@@ -165,7 +165,28 @@ local function force(mind, snap)
     return 0
 end
 
-local CLASSES = { ["전사"] = "WARRIOR", ["도적"] = "ROGUE", ["주술사"] = "MAGE", ["도사"] = "POET" }
+local CLASSES = {
+    ["전사"] = "WARRIOR",
+    ["검객"] = "WARRIOR",
+    ["검제"] = "WARRIOR",
+    ["검황"] = "WARRIOR",
+    ["검성"] = "WARRIOR",
+    ["도적"] = "ROGUE",
+    ["자객"] = "ROGUE",
+    ["진검"] = "ROGUE",
+    ["귀검"] = "ROGUE",
+    ["태성"] = "ROGUE",
+    ["주술사"] = "MAGE",
+    ["술사"] = "MAGE",
+    ["현사"] = "MAGE",
+    ["현인"] = "MAGE",
+    ["현자"] = "MAGE",
+    ["도사"] = "POET",
+    ["도인"] = "POET",
+    ["명인"] = "POET",
+    ["진인"] = "POET",
+    ["진선"] = "POET",
+}
 
 local START = { map = 22, x = 16, y = 103 }
 

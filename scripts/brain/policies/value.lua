@@ -45,7 +45,8 @@ local traded = setmetatable({}, { __mode = "k" })
 -- What a coin is worth in exp follows from the ranked grounds alone, and the list stays the same one while
 -- nothing moved (ground.ranked): worked out once for a list, not from every floor of every ground each decision.
 function M.exchange(snap, query)
-    local made  = require("brain.planner").latest(snap, query)
+    local made  = require("brain.policies.party").pin(snap) == nil and require("brain.planner").latest(snap, query) or
+    nil
     local found = nil
     if made ~= nil then
         found = made.exchange or 0
@@ -371,10 +372,31 @@ function M.refill(snap, query, worth)
     return plains[snap]
 end
 
+-- What a point of mana spent on a strike costs (battle). A bot that gets its mana back by 공력증강 pays its refill as
+-- before, and its strikes are no reason to hold mana back (user 11-16: mages and poets charge). One that drinks it back
+-- pays the dose, the time the dose it carries takes (pace.use, measured), and its share of the trip a bag of doses
+-- makes, as a lap carries its doses from its servicing (ground.lapped). Priced at the dose alone, 40 mana was nothing
+-- to a warrior of 1516: it cast 건곤대나이 97 times and drank 174 doses in 100 seconds (online 061552; user 11-16: a
+-- warrior or rogue spends its strike whenever it beats a swing).
+function M.strike(snap, query, worth)
+    local base  = M.refill(snap, query, worth)
+    local doses = recovery.doses(snap, "mp")
+    local dose  = #doses > 0 and doses[#doses].amount or recovery.purchasable(snap, "mp")
+    if recovery.spells(snap).charge ~= nil or dose <= 0 then
+        return base
+    end
+    local drink = ((snap.pace or {}).use or 0) / 1000 * worth.value / dose
+    local bag   = ((snap.bag.capacity or 0) - 2) * recovery.carriable(snap, "mp")
+    local plan  = party.plan(snap, query)
+    local trip  = plan ~= nil and #plan.floors > 0 and ground.servicing(snap, query, plan.floors[1]) or 0
+    return base + drink + (bag > 0 and trip * worth.value / bag or 0)
+end
+
 local manas = {}
 
 function M.mana(snap, query)
-    local made   = require("brain.planner").latest(snap, query)
+    local made   = require("brain.policies.party").pin(snap) == nil and require("brain.planner").latest(snap, query) or
+    nil
     local period = (snap.now or 0) // data.rerank
     local known  = manas[snap.self.name]
     local found  = 0
@@ -394,9 +416,12 @@ function M.mana(snap, query)
             full = ground.party(members, query, "REFILL") or full
             dry  = ground.party(members, query, "DRY") or dry
         end
+        -- Mana is worth what it adds to the best hunt open with it over the best one open without: between grounds of
+        -- one tier the denser is hunted (ground.prefer), and set by that pick a rogue's mana was worth 0.84 a point for
+        -- a ground 5% better than a denser one, while a better ground was open to it dry (brain unit test).
         local drain = full ~= nil and ground.drain(full, snap) or 0
         if drain > 0 then
-            found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / drain)
+            found = math.max(0, ((full.top or full.rate) - (dry ~= nil and (dry.top or dry.rate) or 0)) / drain)
         end
         manas[snap.self.name] = { period = period, found = found }
     end

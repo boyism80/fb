@@ -120,6 +120,9 @@ local function stage(snap, facts, maps, hunting)
     -- a mage four steps south of the door of 개주비밀세작의집 was eleven steps round the wall from its mage leader two
     -- steps north, and each waited for the other for good (online 024320, 02:45:10). On the hunting floors the crew
     -- gathers on the vanguard (together.cross_after), and is counted by its walk to me.
+    -- A member that died outside is waited for at the door as one still servicing is: it revives at its shrine and walks
+    -- here. Left out, a rogue vanguard led two poets into 평양성흉가 while their warrior leader lay dead at 흉노족2, and
+    -- the three stood four minutes under ghosts at the first floor's door while it walked back (online 015836, 02:05).
     local gathered = hunting == true and snap.world or exit
     local plan     = party.plan(snap, facts)
     for _, member in ipairs(party.members(snap)) do
@@ -131,8 +134,9 @@ local function stage(snap, facts, maps, hunting)
         for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
             through = through or (floor.map == world.map and world.map ~= snap.world.map)
         end
-        if member.self.ghost == false and through == false and (world.map ~= snap.world.map or world.x == nil or
-                party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
+        local alive = member.self.ghost == false
+        if (alive or hunting ~= true) and through == false and (world.map ~= snap.world.map or world.x == nil or
+                alive == false or party.held(member) or (member.task ~= "FIELD" and member.task ~= "NOTHING") or
                 together.walk(snap, facts, member, gathered) > 2 * data.adjacent) then
             return (hunting == true and together.to_rally(snap, facts)) or together.waiting(snap, facts, exit) or
                 { kind = ACTION.HOLD }
@@ -357,7 +361,7 @@ local enter = choose({
 local function close_on(snap, found)
     local range = stride(snap, found.mob.x, found.mob.y, 1)
     local round = found.steps ~= nil and found.distance ~= nil and found.steps > found.distance - 1
-    if found.choice.approach and (round or range > 1) then
+    if found.choice.approach and found.via == nil and (round or range > 1) then
         return {
             kind = ACTION.MOVE,
             dest = { map = snap.world.map, x = found.mob.x, y = found.mob.y, range = round and 1 or range, mob = found.mob.oid }

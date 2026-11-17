@@ -1,3 +1,4 @@
+local ferry   = require("brain.policies.ferry")
 local terrain = require("brain.policies.terrain")
 
 local M = {}
@@ -7,11 +8,22 @@ local items = {}
 
 local function origin(snap, from)
     local place = from or snap.world
-    return { map = place.map, x = place.x, y = place.y, level = snap.self.level }
+    return {
+        map = place.map,
+        x = place.x,
+        y = place.y,
+        level = place.level or snap.self.level,
+    }
 end
 
 function M.bind(mind, snap, world)
     world = world or {}
+    local function raw_reach(perilous, shunned, from)
+        return mind:reach(nil, { perilous = perilous or {}, shunned = shunned or {} }, from or origin(snap))
+    end
+    local function raw_route(dest, perilous, shunned, from)
+        return mind:route(nil, dest, { perilous = perilous or {}, shunned = shunned or {} }, from or origin(snap))
+    end
     return {
         npcs = function(names)
             local key = table.concat(names, "|")
@@ -93,7 +105,7 @@ function M.bind(mind, snap, world)
             return world.ally ~= nil and world.ally(name) or nil
         end,
         reach = function(perilous, shunned, from)
-            return mind:reach(nil, { perilous = perilous or {}, shunned = shunned or {} }, from or origin(snap))
+            return ferry.widen(raw_reach, perilous, shunned, from or origin(snap))
         end,
         leaps = function(destination, detour, from)
             return mind:leaps(nil, destination, detour, from)
@@ -102,11 +114,10 @@ function M.bind(mind, snap, world)
             return mind:distances(nil, detour, from or origin(snap))
         end,
         route = function(maps, perilous, shunned)
-            return mind:route(nil, { maps = maps }, { perilous = perilous or {}, shunned = shunned or {} },
-                origin(snap))
+            return ferry.bridge(raw_route, { maps = maps }, perilous, shunned, origin(snap))
         end,
         path = function(dest, perilous, shunned, from)
-            return mind:route(nil, dest, { perilous = perilous or {}, shunned = shunned or {} }, origin(snap, from))
+            return ferry.bridge(raw_route, dest, perilous, shunned, origin(snap, from))
         end,
     }
 end

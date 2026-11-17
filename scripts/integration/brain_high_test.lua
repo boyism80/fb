@@ -11,8 +11,8 @@ test_suite {
     scenarios = {
         {
             parallel = {
-                [0] = { function(ctx) return cases.group(ctx, { "warrior99", "rogue99", "poet99" }, 0, WATCH, 0) end },
-                [3] = { function(ctx) return cases.group(ctx, { "mage99", "mage99b" }, 0, WATCH, 3) end },
+                [0] = { function(ctx) return cases.group(ctx, { "warrior3", "rogue3", "poet3" }, 0, WATCH, 0) end },
+                [3] = { function(ctx) return cases.group(ctx, { "mage3", "mage3b" }, 0, WATCH, 3) end },
             },
         },
     },

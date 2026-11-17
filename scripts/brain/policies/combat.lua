@@ -580,9 +580,48 @@ end
 
 local choices = setmetatable({}, { __mode = "k" })
 
+local function worn_weapon(snap)
+    for _, slot in ipairs(snap.gear or {}) do
+        if slot.type == "WEAPON" and slot.names[1] ~= nil then
+            return slot.names[1]
+        end
+    end
+    return nil
+end
+
+-- The crewmates a group heal reaches: alive, on my map and in my sight, as the server finds them (spell.heal_group).
+-- A crewmate is told of by its profile, which holds no crew of its own, so it posts the count it sees around it.
+function M.reached(snap)
+    if snap.party == nil then
+        return snap.reached or 0
+    end
+    local count = 0
+    for _, member in ipairs(snap.party or {}) do
+        local world = member.world or {}
+        if (member.self or {}).ghost ~= true and world.map == snap.world.map and world.x ~= nil and snap.world.x ~= nil and
+            math.abs(world.x - snap.world.x) <= combat.sight.x and math.abs(world.y - snap.world.y) <= combat.sight.y then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 local function compute(snap, mob, extra)
-    local me     = { hp = snap.self.hp, mp = snap.self.mp or 0 }
-    local result = { offense = {}, heal = {}, strike = {} }
+    local me       = {
+        hp = snap.self.hp,
+        mp = snap.self.mp or 0,
+        max_mp = snap.self.max_mp or snap.self.mp or 0,
+        weapon = worn_weapon(snap),
+        crew = M.reached(snap),
+    }
+    local result   = { offense = {}, heal = {}, group = {}, strike = {} }
+    local replaced = {}
+    for _, learned in ipairs(snap.spells or {}) do
+        local data = magic.spells[learned.name]
+        for _, name in ipairs(data ~= nil and data.replaces or {}) do
+            replaced[name] = true
+        end
+    end
     for _, learned in ipairs(snap.spells or {}) do
         local data = magic.spells[learned.name]
         if data ~= nil and OFFENSE[data.role] and (data.limit == nil or (mob.hp or 0) <= data.limit) then
@@ -592,23 +631,30 @@ local function compute(snap, mob, extra)
                 name   = learned.name,
                 damage = value * (1 - resist(mob, "SPELL")) * hits,
                 mp     = amount(data.mp, me),
-                hp     = -(data.hp_spend or 0),
+                hp     = -amount(data.hp_spend or 0, me),
                 front  = data.front == true,
             })
         elseif data ~= nil and data.role == "HEAL" then
-            table.insert(result.heal, {
+            -- A group heal lands on my crewmates and never on me (spell.heal_group_baekho), so it is kept off the
+            -- heals I may cast on myself.
+            table.insert(data.group == true and result.group or result.heal, {
                 name   = learned.name,
                 hp     = amount(data.hp, me),
                 mp     = amount(data.mp, me),
                 others = data.self ~= true,
+                delay  = amount(data.delay, me),
             })
-        elseif data ~= nil and data.role == "STRIKE" then
+        elseif data ~= nil and data.role == "STRIKE" and replaced[learned.name] ~= true then
             local value = M.mitigate(amount(data.damage, me), mob.defense or 0, resist(mob, "PHYSICAL"))
             table.insert(result.strike, {
                 name   = learned.name,
                 damage = value,
                 hp     = amount(data.hp, me),
                 mp     = amount(data.mp, me),
+                reach  = data.reach or 1,
+                front  = data.front == true,
+                dash   = data.dash ~= nil,
+                clear  = data.clear,
             })
         end
     end
@@ -643,11 +689,11 @@ function M.options(snap, mob, extra)
         byhp = {}
         byextra[snap.self.hp] = byhp
     end
-    local mp    = snap.self.mp or 0
-    local found = byhp[mp]
+    local key   = (snap.self.mp or 0) .. "|" .. M.reached(snap)
+    local found = byhp[key]
     if found == nil then
         found = compute(snap, mob, extra)
-        byhp[mp] = found
+        byhp[key] = found
     end
     return found
 end
@@ -717,7 +763,7 @@ function M.bloodless(options)
             table.insert(offense, choice)
         end
     end
-    return { offense = offense, heal = options.heal, strike = options.strike }
+    return { offense = offense, heal = options.heal, group = options.group, strike = options.strike }
 end
 
 function M.plain(options, mp, left, cast, melee, hp)

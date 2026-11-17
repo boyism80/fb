@@ -343,8 +343,8 @@ function M.go(brain, bot, destination)
         avoid = {},
         threats = danger.threats(snap, facts),
         braved = {},
-        perilous = risky and {} or party.perilous(snap, facts),
-        shunned = risky and {} or danger.shunned(snap, facts),
+        perilous = destination.perilous or (risky and {} or party.perilous(snap, facts)),
+        shunned = destination.shunned or (risky and {} or danger.shunned(snap, facts)),
         bounced = {}
     }
     expect(brain, bot, destination, detour)

@@ -3,7 +3,7 @@ local cases = require("integration.scenarios.brain.state.cases")
 local WATCH = 600000
 local FORM  = 480000
 
-cases.start(16, 103)
+cases.start(28, 17, "흉노족1")
 
 test_suite {
     name      = "Brain High Warrior Rogue Poet Poet Test",
@@ -13,7 +13,7 @@ test_suite {
         {
             parallel = {
                 [0] = { function(ctx)
-                    return cases.group(ctx, { "warrior99", "rogue99", "poet99", "poet99b" }, 0, WATCH, 0, FORM, true)
+                    return cases.group(ctx, { "warrior3", "rogue3", "poet3", "poet3b" }, 0, WATCH, 0, FORM, true)
                 end },
             },
         },

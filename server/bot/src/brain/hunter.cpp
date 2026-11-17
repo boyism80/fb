@@ -129,12 +129,26 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
 
     if (std::abs(target.x - here.x) + std::abs(target.y - here.y) != 1)
     {
-        auto moved = co_await this->walk(bot,
-                                         destination{{map}, target, 1, maneuver.steps, maneuver.pace, maneuver.leeway},
-                                         detour{});
-        if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
-            co_return event{"UNREACHABLE", map, target};
-        else if (moved.type != "ARRIVED")
+        auto via   = maneuver.via.has_value() && maneuver.via.value() != here;
+        auto moved = event{};
+        if (via)
+            moved = co_await this->walk(bot,
+                                        destination{{map}, maneuver.via.value(), 0, 0, maneuver.pace, maneuver.leeway},
+                                        detour{});
+
+        if (via == false || moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
+        {
+            if (auto ended = check(); ended.has_value())
+                co_return ended.value();
+
+            moved = co_await this->walk(bot,
+                                        destination{{map}, target, 1, maneuver.steps, maneuver.pace, maneuver.leeway},
+                                        detour{});
+            if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
+                co_return event{"UNREACHABLE", map, target};
+        }
+
+        if (moved.type != "ARRIVED")
             co_return moved;
 
         if (auto ended = check(); ended.has_value())
