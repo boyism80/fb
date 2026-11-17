@@ -1230,7 +1230,7 @@ test_suite {
                             end
                         end
                         local weak = plan ~= nil and
-                        (string.find(plan.name, "흑해골", 1, true) ~= nil or string.find(plan.name, "흑령", 1, true) ~= nil)
+                            (string.find(plan.name, "흑해골", 1, true) ~= nil or string.find(plan.name, "흑령", 1, true) ~= nil)
                         return plan ~= nil and weak ~= true and ghost ~= nil and clear > 0 and clear < refill,
                             string.format("pick=%s rate=%.0f ghost_floors=%s clear=%.1f refill=%.1f",
                                 tostring(plan and plan.name),

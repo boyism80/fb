@@ -977,9 +977,9 @@ function Actor:engage(oid, steps, leeway, via)
     if math.abs(mob.x - self.me.x) + math.abs(mob.y - self.me.y) ~= 1 then
         local goal  = { x = mob.x, y = mob.y }
         local aside = via ~= nil and (via.x ~= self.me.x or via.y ~= self.me.y) and
-        world.map:route(self.me, function(x, y)
-            return x == via.x and y == via.y
-        end) or nil
+            world.map:route(self.me, function(x, y)
+                return x == via.x and y == via.y
+            end) or nil
         local path  = aside
         if aside == nil or #aside == 0 then
             path       = world.map:route(self.me, function(x, y)

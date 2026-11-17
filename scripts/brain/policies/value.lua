@@ -46,7 +46,7 @@ local traded = setmetatable({}, { __mode = "k" })
 -- nothing moved (ground.ranked): worked out once for a list, not from every floor of every ground each decision.
 function M.exchange(snap, query)
     local made  = require("brain.policies.party").pin(snap) == nil and require("brain.planner").latest(snap, query) or
-    nil
+        nil
     local found = nil
     if made ~= nil then
         found = made.exchange or 0
@@ -396,7 +396,7 @@ local manas = {}
 
 function M.mana(snap, query)
     local made   = require("brain.policies.party").pin(snap) == nil and require("brain.planner").latest(snap, query) or
-    nil
+        nil
     local period = (snap.now or 0) // data.rerank
     local known  = manas[snap.self.name]
     local found  = 0

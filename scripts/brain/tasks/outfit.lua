@@ -160,7 +160,7 @@ local function worth(snap, query)
     local rates  = value.baseline(snap, query)
     local cost   = value.cost(snap, query, action, rates) * (1 + #party.members(snap))
     local trip   = action.kind == ACTION.MOVE and action.dest ~= nil and value.trip(snap, query, action.dest, rates) or
-    nil
+        nil
     local window = math.max(ground.lap_left(snap, party.plan(snap, query)), trip ~= nil and trip.time or 0,
         combat.cast(snap) / 1000)
     return found.gain * value.arrival(snap, query, action, rates) - (cost > 0 and cost / window or 0)

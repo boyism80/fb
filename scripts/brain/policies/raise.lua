@@ -45,8 +45,15 @@ function M.cast(snap, query)
             local gain = worth(snap, query, member, ally)
             if best == nil or gain > best then
                 best  = gain
-                found = { kind = ACTION.CAST, slot = learned.slot, oid = ally.oid, x = ally.x, y = ally.y, raise = member
-                .self.name }
+                found = {
+                    kind = ACTION.CAST,
+                    slot = learned.slot,
+                    oid = ally.oid,
+                    x = ally.x,
+                    y = ally.y,
+                    raise = member
+                        .self.name
+                }
             end
         end
     end
@@ -83,7 +90,7 @@ function M.promise(snap, query)
                 name    = member.self.name,
                 at      = snap.now,
                 eta     = able and type(steps) == "number" and steps * (snap.pace.step or data.walk) + combat.cast(snap) or
-                nil,
+                    nil,
                 refused = able == false or nil,
             }
         end
