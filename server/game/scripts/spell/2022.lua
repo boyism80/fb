@@ -14,6 +14,7 @@ return {
         local mp = 180
         local damage = me:hp()
         local message = '파천검무'
+        local delay = 30
 
         local map = me:map()
         if map == nil then
@@ -49,8 +50,9 @@ return {
             end
 
             me:position(me:front_position(5))
-            spell.attack_cast(me, targets, sp,
-                { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect })
+            if spell.attack_cast(me, targets, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect }) and me:is(OBJECT_TYPE.CHARACTER) then
+                me:spell(sp):delay(delay)
+            end
             return
         else
             return failed(me)

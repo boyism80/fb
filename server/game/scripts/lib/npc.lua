@@ -1433,16 +1433,20 @@ function M.promotion_skills(me, npc, class)
         return
     end
     local tier_sel, tier_btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '1차 승급기술', '2차 승급기술', '3차 승급기술',
+        '1차 승급기술', '2차 승급기술', '3차 승급기술', '4차 승급기술',
     })
     if tier_sel == nil or tier_btn == DIALOG_RESULT.QUIT then
         return
     end
     local tier = tier_sel
-    if tier < 1 or tier > 3 then
+    if tier < 1 or tier > 4 then
         return
     end
-    if me:promotion() < tier - 1 then
+    local required = tier - 1
+    if tier == 4 then
+        required = 4
+    end
+    if me:promotion() < required then
         me:dialog(npc, string.format('%d차 승급을 한 뒤에 다시 오세요.', tier), { prev = false, next = true })
         return
     end
@@ -1514,6 +1518,147 @@ function M.promotion_clothes(me, npc, class)
         return
     end
     me:dialog(npc, name_with(item_name, '을', '를') .. ' 드렸습니다.', { prev = false, next = true })
+end
+
+local PROMOTION_WEAPONS = {
+    [CLASS.WARRIOR] = '검성기검',
+    [CLASS.ROGUE]   = '태성태도',
+    [CLASS.MAGE]    = '현자금봉',
+    [CLASS.POET]    = '진선역봉',
+}
+
+local PROMOTION_WEAPON_GOLD = 5000000
+
+local CLASS_NAME_FALLBACK = {
+    [CLASS.WARRIOR] = '전사',
+    [CLASS.ROGUE]   = '도적',
+    [CLASS.MAGE]    = '주술사',
+    [CLASS.POET]    = '도사',
+}
+
+local function owns_named_item(me, item_name, part)
+    if me:has_items(item_name, 1) then
+        return true
+    end
+    local equipments = me:equipments()
+    local equipped = equipments[part]
+    if equipped and equipped:model():name() == item_name then
+        return true
+    end
+    return false
+end
+
+function M.promotion_weapon(me, npc, class)
+    if me:class() ~= class then
+        me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', { prev = false, next = true })
+        return
+    end
+    if me:promotion() < 4 then
+        me:dialog(npc, '4차 승급을 한 뒤에 다시 오세요.', { prev = false, next = true })
+        return
+    end
+    local weapon_name = PROMOTION_WEAPONS[class]
+    if not weapon_name then
+        me:dialog(npc, '그 무기는 아직 준비 중이에요.', { prev = false, next = true })
+        return
+    end
+    if owns_named_item(me, weapon_name, EQUIPMENT_PARTS.WEAPON) then
+        me:dialog(npc, name_with(weapon_name, '은', '는') .. ' 한 자루만 소유할 수 있습니다.', { prev = false, next = true })
+        return
+    end
+    local selected, button = me:pursuit(npc,
+        '천상계에서 하사한 물품을 잃어버린 잘못으로 500만전을 바치면 그 잘못을 뉘우쳐, 새로이 무기를 드리도록 하겠습니다.\n\n시주를 하고 무기를 받으시겠습니까?',
+        { '네', '아뇨' })
+    if button == DIALOG_RESULT.QUIT or selected ~= 1 then
+        return
+    end
+    if owns_named_item(me, weapon_name, EQUIPMENT_PARTS.WEAPON) then
+        me:dialog(npc, name_with(weapon_name, '은', '는') .. ' 한 자루만 소유할 수 있습니다.', { prev = false, next = true })
+        return
+    end
+    if me:promotion() < 4 then
+        me:dialog(npc, '4차 승급을 한 뒤에 다시 오세요.', { prev = false, next = true })
+        return
+    end
+    local code = me:exchange({ ['money'] = PROMOTION_WEAPON_GOLD }, { ['item'] = { [weapon_name] = 1 } })
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc, '오백만전을 준비하신 후에 다시 오시길 바랍니다.', { prev = false, next = true })
+        return
+    end
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(weapon_name, '을', '를') .. ' 드릴 수 없습니다.', { prev = false, next = true })
+        return
+    end
+    me:dialog(npc, '새로운 무기를 드렸습니다. 다음부터는 잃어버리지 않고 소중히 사용하시길 바랍니다.', { prev = false, next = true })
+end
+
+function M.promotion_4th(me, npc, take_heart, quest_obj)
+    local class = me:class()
+    local stats = PROMOTION_STATS[class] and PROMOTION_STATS[class][3]
+    local next_name = class2name(class, 4)
+    if not stats or not next_name then
+        me:dialog(npc, '아직 준비가 안 되었습니다.', { prev = false, next = false })
+        return false
+    end
+    local choice = me:list(npc,
+        '당신은 지금껏 수많은 수련을 거쳐 인간으로서 오르기 힘든 경지에 도달하셨고, 더욱이 세상을 종말로부터 보호하는 업적을 세우셨으니 '
+        .. name_with(next_name, '으로', '로')
+        .. ' 불리우시기에 부족함이 없습니다. 지금 바로 승급을 원하시나요?',
+        { '예', '아뇨' })
+    if choice == nil or choice ~= 1 then
+        return false
+    end
+    if me:promotion() ~= 3 or me:level() < 99 or me:base_hp() < stats.min_hp or me:base_mp() < stats.min_mp then
+        if me:promotion() ~= 3 then
+            me:dialog(npc, '3차 승급을 한 뒤에 다시 오세요.', { prev = false, next = false })
+        else
+            me:dialog(npc, '좀더 수련을 쌓고오세요.', { prev = false, next = false })
+        end
+        return false
+    end
+    if take_heart and not me:rmitem('반고의심장', 1, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '반고의심장이 없습니다.', { prev = false, next = false })
+        return false
+    end
+    me:promotion(4)
+    if quest_obj and not quest_obj:completed() then
+        quest_obj:complete()
+    end
+    broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')),
+        MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
+    me:dialog(npc, '승급을 마쳤습니다. 더 높은 경지에 도전하시길 바랍니다.', { prev = false, next = false })
+    return true
+end
+
+function M.promotion_master(me, npc, class)
+    local class_name = class2name(me:class(), me:promotion())
+    if not class_name then
+        class_name = CLASS_NAME_FALLBACK[class] or '평민'
+    end
+    local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
+        name_with(class_name, '으로서', '로서') .. ' 승급을 원합니다',
+        '기술을 배울래요',
+        '3차승급 옷을 원합니다',
+        '4차승급 무기를 원합니다',
+    })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if sel == 1 then
+        if me:class() ~= class or me:promotion() >= 4 then
+            me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', { prev = false, next = false })
+        elseif me:promotion() == 3 then
+            me:dialog(npc, '당신의 업적을 확인하는 일은 제가 하기에는 적합하지 않은 것 같군요. 천성랑님을 찾아가 보세요.', { prev = false, next = false })
+        else
+            M.promotion(me, npc, class)
+        end
+    elseif sel == 2 then
+        M.promotion_skills(me, npc, class)
+    elseif sel == 3 then
+        M.promotion_clothes(me, npc, class)
+    elseif sel == 4 then
+        M.promotion_weapon(me, npc, class)
+    end
 end
 
 function M.promotion(me, npc, class)

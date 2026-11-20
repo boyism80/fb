@@ -7,6 +7,7 @@ namespace fb::game::builtin {
 
 struct map
 {
+    static int builtin_eq(lua_State* L);
     static int builtin_model(lua_State* L);
     static int builtin_id(lua_State* L);
     static int builtin_active(lua_State* L);

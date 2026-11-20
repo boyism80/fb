@@ -12,9 +12,14 @@ return {
         local sound = 79
         local effect = 39
         local buff_time = 425
+        local delay = 30
 
-        for _, you in ipairs(spell.area_debuff_cast(me, sp, { mp = mp, sound = sound, effect = effect })) do
+        local hits = spell.area_debuff_cast(me, sp, { mp = mp, sound = sound, effect = effect })
+        for _, you in ipairs(hits) do
             you:buff(sp, buff_time, me)
+        end
+        if #hits > 0 and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
         end
     end,
 

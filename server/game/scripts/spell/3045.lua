@@ -9,9 +9,11 @@ return {
         local mp = math.max(me:mp(), 30)
         local sound = 107
         local effect = 104
+        local delay = 255
 
-        spell.damage_area(me, me:nears(OBJECT_TYPE.LIFE, 8, 7), sp,
-            { damage = damage, hp = hp, mp = mp, sound = sound, effect = { you = effect } })
+        if spell.damage_area(me, me:nears(OBJECT_TYPE.LIFE, 8, 7), sp, { damage = damage, hp = hp, mp = mp, sound = sound, effect = { you = effect } }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
+        end
     end,
 
     -- on_buff = function(me, sp)

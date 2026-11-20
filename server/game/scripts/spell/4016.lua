@@ -12,8 +12,12 @@ return {
         local sound = 109
         local effect = 116
         local buff_time = 45
+        local delay = 120
         if spell.buff_cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             me:buff(sp, buff_time, me)
+            if me:is(OBJECT_TYPE.CHARACTER) then
+                me:spell(sp):delay(delay)
+            end
         end
     end,
 

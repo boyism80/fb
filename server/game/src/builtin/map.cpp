@@ -17,6 +17,7 @@ using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
+{"__eq",                builtin::map::builtin_eq},
 {"model",               builtin::map::builtin_model},
 {"id",                  builtin::map::builtin_id},
 {"active",              builtin::map::builtin_active},
@@ -785,6 +786,18 @@ int builtin::map::builtin_instance(lua_State* L)
     };
 
     return builder.run();
+}
+
+int builtin::map::builtin_eq(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto left  = lua->touserdata<fb::game::map>(1);
+    auto right = lua->touserdata<fb::game::map>(2);
+    lua->pushboolean(left != nullptr && right != nullptr && left.get() == right.get());
+    return 1;
 }
 
 int builtin::map::builtin_slot(lua_State* L)

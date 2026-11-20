@@ -14,10 +14,11 @@ return {
         local mp = 180
         local damage = me:hp() + math.min(20000, me:mp())
         local message = '무형검'
+        local delay = 60
 
         local front = me:front(OBJECT_TYPE.LIFE)
-        if not spell.attack_cast(me, front, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect, preprocess = preprocess }) then
-            return
+        if spell.attack_cast(me, front, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect, preprocess = preprocess }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
         end
     end,
 

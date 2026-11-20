@@ -15,6 +15,7 @@ return {
         local sound = 99
         local damage = me:hp() * 3
         local message = '초혼비무'
+        local delay = 30
         if me:is(OBJECT_TYPE.CHARACTER) then
             local error = me:assert(STATE.GHOST, STATE.RIDING)
             if error ~= nil then
@@ -59,8 +60,9 @@ return {
             end
         end
 
-        spell.attack_cast(me, front, sp,
-            { hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect })
+        if spell.attack_cast(me, front, sp, { hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
+        end
     end,
 
     -- on_buff = function(me, sp)

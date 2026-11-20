@@ -942,6 +942,11 @@ return {
         report(me, me:promotion() == tonumber(value), step)
     end,
 
+    verify_promotion = function(me, step, value)
+        report(me, me:promotion() == tonumber(value), step,
+            string.format('promotion=%d expected=%s', me:promotion(), tostring(value)))
+    end,
+
     set_money = function(me, step, value)
         me:money(tonumber(value))
         report(me, true, step)

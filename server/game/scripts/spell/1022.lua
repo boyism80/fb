@@ -10,6 +10,7 @@ return {
         local mp = 50
         local damage = me:hp()
         local message = '극\'백호참'
+        local delay = 60
 
         local targets = {}
         local x, y = me:position()
@@ -67,8 +68,8 @@ return {
             end
         end
 
-        if not spell.attack_cast(me, targets, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect }) then
-            return
+        if spell.attack_cast(me, targets, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
         end
     end,
 

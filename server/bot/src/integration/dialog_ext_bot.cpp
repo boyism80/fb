@@ -12,13 +12,28 @@ void dialog_ext_bot::read_appearance(fb::stream_reader<big_endian>& reader)
 {
     this->interaction = reader.read<uint8_t>();
     this->oid         = reader.read<uint32_t>();
-    reader.read<uint8_t>(); // obj type flag
-    reader.read<uint8_t>(); // 0x01
+    reader.read<uint8_t>();
+    if (reader.read<uint8_t>() == 0x00)
+    {
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        this->look  = reader.read<uint16_t>();
+        this->color = reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint16_t>();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint32_t>();
+        return;
+    }
+
     this->look  = reader.read<uint16_t>();
     this->color = reader.read<uint8_t>();
-    reader.read<uint8_t>();  // obj type flag (duplicate)
-    reader.read<uint16_t>(); // look (duplicate)
-    reader.read<uint8_t>();  // color (duplicate)
+    reader.read<uint8_t>();
+    reader.read<uint16_t>();
+    reader.read<uint8_t>();
 }
 
 void dialog_ext_bot::read_appearance_v651(fb::stream_reader<big_endian>& reader)

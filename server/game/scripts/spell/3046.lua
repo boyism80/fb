@@ -9,12 +9,16 @@ return {
         local mp = math.max(30, me:mp() // 2)
         local sound = 500
         local effect = 161
+        local delay = 420
 
         if not spell.damage_area(me, me:nears(OBJECT_TYPE.LIFE, 6, 5), sp, { damage = damage, hp = hp, mp = mp, sound = sound, effect = { me = effect } }) then
             return
         end
 
         me:hp(me:hp() // 2)
+        if me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
+        end
     end,
 
     -- on_buff = function(me, sp)

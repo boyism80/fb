@@ -8,8 +8,9 @@ return {
         local sound = 97
         local effect = 63
         local hp = 10000
-        if not spell.heal_group(me, sp, { hp = hp, mp = mp, sound = sound, effect = effect }) then
-            return
+        local delay = 5
+        if spell.heal_group(me, sp, { hp = hp, mp = mp, sound = sound, effect = effect }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
         end
     end,
 

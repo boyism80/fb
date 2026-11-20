@@ -8,7 +8,10 @@ return {
         local mp = me:mp()
         local sound = 73
         local effect = 8
-        spell.damage_near_target(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
+        local delay = 60
+        if spell.damage_near_target(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect }) and me:is(OBJECT_TYPE.CHARACTER) then
+            me:spell(sp):delay(delay)
+        end
     end,
 
     -- on_buff = function(me, sp)

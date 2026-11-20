@@ -2,8 +2,8 @@
 local HP_MIN_LEVEL = 90
 
 local HP_PROMOTION_CAP = {
-    warrior = { 80000, 250000, 700000, 1600000 },
-    mage    = { 35000, 170000, 550000, 1000000 },
+    warrior = { 80000, 250000, 1600000, 1600000 },
+    mage    = { 35000, 170000, 1000000, 1000000 },
 }
 
 local HP_CLASS_PROFILE = {
@@ -51,7 +51,7 @@ local HP_TIERS = {
 
 local MP_PROMOTION_CAP = {
     warrior = nil,
-    mage    = { 30000, 110000, 550000, 1000000 },
+    mage    = { 30000, 110000, 1000000, 1000000 },
 }
 
 local MP_TIERS = {
@@ -215,7 +215,11 @@ local function run_buy_hp(me, npc)
     local base_hp = me:base_hp()
     local caps = HP_PROMOTION_CAP[profile]
     if caps and caps[promotion] and base_hp >= caps[promotion] then
-        me:dialog(npc, '아직도 승급을 하지 않았다니. 일단 승급을 한 뒤에 다시 오도록!', { prev = false, next = false })
+        if promotion >= 4 then
+            me:dialog(npc, '더 이상 올릴 수 없습니다.', { prev = false, next = false })
+        else
+            me:dialog(npc, '아직도 승급을 하지 않았다니. 일단 승급을 한 뒤에 다시 오도록!', { prev = false, next = false })
+        end
         return true
     end
 
